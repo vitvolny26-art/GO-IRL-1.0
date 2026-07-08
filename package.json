@@ -9,7 +9,7 @@
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "test": "vitest run",
-    "build": "node scripts/generate-build-marker.cjs && vite build",
+    "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {

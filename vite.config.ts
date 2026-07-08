@@ -3,6 +3,10 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __GO_IRL_COMMIT__: "\"a18abb0\"",
+    __GO_IRL_BUILT_AT__: "\"2026-07-08T14:10:13.387Z\"",
+  },
   build: {
     rollupOptions: {
       output: {
