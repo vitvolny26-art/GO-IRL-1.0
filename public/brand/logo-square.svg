@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">GO IRL logo</title>
+  <desc id="desc">GO IRL logo on black with neon green and white text.</desc>
+  <defs>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.78 0 0 0 0 1 0 0 0 0 0.24 0 0 0 0.9 0" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="172" fill="#050607"/>
+  <rect x="52" y="52" width="920" height="920" rx="132" fill="none" stroke="#c9ff3d" stroke-opacity="0.22" stroke-width="6"/>
+  <text x="512" y="386" text-anchor="middle" font-family="Arial Black, Inter, Arial, sans-serif" font-size="262" font-weight="900" letter-spacing="-8" fill="#ffffff">GO</text>
+  <g filter="url(#glow)">
+    <path d="M629 249c-59 0-107 48-107 107 0 77 107 177 107 177s107-100 107-177c0-59-48-107-107-107zm0 63a44 44 0 1 1 0 88 44 44 0 0 1 0-88z" fill="#c9ff3d"/>
+    <path d="M629 328l34 28-34 28-34-28 34-28z" fill="#050607" opacity="0.92"/>
+  </g>
+  <text x="512" y="667" text-anchor="middle" font-family="Arial Black, Inter, Arial, sans-serif" font-size="260" font-weight="900" letter-spacing="-2" fill="#c9ff3d" filter="url(#glow)">IRL</text>
+  <text x="512" y="792" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800" fill="#ffffff">Меньше скролла, больше жизни</text>
+</svg>

@@ -1,0 +1,957 @@
+{
+  "generatedAt": "2026-07-06T15:28:34.225Z",
+  "root": "C:\\Users\\lenovo\\Documents\\Codex\\2026-05-28\\go irl 0.9",
+  "git": {
+    "branch": "main",
+    "status": "",
+    "log": "cc4750c fix: remove map preview and link address\nc4244ea fix: replace embedded map with place card\nae8a5b9 fix: localize coach request status\n34eb275 fix: improve compact event detail grid\nc3a32b1 fix: compact event details and translations\n8fe5e94 feat: add bug report copy action\n61b729d fix: clarify bug report action\n370fc66 fix: clarify report bug action\n369cbd3 fix: remove unused share text variable\n78a3b9f fix: improve share preview\n441ce0f fix: improve activity sharing flow\n09a82d4 fix: hide expired activities",
+    "remote": "origin\thttps://github.com/vitvolny26-art/GO-IRL.git (fetch)\norigin\thttps://github.com/vitvolny26-art/GO-IRL.git (push)"
+  },
+  "checks": {
+    "lint": {
+      "ok": true,
+      "outputTail": ""
+    },
+    "build": {
+      "ok": true,
+      "outputTail": "\u001b[36mvite v8.1.3 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\n\u001b[2K\rtransforming...✓ 147 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                       1.68 kB │ gzip:  0.64 kB\ndist/assets/go-irl-v0-BUB7bB6_.css                   44.03 kB │ gzip:  8.45 kB\ndist/assets/rolldown-runtime-go-irl-v0-QTnfLwEv.js    0.69 kB │ gzip:  0.42 kB\ndist/assets/index-go-irl-v0-D5uzyK6a.js               1.61 kB │ gzip:  0.80 kB\ndist/assets/vendor-icons-go-irl-v0-7OkM1NPP.js        9.05 kB │ gzip:  3.66 kB\ndist/assets/App-go-irl-v0-CEzVM9pK.js                54.91 kB │ gzip: 15.03 kB\ndist/assets/vertical-sport-go-irl-v0-BrctvHyA.js     86.66 kB │ gzip: 26.49 kB\ndist/assets/vendor-react-go-irl-v0-Cy5oDBDU.js      206.55 kB │ gzip: 64.27 kB\ndist/assets/vendor-data-go-irl-v0-BmXsYpjP.js       210.68 kB │ gzip: 54.78 kB\n\n\u001b[32m✓ built in 445ms\u001b[39m\n"
+    },
+    "test": {
+      "ok": true,
+      "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.9 \u001b[39m\u001b[90mC:/Users/lenovo/Documents/Codex/2026-05-28/go irl 0.9\u001b[39m\n\n \u001b[32m✓\u001b[39m src/i18n.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/data.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/telegramInitData.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 88\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/validation.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 20\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/calendar/googleCalendar.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 108\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/verticals/sport.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/share.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 40\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/recommendations.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/config/cities.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/securityIdentity.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m51 passed\u001b[39m\u001b[22m\u001b[90m (51)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:28:45\n\u001b[2m   Duration \u001b[22m 1.57s\u001b[2m (transform 1.47s, setup 0ms, import 2.25s, tests 345ms, environment 3ms)\u001b[22m\n\n"
+    }
+  },
+  "indicators": {
+    "telegramAuth": true,
+    "supabase": true,
+    "sportVertical": true,
+    "participants": true,
+    "coach": true,
+    "chat": true,
+    "share": true,
+    "calendar": true,
+    "maps": true,
+    "visualDemo": true,
+    "i18n": true,
+    "admin": true,
+    "tests": true,
+    "deployment": true
+  },
+  "roadmap": [
+    {
+      "name": "Telegram trusted auth",
+      "detected": true,
+      "completion": 90,
+      "note": "Auth exists. Test only inside Telegram or demo mode."
+    },
+    {
+      "name": "Supabase data layer",
+      "detected": true,
+      "completion": 85,
+      "note": "CRUD and migrations detected. Keep RLS/auth protected."
+    },
+    {
+      "name": "Sport vertical",
+      "detected": true,
+      "completion": 85,
+      "note": "Main vertical is real. Needs UX polish and translation cleanup."
+    },
+    {
+      "name": "Participants and requests",
+      "detected": true,
+      "completion": 80,
+      "note": "Join/pending/waiting flows detected."
+    },
+    {
+      "name": "Coach requests",
+      "detected": true,
+      "completion": 65,
+      "note": "MVP exists. Needs localization, admin workflow, coach matching."
+    },
+    {
+      "name": "Event chat",
+      "detected": true,
+      "completion": 70,
+      "note": "MVP exists. Needs expiry verification and moderation."
+    },
+    {
+      "name": "Share/invites",
+      "detected": true,
+      "completion": 60,
+      "note": "Share exists. Telegram preview/deep-link UX still fragile."
+    },
+    {
+      "name": "Calendar",
+      "detected": true,
+      "completion": 60,
+      "note": "Calendar hooks detected. Needs UX validation on mobile."
+    },
+    {
+      "name": "Maps/location",
+      "detected": true,
+      "completion": 55,
+      "note": "Map/link support exists. Embedded map should be simplified."
+    },
+    {
+      "name": "Local visual demo mode",
+      "detected": true,
+      "completion": 75,
+      "note": "Good for UI QA. Must stay isolated from production auth."
+    },
+    {
+      "name": "Translations/i18n",
+      "detected": true,
+      "completion": 55,
+      "note": "Architecture exists. Content still mixed RU/UK/CS/EN."
+    },
+    {
+      "name": "Admin/moderation",
+      "detected": true,
+      "completion": 65,
+      "note": "Admin delete/roles detected. Needs real moderation panels."
+    },
+    {
+      "name": "Tests",
+      "detected": true,
+      "completion": 70,
+      "note": "Test suite exists. Needs component/e2e tests for Mini App flows."
+    },
+    {
+      "name": "Deployment",
+      "detected": true,
+      "completion": 75,
+      "note": "Vercel/Supabase deployment signals detected."
+    }
+  ],
+  "roadmapFiles": [
+    "BACKLOG.md",
+    "old/README.md",
+    "README.md",
+    "ROADMAP.md",
+    "SETUP.md",
+    "SETUP_RU.md",
+    "supabase/migration_ai_events_plan.sql",
+    "supabase/README.md"
+  ],
+  "todoHits": [
+    {
+      "file": "BACKLOG.md",
+      "line": 56,
+      "text": "- Add deeper tests for activity creation, join/leave, waiting list, private pending requests, organizer approvals, and edit permissions."
+    },
+    {
+      "file": "BACKLOG.md",
+      "line": 107,
+      "text": "- Chat RLS design: only organizer, confirmed participants, admin, and moderator can read chat; guests, pending users, rejected users, and blocked users cannot."
+    },
+    {
+      "file": "BACKLOG.md",
+      "line": 277,
+      "text": "- SRC-003 Add manual moderation queue for `pending_review`."
+    },
+    {
+      "file": "BACKLOG.md",
+      "line": 308,
+      "text": "- VERT-007 Sport skill matching."
+    },
+    {
+      "file": "CHANGELOG.md",
+      "line": 15,
+      "text": "- Participant states: joined, waiting, pending."
+    },
+    {
+      "file": "docs/ai-event-discovery.md",
+      "line": 110,
+      "text": "- `review_status`: `new`, `pending_review`, `approved`, `rejected`, `published`, `expired`"
+    },
+    {
+      "file": "docs/ai-event-discovery.md",
+      "line": 165,
+      "text": "4. Medium confidence candidates become `pending_review`."
+    },
+    {
+      "file": "docs/AI.md",
+      "line": 33,
+      "text": "Duplicates --> Moderation[\"Pending review / moderation\"]"
+    },
+    {
+      "file": "docs/Database.md",
+      "line": 217,
+      "text": "- guests, pending users, rejected users, and blocked users cannot read chat."
+    },
+    {
+      "file": "docs/Database.md",
+      "line": 248,
+      "text": "- pending Activity requests do not create chat membership."
+    },
+    {
+      "file": "docs/EventLifecycle.md",
+      "line": 57,
+      "text": "- Invite: pending request until organizer approval."
+    },
+    {
+      "file": "docs/n8n-workflows.md",
+      "line": 26,
+      "text": "10. Move candidates to `pending_review`, `rejected`, or later `approved`."
+    },
+    {
+      "file": "docs/Notifications.md",
+      "line": 84,
+      "text": "- Do not notify guests, pending users, rejected users, blocked users, or users who left the chat."
+    },
+    {
+      "file": "docs/privacy.md",
+      "line": 95,
+      "text": "- Guests, pending users, rejected users, and blocked users cannot see the chat."
+    },
+    {
+      "file": "docs/RLS.md",
+      "line": 95,
+      "text": "- pending users do not see private chat;"
+    },
+    {
+      "file": "docs/RLS.md",
+      "line": 101,
+      "text": "- Pending users are not chat members."
+    },
+    {
+      "file": "docs/Security.md",
+      "line": 161,
+      "text": "- Pending users cannot access chat."
+    },
+    {
+      "file": "docs/Security.md",
+      "line": 172,
+      "text": "- Pending Activity membership is not enough for chat membership."
+    },
+    {
+      "file": "docs/vertical-experiences.md",
+      "line": 237,
+      "text": "2. User sends request or joins, depending on privacy."
+    },
+    {
+      "file": "README.md",
+      "line": 70,
+      "text": "- Participants list with joined, waiting, and pending states"
+    },
+    {
+      "file": "RELEASE_NOTES.md",
+      "line": 23,
+      "text": "- Private events create pending requests that the organizer can approve or reject."
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 104,
+      "text": "const { joinedIds, pendingIds } = useAppStore();"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 109,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 112,
+      "text": "const action = isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === \"invite\" ? t.request : t.join;"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 164,
+      "text": "<button className={joined || pending ? \"card-join secondary\" : \"card-join\"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type=\"button\" disabled={!isOrganizer && full && !joined && !pending}>{action}</button>"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 185,
+      "text": "const { joinedIds, pendingIds, userRole, reviewRequest } = useAppStore();"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 193,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 195,
+      "text": "const action = isOrganizer ? t.edit : pending ? t.cancelRequest : joined ? t.leave : full ? t.eventFull : activity.visibility === \"invite\" ? t.request : t.join;"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 198,
+      "text": "const pendingMembers = activity.members.filter((member) => member.status === \"pending\");"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 267,
+      "text": "{canManageActivity && pendingMembers.length > 0 && <div className=\"pending-heading\">{t.requests} · {pendingMembers.length}</div>}"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 268,
+      "text": "{canManageActivity && pendingMembers.map((member) => ("
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 269,
+      "text": "<div className=\"member-row pending-member\" key={member.userKey}>"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 282,
+      "text": "<button className=\"main-action\" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type=\"button\" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 535,
+      "text": ": result === \"pending\""
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 859,
+      "text": "const { joinedIds, pendingIds } = useAppStore();"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 863,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 882,
+      "text": "<button className={joined || pending ? \"card-join secondary\" : \"card-join\"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type=\"button\">"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 883,
+      "text": "{isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : activity.visibility === \"invite\" ? t.request : t.join}"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1108,
+      "text": "const { activities, joinedIds, pendingIds, loading, syncError, selectedCityId, setSelectedCity } = useAppStore();"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1119,
+      "text": "const pendingRequests = activities.filter((item) => pendingIds.includes(item.id));"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1120,
+      "text": "const activeEvents = activities.filter((item) => item.date >= today && (item.organizerKey === userKey || joinedIds.includes(item.id) || pendingIds.includes(item.id)));"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1202,
+      "text": "<Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1208,
+      "text": "<ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1258,
+      "text": "const { joinedIds, waitingIds, pendingIds } = useAppStore();"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1264,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1269,
+      "text": ": pending"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1284,
+      "text": ": pending"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1324,
+      "text": "<button className={joined || waiting || pending ? \"card-join secondary\" : \"card-join\"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type=\"button\">"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1372,
+      "text": "const { joinedIds, waitingIds, pendingIds, reviewRequest, userRole } = useAppStore();"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1384,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1388,
+      "text": ": pending"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1401,
+      "text": ": pending"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1417,
+      "text": "const pendingMembers = activity.members.filter((member) => member.status === \"pending\");"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1435,
+      "text": "<span className={isOrganizer ? \"details-status organizer\" : pending ? \"details-status pending\" : joined ? \"details-status joined\" : full ? \"details-status full\" : \"details-status\"}>{status}</span>"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1473,
+      "text": "{isOrganizer && pendingMembers.length > 0 && <div className=\"pending-heading\">{t.requests} · {pendingMembers.length}</div>}"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1474,
+      "text": "{isOrganizer && pendingMembers.map((member) => ("
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1475,
+      "text": "<div className=\"member-row pending-member\" key={member.userKey}>"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1487,
+      "text": "{!isOrganizer && (joined || waiting || pending) && <div className=\"status-banner\">{joined ? <UserRoundCheck /> : <Clock3 />}<span>{joined ? t.joined : waiting ? t.waiting : t.requested}</span></div>}"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1488,
+      "text": "{!isOrganizer && activity.visibility === \"private\" && !joined && !waiting && !pending && <div className=\"status-banner neutral\"><ShieldCheck /><span>{t.privateJoinInfo}</span></div>}"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1489,
+      "text": "{full && !joined && !waiting && !pending && !isOrganizer && <div className=\"status-banner danger\"><UsersRound /><span>{t.eventFull}</span></div>}"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1491,
+      "text": "<button className=\"main-action\" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type=\"button\" disabled={!isOrganizer && full && !joined && !waiting && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1609,
+      "text": "type JoinResult = \"joined\" | \"pending\" | \"left\" | \"full\" | \"private\";"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1641,
+      "text": "status: \"joined\" | \"waiting\" | \"pending\";"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1651,
+      "text": "pendingIds: string[];"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1862,
+      "text": "pendingIds: members.filter((member) => member.user_key === userKey && member.status === \"pending\").map((member) => member.activity_id),"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1877,
+      "text": "pendingIds: [],"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1900,
+      "text": "console.error(error);"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1929,
+      "text": "const { joinedIds, waitingIds, pendingIds, activities } = get();"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1931,
+      "text": "if (joinedIds.includes(id) || waitingIds.includes(id) || pendingIds.includes(id)) {"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 1943,
+      "text": "const status: DbMember[\"status\"] = activity.visibility === \"invite\" ? \"pending\" : \"joined\";"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 2097,
+      "text": "pendingIds: state.pendingIds.filter((activityId) => activityId !== id) }));"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 2369,
+      "text": "export type CoachRequestStatus = \"pending\" | \"matched\" | \"confirmed\" | \"cancelled\" | \"completed\" | \"rejected\";"
+    },
+    {
+      "file": "snapshot.txt",
+      "line": 2403,
+      "text": "status: \"joined\" | \"waiting\" | \"pending\";"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 240,
+      "text": ": result === \"pending\""
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 284,
+      "text": "window.alert(t.copied);"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 565,
+      "text": "const { joinedIds, pendingIds } = useAppStore();"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 569,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 588,
+      "text": "<button className={joined || pending ? \"card-join secondary\" : \"card-join\"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type=\"button\">"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 589,
+      "text": "{isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : activity.visibility === \"invite\" ? t.request : t.join}"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 814,
+      "text": "const { activities, joinedIds, pendingIds, loading, syncError, selectedCityId, setSelectedCity } = useAppStore();"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 825,
+      "text": "const pendingRequests = activities.filter((item) => pendingIds.includes(item.id));"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 826,
+      "text": "const activeEvents = activities.filter((item) => item.date >= today && (item.organizerKey === userKey || joinedIds.includes(item.id) || pendingIds.includes(item.id)));"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 908,
+      "text": "<Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 914,
+      "text": "<ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 964,
+      "text": "const { joinedIds, waitingIds, pendingIds } = useAppStore();"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 970,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 975,
+      "text": ": pending"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 990,
+      "text": ": pending"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1030,
+      "text": "<button className={joined || waiting || pending ? \"card-join secondary\" : \"card-join\"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type=\"button\">"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1078,
+      "text": "const { joinedIds, waitingIds, pendingIds, reviewRequest, userRole } = useAppStore();"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1090,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1094,
+      "text": ": pending"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1107,
+      "text": ": pending"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1123,
+      "text": "const pendingMembers = activity.members.filter((member) => member.status === \"pending\");"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1141,
+      "text": "<span className={isOrganizer ? \"details-status organizer\" : pending ? \"details-status pending\" : joined ? \"details-status joined\" : full ? \"details-status full\" : \"details-status\"}>{status}</span>"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1179,
+      "text": "{isOrganizer && pendingMembers.length > 0 && <div className=\"pending-heading\">{t.requests} · {pendingMembers.length}</div>}"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1180,
+      "text": "{isOrganizer && pendingMembers.map((member) => ("
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1181,
+      "text": "<div className=\"member-row pending-member\" key={member.userKey}>"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1193,
+      "text": "{!isOrganizer && (joined || waiting || pending) && <div className=\"status-banner\">{joined ? <UserRoundCheck /> : <Clock3 />}<span>{joined ? t.joined : waiting ? t.waiting : t.requested}</span></div>}"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1194,
+      "text": "{!isOrganizer && activity.visibility === \"private\" && !joined && !waiting && !pending && <div className=\"status-banner neutral\"><ShieldCheck /><span>{t.privateJoinInfo}</span></div>}"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1195,
+      "text": "{full && !joined && !waiting && !pending && !isOrganizer && <div className=\"status-banner danger\"><UsersRound /><span>{t.eventFull}</span></div>}"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1199,
+      "text": "<button className=\"main-action\" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type=\"button\" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>"
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1205,
+      "text": "<button onClick={() => { void navigator.clipboard?.writeText(`GO IRL bug report\\nEvent: ${activity.id}\\nTitle: ${activity.title[language]}\\nTime: ${activity.date} ${activity.time}`); window.alert(t.copied); }} type=\"button\"><Bug size={18} /"
+    },
+    {
+      "file": "src/coachFeature.ts",
+      "line": 73,
+      "text": "status: \"pending\","
+    },
+    {
+      "file": "src/components/CoachRequestPanel.tsx",
+      "line": 17,
+      "text": "case \"pending\": return \"ожидает подтверждения\";"
+    },
+    {
+      "file": "src/components/CoachRequestPanel.tsx",
+      "line": 47,
+      "text": "() => requests.filter((request) => request.requestType === \"participant_interest\" && request.status === \"pending\").length,"
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 193,
+      "text": "pendingRequests: \"заявки\","
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 200,
+      "text": "noPendingRequests: \"Нет заявок, которые ждут решения.\","
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 413,
+      "text": "pendingRequests: \"заявки\","
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 420,
+      "text": "noPendingRequests: \"Немає заявок, що очікують рішення.\","
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 627,
+      "text": "pendingRequests: \"žádosti\","
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 634,
+      "text": "noPendingRequests: \"Žádné žádosti nečekají na rozhodnutí.\","
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 843,
+      "text": "pendingRequests: \"requests\","
+    },
+    {
+      "file": "src/i18n.ts",
+      "line": 850,
+      "text": "noPendingRequests: \"No requests are awaiting a decision.\","
+    },
+    {
+      "file": "src/store.ts",
+      "line": 15,
+      "text": "type JoinResult = \"joined\" | \"pending\" | \"left\" | \"full\" | \"private\";"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 47,
+      "text": "status: \"joined\" | \"waiting\" | \"pending\";"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 57,
+      "text": "pendingIds: string[];"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 185,
+      "text": "pendingIds: activities.filter((activity) => activity.members.some((member) => member.userKey === visualDemoUserKey && member.status === \"pending\")).map((activity) => activity.id),"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 387,
+      "text": "pendingIds: members.filter((member) => member.user_key === userKey && member.status === \"pending\").map((member) => member.activity_id),"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 402,
+      "text": "pendingIds: [],"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 425,
+      "text": "console.error(error);"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 454,
+      "text": "const { joinedIds, waitingIds, pendingIds, activities } = get();"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 456,
+      "text": "if (joinedIds.includes(id) || waitingIds.includes(id) || pendingIds.includes(id)) {"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 468,
+      "text": "const status: DbMember[\"status\"] = activity.visibility === \"invite\" ? \"pending\" : \"joined\";"
+    },
+    {
+      "file": "src/store.ts",
+      "line": 622,
+      "text": "pendingIds: state.pendingIds.filter((activityId) => activityId !== id) }));"
+    },
+    {
+      "file": "src/styles.css",
+      "line": 322,
+      "text": ".details-status.pending { border-color: rgba(174,140,255,.32); background: rgba(174,140,255,.1); color: var(--violet); }"
+    },
+    {
+      "file": "src/styles.css",
+      "line": 348,
+      "text": ".pending-heading { margin: 9px 0 3px; color: var(--violet); font-size: 11px; font-weight: 800; text-transform: uppercase; }"
+    },
+    {
+      "file": "src/styles.css",
+      "line": 349,
+      "text": ".member-row.pending-member { grid-template-columns: 34px 1fr auto; }"
+    },
+    {
+      "file": "src/types.ts",
+      "line": 9,
+      "text": "export type CoachRequestStatus = \"pending\" | \"matched\" | \"confirmed\" | \"cancelled\" | \"completed\" | \"rejected\";"
+    },
+    {
+      "file": "src/types.ts",
+      "line": 43,
+      "text": "status: \"joined\" | \"waiting\" | \"pending\";"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 103,
+      "text": "const { joinedIds, pendingIds } = useAppStore();"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 108,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 111,
+      "text": "const action = isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === \"invite\" ? t.request : t.join;"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 174,
+      "text": "<button className={joined || pending ? \"card-join secondary\" : \"card-join\"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type=\"button\" disabled={!isOrganizer && full && !joined && !pending}>{action}</button>"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 194,
+      "text": "const { joinedIds, pendingIds, userRole, reviewRequest } = useAppStore();"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 202,
+      "text": "const pending = pendingIds.includes(activity.id);"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 204,
+      "text": "const action = isOrganizer ? t.edit : pending ? t.cancelRequest : joined ? t.leave : full ? t.eventFull : activity.visibility === \"invite\" ? t.request : t.join;"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 207,
+      "text": "const pendingMembers = activity.members.filter((member) => member.status === \"pending\");"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 290,
+      "text": "{canManageActivity && pendingMembers.length > 0 && <div className=\"pending-heading\">{t.requests} · {pendingMembers.length}</div>}"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 291,
+      "text": "{canManageActivity && pendingMembers.map((member) => ("
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 292,
+      "text": "<div className=\"member-row pending-member\" key={member.userKey}>"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 309,
+      "text": "<button className=\"main-action\" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type=\"button\" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>"
+    },
+    {
+      "file": "src/verticals/SportVertical.tsx",
+      "line": 315,
+      "text": "<button onClick={() => { void navigator.clipboard?.writeText(`GO IRL bug report\\nEvent: ${activity.id}\\nTitle: ${activity.title[language]}\\nTime: ${activity.date} ${activity.time}`); window.alert(t.copied); }} type=\"button\"><Bug size={18} /"
+    },
+    {
+      "file": "supabase/functions/verifyTelegramInitData/index.ts",
+      "line": 160,
+      "text": "console.error(error);"
+    },
+    {
+      "file": "supabase/migrations/20260704_coach_requests_and_ratings.sql",
+      "line": 37,
+      "text": "status text NOT NULL DEFAULT 'pending',"
+    },
+    {
+      "file": "supabase/migrations/20260704_coach_requests_and_ratings.sql",
+      "line": 42,
+      "text": "CONSTRAINT coach_requests_status_check CHECK (status IN ('pending', 'matched', 'confirmed', 'cancelled', 'completed', 'rejected')),"
+    },
+    {
+      "file": "supabase/migrations/20260704_coach_requests_and_ratings.sql",
+      "line": 90,
+      "text": "FOR UPDATE USING (requester_user_key = go_irl_request_user_key() AND status = 'pending')"
+    },
+    {
+      "file": "supabase/migrations/20260704_coach_requests_and_ratings.sql",
+      "line": 91,
+      "text": "WITH CHECK (status IN ('cancelled', 'pending'));"
+    },
+    {
+      "file": "supabase/migration_v1.sql",
+      "line": 81,
+      "text": "add constraint activity_members_status_check check (status in ('joined', 'waiting', 'pending'));"
+    },
+    {
+      "file": "supabase/migration_v1.sql",
+      "line": 143,
+      "text": "or (activity.visibility = 'invite' and p_member_status = 'pending')"
+    },
+    {
+      "file": "supabase/migration_v2_backend_foundation.sql",
+      "line": 159,
+      "text": "or (activity.visibility = 'invite' and p_member_status = 'pending')"
+    },
+    {
+      "file": "supabase/migration_v7_coach_requests_and_ratings.sql",
+      "line": 36,
+      "text": "status text not null default 'pending',"
+    },
+    {
+      "file": "supabase/migration_v7_coach_requests_and_ratings.sql",
+      "line": 45,
+      "text": "status in ('pending', 'matched', 'confirmed', 'cancelled', 'completed', 'rejected')"
+    },
+    {
+      "file": "supabase/README.md",
+      "line": 58,
+      "text": "- member status check with `pending`"
+    },
+    {
+      "file": "supabase/README.md",
+      "line": 61,
+      "text": "- invite join policy alignment: `invite` creates `pending`, `public` creates `joined`"
+    },
+    {
+      "file": "supabase/README.md",
+      "line": 240,
+      "text": "6. Join from another account and confirm the request appears as `pending`."
+    },
+    {
+      "file": "supabase/schema.sql",
+      "line": 78,
+      "text": "add constraint activity_members_status_check check (status in ('joined', 'waiting', 'pending'));"
+    },
+    {
+      "file": "supabase/schema.sql",
+      "line": 187,
+      "text": "or (activity.visibility = 'invite' and p_member_status = 'pending')"
+    },
+    {
+      "file": "ui-cleanup-v2-report.txt",
+      "line": 15,
+      "text": "- no joined/free/pending logic replacement"
+    }
+  ],
+  "riskItems": [
+    "Unlocalized technical/English labels are still present.",
+    "window.alert is used for UX feedback. Replace with in-app toast later.",
+    "Demo mode exists. Verify it cannot affect production writes."
+  ],
+  "nextSteps": [
+    "Stabilize green baseline: lint/build/test must pass before each push.",
+    "Finish UX cleanup in event sheet: compact buttons, readable 2-column details, no embedded map junk.",
+    "Finish localization: remove pending, Skill match, Indoor/Outdoor, Casual/Outdoor leaks in RU/UK/CS.",
+    "Replace bug-report copy/alert MVP with in-app feedback form and Supabase feedback table.",
+    "Fix share properly with a dedicated /join/:id landing page and Open Graph image instead of t.me/share hacks.",
+    "Verify chat expiration from event date + time + 24h in database and UI.",
+    "Add component/e2e tests for create event, join, share, chat, coach request, delete.",
+    "Add moderation/admin screen: reports, delete/hide, user/event review.",
+    "Prepare private beta checklist: onboarding, city/language defaults, privacy, support flow."
+  ],
+  "perspective": [
+    "GO IRL has a clear niche: turning local Telegram communities into real-world micro-events.",
+    "The strongest wedge is sport and low-friction meetups, because users immediately understand join/capacity/place/time.",
+    "The Telegram Mini App distribution is a real advantage, but it also makes sharing/auth/cache messy. Build robust fallbacks.",
+    "The product should avoid becoming a generic event app. Focus on small trusted activities, friends-of-friends, and city communities.",
+    "Near-term growth loop: create event -> share to chat -> people join in Telegram -> participants chat -> repeat.",
+    "Main risk: UX bugs around auth/share/time will destroy trust faster than missing features. Polish beats feature spam now."
+  ]
+}
