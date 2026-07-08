@@ -23,12 +23,12 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   
-    <button id="beta-build-marker" type="button" style="position:fixed;left:60px;top:24px;z-index:99999;font-size:12px;font-weight:700;line-height:1;background:#2563eb;color:#fff;padding:5px 10px;border:0;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.28);cursor:pointer;user-select:none">BETA e8deea1</button>
+    <button id="beta-build-marker" type="button" style="position:fixed;left:60px;top:24px;z-index:99999;font-size:12px;font-weight:700;line-height:1;background:#2563eb;color:#fff;padding:5px 10px;border:0;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.28);cursor:pointer;user-select:none">BETA 47ef769</button>
     <div id="beta-dev-panel" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.55)">
       <div style="position:absolute;left:0;right:0;bottom:0;background:#101214;color:#fff;border-radius:22px 22px 0 0;padding:18px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;box-shadow:0 -8px 28px rgba(0,0,0,.35)">
         <div style="width:42px;height:4px;border-radius:999px;background:#3a3f46;margin:0 auto 14px"></div>
         <h3 style="margin:0 0 10px;font-size:18px">GO IRL DEV</h3>
-        <div style="font-size:13px;opacity:.8;margin-bottom:14px">Commit: <b>e8deea1</b><br>Built: 2026-07-08T12:00:06.255Z</div>
+        <div style="font-size:13px;opacity:.8;margin-bottom:14px">Commit: <b>47ef769</b><br>Built: 2026-07-08T12:06:03.675Z</div>
         <button data-dev-action="reload" style="width:100%;margin:6px 0;padding:13px;border:0;border-radius:14px;background:#2563eb;color:#fff;font-weight:700">Reload latest build</button>
         <button data-dev-action="commit" style="width:100%;margin:6px 0;padding:13px;border:0;border-radius:14px;background:#20242a;color:#fff">Copy commit</button>
         <button data-dev-action="debug" style="width:100%;margin:6px 0;padding:13px;border:0;border-radius:14px;background:#20242a;color:#fff">Copy debug info</button>
@@ -37,8 +37,8 @@
     </div>
     <script>
       (() => {
-        const commit = "e8deea1";
-        const builtAt = "2026-07-08T12:00:06.255Z";
+        const commit = "47ef769";
+        const builtAt = "2026-07-08T12:06:03.675Z";
         const badge = document.getElementById("beta-build-marker");
         const panel = document.getElementById("beta-dev-panel");
         const open = () => { if (panel) panel.style.display = "block"; };
