@@ -17,32 +17,40 @@ Current priority:
    - Roles.
    - Database verification.
    - Remove dependency on local fallback where possible.
-2. Performance
+2. Sport Coach MVP 1.1
+   - Coach is sport-only.
+   - Validate show-up rate and beginner comfort in Olomouc.
+   - Keep the existing coach model compatible.
+   - Do not introduce universal Event Roles yet.
+3. Performance
    - Lazy loading.
    - Code splitting.
    - Bundle optimization.
    - Telegram Mini App startup performance.
-3. n8n Notifications
+4. n8n Notifications
    - Server-side notification workflow.
    - Evening digest.
    - Working hours.
    - Quiet hours.
    - No Mini App background work.
-4. AI Event Discovery
+5. AI Event Discovery
    - External sources.
    - Event collection.
    - AI normalization.
    - Duplicate detection.
    - Confidence scoring.
    - Save discovered events to the database.
-5. Friends Vertical
+6. Event Roles Foundation
+   - Start only after Sport Coach proves value.
+   - Future roles must use native vertical names, not Coach everywhere.
+7. Friends Vertical
    - Start only after database and notification foundation is stable.
-6. Travel Vertical
+8. Travel Vertical
    - Start only after Friends and source discovery architecture is stable.
-7. Dating Vertical
+9. Dating Vertical
    - Start last because it requires privacy, safety, anonymous chat, mutual reveal, reporting, moderation, and abuse protection.
 
-Do not implement Friends, Travel, or Dating until their prerequisites are complete.
+Do not implement Friends, Travel, Dating, or universal Event Roles until their prerequisites are complete.
 
 ## Principle
 
@@ -59,6 +67,7 @@ Each activity vertical can define:
 - own UI components
 - own safety rules
 - own notification rules
+- own role model later
 
 Shared platform layer should contain only:
 
@@ -171,6 +180,65 @@ Sport matching rules for MVP:
 
 This is intentionally deterministic. AI recommendations can later replace the engine behind the same interface without rewriting UI.
 
+## Sport Coach MVP 1.1
+
+Sport Coach is the first role-like product pattern, but it is intentionally limited to sport.
+
+Coach helps with:
+
+- warm-up;
+- rules;
+- beginner support;
+- team flow;
+- safety;
+- reducing the fear of arriving alone.
+
+Coach does not replace the organizer. The organizer creates the event; the coach supports the sport activity.
+
+MVP 1.1 must use the existing coach foundation:
+
+- `coach_profiles`
+- `coach_requests`
+- `coach_reviews`
+
+Do not rename or generalize these tables into Event Roles during MVP 1.1.
+
+MVP status rules:
+
+- pending/requested is not public proof that the event has a coach;
+- only confirmed coach can show `✨ Есть тренер`;
+- browser demo mode can immediately confirm Alex, Sport Coach, Olomouc;
+- production writes must stay behind existing Supabase/auth/RLS rules.
+
+Primary beta metric:
+
+> Sport events with a confirmed coach should improve show-up rate and beginner comfort compared to sport events without a coach.
+
+## Future Event Roles
+
+Event Roles are a future architecture layer, not the Sport Coach MVP.
+
+The rule:
+
+> Use the role name that fits the vertical. Do not call every helper a coach.
+
+Future examples:
+
+- Sport -> Referee, Captain, Safety Lead.
+- Board games -> Game Master.
+- Language -> Language Buddy, Conversation Mentor.
+- City walks -> Guide, Route Leader.
+- Social meetups -> Host, Icebreaker.
+
+Potential normalized tables later:
+
+- `event_role_profiles`
+- `event_role_requests`
+- `event_role_assignments`
+- `event_role_reviews`
+
+Build this only after Sport Coach proves value through real beta metrics.
+
 ## Dating Vertical
 
 Dating is a separate product vertical, not a normal event category.
@@ -190,187 +258,3 @@ Dating profile fields:
 - avatar/photo later
 - visibility
 - privacy controls
-
-Matching flow:
-
-1. Discover dating profiles.
-2. Like or pass.
-3. Mutual match unlocks anonymous chat.
-4. Identity reveal only by mutual consent.
-5. Telegram username remains hidden unless the user agrees.
-6. User can block or report at any time.
-
-Safety:
-
-- report
-- block
-- moderation
-- rate limits
-- anti-spam
-- age gate
-- consent-first reveal
-- no public contact leakage
-
-Dating must not use the generic event join flow. Its flow is:
-
-`discover -> like/pass -> match -> anonymous chat -> mutual reveal`
-
-## Friends Vertical
-
-Friends / social hangouts focus on casual group meetings.
-
-Friends is deferred until database and notification foundation is stable.
-
-Examples:
-
-- find company
-- walk
-- coffee
-- board games
-- language exchange
-- shared trip
-- casual meetup
-
-Flow:
-
-1. Create meetup.
-2. User sends request or joins, depending on privacy.
-3. Organizer approves when needed.
-4. Group participant/chat layer later.
-
-Recommendations prioritize city, shared interests, time window, event format, and organizer trust.
-
-## Food Vertical
-
-Food needs food-specific fields and decisions.
-
-Examples:
-
-- cafe
-- restaurant
-- bar
-- breakfast
-- dinner
-- tasting
-
-Fields:
-
-- cuisine
-- average check
-- place
-- reservation status
-- who pays
-- meeting format
-
-Recommendations prioritize city, cuisine preference, budget, time, reservation confidence, and group size.
-
-Food remains a future vertical and should not take priority over infrastructure, performance, n8n notifications, or AI event discovery.
-
-## Travel Vertical
-
-Travel is a future vertical and must start only after Friends and source discovery architecture are stable.
-
-Potential examples:
-
-- day trips
-- weekend trips
-- hiking trips
-- city visits
-- shared transport
-- group travel planning
-
-Travel will likely depend on external sources, availability windows, location radius, and richer planning data. That makes it a later vertical, not an MVP priority.
-
-## Generic Event Fallback
-
-Generic Activity/Event remains as a fallback when no vertical is implemented.
-
-Rules:
-
-- use base Activity/Event fields
-- use generic card/details/create form
-- use generic join/request flow
-- keep compatibility with current Dashboard, Discover, Create Event, Event Details, and Profile
-
-A vertical can replace fallback behavior later through renderer and flow registries.
-
-## UI Architecture
-
-Introduce an `ActivityRendererRegistry`.
-
-Conceptual renderers:
-
-- `SportActivityCard`
-- `DatingProfileCard`
-- `FriendsEventCard`
-- `FoodEventCard`
-- `TravelEventCard`
-- `GenericActivityCard`
-
-The registry selects UI by `activity.type`.
-
-The same registry pattern applies to:
-
-- create form
-- details screen
-- filters
-- join/match flow
-- recommendation section
-- notification template
-
-Example shape:
-
-```ts
-type ActivityRendererRegistry = {
-  sport: SportExperienceModule;
-  dating: DatingExperienceModule;
-  friends: FriendsExperienceModule;
-  food: FoodExperienceModule;
-  travel: GenericExperienceModule;
-  culture: GenericExperienceModule;
-  local: GenericExperienceModule;
-  custom: GenericExperienceModule;
-};
-```
-
-## Recommendation Architecture
-
-Each vertical owns its matching logic.
-
-Engines:
-
-- `SportRecommendationEngine`
-- `DatingMatchingEngine`
-- `FriendsRecommendationEngine`
-- `FoodRecommendationEngine`
-- `TravelRecommendationEngine`
-- `GenericRecommendationEngine`
-
-The shared recommendation layer coordinates engines but must not force identical rules on every vertical.
-
-Dating matching is separate from event recommendation. It must account for consent, safety, age gate, privacy settings, blocks, reports, and mutual reveal state.
-
-## Notification Rules
-
-Notification templates should be vertical-aware:
-
-- sport: game level, missing players, weather, equipment
-- dating: match, anonymous chat, reveal consent
-- friends: request approval, group plans
-- food: reservation, budget, place/time changes
-
-Mini App still does not run in the background. All notifications remain server/n8n driven.
-
-## Migration Path
-
-1. Keep current generic event MVP.
-2. Keep Sport as the reference vertical.
-3. Harden Supabase production readiness, migrations, RLS, roles, and database verification.
-4. Remove dependency on local fallback where possible after production schema is verified.
-5. Improve performance through lazy loading, code splitting, bundle optimization, and Telegram Mini App startup checks.
-6. Build n8n server-side notifications, evening digest, working hours, and quiet hours.
-7. Build AI Event Discovery with public sources, event collection, AI normalization, duplicate detection, confidence scoring, and database persistence.
-8. Add Friends only after database and notification foundation is stable.
-9. Add Travel only after Friends and source discovery architecture is stable.
-10. Build Dating last with safety and privacy architecture before launch.
-11. Normalize JSONB metadata into stable vertical tables when usage proves the shape.
