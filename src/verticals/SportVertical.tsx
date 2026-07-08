@@ -143,7 +143,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           <UsersRound size={16} aria-hidden="true" />
           <span>{activity.participants} / {activity.capacity}</span>
         </button>
-        <span className="sport-card-chip"><Clock3 size={16} aria-hidden="true" /><span>{meta.durationMinutes || 90} {t.minutesShort}</span></span>
+        <span className="sport-card-chip"><CalendarPlus size={16} aria-hidden="true" /><span>{meta.durationMinutes || 90} {t.minutesShort}</span></span>
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -167,7 +167,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       )}
       <div className="activity-card-details sport-details-grid">
         <div><MapPin /><span>{activity.address}</span></div>
-        <div><CalendarDays /><span>{compactDateLabel(activity.date, language)}</span></div>
+        <div><CalendarDays /><span>{compactDateLabel(activity.date, language)}{formatEventTime(activity.time) ? " · " + formatEventTime(activity.time) : ""}</span></div>
         <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
         <div><ShieldCheck /><span>{sportFormatLabel(meta.format, language)}</span></div>
       </div>
