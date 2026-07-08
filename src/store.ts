@@ -482,7 +482,7 @@ export const useAppStore = create<AppState>((set, get) => {
       try {
         set({ userRole: getTrustedUserRole() === "user" ? getCurrentUserRole(getUserKey()) : getTrustedUserRole() });
         await reload();
-        if (!realtimeChannel && !(typeof document !== "undefined" && document.hidden)) {
+        if (!isVisualDemoMode() && !realtimeChannel && !(typeof document !== "undefined" && document.hidden)) {
           realtimeChannel = supabase
             .channel("go-irl-live")
             .on("postgres_changes", { event: "*", schema: "public", table: "activities" }, () => {

@@ -4,7 +4,9 @@ import type { UserRole } from "./types";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-const legacyDemoAuthEnabled = import.meta.env.DEV || import.meta.env.VITE_GO_IRL_LEGACY_DEMO_AUTH === "true";
+const configuredDemoAuthEnabled = import.meta.env.DEV || import.meta.env.VITE_GO_IRL_LEGACY_DEMO_AUTH === "true";
+const isBrowserMockAuthEnabled = () => typeof window !== "undefined" && !getTelegramInitData();
+const isDemoAuthEnabled = () => configuredDemoAuthEnabled || isBrowserMockAuthEnabled();
 const sessionStorageKey = "go-irl-trusted-session-v2";
 
 export type TrustedAuthUser = {
@@ -50,10 +52,10 @@ function writeTrustedSession(session: TrustedAuthSession) {
 }
 
 function resolveLegacyDemoIdentity() {
-  if (!legacyDemoAuthEnabled) return null;
+  if (!isDemoAuthEnabled()) return null;
   if (!legacyIdentity) {
     legacyIdentity = resolveDemoIdentity({
-      telegramId: getTelegramWebApp()?.initDataUnsafe?.user?.id,
+      telegramId: getTelegramWebApp()?.initDataUnsafe?.user?.id || (isBrowserMockAuthEnabled() ? 999999 : undefined),
       storage: localStorage,
       randomUUID: () => crypto.randomUUID(),
     });
@@ -167,5 +169,5 @@ export function getAuthError() {
 }
 
 export function isLegacyDemoAuthEnabled() {
-  return legacyDemoAuthEnabled;
+  return isDemoAuthEnabled();
 }

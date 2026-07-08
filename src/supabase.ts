@@ -11,9 +11,7 @@ import type { DemoIdentityResolution, DemoIdentitySource } from "./securityIdent
 const url = import.meta.env.VITE_SUPABASE_URL;
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-if (!url || !publishableKey) {
-  throw new Error("Supabase environment variables are missing");
-}
+if ((!url || !publishableKey) && !isLegacyDemoAuthEnabled()) { throw new Error("Supabase environment variables are missing"); } const resolvedSupabaseUrl = url || "http://127.0.0.1:54321"; const resolvedPublishableKey = publishableKey || "demo-browser-mock-key";
 
 export type UserKeyResolutionSource = DemoIdentitySource;
 
@@ -39,7 +37,7 @@ const legacyHeaders = () => {
   };
 };
 
-export const supabase = createClient(url, publishableKey, {
+export const supabase = createClient(resolvedSupabaseUrl, resolvedPublishableKey, {
   auth: { persistSession: false },
   accessToken: getTrustedAccessToken,
   global: {
@@ -54,3 +52,4 @@ export function getUserKey() {
 export function getUserKeyResolution() {
   return getCurrentAuthIdentity();
 }
+
