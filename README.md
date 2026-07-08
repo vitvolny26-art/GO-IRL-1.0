@@ -1,8 +1,8 @@
-# GO IRL 1.0 Documentation Mirror
+# GO IRL 1.0
 
-This repository is a documentation-only mirror for the stabilized GO IRL MVP 1.1 knowledge base.
+This repository is a clean stabilized GO IRL 1.0 app copy with synchronized MVP 1.1 documentation.
 
-Source code remains in:
+Primary source repository:
 
 ```text
 vitvolny26-art/GO-IRL
@@ -10,18 +10,39 @@ vitvolny26-art/GO-IRL
 
 ## Purpose
 
-Use this repository to keep the cleaned and synchronized documentation separate from the application code.
+Use this repository as a safer clean-copy workspace for the stabilized GO IRL MVP.
 
-This repo must not contain:
+This is **not** a documentation-only repository.
 
-- app source code;
+It can contain:
+
+- React / TypeScript / Vite app source;
+- pnpm project files;
+- Vercel configuration;
+- synchronized documentation;
+- beta readiness docs.
+
+It must not contain:
+
 - `.env` files;
 - secrets;
 - Supabase service keys;
-- destructive SQL;
-- generated build artifacts;
+- destructive SQL experiments;
 - `node_modules`;
-- `dist`.
+- `dist`;
+- backup files.
+
+## Stack
+
+```text
+React
+TypeScript
+Vite
+pnpm
+Supabase
+Telegram Mini Apps
+Vercel
+```
 
 ## Product focus
 
@@ -54,6 +75,19 @@ Slogan:
 Less scrolling. More living.
 ```
 
+## Local commands
+
+Use pnpm only:
+
+```powershell
+pnpm install
+pnpm run lint
+pnpm run build
+pnpm run test
+```
+
+Do not claim beta-ready until these pass on the latest commit.
+
 ## Current source-of-truth files
 
 | Area | File |
@@ -63,13 +97,20 @@ Less scrolling. More living.
 | Missing sections / boundary registry | `docs/MISSING_SECTIONS.md` |
 | Deployment and release gate | `DEPLOYMENT.md` |
 | Beta testing | `BETA_TESTING.md` |
+| Manual beta checklist | `BETA_CHECKLIST.md` |
+| Roadmap | `ROADMAP.md` |
+| Backlog | `BACKLOG.md` |
+| Changelog | `CHANGELOG.md` |
+| Release notes | `RELEASE_NOTES.md` |
 | MVP stabilization | `docs/MVP_STABILIZATION_PLAN.md` |
 | Event/chat lifecycle | `docs/EventLifecycle.md` |
 | Sport Coach MVP | `docs/SPORT_COACH_MVP.md` |
+| Market positioning | `docs/MARKET_POSITIONING.md` |
+| Competitor watch | `docs/COMPETITOR_WATCH.md` |
 
 ## Hard boundaries
 
-Do not generate code from historical docs.
+Do not generate current MVP code from historical docs.
 
 Deprecated/historical snapshot files from the source repo:
 
@@ -94,10 +135,14 @@ upgradeToPro=build-rate-limit
 
 Treat that as a Vercel quota issue, not an app or documentation regression.
 
-Do not claim beta-ready until local quality gates pass in the source repo:
+## Release rule
 
-```text
+Before any release/beta claim, verify in this repo or the primary source repo:
+
+```powershell
 pnpm run lint
 pnpm run build
 pnpm run test
 ```
+
+Then run Telegram, Vercel, and Supabase smoke checks from `BETA_CHECKLIST.md`.
