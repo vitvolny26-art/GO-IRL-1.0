@@ -1,30 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { execSync } from "child_process";
-
-// Get current git commit SHA and timestamp
-let gitCommit = "unknown";
-let builtAt = new Date().toISOString();
-
-try {
-  gitCommit = execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim();
-} catch {
-  console.warn("Could not get git commit hash");
-}
-
-try {
-  builtAt = execSync('git log -1 --format=%cI', { encoding: "utf-8" }).trim();
-} catch {
-  console.warn("Could not get git commit timestamp");
-}
-
-console.log(`[GO IRL] Building with commit: ${gitCommit}, built at: ${builtAt}`);
 
 export default defineConfig({
   plugins: [react()],
   define: {
-    __GO_IRL_COMMIT__: JSON.stringify(gitCommit),
-    __GO_IRL_BUILT_AT__: JSON.stringify(builtAt),
+    __GO_IRL_COMMIT__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || process.env.VITE_GIT_COMMIT || "unknown"),
+    __GO_IRL_BUILT_AT__: JSON.stringify(process.env.VITE_BUILD_TIME || new Date().toISOString()),
   },
   build: {
     rollupOptions: {
