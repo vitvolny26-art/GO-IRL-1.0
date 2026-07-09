@@ -2,55 +2,167 @@
 
 Single entry point for GO IRL documentation status, ownership, and conflict tracking.
 
+Use this file before changing product logic, architecture, QA flow, beta scope, release wording, or historical product philosophy.
+
 ## Absolute source-of-truth rules
 
-- `docs/GO_IRL_CONSTITUTION.md` is the absolute source of truth for GO IRL philosophy and architecture principles.
-- `README.md` is the source of truth for current code scope and stabilized MVP boundaries.
+- `docs/GO_IRL_CONSTITUTION.md` is the **absolute source of truth** for GO IRL philosophy and architecture principles.
+- `docs/MARKET_POSITIONING.md` is the **source of truth for market positioning and MVP feature filtering**.
+- `docs/COMPETITOR_WATCH.md` is the **source of truth for competitor signals**, but competitor signals must not automatically become MVP scope.
+- `README.md` is the **source of truth for current code scope**: implemented features, stack, setup, and current runtime model.
+- `RELEASE_NOTES.md` is the source of truth for release state and must not contradict `README.md`.
 - `DEPLOYMENT.md` is the source of truth for Vercel-first deployment flow.
+- `docs/SPORT_COACH_MVP.md` is the source of truth for Sport Coach MVP 1.1 boundaries.
 - `docs/MVP_DOC_AUDIT.md` is the source of truth for known documentation conflicts.
-- `docs/MISSING_SECTIONS.md` tracks missing or incomplete documentation boundaries.
-- `docs/SPORT_COACH_MVP.md` is the source of truth for Sport Coach MVP boundaries.
-- `docs/COACH_CHAT_TRUST_LAYER.md` is the source of truth for the Coach/Role + Activity Chat trust-layer concept, current `event_helper` copy rule, and generic bridge guardrails.
+- `docs/MISSING_SECTIONS.md` is the source of truth for missing documentation boundaries.
+- `docs/DATABASE_SCHEMA_AUDIT.md` is the source of truth for current schema-vs-future-schema documentation conflicts.
 - Historical snapshot files must not be used for code generation.
+- Bible files are preserved product sources. New Bible boundary chapters can describe MVP scope, but Bible files must not override current code, Supabase schema, auth, or RLS.
 - Do not change `.env`, secrets, Supabase RLS, auth, or destructive SQL without explicit approval.
 
 ## Статусный реестр документации
 
-| Документ | Тип | Статус (Current/Draft/Deprecated) | Source of Truth (Да/Нет) | Известные конфликты |
+| Документ | Тип | Статус | Source of Truth | Известные конфликты |
 |---|---|---|---|---|
-| `README.md` | Core / Code Scope | Current | Да | Current stabilized boundary copied from source repo. |
+| `README.md` | Core / Code Scope | Current | Да | Must stay aligned with `RELEASE_NOTES.md` on Trusted Auth and release blockers. |
 | `DOCS_INDEX.md` | Registry | Current | Да | Must be updated after every doc move/status change. |
-| `DEPLOYMENT.md` | Release / Deploy | Current | Да | Vercel-first; Netlify is historical/secondary. |
-| `BETA_TESTING.md` | QA / Beta | Current | Да | Includes Browser Demo Mode and Share/Join checks. |
-| `docs/MVP_DOC_AUDIT.md` | Audit / Conflict Registry | Current | Да | Tracks fixed/open documentation conflicts. |
-| `docs/MISSING_SECTIONS.md` | Audit / Missing Boundaries | Current | Да | Tracks remaining incomplete sections. |
-| `docs/MVP_STABILIZATION_PLAN.md` | MVP Plan | Current | Да | Includes Weather Widget boundary. |
-| `docs/EventLifecycle.md` | Architecture | Draft | Нет | Chat 24-hour rule is contained but needs code/migration audit. |
-| `docs/SPORT_COACH_MVP.md` | Product Scope / Coach | Current | Да | Coach remains sport-only; generic helper roles are future Event Roles. |
-| `docs/COACH_CHAT_TRUST_LAYER.md` | Product / UX Trust Layer | Current | Да | Generic non-sport sheets use Event Helper copy; Sport keeps Coach copy. |
-| `SETUP.md` | Legacy Setup | Deprecated | Нет | Historical only; do not generate code from it. |
-| `SETUP_RU.md` | Legacy Setup | Deprecated | Нет | Historical only; do not generate code from it. |
-| `SPRINT0_STATUS.md` | Historical Snapshot | Deprecated | Нет | Netlify-era proof; not current Vercel release truth. |
-| `CHECKLIST.md` | Historical Checklist | Deprecated | Нет | Old local assumptions. |
+| `ROADMAP.md` | Product Planning | Current | Да | Broad platform work remains future. Sprint structure should be moved under `docs/roadmap/`. |
+| `BACKLOG.md` | Product Planning | Draft | Нет | Future items must remain tagged. |
+| `CHANGELOG.md` | Release History | Draft | Нет | Needs quality-gate verification before release claims. |
+| `RELEASE_NOTES.md` | Release Status | Current | Да | Trusted Auth is `[SHIPPED/PRODUCTION PATH]`; operational smoke checks remain. |
+| `DEPLOYMENT.md` | Release / Deploy | Current | Да | Must remain Vercel-first; old Netlify references are historical only. |
+| `BETA_CHECKLIST.md` | QA / Beta | Current | Да | Needs sync after deployment wording changes. |
+| `BETA_TESTING.md` | QA / Beta | Current | Да | Browser Demo Mode should be documented. |
+| `SPRINTS.md` | Roadmap / Sprint History | Draft | Нет | Should move into `docs/roadmap/SPRINTS.md` or be split into Sprint 0-5 files. |
+| `SPRINT0_STATUS.md` | Historical Snapshot | Deprecated | Нет | Contains Sprint 0 / Netlify-era proof; not current Vercel release truth. |
+| `CHECKLIST.md` | Historical Local Checklist | Deprecated | Нет | Old local branch/Docker/Prisma/Turbo assumptions; do not generate code from it. |
+| `SETUP.md` | Legacy Setup | Deprecated | Нет | Old Windows paths and `.bat` / `.ps1` workflow. |
+| `SETUP_RU.md` | Legacy Setup | Deprecated | Нет | Old Windows paths and `.bat` / `.ps1` workflow. |
 | `PATCH_REPORT.md` | Historical Patch Report | Deprecated | Нет | Trusted Auth implementation history, not current release truth. |
-| `GO_IRL_DOCUMENTATION.md` | Generated Snapshot | Deprecated | Нет | Old generated snapshot. |
+| `GO_IRL_DOCUMENTATION.md` | Generated Snapshot | Deprecated | Нет | Old generated snapshot; may contain outdated README/Roadmap excerpts. |
+| `docs/GO_IRL_CONSTITUTION.md` | Product / Architecture Constitution | Current | Да | Absolute philosophy and architecture source of truth. |
+| `docs/MARKET_POSITIONING.md` | Market / Feature Filter | Current | Да | Must gate new feature categories before MVP expansion. |
+| `docs/COMPETITOR_WATCH.md` | Market Watch | Current | Да | Competitor signals must not auto-create MVP scope. |
+| `docs/MVP_DOC_AUDIT.md` | Audit / Conflict Registry | Current | Да | Registry for documentation conflicts and resolutions. |
+| `docs/MISSING_SECTIONS.md` | Audit / Missing Boundaries | Current | Да | Registry for undocumented MVP boundaries. |
+| `docs/DATABASE_SCHEMA_AUDIT.md` | Audit / Supabase Schema | Current | Да | Separates current Supabase schema/migrations from future database architecture. |
+| `docs/SPORT_COACH_MVP.md` | Product Scope / Coach | Current | Да | `CoachRequestPanel.tsx` is current UI basis; Role Choice and Review Flow are future. |
+| `docs/MVP_STABILIZATION_PLAN.md` | MVP Plan | Current | Да | Stabilization plan and weather/share/join/profile/demo boundaries. |
+| `docs/GO_IRL_1_1_STABILIZATION.md` | Stabilization Ledger | Draft | Нет | Task statuses may become historical. |
+| `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Current | Да | pnpm, small patches, no unsafe changes. |
+| `docs/Database.md` | Architecture | Draft | Нет | Future database architecture; not current schema. |
+| `docs/RLS.md` | Supabase / RLS | Draft | Нет | Do not edit policies without explicit approval. |
+| `docs/Security.md` | Security | Draft | Нет | Must stay aligned with Trusted Auth production path. |
+| `docs/EventLifecycle.md` | Architecture | Draft | Нет | Activity Chat boundary added; final chat expiry needs code/schema decision. |
+| `docs/Notifications.md` | Architecture / Future | Draft | Нет | Advanced notification automation is future scope. |
+| `docs/AI.md` | AI / Future | Draft | Нет | AI discovery is not current MVP. |
+| `docs/reputation.md` | Reputation / Future | Draft | Нет | RLI/Trust future model, not current complete runtime. |
+| `docs/vertical-experiences.md` | Product / Future Architecture | Draft | Нет | Current MVP is Olomouc-first with six beta categories. |
+| `docs/bible/00-completion-audit.md` | Bible Audit | Current | Да | Bible expanded and structured, not final. |
+| `docs/bible/00-bible-roadmap.md` | Bible Roadmap | Current | Да | How to finish Bible without rewriting from scratch. |
+| `docs/bible/01-foundation/03-mvp-scope-and-market-positioning.md` | Bible / MVP Boundary | Current | Да | MVP 1.0 scope, market positioning, Olomouc beta, six categories, non-goals. |
+| `docs/bible/04-modules-mvp-audit.md` | Bible / MVP Boundary | Current | Да | Six-category beta module boundary and future module containment. |
+| `docs/bible/05-product-requirements-mvp-split.md` | Bible / MVP Boundary | Current | Да | PRD split: MVP 1.0, MVP 1.1 stabilization, future, blocked-before-beta. |
+| `docs/bible/07-beta-readiness-and-operations.md` | Bible / Beta Ops | Current | Да | Beta operations, QA gates, release gates, Browser Demo Mode, MVP non-goals. |
+| `docs/bible/08-runtime-boundaries.md` | Bible / Runtime Boundary | Current | Да | Runtime/auth/Supabase/demo/profile/chat/share/weather boundaries. |
+| `supabase/README.md` | Supabase Setup | Current | Да | Must reflect Trusted Auth and migration reality. |
+| `supabase/schema.sql` | Supabase Schema | Current | Да | Production-sensitive. Read-only during documentation cleanup. |
+| `supabase/schema_next.sql` | Future Schema | Draft | Нет | Do not apply without review. |
+| `supabase/migration_v*.sql` | Supabase Migration History | Current | Да | Read-only for docs cleanup. No destructive SQL. |
 
 ## Current documentation conflicts
 
-| Conflict | Resolution |
-|---|---|
-| Trusted Auth was both current production model and public blocker. | Marked as `[SHIPPED/PRODUCTION PATH]`; remaining work is operational verification. |
-| Coach UI promise exceeded current implementation. | Sport Coach remains canonical MVP; generic bridge now uses Event Helper copy and is documented as temporary trust-layer placement. |
-| Sprint 0 Netlify proof conflicted with Vercel beta flow. | Netlify marked historical/secondary; Vercel is current deployment target. |
-| Legacy setup docs could mislead AI/code generation. | Deprecated and excluded from code generation. |
-| Activity Chat 24-hour rule was not safely verified. | Contained as temporary chat; exact archive timing needs code/migration audit. |
-| Vercel latest failure can be quota-related. | `upgradeToPro=build-rate-limit` is operational quota issue, not code regression. |
+| Conflict | Files | Resolution |
+|---|---|---|
+| Trusted Auth was both current production model and public blocker. | `README.md`, `RELEASE_NOTES.md`, `PATCH_REPORT.md` | `RELEASE_NOTES.md` marks Trusted Auth as `[SHIPPED/PRODUCTION PATH]`; operational checks remain. |
+| Coach UI promise exceeded current implementation. | `docs/SPORT_COACH_MVP.md`, `src/components/CoachRequestPanel.tsx` | Role Choice and Review Flow moved to future scope. |
+| Sprint 0 Netlify proof conflicted with current Vercel beta flow. | `SPRINT0_STATUS.md`, `DEPLOYMENT.md`, `BETA_CHECKLIST.md` | Sprint 0 docs are historical/deprecated. |
+| Legacy setup docs could mislead AI/code generation. | `SETUP.md`, `SETUP_RU.md`, `CHECKLIST.md` | Historical/deprecated warning banners required. |
+| Activity Chat, Browser Demo Mode, Weather, Telegram Mini App limits were scattered. | `docs/MISSING_SECTIONS.md`, `BETA_TESTING.md`, `docs/EventLifecycle.md`, `docs/MVP_STABILIZATION_PLAN.md` | Boundaries documented; chat expiry still needs product/schema decision. |
+| Bible files could be mistaken for current MVP/schema/implementation plan. | `docs/bible/*`, `ROADMAP.md`, `BACKLOG.md` | Current MVP boundary chapters/audits added; Bible remains not final. |
+| Future DB architecture conflicted with current Supabase migrations. | `docs/Database.md`, `docs/bible/03-database-design.md`, `supabase/migration_v8_activity_chat.sql` | `docs/DATABASE_SCHEMA_AUDIT.md` created; `docs/Database.md` should stay marked future architecture. |
+
+## Sprint documentation decision
+
+Sprint docs should not stay as loose root-level artifacts long term.
+
+Preferred Documentation 2.0 structure:
+
+```text
+docs/roadmap/
+├── ROADMAP.md
+├── BACKLOG.md
+├── SPRINTS.md
+├── SPRINT_0.md
+├── SPRINT_1.md
+├── SPRINT_2.md
+├── SPRINT_3.md
+├── SPRINT_4.md
+└── SPRINT_5.md
+```
+
+Rules:
+
+- `ROADMAP.md` remains the living roadmap.
+- `BACKLOG.md` remains the controlled work queue.
+- Sprint 0-5 files become historical execution records and decision logs.
+- Root `SPRINT0_STATUS.md` stays deprecated until links are checked and migration is complete.
+- Do not move files blindly; update links and `DOCS_INDEX.md` in the same documentation-only phase.
+
+## Current tree target
+
+```text
+GO IRL Documentation
+├── Core
+│   ├── README.md
+│   ├── DOCS_INDEX.md
+│   ├── ROADMAP.md
+│   ├── BACKLOG.md
+│   ├── CHANGELOG.md
+│   └── RELEASE_NOTES.md
+├── Product / Market
+│   └── docs/
+│       ├── GO_IRL_CONSTITUTION.md
+│       ├── MARKET_POSITIONING.md
+│       ├── COMPETITOR_WATCH.md
+│       ├── SPORT_COACH_MVP.md
+│       └── MVP_STABILIZATION_PLAN.md
+├── Architecture
+│   └── docs/
+│       ├── Database.md
+│       ├── DATABASE_SCHEMA_AUDIT.md
+│       ├── RLS.md
+│       ├── Security.md
+│       ├── EventLifecycle.md
+│       └── vertical-experiences.md
+├── Audit
+│   ├── docs/MVP_DOC_AUDIT.md
+│   ├── docs/MISSING_SECTIONS.md
+│   ├── docs/DOCUMENTATION_AUDIT.md
+│   └── project-audit/
+├── Bible
+│   └── docs/bible/
+├── Roadmap / Sprints
+│   ├── ROADMAP.md
+│   ├── BACKLOG.md
+│   ├── SPRINTS.md
+│   └── docs/roadmap/ (planned)
+└── Deprecated / Snapshot Candidates
+    ├── SETUP.md
+    ├── SETUP_RU.md
+    ├── PATCH_REPORT.md
+    ├── SPRINT0_STATUS.md
+    └── GO_IRL_DOCUMENTATION.md
+```
 
 ## Maintenance rule
 
 Update this registry when:
 
 - a document is added, moved, deprecated, or promoted to source of truth;
-- release/deployment source of truth changes;
-- source docs are resynced from `vitvolny26-art/GO-IRL`;
-- a missing section is closed or re-opened.
+- release blockers change;
+- future vision becomes MVP scope;
+- code implementation contradicts docs;
+- Bible files are audited or reclassified;
+- Supabase migration/auth/RLS docs are audited;
+- Sprint docs are moved into `docs/roadmap/`.
