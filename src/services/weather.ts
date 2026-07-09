@@ -1,3 +1,5 @@
+import { formatEventTime } from "../eventTime";
+
 export type WeatherHour = {
   time: string;
   temperature: number;
@@ -28,8 +30,7 @@ const codeIcon = (code: number) => {
 };
 
 const toIsoHour = (date: string, time: string) => {
-  const rawTime = time || "12:00";
-  const normalizedTime = rawTime.length === 5 ? rawTime : rawTime.slice(0, 5);
+  const normalizedTime = formatEventTime(time) || "12:00";
   return `${date}T${normalizedTime}`;
 };
 
