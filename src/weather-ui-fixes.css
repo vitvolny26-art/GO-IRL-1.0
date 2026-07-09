@@ -9,3 +9,14 @@
 .weather-summary-lines > span {
   display: block;
 }
+
+.weather-bar-row {
+  grid-template-columns: 48px 1fr 1fr 1fr !important;
+  gap: 8px !important;
+}
+
+.weather-hour-metric {
+  font-weight: 850;
+  text-align: right;
+  white-space: nowrap;
+}
