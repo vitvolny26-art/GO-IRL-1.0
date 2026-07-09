@@ -40,7 +40,7 @@ The chat creates social commitment.
 
 Together they increase the chance that a joined user actually shows up.
 
-## Why Coach next to Chat is powerful
+## Why Role next to Chat is powerful
 
 Role and chat solve the same conversion problem from different angles.
 
@@ -71,9 +71,37 @@ Current Sport Coach source of truth:
 - `docs/SPORT_COACH_MVP.md`
 - `ROADMAP.md` -> Sport Coach MVP 1.1
 
+## Current implementation status
+
+Current implementation uses one component with two copy variants:
+
+- `variant="coach"` for sport events;
+- `variant="event_helper"` for generic non-sport events.
+
+Implementation files:
+
+- `src/components/CoachRequestPanel.tsx`
+- `src/components/ActivityChatPanel.tsx`
+
+Merged implementation:
+
+```text
+PR #1: fix: use event helper copy for generic events
+merge commit: 9b7297519aacd130e334bc1dc65fe22e8f8fc454
+```
+
+Verification for PR #1:
+
+```text
+GitHub Actions CI: PASS
+Test: PASS
+Lint: PASS
+Build: PASS
+```
+
 ## Generic event bridge
 
-The current restore patch mounts `CoachRequestPanel` near `ActivityChatPanel` for non-sport generic event sheets.
+Generic event sheets currently mount the same underlying panel near `ActivityChatPanel`, but the UI copy must say **Помощник события**, not **Тренер**.
 
 This is a pragmatic stabilization bridge, not the final product language.
 
@@ -86,6 +114,32 @@ But it must be treated carefully:
 - It does **not** introduce payments or marketplace behavior.
 - It does **not** change Supabase RLS/auth/schema.
 - It should later migrate to Event Roles if the pattern proves value.
+
+## Current UI copy rule
+
+### Sport events
+
+Sport events use coach copy:
+
+```text
+Тренер
+Пригласить тренера
+Хочу тренера
+Тренер запрошен
+```
+
+### Generic non-sport events
+
+Generic events use event-helper copy:
+
+```text
+Помощник события
+Нужен помощник
+Хочу помощника
+Помощник запрошен
+```
+
+Do not show `Тренер` in non-sport generic event sheets.
 
 ## Naming rule
 
@@ -143,7 +197,7 @@ Activity Chat
 For generic events during the bridge phase:
 
 ```text
-Temporary Coach/Role bridge block
+Event Helper bridge block
 Activity Chat
 ```
 
@@ -230,6 +284,7 @@ For future Event Roles:
 - Do not rewrite large `App.tsx` surfaces just to mount the trust layer.
 - Prefer small component-level patches.
 - Do not duplicate Coach in sport details.
+- Do not show `Тренер` copy in non-sport generic event sheets.
 - Do not change Supabase RLS/auth for UI placement work.
 - Do not add payments.
 - Do not add universal role tables before Sport Coach proves value.
