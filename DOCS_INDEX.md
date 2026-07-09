@@ -9,6 +9,8 @@ Single entry point for GO IRL documentation status, ownership, and conflict trac
 - `DEPLOYMENT.md` is the source of truth for Vercel-first deployment flow.
 - `docs/MVP_DOC_AUDIT.md` is the source of truth for known documentation conflicts.
 - `docs/MISSING_SECTIONS.md` tracks missing or incomplete documentation boundaries.
+- `docs/SPORT_COACH_MVP.md` is the source of truth for Sport Coach MVP boundaries.
+- `docs/COACH_CHAT_TRUST_LAYER.md` is the source of truth for the Coach/Role + Activity Chat trust-layer concept and generic bridge guardrails.
 - Historical snapshot files must not be used for code generation.
 - Do not change `.env`, secrets, Supabase RLS, auth, or destructive SQL without explicit approval.
 
@@ -24,7 +26,8 @@ Single entry point for GO IRL documentation status, ownership, and conflict trac
 | `docs/MISSING_SECTIONS.md` | Audit / Missing Boundaries | Current | Да | Tracks remaining incomplete sections. |
 | `docs/MVP_STABILIZATION_PLAN.md` | MVP Plan | Current | Да | Includes Weather Widget boundary. |
 | `docs/EventLifecycle.md` | Architecture | Draft | Нет | Chat 24-hour rule is contained but needs code/migration audit. |
-| `docs/SPORT_COACH_MVP.md` | Product Scope / Coach | Current | Да | `CoachRequestPanel.tsx` is current UI basis; Role Choice and Review Flow are future. |
+| `docs/SPORT_COACH_MVP.md` | Product Scope / Coach | Current | Да | Coach remains sport-only; generic helper roles are future Event Roles. |
+| `docs/COACH_CHAT_TRUST_LAYER.md` | Product / UX Trust Layer | Current | Да | Generic Coach/Role bridge is temporary and must not redefine Coach as universal. |
 | `SETUP.md` | Legacy Setup | Deprecated | Нет | Historical only; do not generate code from it. |
 | `SETUP_RU.md` | Legacy Setup | Deprecated | Нет | Historical only; do not generate code from it. |
 | `SPRINT0_STATUS.md` | Historical Snapshot | Deprecated | Нет | Netlify-era proof; not current Vercel release truth. |
@@ -37,7 +40,7 @@ Single entry point for GO IRL documentation status, ownership, and conflict trac
 | Conflict | Resolution |
 |---|---|
 | Trusted Auth was both current production model and public blocker. | Marked as `[SHIPPED/PRODUCTION PATH]`; remaining work is operational verification. |
-| Coach UI promise exceeded current implementation. | Role Choice and Review Flow moved to future; `CoachRequestPanel.tsx` is current MVP basis. |
+| Coach UI promise exceeded current implementation. | Sport Coach remains canonical MVP; generic bridge is now documented as temporary trust-layer placement. |
 | Sprint 0 Netlify proof conflicted with Vercel beta flow. | Netlify marked historical/secondary; Vercel is current deployment target. |
 | Legacy setup docs could mislead AI/code generation. | Deprecated and excluded from code generation. |
 | Activity Chat 24-hour rule was not safely verified. | Contained as temporary chat; exact archive timing needs code/migration audit. |
