@@ -54,14 +54,14 @@ next_review:
 |---|---|---|---|---|
 | `README.md` | Core / Code Scope | Current | Да | Must stay aligned with `RELEASE_NOTES.md` on Trusted Auth and release blockers. |
 | `DOCS_INDEX.md` | Registry | Current | Да | Must be updated after every doc move/status change. |
-| `ROADMAP.md` | Product Planning | Current | Да | Broad platform work remains future. Sprint structure should be moved under `docs/roadmap/`. |
+| `ROADMAP.md` | Product Planning | Current | Да | Broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
 | `BACKLOG.md` | Product Planning | Draft | Нет | Future items must remain tagged. |
 | `CHANGELOG.md` | Release History | Draft | Нет | Needs quality-gate verification before release claims. |
 | `RELEASE_NOTES.md` | Release Status | Current | Да | Trusted Auth is `[SHIPPED/PRODUCTION PATH]`; operational smoke checks remain. |
 | `DEPLOYMENT.md` | Release / Deploy | Current | Да | Must remain Vercel-first; old Netlify references are historical only. |
 | `BETA_CHECKLIST.md` | QA / Beta | Current | Да | Needs sync after deployment wording changes. |
 | `BETA_TESTING.md` | QA / Beta | Current | Да | Browser Demo Mode should be documented. |
-| `SPRINTS.md` | Roadmap / Sprint History | Draft | Нет | Should move into `docs/roadmap/SPRINTS.md` or be split into Sprint 0-5 files. |
+| `SPRINTS.md` | Roadmap / Sprint History | Draft | Нет | Root historical plan; canonical roadmap-folder copy exists in `docs/roadmap/SPRINTS.md`. |
 | `SPRINT0_STATUS.md` | Historical Snapshot | Deprecated | Нет | Contains Sprint 0 / Netlify-era proof; not current Vercel release truth. |
 | `CHECKLIST.md` | Historical Local Checklist | Deprecated | Нет | Old local branch/Docker/Prisma/Turbo assumptions; do not generate code from it. |
 | `SETUP.md` | Legacy Setup | Deprecated | Нет | Old Windows paths and `.bat` / `.ps1` workflow. |
@@ -82,6 +82,13 @@ next_review:
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, and escalation. |
 | `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
+| `docs/roadmap/SPRINTS.md` | Roadmap / Sprint Overview | Draft | Нет | Roadmap-folder copy of sprint plan; not current MVP scope by itself. |
+| `docs/roadmap/SPRINT_0.md` | Roadmap / Sprint Record | Archived | Нет | Historical Sprint 0 record; Netlify references are historical only. |
+| `docs/roadmap/SPRINT_1.md` | Roadmap / Sprint Record | Archived | Нет | Historical MVP Core record; current scope controlled by ROADMAP/BACKLOG/README. |
+| `docs/roadmap/SPRINT_2.md` | Roadmap / Sprint Record | Draft | Нет | Telegram/notification direction; current runtime boundaries override old assumptions. |
+| `docs/roadmap/SPRINT_3.md` | Roadmap / Sprint Record | Draft | Нет | Trust/RLI future layer; not current MVP scope. |
+| `docs/roadmap/SPRINT_4.md` | Roadmap / Sprint Record | Draft | Нет | Modules/discovery future layer; Olomouc beta remains focused. |
+| `docs/roadmap/SPRINT_5.md` | Roadmap / Sprint Record | Draft | Нет | Production growth future layer; blocked until beta/release gates are verified. |
 | `docs/Database.md` | Architecture | Draft | Нет | Future database architecture; not current schema. |
 | `docs/RLS.md` | Supabase / RLS | Draft | Нет | Do not edit policies without explicit approval. |
 | `docs/Security.md` | Security | Draft | Нет | Must stay aligned with Trusted Auth production path. |
@@ -115,6 +122,7 @@ next_review:
 | Future DB architecture conflicted with current Supabase migrations. | `docs/Database.md`, `docs/bible/03-database-design.md`, `supabase/migration_v8_activity_chat.sql` | `docs/DATABASE_SCHEMA_AUDIT.md` created; `docs/Database.md` should stay marked future architecture. |
 | AI roles and Archivist rules existed only in chat. | Chat history, onboarding docs | Added `ARCHIVIST_CHARTER.md`, `AI_ROLES.md`, and `AI_ORGANIZATION.md`. |
 | Knowledge architecture existed only in discussion. | Chat history, governance docs | Added `KNOWLEDGE_PLATFORM.md` with status model, KPIs, review cadence, and Project Memory Bus. |
+| Sprint structure existed as loose root-level docs. | `SPRINTS.md`, `SPRINT0_STATUS.md` | Added `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md` through `SPRINT_5.md`. |
 
 ## Sprint documentation decision
 
@@ -141,7 +149,8 @@ Rules:
 - `BACKLOG.md` remains the controlled work queue.
 - Sprint 0-5 files become historical execution records and decision logs.
 - Root `SPRINT0_STATUS.md` stays deprecated until links are checked and migration is complete.
-- Do not move files blindly; update links and `DOCS_INDEX.md` in the same documentation-only phase.
+- Root `SPRINTS.md` stays as legacy/transition until links are checked.
+- Do not move or delete root files blindly; update links and `DOCS_INDEX.md` in the same documentation-only phase.
 
 ## Current tree target
 
@@ -188,7 +197,14 @@ GO IRL Documentation
 │   ├── ROADMAP.md
 │   ├── BACKLOG.md
 │   ├── SPRINTS.md
-│   └── docs/roadmap/ (planned)
+│   └── docs/roadmap/
+│       ├── SPRINTS.md
+│       ├── SPRINT_0.md
+│       ├── SPRINT_1.md
+│       ├── SPRINT_2.md
+│       ├── SPRINT_3.md
+│       ├── SPRINT_4.md
+│       └── SPRINT_5.md
 └── Deprecated / Snapshot Candidates
     ├── SETUP.md
     ├── SETUP_RU.md
