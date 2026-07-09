@@ -9,7 +9,7 @@ All notable confirmed changes to GO IRL are tracked here.
 - Added `docs/MARKET_POSITIONING.md` as the market positioning source of truth for GO IRL beta.
 - Added `docs/COMPETITOR_WATCH.md` to track competitor signals and product mechanics worth borrowing.
 - Added `docs/SPORT_COACH_MVP.md` with scope, UX guardrails, beta metrics, roadmap, and Event Roles boundaries.
-- Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept, current implementation status, generic bridge guardrails, and event-helper copy rule.
+- Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept, current implementation status, generic bridge guardrails, event-helper copy rule, and confirmed-only badge rule.
 - Added Browser Mock Mode reports and beta checklist coverage for non-Telegram browser testing.
 - Added MVP documentation audit and missing sections registry.
 
@@ -22,6 +22,8 @@ All notable confirmed changes to GO IRL are tracked here.
 - Clarified that guides, tutors, language buddies, game masters, hosts, referees, and paid role marketplace work belong to future Event Roles phases.
 - Clarified that generic Coach/Role placement near Activity Chat is a temporary trust-layer bridge, not a universal Coach model.
 - Changed generic non-sport event trust-layer copy from Coach language to Event Helper language: `Помощник события`, `Нужен помощник`, `Хочу помощника`, `Помощник запрошен`.
+- Sport cards now show `Есть тренер` only when there is a confirmed organizer coach request.
+- Demo organizer coach requests now become `confirmed`; participant interest requests remain `pending`.
 - Updated roadmap priority to validate Sport Coach through show-up rate and beginner comfort before universal role expansion.
 - Browser without Telegram `initData` now uses local demo state instead of production Supabase write paths.
 - Sport cards now show event start time consistently instead of sport duration.
@@ -30,12 +32,13 @@ All notable confirmed changes to GO IRL are tracked here.
 
 ### Verification
 
-Latest code quality gate for the event-helper copy patch:
+Latest code quality gates:
 
-- GitHub Actions CI: PASS
-- `pnpm run test`: PASS
-- `pnpm run lint`: PASS
-- `pnpm run build`: PASS
+- Event-helper copy patch: GitHub Actions CI PASS
+- Confirmed coach badge patch: GitHub Actions CI PASS
+- `pnpm run test`: PASS in CI
+- `pnpm run lint`: PASS in CI
+- `pnpm run build`: PASS in CI
 
 Latest local quality gates are still required before a beta-ready claim:
 
