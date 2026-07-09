@@ -59,6 +59,7 @@ Join event
 Event chat
 People meet in real life
 Sport-first Coach stabilization
+Coach/Role + Chat trust layer
 Weather and share/join polish
 Browser demo mode without production writes
 ```
@@ -74,6 +75,23 @@ Slogan:
 ```text
 Less scrolling. More living.
 ```
+
+## Coach / Role + Chat trust layer
+
+The trust layer places event support close to Activity Chat.
+
+It exists to answer two questions before a user arrives:
+
+```text
+Who helps this event happen?
+Where can I talk to the group before I come?
+```
+
+Sport Coach remains the canonical MVP 1.1 implementation.
+
+Generic non-sport usage is a temporary stabilization bridge until future Event Roles exist. It must not redefine Coach as a universal role.
+
+See `docs/COACH_CHAT_TRUST_LAYER.md`.
 
 ## Local commands
 
@@ -105,6 +123,7 @@ Do not claim beta-ready until these pass on the latest commit.
 | MVP stabilization | `docs/MVP_STABILIZATION_PLAN.md` |
 | Event/chat lifecycle | `docs/EventLifecycle.md` |
 | Sport Coach MVP | `docs/SPORT_COACH_MVP.md` |
+| Coach / Role + Chat trust layer | `docs/COACH_CHAT_TRUST_LAYER.md` |
 | Market positioning | `docs/MARKET_POSITIONING.md` |
 | Competitor watch | `docs/COMPETITOR_WATCH.md` |
 
