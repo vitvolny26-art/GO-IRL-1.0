@@ -6,7 +6,9 @@ import {
   loadActivityChatMessages,
   sendActivityChatMessage,
 } from "../activityChatFeature";
+import { useAppStore } from "../store";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
+import { CoachRequestPanel } from "./CoachRequestPanel";
 
 type ActivityChatPanelProps = {
   activity: Activity;
@@ -23,6 +25,7 @@ const formatCloseTime = (value?: string | null) => {
 };
 
 export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
+  const userRole = useAppStore((state) => state.userRole);
   const [open, setOpen] = useState(false);
   const [chat, setChat] = useState<ActivityChat | null>(null);
   const [messages, setMessages] = useState<ActivityChatMessage[]>([]);
@@ -30,6 +33,7 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const showCoachPanel = activity.type !== "sport" && activity.categoryId !== "sport";
 
   const expired = useMemo(() => {
     if (!chat) return false;
@@ -79,76 +83,80 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
   };
 
   return (
-    <section className="activity-chat-panel">
-      <button
-        type="button"
-        className="activity-chat-toggle"
-        onClick={() => setOpen((current) => !current)}
-        aria-expanded={open}
-      >
-        <span className="activity-chat-toggle-icon">
-          <MessageCircle size={18} aria-hidden="true" />
-        </span>
-        <span>
-          <strong>Чат события</strong>
-          <small>Для участников. Закроется через 24 часа после события.</small>
-        </span>
-      </button>
+    <>
+      {showCoachPanel ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
 
-      {open ? (
-        <div className="activity-chat-box">
-          {loading ? <div className="activity-chat-muted">Загрузка чата…</div> : null}
+      <section className="activity-chat-panel">
+        <button
+          type="button"
+          className="activity-chat-toggle"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={open}
+        >
+          <span className="activity-chat-toggle-icon">
+            <MessageCircle size={18} aria-hidden="true" />
+          </span>
+          <span>
+            <strong>Чат события</strong>
+            <small>Для участников. Закроется через 24 часа после события.</small>
+          </span>
+        </button>
 
-          {chat?.expiresAt ? (
-            <div className="activity-chat-muted">
-              Чат закроется: {formatCloseTime(chat.expiresAt)}
-            </div>
-          ) : null}
+        {open ? (
+          <div className="activity-chat-box">
+            {loading ? <div className="activity-chat-muted">Загрузка чата…</div> : null}
 
-          {expired ? (
-            <div className="activity-chat-muted">Чат закрыт. Сообщения больше недоступны.</div>
-          ) : null}
+            {chat?.expiresAt ? (
+              <div className="activity-chat-muted">
+                Чат закроется: {formatCloseTime(chat.expiresAt)}
+              </div>
+            ) : null}
 
-          {error ? <div className="activity-chat-error">{error}</div> : null}
+            {expired ? (
+              <div className="activity-chat-muted">Чат закрыт. Сообщения больше недоступны.</div>
+            ) : null}
 
-          {!loading && !error ? (
-            <div className="activity-chat-messages">
-              {messages.length > 0 ? (
-                messages.map((message) => (
-                  <article key={message.id} className="activity-chat-message">
-                    <div className="activity-chat-message-meta">
-                      <strong>{message.senderDisplayName || "GO IRL User"}</strong>
-                      <span>{formatCloseTime(message.createdAt)}</span>
-                    </div>
-                    <p>{message.body}</p>
-                  </article>
-                ))
-              ) : (
-                <div className="activity-chat-muted">Сообщений пока нет. Напишите первым.</div>
-              )}
-            </div>
-          ) : null}
+            {error ? <div className="activity-chat-error">{error}</div> : null}
 
-          {!expired && !error ? (
-            <div className="activity-chat-form">
-              <input
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                placeholder="Сообщение…"
-                maxLength={1000}
-              />
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={sending || !body.trim()}
-                aria-label="Отправить"
-              >
-                <Send size={18} aria-hidden="true" />
-              </button>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-    </section>
+            {!loading && !error ? (
+              <div className="activity-chat-messages">
+                {messages.length > 0 ? (
+                  messages.map((message) => (
+                    <article key={message.id} className="activity-chat-message">
+                      <div className="activity-chat-message-meta">
+                        <strong>{message.senderDisplayName || "GO IRL User"}</strong>
+                        <span>{formatCloseTime(message.createdAt)}</span>
+                      </div>
+                      <p>{message.body}</p>
+                    </article>
+                  ))
+                ) : (
+                  <div className="activity-chat-muted">Сообщений пока нет. Напишите первым.</div>
+                )}
+              </div>
+            ) : null}
+
+            {!expired && !error ? (
+              <div className="activity-chat-form">
+                <input
+                  value={body}
+                  onChange={(event) => setBody(event.target.value)}
+                  placeholder="Сообщение…"
+                  maxLength={1000}
+                />
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={sending || !body.trim()}
+                  aria-label="Отправить"
+                >
+                  <Send size={18} aria-hidden="true" />
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </section>
+    </>
   );
 }
