@@ -34,6 +34,34 @@ const toIsoHour = (date: string, time: string) => {
   return `${date}T${normalizedTime}`;
 };
 
+const weatherHourFromData = (data: any, times: string[], index: number): WeatherHour | null => {
+  const time = times[index];
+  if (!time) return null;
+
+  const temperature = Math.round(data.hourly.temperature_2m?.[index]);
+  if (Number.isNaN(temperature)) return null;
+
+  return {
+    time,
+    temperature,
+    rain: Number(data.hourly.precipitation_probability?.[index] ?? 0),
+    wind: Math.round(data.hourly.wind_speed_10m?.[index] ?? 0),
+  };
+};
+
+const detailHoursAround = (data: any, times: string[], targetIndex: number) => {
+  const start = Math.max(targetIndex - 2, 0);
+  const end = Math.min(targetIndex + 2, times.length - 1);
+  const hours: WeatherHour[] = [];
+
+  for (let index = start; index <= end; index += 1) {
+    const hour = weatherHourFromData(data, times, index);
+    if (hour) hours.push(hour);
+  }
+
+  return hours;
+};
+
 const daysFromNow = (date: string) => {
   const target = new Date(`${date}T12:00:00`).getTime();
   const today = new Date();
@@ -106,16 +134,7 @@ export async function getEventWeather(input: {
 
     if (Number.isNaN(temp)) return null;
 
-    const hours = times
-      .map((time, current) => ({
-        time,
-        temperature: Math.round(data.hourly.temperature_2m?.[current]),
-        rain: Number(data.hourly.precipitation_probability?.[current] ?? 0),
-        wind: Math.round(data.hourly.wind_speed_10m?.[current] ?? 0),
-      }))
-      .filter((hour) => hour.time.startsWith(input.date) && !Number.isNaN(hour.temperature))
-      .filter((_, current) => current % 2 === 0)
-      .slice(0, 12);
+    const hours = detailHoursAround(data, times, index);
 
     return {
       text: `${codeIcon(code)} ${temp}°C · ☔ ${rain ?? 0}% · 💨 ${wind || 0} km/h`,
