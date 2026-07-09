@@ -2,7 +2,7 @@
 
 Single entry point for GO IRL documentation status, ownership, and conflict tracking.
 
-Use this file before changing product logic, architecture, QA flow, beta scope, release wording, or historical product philosophy.
+Use this file before changing product logic, architecture, QA flow, beta scope, release wording, AI role behavior, or historical product philosophy.
 
 ## Absolute source-of-truth rules
 
@@ -16,9 +16,37 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/MVP_DOC_AUDIT.md` is the source of truth for known documentation conflicts.
 - `docs/MISSING_SECTIONS.md` is the source of truth for missing documentation boundaries.
 - `docs/DATABASE_SCHEMA_AUDIT.md` is the source of truth for current schema-vs-future-schema documentation conflicts.
+- `docs/governance/KNOWLEDGE_PLATFORM.md` is the source of truth for knowledge status model, review cadence, knowledge debt, and Project Memory Bus.
+- `docs/onboarding/ARCHIVIST_CHARTER.md` is the source of truth for the Project Archivist role.
+- `docs/onboarding/AI_ROLES.md` is the working registry for reusable AI roles.
+- `docs/governance/AI_ORGANIZATION.md` is the working source for AI councils, escalation, and role interaction.
 - Historical snapshot files must not be used for code generation.
 - Bible files are preserved product sources. New Bible boundary chapters can describe MVP scope, but Bible files must not override current code, Supabase schema, auth, or RLS.
 - Do not change `.env`, secrets, Supabase RLS, auth, or destructive SQL without explicit approval.
+
+## Knowledge Status Model
+
+Strategic and operational documents should use this status model:
+
+```text
+Draft
+Review
+Approved
+Active
+Deprecated
+Archived
+```
+
+Preferred metadata header:
+
+```yaml
+title:
+owner:
+status:
+source_of_truth:
+last_review:
+next_review:
+```
 
 ## Статусный реестр документации
 
@@ -50,6 +78,10 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 | `docs/MVP_STABILIZATION_PLAN.md` | MVP Plan | Current | Да | Stabilization plan and weather/share/join/profile/demo boundaries. |
 | `docs/GO_IRL_1_1_STABILIZATION.md` | Stabilization Ledger | Draft | Нет | Task statuses may become historical. |
 | `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Current | Да | pnpm, small patches, no unsafe changes. |
+| `docs/onboarding/ARCHIVIST_CHARTER.md` | Onboarding / Role Charter | Current | Да | Source of truth for Project Archivist duties, reading order, market intelligence duty, and memory rules. |
+| `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
+| `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, and escalation. |
+| `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
 | `docs/Database.md` | Architecture | Draft | Нет | Future database architecture; not current schema. |
 | `docs/RLS.md` | Supabase / RLS | Draft | Нет | Do not edit policies without explicit approval. |
 | `docs/Security.md` | Security | Draft | Нет | Must stay aligned with Trusted Auth production path. |
@@ -81,6 +113,8 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 | Activity Chat, Browser Demo Mode, Weather, Telegram Mini App limits were scattered. | `docs/MISSING_SECTIONS.md`, `BETA_TESTING.md`, `docs/EventLifecycle.md`, `docs/MVP_STABILIZATION_PLAN.md` | Boundaries documented; chat expiry still needs product/schema decision. |
 | Bible files could be mistaken for current MVP/schema/implementation plan. | `docs/bible/*`, `ROADMAP.md`, `BACKLOG.md` | Current MVP boundary chapters/audits added; Bible remains not final. |
 | Future DB architecture conflicted with current Supabase migrations. | `docs/Database.md`, `docs/bible/03-database-design.md`, `supabase/migration_v8_activity_chat.sql` | `docs/DATABASE_SCHEMA_AUDIT.md` created; `docs/Database.md` should stay marked future architecture. |
+| AI roles and Archivist rules existed only in chat. | Chat history, onboarding docs | Added `ARCHIVIST_CHARTER.md`, `AI_ROLES.md`, and `AI_ORGANIZATION.md`. |
+| Knowledge architecture existed only in discussion. | Chat history, governance docs | Added `KNOWLEDGE_PLATFORM.md` with status model, KPIs, review cadence, and Project Memory Bus. |
 
 ## Sprint documentation decision
 
@@ -142,6 +176,14 @@ GO IRL Documentation
 │   └── project-audit/
 ├── Bible
 │   └── docs/bible/
+├── Governance
+│   └── docs/governance/
+│       ├── AI_ORGANIZATION.md
+│       └── KNOWLEDGE_PLATFORM.md
+├── Onboarding
+│   └── docs/onboarding/
+│       ├── ARCHIVIST_CHARTER.md
+│       └── AI_ROLES.md
 ├── Roadmap / Sprints
 │   ├── ROADMAP.md
 │   ├── BACKLOG.md
@@ -165,4 +207,6 @@ Update this registry when:
 - code implementation contradicts docs;
 - Bible files are audited or reclassified;
 - Supabase migration/auth/RLS docs are audited;
-- Sprint docs are moved into `docs/roadmap/`.
+- Sprint docs are moved into `docs/roadmap/`;
+- AI roles or councils are added/changed;
+- Knowledge Platform status model or governance rules change.
