@@ -84,6 +84,8 @@ Implementation files:
 - `src/components/ActivityChatPanel.tsx`
 - `src/coachFeature.ts`
 - `src/verticals/SportVertical.tsx`
+- `src/coach-panel.css`
+- `src/main.tsx`
 
 Merged implementation:
 
@@ -93,6 +95,9 @@ merge commit: 9b7297519aacd130e334bc1dc65fe22e8f8fc454
 
 PR #2: feat(coach): show confirmed coach badge on sport cards
 merge commit: 76b52b20da6e4297e2e5b92006ad186dd38966d0
+
+PR #6: feat(coach): allow cancelling coach requests
+merge commit: e2871dba290f414d822847c9eacc74d66b2f17a6
 ```
 
 Verification:
@@ -100,6 +105,7 @@ Verification:
 ```text
 PR #1 GitHub Actions CI: PASS
 PR #2 GitHub Actions CI: PASS
+PR #6 GitHub Actions CI: PASS
 Test: PASS
 Lint: PASS
 Build: PASS
@@ -133,6 +139,8 @@ Sport events use coach copy:
 Хочу тренера
 Тренер запрошен
 Есть тренер
+Больше не нужен
+Отменить запрос
 ```
 
 ### Generic non-sport events
@@ -144,9 +152,45 @@ Generic events use event-helper copy:
 Нужен помощник
 Хочу помощника
 Помощник запрошен
+Больше не нужен
+Отменить запрос
 ```
 
 Do not show `Тренер` in non-sport generic event sheets.
+
+## Request cancellation rule
+
+Active role requests must be cancellable from the same panel where they were created.
+
+Current cancel copy:
+
+```text
+Organizer: Больше не нужен
+Participant: Отменить запрос
+```
+
+Cancellation behavior:
+
+- organizer can cancel an active `organizer_request`;
+- participant can cancel their own active `participant_interest`;
+- cancelled requests are excluded from the visible active status;
+- cancelled requests must not create public trust badges.
+
+Cancellable statuses:
+
+```text
+pending
+matched
+confirmed
+```
+
+Non-cancellable terminal statuses:
+
+```text
+cancelled
+completed
+rejected
+```
 
 ## Badge rule
 
@@ -256,108 +300,6 @@ The trust layer must separate requested support from confirmed support.
 | no role | No support requested | No |
 | requested | Organizer asked for support | No |
 | confirmed | Helper/coach confirmed | Yes |
+| cancelled | Request cancelled by organizer/participant | No |
 | completed | Event passed | Optional historical |
-| rejected / cancelled | No active support | No |
-
-Only confirmed support should create a public confidence badge.
-
-Pending requests must never look like confirmed trust.
-
-## Activity Chat boundary
-
-Activity Chat is not a social feed.
-
-It is temporary event coordination.
-
-It should support:
-
-- “I am coming.”
-- “Where exactly do we meet?”
-- “I am a beginner, is it okay?”
-- “Who brings the ball / game / equipment?”
-- “I am five minutes late.”
-
-It must not become:
-
-- permanent group chat replacement;
-- direct messaging;
-- public comments;
-- dating chat;
-- post-event social feed.
-
-## Metrics
-
-This layer should be judged by real-life outcomes, not UI activity alone.
-
-Primary metrics:
-
-- Join -> show-up rate.
-- Join -> first chat message.
-- Chat active before event.
-- Beginner comfort feedback.
-- Repeat attendance.
-- Event cancellation/no-show rate.
-
-For Sport Coach specifically:
-
-- confirmed coach events vs no-coach events;
-- beginner comfort yes/no;
-- organizer coach-request conversion;
-- coach badge open/click rate.
-
-For future Event Roles:
-
-- role-confirmed events vs no-role events;
-- role badge open/click rate;
-- category-specific attendance improvement.
-
-## Implementation guardrails
-
-- Do not rewrite large `App.tsx` surfaces just to mount the trust layer.
-- Prefer small component-level patches.
-- Do not duplicate Coach in sport details.
-- Do not show `Тренер` copy in non-sport generic event sheets.
-- Do not show public trust badges for pending requests.
-- Do not change Supabase RLS/auth for UI placement work.
-- Do not add payments.
-- Do not add universal role tables before Sport Coach proves value.
-- Do not claim beta-ready until lint/build/test pass.
-
-## Future architecture
-
-If Sport Coach proves value, the generic bridge should evolve into Event Roles.
-
-Future tables may include:
-
-- `event_role_profiles`
-- `event_role_requests`
-- `event_role_assignments`
-- `event_role_reviews`
-
-At that point:
-
-- Sport Coach can stay as a sport-specific module or migrate into Event Roles.
-- Generic event sheets should render role blocks through a role abstraction.
-- `CoachRequestPanel` should not remain the generic UI name for non-sport roles.
-
-## Product summary
-
-The idea is not:
-
-```text
-Add Coach everywhere.
-```
-
-The idea is:
-
-```text
-Every real-life event needs enough trust for people to actually show up.
-```
-
-Sport proves this through Coach.
-
-Other categories later get native roles.
-
-Chat stays next to the role because both features solve the same beta problem:
-
-> Make the event feel real, safe, and socially easier before the user arrives.
+| rejected | Support request rejected | No |
