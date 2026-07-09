@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Dumbbell, Bug, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
-import { getEventWeather, type WeatherHour } from "../services/weather";
+import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import { formatEventTime } from "../eventTime";
 import { useAppStore } from "../store";
 import { getUserKey } from "../supabase";
@@ -26,6 +26,12 @@ const buildMapsQuery = (parts: Array<string | null | undefined>) =>
 
 const buildGoogleMapsSearchUrl = (query: string) =>
   query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null;
+
+const weatherSummaryLines = (weather: WeatherResult) => [
+  `🌡️ ${weather.temperature}°C`,
+  `☔ ${weather.rain}%`,
+  `💨 ${weather.wind} km/h`,
+];
 
 type SportCardProps = {
   activity: Activity;
@@ -236,9 +242,11 @@ export function SportActivitySheet({
   const [membersOpen, setMembersOpen] = useState(initialMembersOpen);
   const t = getTranslation(language);
   const [weatherText, setWeatherText] = useState(t.weatherPlaceholder);
+  const [weather, setWeather] = useState<WeatherResult | null>(null);
   const [weatherHours, setWeatherHours] = useState<WeatherHour[]>([]);
   const [weatherDetailsOpen, setWeatherDetailsOpen] = useState(false);
   const meta = getSportMetadata(activity);
+  const showWeather = meta.environment === "outdoor";
   const isOrganizer = activity.organizerKey === getUserKey();
   const canDelete = isOrganizer || userRole === "admin";
   const canManageActivity = isOrganizer || userRole === "admin" || userRole === "moderator";
@@ -258,27 +266,39 @@ export function SportActivitySheet({
 
   useEffect(() => {
     let active = true;
+
+    if (!showWeather) {
+      setWeatherText("");
+      setWeather(null);
+      setWeatherHours([]);
+      setWeatherDetailsOpen(false);
+      return;
+    }
+
     const days = Math.round((new Date(`${activity.date}T12:00:00`).getTime() - new Date(new Date().setHours(12, 0, 0, 0)).getTime()) / 86400000);
 
     if (days > 7) {
       setWeatherText(t.weatherAvailableSoon);
+      setWeather(null);
       setWeatherHours([]);
       return;
     }
 
     setWeatherText(t.weatherLoading);
+    setWeather(null);
     setWeatherHours([]);
     void getEventWeather({ date: activity.date, time: activity.time, address: activity.address, city: cityName })
-      .then((weather) => {
+      .then((nextWeather) => {
         if (!active) return;
-        setWeatherText(weather?.text || t.weatherUnavailable);
-        setWeatherHours(weather?.hours || []);
+        setWeather(nextWeather);
+        setWeatherText(nextWeather?.text || t.weatherUnavailable);
+        setWeatherHours(nextWeather?.hours || []);
       });
 
     return () => {
       active = false;
     };
-  }, [activity.id, activity.date, activity.time, activity.address, cityName, t.weatherAvailableSoon, t.weatherLoading, t.weatherUnavailable]);
+  }, [activity.id, activity.date, activity.time, activity.address, cityName, showWeather, t.weatherAvailableSoon, t.weatherLoading, t.weatherUnavailable]);
 
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
@@ -316,13 +336,21 @@ export function SportActivitySheet({
           {meta.bring && <div><Sparkles /><span>{t.sportBring}</span><strong>{meta.bring}</strong></div>}
           {meta.requirements && <div><ShieldCheck /><span>{t.sportRequirements}</span><strong>{meta.requirements}</strong></div>}
           {meta.organizerTips && <div><CircleUserRound /><span>{t.sportOrganizerTips}</span><strong>{meta.organizerTips}</strong></div>}
-          <button className="weather-detail-toggle" onClick={() => setWeatherDetailsOpen((open) => !open)} type="button"><Sparkles /><span>{t.weatherHint}</span><strong>{weatherText}</strong></button>
+          {showWeather && (
+            <button className="weather-detail-toggle" onClick={() => setWeatherDetailsOpen((open) => !open)} type="button">
+              <Sparkles />
+              <span>{t.weatherHint}</span>
+              <strong className="weather-summary-lines">
+                {weather ? weatherSummaryLines(weather).map((line) => <span key={line}>{line}</span>) : weatherText}
+              </strong>
+            </button>
+          )}
         </div>
-        {weatherDetailsOpen && weatherHours.length > 0 && (
+        {showWeather && weatherDetailsOpen && weatherHours.length > 0 && (
           <section className="weather-detail-card" aria-label={t.weatherDetails}>
             <div className="weather-detail-head">
               <span>{t.weatherDetails}</span>
-              <strong>{weatherText}</strong>
+              <strong>{weather ? weatherSummaryLines(weather).join(" · ") : weatherText}</strong>
             </div>
             <div className="weather-bars">
               {weatherHours.map((hour) => (
