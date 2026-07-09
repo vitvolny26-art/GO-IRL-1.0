@@ -6,6 +6,8 @@ import {
   loadActivityChatMessages,
   sendActivityChatMessage,
 } from "../activityChatFeature";
+import { getCity } from "../config/cities";
+import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import { useAppStore } from "../store";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
 import { CoachRequestPanel } from "./CoachRequestPanel";
@@ -24,6 +26,98 @@ const formatCloseTime = (value?: string | null) => {
   }).format(new Date(value));
 };
 
+const normalizedActivityText = (activity: Activity) =>
+  [
+    activity.categoryId,
+    activity.type,
+    activity.activity.ru,
+    activity.activity.uk,
+    activity.activity.cs,
+    activity.activity.en,
+    activity.title.ru,
+    activity.title.uk,
+    activity.title.cs,
+    activity.title.en,
+  ].join(" ").toLocaleLowerCase();
+
+const isOutdoorGenericActivity = (activity: Activity) => {
+  if (activity.type === "sport" || activity.categoryId === "sport") return false;
+  if (activity.categoryId === "nature") return true;
+
+  const text = normalizedActivityText(activity);
+  return ["прогул", "proch", "walk", "walking", "похід", "поход", "hike", "park"].some((term) => text.includes(term));
+};
+
+const weatherSummaryLines = (weather: WeatherResult) => [
+  `🌡️ ${weather.temperature}°C`,
+  `☔ ${weather.rain}%`,
+  `💨 ${weather.wind} km/h`,
+];
+
+function OutdoorWeatherPanel({ activity }: { activity: Activity }) {
+  const [weather, setWeather] = useState<WeatherResult | null>(null);
+  const [weatherHours, setWeatherHours] = useState<WeatherHour[]>([]);
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState("Загрузка погоды…");
+  const city = getCity(activity.cityId);
+  const cityName = city?.name.ru || activity.cityId;
+
+  useEffect(() => {
+    let active = true;
+    setStatus("Загрузка погоды…");
+    setWeather(null);
+    setWeatherHours([]);
+
+    void getEventWeather({
+      date: activity.date,
+      time: activity.time,
+      address: activity.address,
+      city: cityName,
+      durationMinutes: activity.metadata?.sport?.durationMinutes || 90,
+    }).then((nextWeather) => {
+      if (!active) return;
+      setWeather(nextWeather);
+      setWeatherHours(nextWeather?.hours || []);
+      setStatus(nextWeather ? "" : "Прогноз недоступен");
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [activity.id, activity.date, activity.time, activity.address, cityName, activity.metadata?.sport?.durationMinutes]);
+
+  return (
+    <section className="generic-weather-card">
+      <button className="weather-detail-toggle generic-weather-toggle" onClick={() => setOpen((current) => !current)} type="button">
+        <span className="generic-weather-icon">☀️</span>
+        <span>Погода</span>
+        <strong className="weather-summary-lines">
+          {weather ? weatherSummaryLines(weather).map((line) => <span key={line}>{line}</span>) : status}
+        </strong>
+      </button>
+
+      {open && weatherHours.length > 0 ? (
+        <div className="weather-detail-card generic-weather-details">
+          <div className="weather-detail-head">
+            <span>Детали погоды</span>
+            <strong>{weather ? weatherSummaryLines(weather).join(" · ") : status}</strong>
+          </div>
+          <div className="weather-bars">
+            {weatherHours.map((hour) => (
+              <div className="weather-bar-row" key={hour.time}>
+                <span>{hour.time.slice(11, 16)}</span>
+                <span className="weather-hour-metric">🌡️ {hour.temperature}°C</span>
+                <span className="weather-hour-metric">☔ {hour.rain}%</span>
+                <span className="weather-hour-metric">💨 {hour.wind} km/h</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
   const userRole = useAppStore((state) => state.userRole);
   const [open, setOpen] = useState(false);
@@ -34,6 +128,7 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const showEventHelperPanel = activity.type !== "sport" && activity.categoryId !== "sport";
+  const showOutdoorWeather = isOutdoorGenericActivity(activity);
 
   const expired = useMemo(() => {
     if (!chat) return false;
@@ -84,6 +179,8 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
 
   return (
     <>
+      {showOutdoorWeather ? <OutdoorWeatherPanel activity={activity} /> : null}
+
       {showEventHelperPanel ? <CoachRequestPanel activity={activity} userRole={userRole} variant="event_helper" /> : null}
 
       <section className="activity-chat-panel">
