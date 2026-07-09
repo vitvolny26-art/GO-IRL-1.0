@@ -1,0 +1,11 @@
+.weather-summary-lines {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.weather-summary-lines > span {
+  display: block;
+}
