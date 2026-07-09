@@ -7,7 +7,7 @@ export type WeatherHour = {
   wind: number;
 };
 
-type WeatherResult = {
+export type WeatherResult = {
   text: string;
   temperature: number;
   rain: number;
