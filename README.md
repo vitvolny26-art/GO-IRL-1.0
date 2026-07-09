@@ -118,50 +118,7 @@ Do not claim beta-ready until these pass on the latest commit.
 | Manual beta checklist | `BETA_CHECKLIST.md` |
 | Roadmap | `ROADMAP.md` |
 | Backlog | `BACKLOG.md` |
-| Changelog | `CHANGELOG.md` |
-| Release notes | `RELEASE_NOTES.md` |
-| MVP stabilization | `docs/MVP_STABILIZATION_PLAN.md` |
-| Event/chat lifecycle | `docs/EventLifecycle.md` |
-| Sport Coach MVP | `docs/SPORT_COACH_MVP.md` |
-| Coach / Role + Chat trust layer | `docs/COACH_CHAT_TRUST_LAYER.md` |
-| Market positioning | `docs/MARKET_POSITIONING.md` |
-| Competitor watch | `docs/COMPETITOR_WATCH.md` |
 
-## Hard boundaries
+## Deployment trigger
 
-Do not generate current MVP code from historical docs.
-
-Deprecated/historical snapshot files from the source repo:
-
-```text
-SETUP.md
-SETUP_RU.md
-SPRINT0_STATUS.md
-CHECKLIST.md
-PATCH_REPORT.md
-GO_IRL_DOCUMENTATION.md
-```
-
-These documents are preserved only as history in the source repo and must not define current implementation behavior.
-
-## Current operational note
-
-Vercel may show failure when the target URL contains:
-
-```text
-upgradeToPro=build-rate-limit
-```
-
-Treat that as a Vercel quota issue, not an app or documentation regression.
-
-## Release rule
-
-Before any release/beta claim, verify in this repo or the primary source repo:
-
-```powershell
-pnpm run lint
-pnpm run build
-pnpm run test
-```
-
-Then run Telegram, Vercel, and Supabase smoke checks from `BETA_CHECKLIST.md`.
+Last manual production redeploy trigger: weather window polish.
