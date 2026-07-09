@@ -1,0 +1,31 @@
+/* GO IRL mobile card fixes */
+.sport-card-symbol {
+  overflow: hidden !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.sport-card-symbol::after {
+  content: "🏆";
+  display: block;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.sport-card-symbol.large::after {
+  font-size: 34px;
+}
+
+.sport-card-main > div:nth-child(2),
+.sport-sheet-hero > div:nth-child(2) {
+  min-width: 0;
+}
+
+.sport-card-main h3,
+.sport-card-main p,
+.sport-sheet-hero h2,
+.sport-sheet-hero p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
