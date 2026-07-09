@@ -33,7 +33,7 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const showCoachPanel = activity.type !== "sport" && activity.categoryId !== "sport";
+  const showEventHelperPanel = activity.type !== "sport" && activity.categoryId !== "sport";
 
   const expired = useMemo(() => {
     if (!chat) return false;
@@ -84,7 +84,7 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
 
   return (
     <>
-      {showCoachPanel ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
+      {showEventHelperPanel ? <CoachRequestPanel activity={activity} userRole={userRole} variant="event_helper" /> : null}
 
       <section className="activity-chat-panel">
         <button
