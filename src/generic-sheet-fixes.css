@@ -3,7 +3,7 @@
 .sport-card {
   border: 1px solid rgba(255, 255, 255, .08) !important;
   border-radius: 28px !important;
-  padding: 18px !important;
+  padding: 16px !important;
   background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .02)) !important;
   box-shadow: 0 18px 40px rgba(0, 0, 0, .24) !important;
 }
@@ -12,8 +12,8 @@
 .discover-card-main,
 .sport-card-main {
   display: grid !important;
-  grid-template-columns: 82px 1fr 24px !important;
-  gap: 16px !important;
+  grid-template-columns: 76px 1fr 22px !important;
+  gap: 14px !important;
   align-items: center !important;
   width: 100% !important;
   text-align: left !important;
@@ -22,12 +22,26 @@
 .activity-card .category-icon,
 .discover-card .category-icon,
 .sport-card-symbol {
-  width: 82px !important;
-  height: 82px !important;
+  width: 76px !important;
+  height: 76px !important;
+  max-width: 76px !important;
+  max-height: 76px !important;
   border-radius: 18px !important;
-  font-size: 36px !important;
+  font-size: 34px !important;
   display: grid !important;
   place-items: center !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  text-indent: 0 !important;
+}
+
+.sport-card-symbol {
+  font-size: 0 !important;
+}
+
+.sport-card-symbol::before {
+  content: "🏆";
+  font-size: 34px !important;
 }
 
 .activity-card .activity-copy,
@@ -50,7 +64,7 @@
 .discover-card h3,
 .sport-card h3 {
   margin: 4px 0 4px !important;
-  font-size: clamp(24px, 7vw, 36px) !important;
+  font-size: clamp(24px, 7vw, 34px) !important;
   line-height: 1.05 !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -72,16 +86,16 @@
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 8px !important;
-  margin-top: 16px !important;
+  margin-top: 14px !important;
 }
 
 .activity-card .activity-card-details > div,
 .discover-card .discover-card-meta > span,
 .sport-card .activity-card-details > div {
-  min-height: 44px !important;
+  min-height: 38px !important;
   border: 1px solid rgba(255, 255, 255, .08) !important;
-  border-radius: 999px !important;
-  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  padding: 8px 10px !important;
   background: rgba(255, 255, 255, .025) !important;
   display: flex !important;
   align-items: center !important;
@@ -103,7 +117,7 @@
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   gap: 8px !important;
-  margin-top: 14px !important;
+  margin-top: 12px !important;
 }
 
 .activity-card .card-status,
@@ -114,30 +128,43 @@
 .activity-card .spots,
 .sport-card .spots {
   justify-content: center !important;
-  min-height: 48px !important;
+  min-height: 44px !important;
   border: 1px solid rgba(255, 255, 255, .08) !important;
-  border-radius: 14px !important;
+  border-radius: 12px !important;
   cursor: pointer !important;
 }
 
 .activity-card .card-join,
 .discover-card .card-join,
 .sport-card .card-join {
-  min-height: 48px !important;
-  border-radius: 14px !important;
+  min-height: 44px !important;
+  border-radius: 12px !important;
 }
 
 .discover-card .card-join::after,
 .activity-card .card-join::after,
 .sport-card .card-join::after {
-  content: " · Подробнее";
+  content: "" !important;
+}
+
+.activity-sheet,
+.activity-sheet.sport-sheet {
+  max-height: calc(100dvh - 76px) !important;
+  padding-top: 44px !important;
+}
+
+.activity-sheet .sheet-close {
+  position: sticky !important;
+  top: 8px !important;
+  margin-left: auto !important;
+  z-index: 20 !important;
 }
 
 .activity-sheet:not(.sport-sheet) .sheet-symbol {
-  width: 116px !important;
-  height: 116px !important;
+  width: 104px !important;
+  height: 104px !important;
   border-radius: 18px !important;
-  font-size: 42px !important;
+  font-size: 40px !important;
 }
 
 .activity-sheet:not(.sport-sheet) .sheet-label {
@@ -148,50 +175,67 @@
   text-transform: uppercase !important;
 }
 
-.activity-sheet:not(.sport-sheet) .detail-list {
+.activity-sheet:not(.sport-sheet) .detail-list,
+.activity-sheet.sport-sheet .detail-list {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 0 !important;
-  border: 1px solid rgba(255, 255, 255, .08) !important;
-  border-radius: 22px !important;
-  overflow: hidden !important;
+  gap: 8px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
 }
 
-.activity-sheet:not(.sport-sheet) .detail-list > div {
+.activity-sheet:not(.sport-sheet) .detail-list > div,
+.activity-sheet.sport-sheet .detail-list > div,
+.activity-sheet.sport-sheet .detail-list > button {
   display: grid !important;
-  grid-template-columns: 38px 1fr !important;
+  grid-template-columns: 34px 1fr !important;
   align-content: center !important;
-  min-height: 88px !important;
-  padding: 16px !important;
-  border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+  min-height: 72px !important;
+  padding: 12px !important;
+  border: 1px solid rgba(255, 255, 255, .08) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, .02) !important;
 }
 
-.activity-sheet:not(.sport-sheet) .detail-list > div:nth-child(odd) {
+.activity-sheet:not(.sport-sheet) .detail-list > div:nth-child(odd),
+.activity-sheet.sport-sheet .detail-list > div:nth-child(odd) {
   border-right: 1px solid rgba(255, 255, 255, .08) !important;
 }
 
 .activity-sheet:not(.sport-sheet) .detail-list > div:last-child,
-.activity-sheet:not(.sport-sheet) .detail-list > div:nth-last-child(2):nth-child(odd) {
-  border-bottom: 0 !important;
+.activity-sheet:not(.sport-sheet) .detail-list > div:nth-last-child(2):nth-child(odd),
+.activity-sheet.sport-sheet .detail-list > div:last-child,
+.activity-sheet.sport-sheet .detail-list > div:nth-last-child(2):nth-child(odd) {
+  border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
 }
 
-.activity-sheet:not(.sport-sheet) .detail-list > div > svg {
+.activity-sheet:not(.sport-sheet) .detail-list > div > svg,
+.activity-sheet.sport-sheet .detail-list > div > svg,
+.activity-sheet.sport-sheet .detail-list > button > svg {
   grid-row: span 2 !important;
   align-self: center !important;
 }
 
 .activity-sheet:not(.sport-sheet) .detail-list > div > span,
 .activity-sheet:not(.sport-sheet) .detail-list > div > strong,
-.activity-sheet:not(.sport-sheet) .detail-list > div > a {
+.activity-sheet:not(.sport-sheet) .detail-list > div > a,
+.activity-sheet.sport-sheet .detail-list > div > span,
+.activity-sheet.sport-sheet .detail-list > div > strong,
+.activity-sheet.sport-sheet .detail-list > div > a {
   min-width: 0 !important;
 }
 
 .activity-sheet:not(.sport-sheet) .detail-list > div > strong,
-.activity-sheet:not(.sport-sheet) .detail-list > div > a {
+.activity-sheet:not(.sport-sheet) .detail-list > div > a,
+.activity-sheet.sport-sheet .detail-list > div > strong,
+.activity-sheet.sport-sheet .detail-list > div > a {
   overflow-wrap: anywhere !important;
 }
 
 .activity-sheet:not(.sport-sheet) .detail-list > div:has(strong:empty),
-.activity-sheet:not(.sport-sheet) .detail-list > div:has(a:empty) {
+.activity-sheet:not(.sport-sheet) .detail-list > div:has(a:empty),
+.activity-sheet.sport-sheet .detail-list > div:has(strong:empty),
+.activity-sheet.sport-sheet .detail-list > div:has(a:empty) {
   display: none !important;
 }
