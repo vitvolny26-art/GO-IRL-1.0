@@ -82,6 +82,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const copy = copyByVariant[variant];
+  const PanelIcon = variant === "coach" ? Dumbbell : UserCheck;
 
   const isOrganizer = activity.organizerKey === currentUserKey;
   const canManage = isOrganizer || userRole === "admin" || userRole === "moderator";
@@ -164,7 +165,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
     <section className="coach-panel" aria-label={copy.ariaLabel}>
       <div className="coach-panel-header">
         <div className="coach-panel-icon">
-          <Dumbbell size={18} aria-hidden="true" />
+          <PanelIcon size={18} aria-hidden="true" />
         </div>
         <div>
           <h3>{copy.title}</h3>
