@@ -356,14 +356,11 @@ export function SportActivitySheet({
               {weatherHours.map((hour) => (
                 <div className="weather-bar-row" key={hour.time}>
                   <span>{hour.time.slice(11, 16)}</span>
-                  <meter min="-20" max="40" value={hour.temperature} />
-                  <strong>{hour.temperature}°C</strong>
+                  <span className="weather-hour-metric">🌡️ {hour.temperature}°C</span>
+                  <span className="weather-hour-metric">☔ {hour.rain}%</span>
+                  <span className="weather-hour-metric">💨 {hour.wind} km/h</span>
                 </div>
               ))}
-            </div>
-            <div className="weather-detail-grid">
-              <span>{t.weatherRain}: {Math.max(...weatherHours.map((hour) => hour.rain))}%</span>
-              <span>{t.weatherWind}: {Math.max(...weatherHours.map((hour) => hour.wind))} km/h</span>
             </div>
           </section>
         )}
