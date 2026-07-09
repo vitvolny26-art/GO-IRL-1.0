@@ -10,6 +10,8 @@ Competitor-driven product signals are tracked in [docs/COMPETITOR_WATCH.md](docs
 
 For the Sport Coach MVP 1.1 scope, see [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md).
 
+For the Coach/Role + Chat trust layer, see [docs/COACH_CHAT_TRUST_LAYER.md](docs/COACH_CHAT_TRUST_LAYER.md).
+
 ## Current beta gate
 
 Current stabilization state:
@@ -17,6 +19,7 @@ Current stabilization state:
 - Browser Mock Mode is patched for non-Telegram browser usage.
 - Browser demo writes are local-only and must not touch production Supabase.
 - Coach and Event Chat are mounted in sport event details.
+- Generic event sheets may temporarily show a Coach/Role bridge next to Activity Chat, but this is not the final Event Roles model.
 - Sport card time rendering is patched.
 - Bug report opens support instead of copying share text.
 - Weather uses Open-Meteo in sport details.
@@ -93,40 +96,68 @@ These may be revisited after Olomouc proves event creation, join rate, chat acti
    - Join state, participant count, event chat, and share flow work reliably.
    - Profile basics create enough trust to join an event.
    - The six beta categories stay focused and visible.
-2. Infrastructure Hardening
+2. Coach/Role + Chat Trust Layer
+   - Keep role/helper support close to Activity Chat.
+   - Use it to increase trust before arrival.
+   - Generic usage is a bridge, not the final naming model.
+   - Do not duplicate Coach in sport details.
+   - Do not show public trust badges for pending requests.
+3. Infrastructure Hardening
    - Supabase production readiness.
    - Safe, repeatable migrations.
    - RLS hardening for all user and event data.
    - Roles and permission enforcement.
    - Database verification SQL and release checklist.
    - Remove dependency on legacy local fallback where possible after production migration is applied.
-3. Sport Coach MVP 1.1
+4. Sport Coach MVP 1.1
    - Keep Coach sport-only.
    - Stabilize coach request flow for sport events.
    - Add demo confirmed coach for browser mock mode.
    - Add coach detail block and sport card badge.
    - Measure show-up rate and beginner comfort.
-4. Performance
+5. Performance
    - Lazy loading.
    - Code splitting.
    - Bundle optimization.
    - Telegram Mini App startup performance.
-5. n8n Notifications
+6. n8n Notifications
    - Server-side notification workflow.
    - Evening digest.
    - Working hours.
    - Quiet hours.
    - No Mini App background work.
-6. AI Event Discovery
+7. AI Event Discovery
    - Future only until real usage data exists.
-7. Event Roles Foundation
+8. Event Roles Foundation
    - Start only after Sport Coach improves show-up rate or beginner comfort.
-8. Friends Vertical
+   - Replace generic Coach naming with native role labels per category.
+9. Friends Vertical
    - Deferred until database and notification foundation is stable.
-9. Travel Vertical
+10. Travel Vertical
    - Deferred until Friends and source discovery architecture are stable.
-10. Dating Vertical
+11. Dating Vertical
    - Last, because it requires privacy, safety, anonymous chat, mutual reveal, reporting, moderation, and abuse protection.
+
+## Coach / Role + Chat Trust Layer
+
+The trust layer is a beta conversion pattern.
+
+It keeps event support and temporary event chat close together so a user can answer:
+
+```text
+Who helps this event happen?
+Where can I talk to the group before I come?
+```
+
+The goal is not to add Coach everywhere.
+
+The goal is to make events feel real, safe, and socially easier before users arrive.
+
+Current rule:
+
+- Sport uses Coach.
+- Generic event usage is a temporary bridge.
+- Future categories must use native names: Game Master, Language Buddy, Guide, Host, Icebreaker.
 
 ## Sport Coach MVP 1.1
 
