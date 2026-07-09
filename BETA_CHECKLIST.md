@@ -90,8 +90,15 @@ pnpm run dev
 - [ ] Join/leave a demo activity.
 - [ ] Open sport event details.
 - [ ] Check Coach request flow.
+- [ ] Confirm Coach demo requests persist in localStorage key `go-irl-demo-coach-requests-v1`.
 - [ ] Check Event Chat message flow.
-- [ ] Confirm browser demo writes do not appear in production Supabase tables.
+- [ ] Confirm Event Chat demo messages persist in localStorage key `go-irl-demo-activity-chat-v1`.
+- [ ] Open Supabase dashboard and confirm browser demo writes do **not** appear in production tables:
+  - [ ] `activities`
+  - [ ] `activity_members`
+  - [ ] `coach_requests`
+  - [ ] `activity_chats`
+  - [ ] `activity_chat_messages`
 
 **Expected:** Browser without Telegram uses local demo state. Demo writes are allowed locally and must not touch production Supabase.
 
