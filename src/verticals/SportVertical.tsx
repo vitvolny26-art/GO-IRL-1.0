@@ -10,6 +10,7 @@ import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
+import { hasConfirmedCoachForActivity } from "../coachFeature";
 
 const cleanSportLabel = (value: string | null | undefined) => {
   const raw = String(value || "").trim();
@@ -113,8 +114,26 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   const full = activity.participants >= activity.capacity;
   const action = isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
+  const [hasConfirmedCoach, setHasConfirmedCoach] = useState(false);
 
   const joinedMembers = activity.members.filter(m => m.status === "joined");
+
+  useEffect(() => {
+    let active = true;
+
+    setHasConfirmedCoach(false);
+    void hasConfirmedCoachForActivity(activity.id)
+      .then((confirmed) => {
+        if (active) setHasConfirmedCoach(confirmed);
+      })
+      .catch(() => {
+        if (active) setHasConfirmedCoach(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activity.id]);
 
   return (
     <article className="sport-card">
@@ -129,6 +148,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       </button>
       <div className="sport-chip-row">
         <span className="sport-card-chip"><Dumbbell size={16} aria-hidden="true" /><span>{cleanSportLabel(meta.sportType || activity.activity[language])}</span></span>
+        {hasConfirmedCoach ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>Есть тренер</span></span> : null}
         <button
           className="sport-card-participants-chip"
           type="button"
