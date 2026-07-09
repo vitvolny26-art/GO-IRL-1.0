@@ -34,6 +34,9 @@ const writeDemoCoachRequests = (requests: CoachRequest[]) => {
   localStorage.setItem(demoCoachStorageKey, JSON.stringify(requests));
 };
 
+const isConfirmedOrganizerCoachRequest = (request: CoachRequest) =>
+  request.requestType === "organizer_request" && request.status === "confirmed";
+
 export async function getCurrentCoachUserKey() {
   if (isBrowserDemoMode()) return demoUserKey;
 
@@ -77,6 +80,11 @@ export async function loadCoachRequestsForActivity(activityId: string) {
   })) as CoachRequest[];
 }
 
+export async function hasConfirmedCoachForActivity(activityId: string) {
+  const requests = await loadCoachRequestsForActivity(activityId);
+  return requests.some(isConfirmedOrganizerCoachRequest);
+}
+
 export async function requestCoachForActivity(
   activity: Activity,
   requestType: CoachRequestType,
@@ -99,7 +107,7 @@ export async function requestCoachForActivity(
       sportType: activity.categoryId || "sport",
       level: undefined,
       paymentMode: "split",
-      status: "pending",
+      status: requestType === "organizer_request" ? "confirmed" : "pending",
       createdAt: requests.find((request) => request.id === id)?.createdAt || now,
       updatedAt: now,
     };
