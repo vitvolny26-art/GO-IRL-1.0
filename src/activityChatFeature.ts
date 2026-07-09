@@ -1,4 +1,4 @@
-import { initializeTrustedAuth, getCurrentAuthSession, isTrustedAuthReady } from "./authSession";
+import { initializeTrustedAuth, getCurrentAuthSession, isBrowserMockMode, isTrustedAuthReady } from "./authSession";
 import { supabase } from "./supabase";
 import type { ActivityChat, ActivityChatMessage } from "./types";
 
@@ -32,10 +32,9 @@ type DemoChatState = {
   messages: ActivityChatMessage[];
 };
 
-const isBrowserDemoMode = () =>
+const isActivityChatDemoMode = () =>
   typeof window !== "undefined" &&
-  /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) &&
-  !isTrustedAuthReady();
+  (isBrowserMockMode() || (/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && !isTrustedAuthReady()));
 
 const readDemoChatState = (): DemoChatState => {
   try {
@@ -52,7 +51,7 @@ const writeDemoChatState = (state: DemoChatState) => {
 const demoChatExpiry = () => new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
 export async function getCurrentChatIdentity() {
-  if (isBrowserDemoMode()) {
+  if (isActivityChatDemoMode()) {
     return { userKey: demoUserKey, displayName: demoDisplayName };
   }
 
@@ -75,7 +74,7 @@ export async function getCurrentChatIdentity() {
 }
 
 export async function ensureActivityChat(activityId: string) {
-  if (isBrowserDemoMode()) {
+  if (isActivityChatDemoMode()) {
     const state = readDemoChatState();
     const existing = state.chats.find((chat) => chat.activityId === activityId);
     if (existing) return existing.id;
@@ -106,7 +105,7 @@ export async function ensureActivityChat(activityId: string) {
 }
 
 export async function loadActivityChat(activityId: string) {
-  if (isBrowserDemoMode()) {
+  if (isActivityChatDemoMode()) {
     const state = readDemoChatState();
     return state.chats.find((chat) => chat.activityId === activityId) || null;
   }
@@ -132,7 +131,7 @@ export async function loadActivityChat(activityId: string) {
 }
 
 export async function loadActivityChatMessages(activityId: string) {
-  if (isBrowserDemoMode()) {
+  if (isActivityChatDemoMode()) {
     const state = readDemoChatState();
     return state.messages
       .filter((message) => message.activityId === activityId && message.status === "visible")
@@ -182,7 +181,7 @@ export async function sendActivityChatMessage(activityId: string, body: string) 
 
   const chatId = await ensureActivityChat(activityId);
 
-  if (isBrowserDemoMode()) {
+  if (isActivityChatDemoMode()) {
     const state = readDemoChatState();
     const now = new Date().toISOString();
     state.messages.push({
@@ -216,22 +215,25 @@ export async function sendActivityChatMessage(activityId: string, body: string) 
 }
 
 export async function hideOwnActivityChatMessage(messageId: string) {
-  if (isBrowserDemoMode()) {
+  if (isActivityChatDemoMode()) {
     const state = readDemoChatState();
-    state.messages = state.messages.map((message) =>
-      message.id === messageId ? { ...message, status: "deleted", deletedAt: new Date().toISOString() } : message,
-    );
-    writeDemoChatState(state);
+    writeDemoChatState({
+      ...state,
+      messages: state.messages.map((message) =>
+        message.id === messageId ? { ...message, status: "hidden", deletedAt: new Date().toISOString() } : message,
+      ),
+    });
     return;
   }
 
+  const identity = await getCurrentChatIdentity();
+  if (!identity.userKey) throw new Error("auth_required");
+
   const { error } = await supabase
     .from("activity_chat_messages")
-    .update({
-      status: "deleted",
-      deleted_at: new Date().toISOString(),
-    })
-    .eq("id", messageId);
+    .update({ status: "hidden", deleted_at: new Date().toISOString() })
+    .eq("id", messageId)
+    .eq("sender_user_key", identity.userKey);
 
   if (error) throw error;
 }
