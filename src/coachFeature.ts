@@ -1,4 +1,4 @@
-import { initializeTrustedAuth, getCurrentAuthSession, isTrustedAuthReady } from "./authSession";
+import { initializeTrustedAuth, getCurrentAuthSession, isBrowserMockMode, isTrustedAuthReady } from "./authSession";
 import { supabase } from "./supabase";
 import type { Activity, CoachRequest, CoachRequestType } from "./types";
 
@@ -17,10 +17,9 @@ const readAuthUserKey = (identity: unknown) => {
 const demoUserKey = "telegram:999999";
 const demoCoachStorageKey = "go-irl-demo-coach-requests-v1";
 
-const isBrowserDemoMode = () =>
+const isCoachDemoMode = () =>
   typeof window !== "undefined" &&
-  /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) &&
-  !isTrustedAuthReady();
+  (isBrowserMockMode() || (/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && !isTrustedAuthReady()));
 
 const readDemoCoachRequests = () => {
   try {
@@ -38,7 +37,7 @@ const isConfirmedOrganizerCoachRequest = (request: CoachRequest) =>
   request.requestType === "organizer_request" && request.status === "confirmed";
 
 export async function getCurrentCoachUserKey() {
-  if (isBrowserDemoMode()) return demoUserKey;
+  if (isCoachDemoMode()) return demoUserKey;
 
   const existing = getCurrentAuthSession();
   const existingKey = readAuthUserKey(existing);
@@ -49,7 +48,7 @@ export async function getCurrentCoachUserKey() {
 }
 
 export async function loadCoachRequestsForActivity(activityId: string) {
-  if (isBrowserDemoMode()) {
+  if (isCoachDemoMode()) {
     return readDemoCoachRequests().filter((request) => request.activityId === activityId);
   }
 
@@ -95,7 +94,7 @@ export async function requestCoachForActivity(
     throw new Error("auth_required");
   }
 
-  if (isBrowserDemoMode()) {
+  if (isCoachDemoMode()) {
     const requests = readDemoCoachRequests();
     const now = new Date().toISOString();
     const id = `demo-coach-${activity.id}-${userKey}-${requestType}`;
@@ -138,7 +137,7 @@ export async function requestCoachForActivity(
 }
 
 export async function cancelCoachRequest(requestId: string) {
-  if (isBrowserDemoMode()) {
+  if (isCoachDemoMode()) {
     const requests = readDemoCoachRequests();
     writeDemoCoachRequests(requests.map((request) =>
       request.id === requestId ? { ...request, status: "cancelled", updatedAt: new Date().toISOString() } : request,
