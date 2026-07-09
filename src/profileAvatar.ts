@@ -19,7 +19,11 @@ export const profileAvatarExtension = (file: Pick<File, "name" | "type">) => {
   const mimeExtension = imageMimeExtensions[file.type];
   if (mimeExtension) return mimeExtension;
 
-  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const hasExtension = file.name.includes(".");
+  const extension = hasExtension
+    ? file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "")
+    : "";
+
   return extension || "jpg";
 };
 
