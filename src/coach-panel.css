@@ -1,0 +1,113 @@
+.coach-panel {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 13px;
+  border: 1px solid rgba(201, 255, 61, .22);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(201, 255, 61, .075), rgba(87, 217, 232, .035));
+}
+
+.coach-panel-header {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.coach-panel-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(201, 255, 61, .22);
+  border-radius: 7px;
+  background: rgba(201, 255, 61, .1);
+  color: var(--lime);
+}
+
+.coach-panel h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.coach-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.coach-panel-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, .075);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, .14);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.coach-panel-status svg {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  color: var(--lime);
+}
+
+.coach-panel-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.coach-panel-button,
+.coach-panel-cancel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.coach-panel-button {
+  border: 0;
+  background: var(--lime);
+  color: var(--lime-text);
+}
+
+.coach-panel-button:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+.coach-panel-cancel-button {
+  border: 1px solid rgba(255, 111, 97, .35);
+  background: rgba(255, 111, 97, .08);
+  color: #ff8c80;
+}
+
+.coach-panel-cancel-button:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+.coach-panel-message {
+  padding: 9px 10px;
+  border: 1px solid rgba(87, 217, 232, .28);
+  border-radius: 7px;
+  background: rgba(87, 217, 232, .08);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}

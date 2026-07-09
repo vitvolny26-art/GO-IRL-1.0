@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Dumbbell, Star, UserCheck } from "lucide-react";
+import { Dumbbell, Star, UserCheck, XCircle } from "lucide-react";
 import {
+  cancelCoachRequest,
   getCurrentCoachUserKey,
   loadCoachRequestsForActivity,
   requestCoachForActivity,
@@ -26,10 +27,15 @@ const copyByVariant = {
     organizerButton: "Пригласить тренера",
     participantButton: "Хочу тренера",
     disabledButton: "Запрос отправлен",
+    organizerCancelButton: "Больше не нужен",
+    participantCancelButton: "Отменить запрос",
     loadError: "Не удалось загрузить тренера",
     submitSuccess: "Тренер запрошен",
     participantSuccess: "Вы хотите тренера",
     submitError: "Не удалось отправить запрос",
+    cancelSuccess: "Запрос тренера отменён",
+    participantCancelSuccess: "Запрос отменён",
+    cancelError: "Не удалось отменить запрос",
   },
   event_helper: {
     ariaLabel: "Помощник события",
@@ -41,10 +47,15 @@ const copyByVariant = {
     organizerButton: "Нужен помощник",
     participantButton: "Хочу помощника",
     disabledButton: "Запрос отправлен",
+    organizerCancelButton: "Больше не нужен",
+    participantCancelButton: "Отменить запрос",
     loadError: "Не удалось загрузить помощника события",
     submitSuccess: "Помощник события запрошен",
     participantSuccess: "Вы хотите помощника события",
     submitError: "Не удалось отправить запрос",
+    cancelSuccess: "Запрос помощника отменён",
+    participantCancelSuccess: "Запрос отменён",
+    cancelError: "Не удалось отменить запрос",
   },
 } satisfies Record<CoachRequestPanelVariant, Record<string, string>>;
 
@@ -61,6 +72,9 @@ const coachStatusLabel = (status: CoachRequest["status"], variant: CoachRequestP
     default: return "в обработке";
   }
 };
+
+const canCancelRequest = (request?: CoachRequest) =>
+  Boolean(request && !["cancelled", "completed", "rejected"].includes(request.status));
 
 export function CoachRequestPanel({ activity, userRole, variant = "coach" }: CoachRequestPanelProps) {
   const [requests, setRequests] = useState<CoachRequest[]>([]);
@@ -86,6 +100,9 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
     () => requests.filter((request) => request.requestType === "participant_interest" && request.status === "pending").length,
     [requests],
   );
+
+  const activeRequest = canManage ? organizerRequest : participantInterest;
+  const canCancel = canCancelRequest(activeRequest);
 
   const reload = async () => {
     const [userKey, coachRequests] = await Promise.all([
@@ -122,8 +139,26 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
     }
   };
 
+  const handleCancel = async () => {
+    if (!activeRequest) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      await cancelCoachRequest(activeRequest.id);
+      await reload();
+      setMessage(canManage ? copy.cancelSuccess : copy.participantCancelSuccess);
+    } catch {
+      setMessage(copy.cancelError);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const buttonLabel = canManage ? copy.organizerButton : copy.participantButton;
-  const disabled = loading || Boolean(canManage ? organizerRequest : participantInterest);
+  const cancelLabel = canManage ? copy.organizerCancelButton : copy.participantCancelButton;
+  const disabled = loading || Boolean(activeRequest);
 
   return (
     <section className="coach-panel" aria-label={copy.ariaLabel}>
@@ -158,14 +193,28 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
         </div>
       ) : null}
 
-      <button
-        type="button"
-        className="coach-panel-button"
-        onClick={handleRequest}
-        disabled={disabled}
-      >
-        {disabled ? copy.disabledButton : buttonLabel}
-      </button>
+      <div className="coach-panel-actions">
+        <button
+          type="button"
+          className="coach-panel-button"
+          onClick={handleRequest}
+          disabled={disabled}
+        >
+          {disabled ? copy.disabledButton : buttonLabel}
+        </button>
+
+        {canCancel ? (
+          <button
+            type="button"
+            className="coach-panel-cancel-button"
+            onClick={handleCancel}
+            disabled={loading}
+          >
+            <XCircle size={16} aria-hidden="true" />
+            <span>{cancelLabel}</span>
+          </button>
+        ) : null}
+      </div>
 
       {message ? <div className="coach-panel-message">{message}</div> : null}
     </section>
