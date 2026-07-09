@@ -98,6 +98,12 @@ merge commit: 76b52b20da6e4297e2e5b92006ad186dd38966d0
 
 PR #6: feat(coach): allow cancelling coach requests
 merge commit: e2871dba290f414d822847c9eacc74d66b2f17a6
+
+PR #7: fix(coach): use helper icon for event helper panel
+merge commit: e44b98b456a5fe65539712d9c840aabb22876cd2
+
+PR #8: fix(coach): refresh sport coach badge after request changes
+merge commit: 2481f36d65426af255a3e49d25080a853170c9c2
 ```
 
 Verification:
@@ -106,6 +112,8 @@ Verification:
 PR #1 GitHub Actions CI: PASS
 PR #2 GitHub Actions CI: PASS
 PR #6 GitHub Actions CI: PASS
+PR #7 GitHub Actions CI: PASS
+PR #8 GitHub Actions CI: PASS
 Test: PASS
 Lint: PASS
 Build: PASS
@@ -157,6 +165,17 @@ Generic events use event-helper copy:
 ```
 
 Do not show `Тренер` in non-sport generic event sheets.
+
+## Icon rule
+
+The panel icon must match the copy variant:
+
+```text
+Sport Coach -> Dumbbell
+Event Helper -> UserCheck
+```
+
+Generic non-sport helper panels must not use sport-only visual language.
 
 ## Request cancellation rule
 
@@ -210,6 +229,13 @@ status === "confirmed"
 ```
 
 Pending participant interest or pending organizer request must not create a public trust badge.
+
+Badge refresh behavior:
+
+- `CoachRequestPanel` emits `go-irl-coach-requests-changed` after request create/cancel;
+- `SportActivityCard` listens for matching `activityId`;
+- the card re-checks `hasConfirmedCoachForActivity(activity.id)`;
+- stale `Есть тренер` must disappear after cancellation without full page reload.
 
 Current demo rule:
 
