@@ -75,13 +75,12 @@ type AppState = {
 let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 
 // go-irl-visual-demo-mode-v1
-const visualDemoStorageKey = "go-irl-visual-demo-activities-v1";
+const visualDemoStorageKey = "go-irl-visual-demo-activities-v2";
 const visualDemoUserKey = "telegram:999999";
 const visualDemoUserName = "Vit_Test";
 const visualDemoNotice = "\u0418\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u044b (\u0414\u0435\u043c\u043e-\u0440\u0435\u0436\u0438\u043c)";
 const isVisualDemoMode = () =>
   typeof window !== "undefined" &&
-  /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) &&
   !isTrustedAuthReady();
 
 const demoLocalized = (value: string) => ({ ru: value, uk: value, cs: value, en: value });
