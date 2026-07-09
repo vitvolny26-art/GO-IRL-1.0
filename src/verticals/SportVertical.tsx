@@ -287,7 +287,7 @@ export function SportActivitySheet({
     setWeatherText(t.weatherLoading);
     setWeather(null);
     setWeatherHours([]);
-    void getEventWeather({ date: activity.date, time: activity.time, address: activity.address, city: cityName })
+    void getEventWeather({ date: activity.date, time: activity.time, address: activity.address, city: cityName, durationMinutes: meta.durationMinutes || 90 })
       .then((nextWeather) => {
         if (!active) return;
         setWeather(nextWeather);
@@ -298,7 +298,7 @@ export function SportActivitySheet({
     return () => {
       active = false;
     };
-  }, [activity.id, activity.date, activity.time, activity.address, cityName, showWeather, t.weatherAvailableSoon, t.weatherLoading, t.weatherUnavailable]);
+  }, [activity.id, activity.date, activity.time, activity.address, cityName, showWeather, meta.durationMinutes, t.weatherAvailableSoon, t.weatherLoading, t.weatherUnavailable]);
 
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
