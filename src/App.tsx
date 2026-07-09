@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -63,6 +63,7 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
+import { resolveProfileAvatarUpload } from "./profileAvatar";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -841,6 +842,8 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const fallbackName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ") || t.guestName;
   const [profile, setProfile] = useState(() => loadProfile(fallbackName, selectedCityId));
   const [avatarDraft, setAvatarDraft] = useState(profile.avatar);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
   const userKey = getUserKey();
   const city = getCity(profile.cityId);
   const today = new Date().toISOString().slice(0, 10);
@@ -852,6 +855,23 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const registeredLabel = new Intl.DateTimeFormat(localeByLanguage[language], { day: "numeric", month: "short", year: "numeric" }).format(safeDate(profile.registeredAt));
   const favoriteOptions = favoriteActivityOptions(language);
   const selectedFavorites = favoriteOptions.filter((option) => profile.favoriteActivities.includes(option.id));
+
+  const handleAvatarFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+
+    setAvatarUploading(true);
+    setAvatarError("");
+
+    try {
+      setAvatarDraft(await resolveProfileAvatarUpload(file));
+    } catch {
+      setAvatarError(t.publishError);
+      notifyTelegram("error");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   const saveProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -912,8 +932,9 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
               </label>
             ))}
           </div>
-          <label><span>{t.avatar}</span><input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => setAvatarDraft(String(reader.result || "")); reader.readAsDataURL(file); }} /></label>
-          <button className="publish-button" type="submit"><Pencil size={18} />{t.save}</button>
+          <label><span>{t.avatar}</span><input type="file" accept="image/*" onChange={handleAvatarFileChange} disabled={avatarUploading} /></label>
+          {avatarError && <div className="form-error">{avatarError}</div>}
+          <button className="publish-button" type="submit" disabled={avatarUploading}><Pencil size={18} />{avatarUploading ? "…" : t.save}</button>
         </form>
       )}
 
