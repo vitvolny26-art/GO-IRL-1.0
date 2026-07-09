@@ -58,7 +58,7 @@ const weatherHourFromData = (data: any, times: string[], index: number): Weather
 };
 
 const detailHoursForEventWindow = (data: any, times: string[], input: { date: string; time: string; durationMinutes?: number }) => {
-  const startMs = addMinutesToIsoHour(input.date, input.time, 0);
+  const startMs = addMinutesToIsoHour(input.date, input.time, -120);
   const endMs = addMinutesToIsoHour(input.date, input.time, (input.durationMinutes || 90) + 120);
   const hours: WeatherHour[] = [];
 
