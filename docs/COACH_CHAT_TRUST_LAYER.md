@@ -82,18 +82,24 @@ Implementation files:
 
 - `src/components/CoachRequestPanel.tsx`
 - `src/components/ActivityChatPanel.tsx`
+- `src/coachFeature.ts`
+- `src/verticals/SportVertical.tsx`
 
 Merged implementation:
 
 ```text
 PR #1: fix: use event helper copy for generic events
 merge commit: 9b7297519aacd130e334bc1dc65fe22e8f8fc454
+
+PR #2: feat(coach): show confirmed coach badge on sport cards
+merge commit: 76b52b20da6e4297e2e5b92006ad186dd38966d0
 ```
 
-Verification for PR #1:
+Verification:
 
 ```text
-GitHub Actions CI: PASS
+PR #1 GitHub Actions CI: PASS
+PR #2 GitHub Actions CI: PASS
 Test: PASS
 Lint: PASS
 Build: PASS
@@ -126,6 +132,7 @@ Sport events use coach copy:
 Пригласить тренера
 Хочу тренера
 Тренер запрошен
+Есть тренер
 ```
 
 ### Generic non-sport events
@@ -140,6 +147,31 @@ Generic events use event-helper copy:
 ```
 
 Do not show `Тренер` in non-sport generic event sheets.
+
+## Badge rule
+
+Public trust badges must be confirmed-only.
+
+Current sport card badge:
+
+```text
+Есть тренер
+```
+
+This badge may appear only when there is a confirmed organizer coach request:
+
+```text
+requestType === "organizer_request"
+status === "confirmed"
+```
+
+Pending participant interest or pending organizer request must not create a public trust badge.
+
+Current demo rule:
+
+- organizer coach request in browser demo becomes `confirmed`;
+- participant interest remains `pending`;
+- production Supabase request still starts as `pending`.
 
 ## Naming rule
 
@@ -285,10 +317,10 @@ For future Event Roles:
 - Prefer small component-level patches.
 - Do not duplicate Coach in sport details.
 - Do not show `Тренер` copy in non-sport generic event sheets.
+- Do not show public trust badges for pending requests.
 - Do not change Supabase RLS/auth for UI placement work.
 - Do not add payments.
 - Do not add universal role tables before Sport Coach proves value.
-- Do not show public badges for pending requests.
 - Do not claim beta-ready until lint/build/test pass.
 
 ## Future architecture
