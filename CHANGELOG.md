@@ -9,6 +9,7 @@ All notable confirmed changes to GO IRL are tracked here.
 - Added `docs/MARKET_POSITIONING.md` as the market positioning source of truth for GO IRL beta.
 - Added `docs/COMPETITOR_WATCH.md` to track competitor signals and product mechanics worth borrowing.
 - Added `docs/SPORT_COACH_MVP.md` with scope, UX guardrails, beta metrics, roadmap, and Event Roles boundaries.
+- Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept and generic bridge guardrails.
 - Added Browser Mock Mode reports and beta checklist coverage for non-Telegram browser testing.
 - Added MVP documentation audit and missing sections registry.
 
@@ -19,6 +20,7 @@ All notable confirmed changes to GO IRL are tracked here.
 - Clarified the canonical beta categories: Volleyball, Running, Walking, Coffee meetup, Board games, and Language exchange.
 - Clarified that Coach means sport-only in MVP 1.1.
 - Clarified that guides, tutors, language buddies, game masters, hosts, referees, and paid role marketplace work belong to future Event Roles phases.
+- Clarified that generic Coach/Role placement near Activity Chat is a temporary trust-layer bridge, not a universal Coach model.
 - Updated roadmap priority to validate Sport Coach through show-up rate and beginner comfort before universal role expansion.
 - Browser without Telegram `initData` now uses local demo state instead of production Supabase write paths.
 - Sport cards now show event start time consistently instead of sport duration.
@@ -49,7 +51,7 @@ Do not claim beta-ready until these pass on the latest `main`.
 - Share links using the Telegram `startapp` parameter.
 - Safe-area aware fixed header with city selector, language selector, and notification entry point.
 - City configuration architecture with Olomouc as the first supported city.
-- Russian, Ukrainian, Czech, and English localization architecture.
+- Russian and Czech localization architecture.
 - Supabase RLS helper functions and policies that hide non-public activities from unrelated users.
 - Vercel deployment configuration.
 - GO IRL brand logo assets, favicon, and Open Graph preview.
