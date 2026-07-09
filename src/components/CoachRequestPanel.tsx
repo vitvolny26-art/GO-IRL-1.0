@@ -7,16 +7,54 @@ import {
 } from "../coachFeature";
 import type { Activity, CoachRequest, UserRole } from "../types";
 
+type CoachRequestPanelVariant = "coach" | "event_helper";
+
 type CoachRequestPanelProps = {
   activity: Activity;
   userRole: UserRole;
+  variant?: CoachRequestPanelVariant;
 };
 
-const coachStatusLabel = (status: CoachRequest["status"]) => {
+const copyByVariant = {
+  coach: {
+    ariaLabel: "Тренер",
+    title: "Тренер",
+    description: "Тренер поможет провести игру, разминку и объяснить правила новичкам.",
+    requested: "Тренер запрошен",
+    participantWanted: "Вы хотите тренера",
+    participantCount: "участников хотят тренера",
+    organizerButton: "Пригласить тренера",
+    participantButton: "Хочу тренера",
+    disabledButton: "Запрос отправлен",
+    loadError: "Не удалось загрузить тренера",
+    submitSuccess: "Тренер запрошен",
+    participantSuccess: "Вы хотите тренера",
+    submitError: "Не удалось отправить запрос",
+  },
+  event_helper: {
+    ariaLabel: "Помощник события",
+    title: "Помощник события",
+    description: "Поможет событию состояться: встретит новичков, объяснит формат и поддержит группу перед встречей.",
+    requested: "Помощник запрошен",
+    participantWanted: "Вы хотите помощника события",
+    participantCount: "участников хотят помощника",
+    organizerButton: "Нужен помощник",
+    participantButton: "Хочу помощника",
+    disabledButton: "Запрос отправлен",
+    loadError: "Не удалось загрузить помощника события",
+    submitSuccess: "Помощник события запрошен",
+    participantSuccess: "Вы хотите помощника события",
+    submitError: "Не удалось отправить запрос",
+  },
+} satisfies Record<CoachRequestPanelVariant, Record<string, string>>;
+
+const coachStatusLabel = (status: CoachRequest["status"], variant: CoachRequestPanelVariant) => {
+  const actor = variant === "coach" ? "тренер" : "помощник";
+
   switch (status) {
     case "pending": return "ожидает подтверждения";
-    case "matched": return "тренер найден";
-    case "confirmed": return "тренер подтверждён";
+    case "matched": return `${actor} найден`;
+    case "confirmed": return `${actor} подтверждён`;
     case "completed": return "завершено";
     case "rejected": return "отклонено";
     case "cancelled": return "отменено";
@@ -24,11 +62,12 @@ const coachStatusLabel = (status: CoachRequest["status"]) => {
   }
 };
 
-export function CoachRequestPanel({ activity, userRole }: CoachRequestPanelProps) {
+export function CoachRequestPanel({ activity, userRole, variant = "coach" }: CoachRequestPanelProps) {
   const [requests, setRequests] = useState<CoachRequest[]>([]);
   const [currentUserKey, setCurrentUserKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const copy = copyByVariant[variant];
 
   const isOrganizer = activity.organizerKey === currentUserKey;
   const canManage = isOrganizer || userRole === "admin" || userRole === "moderator";
@@ -60,9 +99,9 @@ export function CoachRequestPanel({ activity, userRole }: CoachRequestPanelProps
 
   useEffect(() => {
     void reload().catch(() => {
-      setMessage("Не удалось загрузить тренера");
+      setMessage(copy.loadError);
     });
-  }, [activity.id]);
+  }, [activity.id, copy.loadError]);
 
   const handleRequest = async () => {
     setLoading(true);
@@ -75,47 +114,47 @@ export function CoachRequestPanel({ activity, userRole }: CoachRequestPanelProps
       );
 
       await reload();
-      setMessage(canManage ? "Тренер запрошен" : "Вы хотите тренера");
+      setMessage(canManage ? copy.submitSuccess : copy.participantSuccess);
     } catch {
-      setMessage("Не удалось отправить запрос");
+      setMessage(copy.submitError);
     } finally {
       setLoading(false);
     }
   };
 
-  const buttonLabel = canManage ? "Пригласить тренера" : "Хочу тренера";
+  const buttonLabel = canManage ? copy.organizerButton : copy.participantButton;
   const disabled = loading || Boolean(canManage ? organizerRequest : participantInterest);
 
   return (
-    <section className="coach-panel" aria-label="Тренер">
+    <section className="coach-panel" aria-label={copy.ariaLabel}>
       <div className="coach-panel-header">
         <div className="coach-panel-icon">
           <Dumbbell size={18} aria-hidden="true" />
         </div>
         <div>
-          <h3>Тренер</h3>
-          <p>Тренер поможет провести игру, разминку и объяснить правила новичкам.</p>
+          <h3>{copy.title}</h3>
+          <p>{copy.description}</p>
         </div>
       </div>
 
       {organizerRequest ? (
         <div className="coach-panel-status">
           <UserCheck size={18} aria-hidden="true" />
-          <span>Тренер запрошен · {coachStatusLabel(organizerRequest.status)}</span>
+          <span>{copy.requested} · {coachStatusLabel(organizerRequest.status, variant)}</span>
         </div>
       ) : null}
 
       {interestCount > 0 && canManage ? (
         <div className="coach-panel-status">
           <Star size={18} aria-hidden="true" />
-          <span>{interestCount} участников хотят тренера</span>
+          <span>{interestCount} {copy.participantCount}</span>
         </div>
       ) : null}
 
       {!canManage && participantInterest ? (
         <div className="coach-panel-status">
           <Star size={18} aria-hidden="true" />
-          <span>Вы хотите тренера</span>
+          <span>{copy.participantWanted}</span>
         </div>
       ) : null}
 
@@ -125,7 +164,7 @@ export function CoachRequestPanel({ activity, userRole }: CoachRequestPanelProps
         onClick={handleRequest}
         disabled={disabled}
       >
-        {disabled ? "Запрос отправлен" : buttonLabel}
+        {disabled ? copy.disabledButton : buttonLabel}
       </button>
 
       {message ? <div className="coach-panel-message">{message}</div> : null}
