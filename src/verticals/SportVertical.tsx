@@ -12,6 +12,10 @@ import { ActivityChatPanel } from "../components/ActivityChatPanel";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
 import { hasConfirmedCoachForActivity } from "../coachFeature";
 
+type CoachRequestsChangedDetail = { activityId?: string };
+
+const coachRequestsChangedEvent = "go-irl-coach-requests-changed";
+
 const cleanSportLabel = (value: string | null | undefined) => {
   const raw = String(value || "").trim();
   return raw.replace(/^[^A-Za-zА-Яа-яЁё0-9]+\s*/u, "").trim() || raw || "Спорт";
@@ -121,17 +125,30 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   useEffect(() => {
     let active = true;
 
-    setHasConfirmedCoach(false);
-    void hasConfirmedCoachForActivity(activity.id)
-      .then((confirmed) => {
-        if (active) setHasConfirmedCoach(confirmed);
-      })
-      .catch(() => {
-        if (active) setHasConfirmedCoach(false);
-      });
+    const refreshConfirmedCoach = () => {
+      setHasConfirmedCoach(false);
+      void hasConfirmedCoachForActivity(activity.id)
+        .then((confirmed) => {
+          if (active) setHasConfirmedCoach(confirmed);
+        })
+        .catch(() => {
+          if (active) setHasConfirmedCoach(false);
+        });
+    };
+
+    const handleCoachRequestsChanged = (event: Event) => {
+      const detail = (event as CustomEvent<CoachRequestsChangedDetail>).detail;
+      if (detail?.activityId && detail.activityId !== activity.id) return;
+
+      refreshConfirmedCoach();
+    };
+
+    refreshConfirmedCoach();
+    window.addEventListener(coachRequestsChangedEvent, handleCoachRequestsChanged);
 
     return () => {
       active = false;
+      window.removeEventListener(coachRequestsChangedEvent, handleCoachRequestsChanged);
     };
   }, [activity.id]);
 
