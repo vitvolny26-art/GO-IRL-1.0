@@ -12,12 +12,14 @@ All notable confirmed changes to GO IRL are tracked here.
 - Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept, current implementation status, generic bridge guardrails, event-helper copy rule, confirmed-only badge rule, request cancellation rule, helper icon rule, and badge refresh behavior.
 - Added Browser Mock Mode reports and beta checklist coverage for non-Telegram browser testing.
 - Added MVP documentation audit and missing sections registry.
+- Added tests for shared event time helpers, including timezone-like datetime values and date/time joining.
 
 ### Changed
 
 - Aligned `README.md`, `DOCS_INDEX.md`, `ROADMAP.md`, and `BACKLOG.md` with the Telegram-first local meetup positioning.
 - Added beta guardrails that block ticketing, payments, club CRM, AI recommendations, dating, broad social feed, complex profiles, and multi-city expansion before the Olomouc loop is stable.
 - Clarified the canonical beta categories: Volleyball, Running, Walking, Coffee meetup, Board games, and Language exchange.
+- Cleaned up create-event activity options: moved Swimming to Nature, removed Inline skating and Hiking from Sport, renamed `PIVO` to `Пиво после работы`, replaced generic Bar with Pub quiz, and added GO IRL-aligned options such as Park walk, Table tennis, and Dancing.
 - Clarified that Coach means sport-only in MVP 1.1.
 - Clarified that guides, tutors, language buddies, game masters, hosts, referees, and paid role marketplace work belong to future Event Roles phases.
 - Clarified that generic Coach/Role placement near Activity Chat is a temporary trust-layer bridge, not a universal Coach model.
@@ -28,8 +30,12 @@ All notable confirmed changes to GO IRL are tracked here.
 - Sport coach badges now refresh after Coach request create/cancel without requiring a full page reload.
 - Demo organizer coach requests now become `confirmed`; participant interest requests remain `pending`.
 - Browser without Telegram `initData` now uses `Vit_Test` / `telegram:999999` and keeps store, Coach, and Activity Chat writes local-only.
+- Generic event details now show the trust-layer panel before Activity Chat without duplicating Coach in sport details.
 - Updated roadmap priority to validate Sport Coach through show-up rate and beginner comfort before universal role expansion.
 - Sport cards now show event start time consistently instead of sport duration.
+- Weather event time lookup now uses the shared `formatEventTime` helper before requesting Open-Meteo hourly data.
+- Share text time ranges now use the shared `formatEventTime` helper instead of raw event time values.
+- Bug report opens a dedicated Telegram support start link using the configured bot username instead of a hard-coded plain bot URL.
 - Static beta/dev marker and debug panel were removed from `index.html`.
 - `BETA_CHECKLIST.md` now matches the current local demo-write behavior.
 
@@ -43,15 +49,16 @@ Latest code quality gates:
 - Coach request cancellation patch: GitHub Actions CI PASS
 - Event Helper icon patch: GitHub Actions CI PASS
 - Coach badge refresh patch: GitHub Actions CI PASS
-- `pnpm run test`: PASS in CI
-- `pnpm run lint`: PASS in CI
-- `pnpm run build`: PASS in CI
+- `pnpm run test`: PASS in CI before the newest stabilization commits
+- `pnpm run lint`: PASS in CI before the newest stabilization commits
+- `pnpm run build`: PASS in CI before the newest stabilization commits
 
 Latest local quality gates are still required before a beta-ready claim:
 
-- `pnpm run lint`: pending locally
-- `pnpm run build`: pending locally
-- `pnpm run test`: pending locally
+- `pnpm run lint`: pending locally after latest commits
+- `pnpm run build`: pending locally after latest commits
+- `pnpm run test`: pending locally after latest commits
+- Vercel deployment check: blocked by `upgradeToPro=build-rate-limit` quota state, not treated as a code regression without build logs
 
 Do not claim beta-ready until local quality gates and real Telegram/Supabase smoke checks pass on the latest `main`.
 
