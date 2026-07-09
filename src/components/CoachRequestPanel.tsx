@@ -9,11 +9,22 @@ import {
 import type { Activity, CoachRequest, UserRole } from "../types";
 
 type CoachRequestPanelVariant = "coach" | "event_helper";
+type CoachRequestsChangedDetail = { activityId: string };
 
 type CoachRequestPanelProps = {
   activity: Activity;
   userRole: UserRole;
   variant?: CoachRequestPanelVariant;
+};
+
+const coachRequestsChangedEvent = "go-irl-coach-requests-changed";
+
+const notifyCoachRequestsChanged = (activityId: string) => {
+  if (typeof window === "undefined") return;
+
+  window.dispatchEvent(new CustomEvent<CoachRequestsChangedDetail>(coachRequestsChangedEvent, {
+    detail: { activityId },
+  }));
 };
 
 const copyByVariant = {
@@ -132,6 +143,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
       );
 
       await reload();
+      notifyCoachRequestsChanged(activity.id);
       setMessage(canManage ? copy.submitSuccess : copy.participantSuccess);
     } catch {
       setMessage(copy.submitError);
@@ -149,6 +161,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
     try {
       await cancelCoachRequest(activeRequest.id);
       await reload();
+      notifyCoachRequestsChanged(activeRequest.activityId);
       setMessage(canManage ? copy.cancelSuccess : copy.participantCancelSuccess);
     } catch {
       setMessage(copy.cancelError);
