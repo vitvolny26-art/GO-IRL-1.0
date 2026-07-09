@@ -9,7 +9,7 @@ All notable confirmed changes to GO IRL are tracked here.
 - Added `docs/MARKET_POSITIONING.md` as the market positioning source of truth for GO IRL beta.
 - Added `docs/COMPETITOR_WATCH.md` to track competitor signals and product mechanics worth borrowing.
 - Added `docs/SPORT_COACH_MVP.md` with scope, UX guardrails, beta metrics, roadmap, and Event Roles boundaries.
-- Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept, current implementation status, generic bridge guardrails, event-helper copy rule, confirmed-only badge rule, and request cancellation rule.
+- Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept, current implementation status, generic bridge guardrails, event-helper copy rule, confirmed-only badge rule, request cancellation rule, helper icon rule, and badge refresh behavior.
 - Added Browser Mock Mode reports and beta checklist coverage for non-Telegram browser testing.
 - Added MVP documentation audit and missing sections registry.
 
@@ -24,6 +24,8 @@ All notable confirmed changes to GO IRL are tracked here.
 - Changed generic non-sport event trust-layer copy from Coach language to Event Helper language: `Помощник события`, `Нужен помощник`, `Хочу помощника`, `Помощник запрошен`.
 - Sport cards now show `Есть тренер` only when there is a confirmed organizer coach request.
 - Coach and Event Helper requests can now be cancelled from the same panel where they were created.
+- Event Helper panels now use a neutral helper icon instead of sport/dumbbell visual language.
+- Sport coach badges now refresh after Coach request create/cancel without requiring a full page reload.
 - Demo organizer coach requests now become `confirmed`; participant interest requests remain `pending`.
 - Browser without Telegram `initData` now uses `Vit_Test` / `telegram:999999` and keeps store, Coach, and Activity Chat writes local-only.
 - Updated roadmap priority to validate Sport Coach through show-up rate and beginner comfort before universal role expansion.
@@ -39,6 +41,8 @@ Latest code quality gates:
 - Confirmed coach badge patch: GitHub Actions CI PASS
 - Browser demo safe-writes patch: GitHub Actions CI PASS
 - Coach request cancellation patch: GitHub Actions CI PASS
+- Event Helper icon patch: GitHub Actions CI PASS
+- Coach badge refresh patch: GitHub Actions CI PASS
 - `pnpm run test`: PASS in CI
 - `pnpm run lint`: PASS in CI
 - `pnpm run build`: PASS in CI
