@@ -24,8 +24,8 @@ All notable confirmed changes to GO IRL are tracked here.
 - Changed generic non-sport event trust-layer copy from Coach language to Event Helper language: `Помощник события`, `Нужен помощник`, `Хочу помощника`, `Помощник запрошен`.
 - Sport cards now show `Есть тренер` only when there is a confirmed organizer coach request.
 - Demo organizer coach requests now become `confirmed`; participant interest requests remain `pending`.
+- Browser without Telegram `initData` now uses `Vit_Test` / `telegram:999999` and keeps store, Coach, and Activity Chat writes local-only.
 - Updated roadmap priority to validate Sport Coach through show-up rate and beginner comfort before universal role expansion.
-- Browser without Telegram `initData` now uses local demo state instead of production Supabase write paths.
 - Sport cards now show event start time consistently instead of sport duration.
 - Static beta/dev marker and debug panel were removed from `index.html`.
 - `BETA_CHECKLIST.md` now matches the current local demo-write behavior.
@@ -36,6 +36,7 @@ Latest code quality gates:
 
 - Event-helper copy patch: GitHub Actions CI PASS
 - Confirmed coach badge patch: GitHub Actions CI PASS
+- Browser demo safe-writes patch: GitHub Actions CI PASS
 - `pnpm run test`: PASS in CI
 - `pnpm run lint`: PASS in CI
 - `pnpm run build`: PASS in CI
