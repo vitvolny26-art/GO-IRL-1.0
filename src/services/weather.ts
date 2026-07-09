@@ -34,6 +34,14 @@ const toIsoHour = (date: string, time: string) => {
   return `${date}T${normalizedTime}`;
 };
 
+const addMinutesToIsoHour = (date: string, time: string, minutes: number) => {
+  const normalizedTime = formatEventTime(time) || "12:00";
+  const next = new Date(`${date}T${normalizedTime}:00`);
+  next.setMinutes(next.getMinutes() + minutes);
+  next.setMinutes(0, 0, 0);
+  return next.getTime();
+};
+
 const weatherHourFromData = (data: any, times: string[], index: number): WeatherHour | null => {
   const time = times[index];
   if (!time) return null;
@@ -49,15 +57,18 @@ const weatherHourFromData = (data: any, times: string[], index: number): Weather
   };
 };
 
-const detailHoursAround = (data: any, times: string[], targetIndex: number) => {
-  const start = Math.max(targetIndex - 2, 0);
-  const end = Math.min(targetIndex + 2, times.length - 1);
+const detailHoursForEventWindow = (data: any, times: string[], input: { date: string; time: string; durationMinutes?: number }) => {
+  const startMs = addMinutesToIsoHour(input.date, input.time, 0);
+  const endMs = addMinutesToIsoHour(input.date, input.time, (input.durationMinutes || 90) + 120);
   const hours: WeatherHour[] = [];
 
-  for (let index = start; index <= end; index += 1) {
+  times.forEach((time, index) => {
+    const currentMs = new Date(time).getTime();
+    if (currentMs < startMs || currentMs > endMs) return;
+
     const hour = weatherHourFromData(data, times, index);
     if (hour) hours.push(hour);
-  }
+  });
 
   return hours;
 };
@@ -90,11 +101,12 @@ export async function getEventWeather(input: {
   time: string;
   address?: string;
   city: string;
+  durationMinutes?: number;
 }): Promise<WeatherResult | null> {
   const offset = daysFromNow(input.date);
   if (offset < 0 || offset > 7) return null;
 
-  const cacheKey = `${input.date}|${input.time}|${input.address || ""}|${input.city}`;
+  const cacheKey = `${input.date}|${input.time}|${input.durationMinutes || 90}|${input.address || ""}|${input.city}`;
   if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey)!;
 
   const promise = (async () => {
@@ -134,7 +146,7 @@ export async function getEventWeather(input: {
 
     if (Number.isNaN(temp)) return null;
 
-    const hours = detailHoursAround(data, times, index);
+    const hours = detailHoursForEventWindow(data, times, input);
 
     return {
       text: `${codeIcon(code)} ${temp}°C · ☔ ${rain ?? 0}% · 💨 ${wind || 0} km/h`,
