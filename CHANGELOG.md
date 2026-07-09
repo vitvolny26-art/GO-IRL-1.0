@@ -9,7 +9,7 @@ All notable confirmed changes to GO IRL are tracked here.
 - Added `docs/MARKET_POSITIONING.md` as the market positioning source of truth for GO IRL beta.
 - Added `docs/COMPETITOR_WATCH.md` to track competitor signals and product mechanics worth borrowing.
 - Added `docs/SPORT_COACH_MVP.md` with scope, UX guardrails, beta metrics, roadmap, and Event Roles boundaries.
-- Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept and generic bridge guardrails.
+- Added `docs/COACH_CHAT_TRUST_LAYER.md` to document the Coach/Role + Activity Chat trust-layer concept, current implementation status, generic bridge guardrails, and event-helper copy rule.
 - Added Browser Mock Mode reports and beta checklist coverage for non-Telegram browser testing.
 - Added MVP documentation audit and missing sections registry.
 
@@ -21,6 +21,7 @@ All notable confirmed changes to GO IRL are tracked here.
 - Clarified that Coach means sport-only in MVP 1.1.
 - Clarified that guides, tutors, language buddies, game masters, hosts, referees, and paid role marketplace work belong to future Event Roles phases.
 - Clarified that generic Coach/Role placement near Activity Chat is a temporary trust-layer bridge, not a universal Coach model.
+- Changed generic non-sport event trust-layer copy from Coach language to Event Helper language: `Помощник события`, `Нужен помощник`, `Хочу помощника`, `Помощник запрошен`.
 - Updated roadmap priority to validate Sport Coach through show-up rate and beginner comfort before universal role expansion.
 - Browser without Telegram `initData` now uses local demo state instead of production Supabase write paths.
 - Sport cards now show event start time consistently instead of sport duration.
@@ -29,13 +30,20 @@ All notable confirmed changes to GO IRL are tracked here.
 
 ### Verification
 
-Latest local quality gates are **pending after the newest commits**:
+Latest code quality gate for the event-helper copy patch:
 
-- `pnpm run lint`: pending
-- `pnpm run build`: pending
-- `pnpm run test`: pending
+- GitHub Actions CI: PASS
+- `pnpm run test`: PASS
+- `pnpm run lint`: PASS
+- `pnpm run build`: PASS
 
-Do not claim beta-ready until these pass on the latest `main`.
+Latest local quality gates are still required before a beta-ready claim:
+
+- `pnpm run lint`: pending locally
+- `pnpm run build`: pending locally
+- `pnpm run test`: pending locally
+
+Do not claim beta-ready until local quality gates and real Telegram/Supabase smoke checks pass on the latest `main`.
 
 ## 0.1.0 - 2026-07-03
 
