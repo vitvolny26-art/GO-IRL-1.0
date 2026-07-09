@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
+import "./weather-ui-fixes.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
