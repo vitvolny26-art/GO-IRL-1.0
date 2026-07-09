@@ -1,11 +1,15 @@
 import { cities } from "../config/cities";
+import { formatEventTime } from "../eventTime";
 import { localeByLanguage } from "../i18n";
 import type { Activity, Language } from "../types";
 import { activityKindTerms } from "./templates/activity";
 import type { ActivityShareKind, ShareBuildOptions, ShareLanguageMap, ShareModel } from "./types";
 
 const addMinutes = (time: string, minutes: number) => {
-  const [hours, mins] = time.split(":").map(Number);
+  const normalizedTime = formatEventTime(time);
+  if (!normalizedTime) return "";
+
+  const [hours, mins] = normalizedTime.split(":").map(Number);
   if (!Number.isFinite(hours) || !Number.isFinite(mins)) return "";
   const date = new Date(2026, 0, 1, hours, mins);
   date.setMinutes(date.getMinutes() + minutes);
@@ -27,8 +31,11 @@ const weekdayLabel = (activity: Activity, language: Language) => {
 };
 
 const timeRangeLabel = (activity: Activity) => {
-  const end = addMinutes(activity.time, activityDuration(activity));
-  return end ? `${activity.time}–${end}` : activity.time;
+  const start = formatEventTime(activity.time);
+  if (!start) return "";
+
+  const end = addMinutes(start, activityDuration(activity));
+  return end ? `${start}–${end}` : start;
 };
 
 const activityName = (activity: Activity, language: Language) =>
