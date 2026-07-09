@@ -5,6 +5,8 @@ import type { UserRole } from "./types";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const configuredDemoAuthEnabled = import.meta.env.DEV || import.meta.env.VITE_GO_IRL_LEGACY_DEMO_AUTH === "true";
+const browserMockTelegramId = 999999;
+const browserMockDisplayName = "Vit_Test";
 const isBrowserMockAuthEnabled = () => typeof window !== "undefined" && !getTelegramInitData();
 const isDemoAuthEnabled = () => configuredDemoAuthEnabled || isBrowserMockAuthEnabled();
 const sessionStorageKey = "go-irl-trusted-session-v2";
@@ -55,7 +57,7 @@ function resolveLegacyDemoIdentity() {
   if (!isDemoAuthEnabled()) return null;
   if (!legacyIdentity) {
     legacyIdentity = resolveDemoIdentity({
-      telegramId: getTelegramWebApp()?.initDataUnsafe?.user?.id || (isBrowserMockAuthEnabled() ? 999999 : undefined),
+      telegramId: getTelegramWebApp()?.initDataUnsafe?.user?.id || (isBrowserMockAuthEnabled() ? browserMockTelegramId : undefined),
       storage: localStorage,
       randomUUID: () => crypto.randomUUID(),
     });
@@ -160,7 +162,9 @@ export function getCurrentDisplayName(fallback: string) {
     return [trustedUser.firstName, trustedUser.lastName].filter(Boolean).join(" ") || fallback;
   }
 
-  const telegramUser = legacyDemoAuthEnabled ? getTelegramWebApp()?.initDataUnsafe?.user : null;
+  if (isBrowserMockAuthEnabled()) return browserMockDisplayName;
+
+  const telegramUser = isDemoAuthEnabled() ? getTelegramWebApp()?.initDataUnsafe?.user : null;
   return [telegramUser?.first_name, telegramUser?.last_name].filter(Boolean).join(" ") || fallback;
 }
 
@@ -170,4 +174,8 @@ export function getAuthError() {
 
 export function isLegacyDemoAuthEnabled() {
   return isDemoAuthEnabled();
+}
+
+export function isBrowserMockMode() {
+  return isBrowserMockAuthEnabled() && !isTrustedAuthReady();
 }
