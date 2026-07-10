@@ -49,7 +49,7 @@
   top: 74px !important;
   right: 14px !important;
   display: grid !important;
-  grid-template-columns: 72px !important;
+  grid-template-columns: 78px !important;
   gap: 8px !important;
   margin: 0 !important;
   z-index: 3 !important;
@@ -62,19 +62,11 @@
 .sport-card .sport-card-participants-chip,
 .sport-card .sport-card-chip:last-child {
   min-height: 46px !important;
-  width: 72px !important;
+  width: 78px !important;
   padding: 6px 8px !important;
   border-radius: 16px !important;
   justify-content: center !important;
   font-size: 15px !important;
-}
-
-.sport-card .sport-card-chip:last-child span {
-  font-size: 0 !important;
-}
-
-.sport-card .sport-card-chip:last-child span::before {
-  content: attr(data-duration-label);
 }
 
 .sport-card .sport-card-chip:last-child svg {
