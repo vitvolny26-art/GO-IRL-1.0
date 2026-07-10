@@ -13,7 +13,7 @@ next_review: 2026-07-17
 
 The GO IRL Bible is **partly completed for MVP 1.0 / MVP 1.1 beta boundaries**, but it is **not final**.
 
-Foundation and Platform Architecture are now materially stronger. The Bible still has missing database, UX, modules, product requirements, governance, and operations chapters.
+Foundation, Platform Architecture, and Database/Supabase Boundaries are now materially stronger. The Bible still has missing UX, modules, product requirements, governance, and operations chapters.
 
 Do not rewrite from scratch. Preserve, classify, reconcile, and complete only missing parts.
 
@@ -30,6 +30,7 @@ GO IRL Bible
 │   ├── 02-core-principles.md
 │   └── 03-mvp-scope-and-market-positioning.md
 ├── docs/bible/02-platform-architecture.md
+├── docs/bible/03-database-and-supabase-boundaries.md
 ├── docs/bible/04-modules-mvp-audit.md
 ├── docs/bible/05-product-requirements-mvp-split.md
 ├── docs/bible/07-beta-readiness-and-operations.md
@@ -47,7 +48,7 @@ docs/bible/05-product-requirements.md
 docs/bible/06-ux-interaction-guidelines.md
 ```
 
-Preferred current-scope replacement for the database chapter:
+`03-database-design.md` is replaced for current Bible 1.0 by:
 
 ```text
 docs/bible/03-database-and-supabase-boundaries.md
@@ -65,7 +66,7 @@ docs/bible/03-database-and-supabase-boundaries.md
 | Book I — Core principles | `01-foundation/02-core-principles.md` | Active | Defines the core product and technical guardrails. |
 | Book I — MVP scope and market positioning | `01-foundation/03-mvp-scope-and-market-positioning.md` | Active | Current MVP boundary for Olomouc beta and market guardrails. |
 | Book II — Platform Architecture | `02-platform-architecture.md` | Active | Current React/Supabase/Telegram Mini App architecture and beta stabilization boundaries. |
-| Book III — Database Design | Missing | Critical gap | Needs current Supabase/schema/RLS boundary chapter, not future-only DB vision. |
+| Book III — Database and Supabase Boundaries | `03-database-and-supabase-boundaries.md` | Active | Current Supabase/schema/RLS/auth/demo safety boundary. |
 | Book IV — Modules MVP Audit | `04-modules-mvp-audit.md` | Active | Current six-category beta module boundary. |
 | Book IV — Modules Architecture | Missing | High gap | Needs current module/vertical architecture with Sport reference and Generic fallback. |
 | Book V — PRD MVP Split | `05-product-requirements-mvp-split.md` | Active | Classifies MVP 1.0, MVP 1.1, future, blocked-before-beta. |
@@ -82,21 +83,20 @@ docs/bible/03-database-and-supabase-boundaries.md
 | Product philosophy | 85% |
 | MVP market boundary | 90% |
 | Platform architecture | 80% |
-| Database / Supabase boundary | 25% |
+| Database / Supabase boundary | 80% |
 | Modules / verticals | 55% |
 | Product requirements | 60% |
 | UX / interaction | 20% |
 | Beta operations | 75% |
 | Runtime boundaries | 80% |
 | Governance / AI organization link | 40% |
-| Overall Bible 1.0 | 60% |
+| Overall Bible 1.0 | 65% |
 
 ## Current priorities
 
 ### Critical
 
-1. Create `docs/bible/03-database-and-supabase-boundaries.md`.
-2. Create `docs/bible/06-ux-interaction-guidelines.md`.
+1. Create `docs/bible/06-ux-interaction-guidelines.md`.
 
 ### High
 
