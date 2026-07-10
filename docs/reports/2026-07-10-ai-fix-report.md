@@ -156,3 +156,42 @@ Medium-low. CSS-only and scoped to `.compact-sport-card`.
 
 ## Follow-up
 Run quality gates and visually verify the compact sport card on mobile after Vercel deploy.
+
+---
+
+## Summary
+Fixed compact sport card share icon position and footer split.
+
+## Root cause
+The top action buttons were still too low, the CSS-drawn share icon looked broken, and footer action styles were affected by existing button rules, causing the two actions to stack visually instead of reading as a clean row.
+
+## Files changed
+- `src/compact-sport-card.css`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Moved bell/share action buttons higher.
+- Replaced the broken drawn share icon with a simpler curved arrow glyph.
+- Raised and reduced duration/participants chips further.
+- Forced footer actions into a two-column single-row grid with explicit heights.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium-low. CSS-only and scoped to `.compact-sport-card`.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and verify the compact sport card footer on mobile after Vercel deploy.
