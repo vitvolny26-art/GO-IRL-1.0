@@ -25,6 +25,20 @@
   padding: 0 !important;
 }
 
+.compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2) svg {
+  display: none !important;
+}
+
+.compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2)::before {
+  content: "↪" !important;
+  display: block !important;
+  color: var(--lime) !important;
+  font-size: 28px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  transform: translateY(-1px) rotate(-12deg) !important;
+}
+
 .compact-sport-card .sport-reminder-placeholder {
   position: absolute !important;
   top: 60px !important;
@@ -108,25 +122,34 @@
 }
 
 .compact-sport-card .sport-chip-row {
-  display: flex !important;
+  position: absolute !important;
+  top: 88px !important;
+  right: 16px !important;
+  z-index: 5 !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
   gap: 8px !important;
-  margin: 10px 0 0 98px !important;
-  position: static !important;
-  right: auto !important;
-  top: auto !important;
-  z-index: auto !important;
+  margin: 0 !important;
 }
 
 .compact-sport-card .sport-card-chip:first-child {
   display: none !important;
 }
 
+.compact-sport-card .sport-duration-chip {
+  order: 1 !important;
+}
+
+.compact-sport-card .sport-card-participants-chip {
+  order: 2 !important;
+}
+
 .compact-sport-card .sport-card-participants-chip,
 .compact-sport-card .sport-duration-chip {
   min-height: 40px !important;
-  width: auto !important;
-  min-width: 88px !important;
-  padding: 6px 12px !important;
+  width: 96px !important;
+  min-width: 96px !important;
+  padding: 6px 10px !important;
   border-radius: 16px !important;
   justify-content: center !important;
   font-size: 15px !important;
@@ -152,8 +175,43 @@
   padding: 8px 10px !important;
 }
 
+.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) {
+  display: grid !important;
+  grid-template-columns: 24px minmax(0, 1fr) !important;
+  grid-template-rows: 1fr 1fr !important;
+  row-gap: 6px !important;
+}
+
+.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) svg {
+  grid-row: 1 !important;
+}
+
+.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4)::after {
+  content: "☆" !important;
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  color: var(--lime) !important;
+  font-size: 25px !important;
+  line-height: 1 !important;
+}
+
+.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span {
+  grid-column: 2 !important;
+  grid-row: 1 / span 2 !important;
+  white-space: pre-line !important;
+  line-height: 1.35 !important;
+}
+
 .compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span::before {
-  content: "" !important;
+  content: "Новичок\A На улице" !important;
+}
+
+.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span {
+  font-size: 0 !important;
+}
+
+.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span::before {
+  font-size: 15px !important;
 }
 
 .compact-sport-card .compact-sport-actions {
@@ -214,12 +272,14 @@
   }
 
   .compact-sport-card .sport-chip-row {
-    margin-left: 94px !important;
+    top: 86px !important;
+    right: 14px !important;
   }
 
   .compact-sport-card .sport-card-participants-chip,
   .compact-sport-card .sport-duration-chip {
-    min-width: 82px !important;
+    min-width: 86px !important;
+    width: 86px !important;
     font-size: 14px !important;
   }
 }
