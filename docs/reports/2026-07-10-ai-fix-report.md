@@ -237,3 +237,42 @@ Medium. CSS-only, but adds one new loaded stylesheet to avoid rewriting the accu
 
 ## Follow-up
 Run quality gates and visually verify the compact sport card on mobile after Vercel deploy.
+
+---
+
+## Summary
+Tightened final compact sport card rows.
+
+## Root cause
+The final card layout was visually correct, but the info blocks and footer buttons were still too tall and sitting slightly too low inside the card.
+
+## Files changed
+- `src/compact-sport-card-final.css`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Reduced info block min-height and padding.
+- Reduced footer button height.
+- Tightened icon and text sizing inside info blocks.
+- Moved the rows visually higher with smaller margins.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Low. CSS-only and scoped to `.compact-sport-card`.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and visually verify the compact sport card on mobile after Vercel deploy.
