@@ -55,7 +55,7 @@ const openMessengerShare = (target: string, title: string) => {
 
   if (target === "telegram") openExternal(`https://t.me/share/url?url=${url}&text=${encodeURIComponent(title)}`);
   if (target === "whatsapp") openExternal(`https://wa.me/?text=${text}`);
-  if (target === "messenger") openExternal(`https://www.facebook.com/dialog/send?link=${url}&app_id=291494419107518&redirect_uri=${url}`);
+  if (target === "messenger") openExternal(`fb-messenger://share?link=${url}`);
   if (target === "viber") openExternal(`viber://forward?text=${text}`);
 };
 
@@ -101,12 +101,29 @@ const openMembers = (card: HTMLElement) => {
   }, 160);
 };
 
+const sportAvatar = (text: string) => {
+  const value = text.toLowerCase();
+  if (/volley|волей|volej/.test(value)) return "🏐";
+  if (/football|футбол|fotbal/.test(value)) return "⚽";
+  if (/basket|баскет/.test(value)) return "🏀";
+  if (/tennis|теннис|tenis/.test(value)) return "🎾";
+  if (/running|run|бег|běh/.test(value)) return "🏃";
+  if (/bike|cycle|velo|велосипед|kolo/.test(value)) return "🚴";
+  if (/swim|плав|plav/.test(value)) return "🏊";
+  if (/badminton|бадминтон/.test(value)) return "🏸";
+  if (/gym|зал|posil/.test(value)) return "🏋️";
+  if (/yoga|йога|jóga/.test(value)) return "🧘";
+  return "🏆";
+};
+
 const normalizeSportLogo = (root: ParentNode = document) => {
-  root.querySelectorAll<HTMLElement>(".sport-card-symbol").forEach((symbol) => {
-    const text = symbol.textContent?.trim() || "";
-    if (!text || isEmojiLike(text)) return;
-    symbol.textContent = "🏆";
-    symbol.dataset.normalized = "true";
+  root.querySelectorAll<HTMLElement>(".sport-card, .sport-sheet").forEach((container) => {
+    const text = container.textContent || "";
+    const avatar = sportAvatar(text);
+    container.querySelectorAll<HTMLElement>(".sport-card-symbol").forEach((symbol) => {
+      symbol.textContent = avatar;
+      symbol.dataset.normalized = "true";
+    });
   });
 };
 
