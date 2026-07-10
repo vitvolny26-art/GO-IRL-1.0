@@ -317,3 +317,43 @@ Medium-low. CSS-only and scoped to activity-stack generic cards; no data or busi
 
 ## Follow-up
 Run quality gates and visually verify Board games / Walking cards on All Events.
+
+---
+
+## Summary
+Applied compact sport DOM template to generic event cards at runtime.
+
+## Root cause
+The CSS-only rollout could not make generic cards identical because generic cards and sport cards had different DOM structure. Generic cards lacked top actions, right-side chips, and the same footer structure.
+
+## Files changed
+- `src/unified-card-template.ts`
+- `src/main.tsx`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Added a runtime card normalizer for generic `.activity-card` elements.
+- Converts generic card DOM into the same compact structure used by sport cards.
+- Adds top actions, right-side duration/participants chips, compact details grid, and two-action footer.
+- Leaves existing join/open handlers intact by reusing original buttons and main click handler.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium. UI-only runtime adapter; no data or backend changes, but it mutates rendered DOM to avoid a large App.tsx rewrite.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and visually verify Walking / Board games cards match Volleyball.
