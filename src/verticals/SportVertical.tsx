@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Dumbbell, Bug, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { Bell, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Dumbbell, Bug, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
@@ -15,6 +15,13 @@ import { hasConfirmedCoachForActivity } from "../coachFeature";
 type CoachRequestsChangedDetail = { activityId?: string };
 
 const coachRequestsChangedEvent = "go-irl-coach-requests-changed";
+const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
+const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
+
+const activityInviteUrl = (activity: Activity) => {
+  const path = telegramAppName ? `/${telegramAppName}` : "";
+  return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
+};
 
 const cleanSportLabel = (value: string | null | undefined) => {
   const raw = String(value || "").trim();
@@ -135,17 +142,27 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   const { joinedIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const meta = getSportMetadata(activity);
-  const free = Math.max(activity.capacity - activity.participants, 0);
   const joined = joinedIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
-  const action = isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
+  const action = pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [hasConfirmedCoach, setHasConfirmedCoach] = useState(false);
   const avatar = sportAvatarForActivity(activity, language, meta);
 
   const joinedMembers = activity.members.filter(m => m.status === "joined");
+  const shareTitle = cleanSportLabel(activity.activity[language]);
+
+  const handleShare = async () => {
+    const url = activityInviteUrl(activity);
+    const text = `${shareTitle}\n${url}`;
+    if (navigator.share) {
+      await navigator.share({ title: shareTitle, text, url });
+      return;
+    }
+    await navigator.clipboard?.writeText(text);
+  };
 
   useEffect(() => {
     let active = true;
@@ -178,18 +195,20 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   }, [activity.id]);
 
   return (
-    <article className="sport-card">
+    <article className="sport-card compact-sport-card">
+      <div className="sport-card-top-actions">
+        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" onClick={(event) => event.stopPropagation()}><Bell size={20} /></button>
+        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); void handleShare(); }}><Share2 size={20} /></button>
+      </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
-        <div className="sport-card-symbol">{avatar}</div>
+        <div className="sport-card-symbol"><span className="sport-avatar-glyph">{avatar}</span></div>
         <div>
           <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
-          <h3>{cleanSportLabel(activity.activity[language])}</h3>
+          <h3>{shareTitle}</h3>
           <p>{activity.title[language]}</p>
         </div>
-        <ChevronRight className="card-arrow" size={18} />
       </button>
       <div className="sport-chip-row">
-        <span className="sport-card-chip"><Dumbbell size={16} aria-hidden="true" /><span>{cleanSportLabel(meta.sportType || activity.activity[language])}</span></span>
         {hasConfirmedCoach ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>Есть тренер</span></span> : null}
         <button
           className="sport-card-participants-chip"
@@ -205,7 +224,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           <UsersRound size={16} aria-hidden="true" />
           <span>{activity.participants} / {activity.capacity}</span>
         </button>
-        <span className="sport-card-chip"><CalendarPlus size={16} aria-hidden="true" /><span>{meta.durationMinutes || 90} {t.minutesShort}</span></span>
+        <span className="sport-card-chip sport-duration-chip"><CalendarPlus size={16} aria-hidden="true" /><span>{meta.durationMinutes || 90} {t.minutesShort}</span></span>
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -231,11 +250,10 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         <div><MapPin /><span>{activity.address}</span></div>
         <div><CalendarDays /><span>{compactDateLabel(activity.date, language)}{formatEventTime(activity.time) ? " · " + formatEventTime(activity.time) : ""}</span></div>
         <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <div><ShieldCheck /><span>{sportFormatLabel(meta.format, language)}</span></div>
+        <div><ShieldCheck /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
       </div>
-      <div className="activity-card-footer">
-        <span className={free <= 1 ? "spots urgent" : "spots"}><UsersRound />{free > 0 ? `${free} ${t.left}` : t.full}</span>
-        <span className="card-status">{t.sportSkillMatch}</span>
+      <div className="activity-card-footer compact-sport-actions">
+        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />Тренер</button>
         <button className={joined || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{action}</button>
       </div>
     </article>
@@ -332,7 +350,7 @@ export function SportActivitySheet({
         {loading && <SportDetailsSkeleton />}
         {error && <div className="details-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
         <div className="sport-sheet-hero">
-          <div className="sport-card-symbol large">{avatar}</div>
+          <div className="sport-card-symbol large"><span className="sport-avatar-glyph">{avatar}</span></div>
           <div>
             <div className="sport-eyebrow">{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</div>
             <h2>{activity.title[language]}</h2>
