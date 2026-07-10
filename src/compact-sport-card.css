@@ -6,9 +6,9 @@
 
 .compact-sport-card .sport-card-top-actions {
   position: absolute !important;
-  top: 16px !important;
+  top: 8px !important;
   right: 16px !important;
-  z-index: 6 !important;
+  z-index: 8 !important;
   display: flex !important;
   gap: 8px !important;
 }
@@ -31,33 +31,23 @@
 }
 
 .compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2)::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 8px !important;
-  top: 14px !important;
-  width: 18px !important;
-  height: 12px !important;
-  border-top: 3px solid currentColor !important;
-  border-right: 3px solid currentColor !important;
-  border-radius: 0 12px 0 0 !important;
-  transform: rotate(-22deg) !important;
+  content: "⤴" !important;
+  display: block !important;
+  color: var(--lime) !important;
+  font-size: 29px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  transform: translate(1px, -2px) !important;
 }
 
 .compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2)::after {
-  content: "" !important;
-  position: absolute !important;
-  right: 8px !important;
-  top: 9px !important;
-  width: 10px !important;
-  height: 10px !important;
-  border-top: 3px solid currentColor !important;
-  border-right: 3px solid currentColor !important;
-  transform: rotate(45deg) !important;
+  content: none !important;
+  display: none !important;
 }
 
 .compact-sport-card .sport-reminder-placeholder {
   position: absolute !important;
-  top: 60px !important;
+  top: 54px !important;
   right: 16px !important;
   z-index: 25 !important;
   width: min(260px, calc(100% - 32px)) !important;
@@ -137,7 +127,7 @@
 
 .compact-sport-card .sport-chip-row {
   position: absolute !important;
-  top: 50px !important;
+  top: 44px !important;
   right: 16px !important;
   z-index: 5 !important;
   display: grid !important;
@@ -160,22 +150,22 @@
 
 .compact-sport-card .sport-card-participants-chip,
 .compact-sport-card .sport-duration-chip {
-  min-height: 32px !important;
-  width: 86px !important;
-  min-width: 86px !important;
+  min-height: 31px !important;
+  width: 84px !important;
+  min-width: 84px !important;
   padding: 4px 8px !important;
   border-radius: 14px !important;
   justify-content: center !important;
-  gap: 6px !important;
-  font-size: 13px !important;
+  gap: 5px !important;
+  font-size: 12px !important;
   font-weight: 900 !important;
   line-height: 1.05 !important;
 }
 
 .compact-sport-card .sport-card-participants-chip svg,
 .compact-sport-card .sport-duration-chip svg {
-  width: 15px !important;
-  height: 15px !important;
+  width: 14px !important;
+  height: 14px !important;
 }
 
 .compact-sport-card .sport-duration-chip svg {
@@ -246,22 +236,29 @@
 .compact-sport-card .compact-sport-actions {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  grid-auto-flow: column !important;
   gap: 0 !important;
   margin-top: 10px !important;
-  min-height: 54px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  max-height: 56px !important;
   border-radius: 16px !important;
   overflow: hidden !important;
   background: rgba(201, 255, 61, .08) !important;
   border: 1px solid rgba(201, 255, 61, .26) !important;
 }
 
+.compact-sport-card .compact-sport-actions > * {
+  grid-row: 1 !important;
+}
+
 .compact-sport-card .sport-coach-action,
 .compact-sport-card .compact-sport-actions .card-join {
   width: 100% !important;
   min-width: 0 !important;
-  height: 54px !important;
-  min-height: 54px !important;
-  max-height: 54px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  max-height: 56px !important;
   border: 0 !important;
   border-radius: 0 !important;
   margin: 0 !important;
@@ -270,18 +267,20 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
-  font-size: 17px !important;
+  font-size: 16px !important;
   font-weight: 1000 !important;
   line-height: 1 !important;
   white-space: nowrap !important;
 }
 
 .compact-sport-card .sport-coach-action {
+  grid-column: 1 !important;
   background: rgba(201, 255, 61, .08) !important;
   color: var(--lime) !important;
 }
 
 .compact-sport-card .compact-sport-actions .card-join {
+  grid-column: 2 !important;
   background: var(--lime) !important;
   color: #0b0f14 !important;
   border-left: 1px solid rgba(0, 0, 0, .25) !important;
@@ -312,20 +311,25 @@
     font-size: 16px !important;
   }
 
+  .compact-sport-card .sport-card-top-actions {
+    top: 7px !important;
+    right: 14px !important;
+  }
+
   .compact-sport-card .sport-chip-row {
-    top: 48px !important;
+    top: 42px !important;
     right: 14px !important;
   }
 
   .compact-sport-card .sport-card-participants-chip,
   .compact-sport-card .sport-duration-chip {
-    min-width: 82px !important;
-    width: 82px !important;
+    min-width: 80px !important;
+    width: 80px !important;
     font-size: 12px !important;
   }
 
   .compact-sport-card .sport-coach-action,
   .compact-sport-card .compact-sport-actions .card-join {
-    font-size: 16px !important;
+    font-size: 15px !important;
   }
 }
