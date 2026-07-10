@@ -1,10 +1,10 @@
 # AI Fix Report — 2026-07-10
 
 ## Summary
-Unified event card visual template across sport and generic cards, then changed share/reminder actions into a compact vertical messenger flyout.
+Unified event card visual template across sport and generic cards, then changed share/reminder actions into a compact vertical messenger flyout with real app logo assets.
 
 ## Root cause
-Sport cards and generic cards used different DOM structure and different action behavior. The previous sheet showed labels and a close button, and appeared as a large bottom modal. The requested UX is a small vertical icon list near the tapped action button, with no text and no explicit close button.
+Sport cards and generic cards used different DOM structure and different action behavior. The previous flyout used hand-drawn SVG approximations for messenger logos. The requested UX requires recognizable app icons without invented custom shapes.
 
 ## Files changed
 - `src/verticals/SportVertical.tsx`
@@ -22,12 +22,13 @@ Sport cards and generic cards used different DOM structure and different action 
 - Added compact sport-card visual template.
 - Added a runtime adapter to normalize generic cards into the compact sport-card DOM template.
 - Wired generic reminder/share/duration/participants/date/address controls.
-- Added shared action-sheet helpers for card reminder/share flows.
+- Added shared action helpers for card reminder/share flows.
 - Standardized reminder/share actions to exactly four messenger options: Telegram, WhatsApp, Messenger, Viber.
 - Replaced the large bottom sheet with a small fixed-position vertical flyout.
 - Removed title text, subtitles, labels and the `Закрыть` button from the flyout UI.
 - Anchored the flyout to the tapped card action button.
 - Added toggle behavior: tapping the same button closes the current flyout.
+- Replaced custom messenger SVG drawings with Simple Icons CDN app logo assets.
 
 ## Button dependency map
 
@@ -52,7 +53,7 @@ pnpm run test   PENDING
 ```
 
 ## Risks
-Medium. The generic card unification still uses a runtime DOM adapter to avoid a large `App.tsx` rewrite. The flyout positioning is UI-only and should be checked on narrow mobile screens.
+Medium. The flyout now loads four external app logo SVGs from Simple Icons CDN. This avoids a new npm dependency but requires network access for the logos.
 
 ## Not touched
 - Supabase schema/RLS/auth
