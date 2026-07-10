@@ -6,14 +6,9 @@ import "./mobile-card-fixes.css";
 import "./coach-panel.css";
 import "./weather-ui-fixes.css";
 import "./generic-sheet-fixes.css";
-import { enableCardActionsEnhancer } from "./card-actions-enhancer";
-import { enableBottomNavSwipe } from "./bottom-nav-swipe";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
-
-enableCardActionsEnhancer();
-enableBottomNavSwipe();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
