@@ -1,0 +1,44 @@
+.unified-event-card .activity-card-details.sport-details-grid > button {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  padding: 6px 10px !important;
+  background: rgba(255, 255, 255, .035) !important;
+  border: 1px solid rgba(255, 255, 255, .08) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: var(--muted) !important;
+  font: inherit !important;
+  text-align: left !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > button svg {
+  width: 17px !important;
+  height: 17px !important;
+  color: var(--lime) !important;
+  flex: 0 0 auto !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > button span {
+  min-width: 0 !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  color: var(--muted) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > button:nth-child(1) {
+  order: 1 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > button:nth-child(3) {
+  order: 3 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > button:nth-child(3) span {
+  max-width: 100px !important;
+  white-space: normal !important;
+  line-height: 1.15 !important;
+}
