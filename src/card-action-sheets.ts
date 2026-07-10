@@ -110,14 +110,15 @@ export const enableSportCardActionSheets = () => {
 
   document.addEventListener("click", (event) => {
     const target = event.target as HTMLElement | null;
-    const actionButton = target?.closest<HTMLButtonElement>(".sport-card:not(.unified-event-card) .sport-card-top-actions .sport-card-icon-action");
+    const actionButton = target?.closest<HTMLButtonElement>(".sport-card-top-actions .sport-card-icon-action");
     if (!actionButton) return;
 
-    const card = actionButton.closest<HTMLElement>(".sport-card");
+    const card = actionButton.closest<HTMLElement>(".sport-card, .activity-card");
     const title = card?.querySelector("h3")?.textContent?.trim() || "GO IRL";
     const date = card?.querySelector(".activity-card-details span")?.textContent?.trim() || "";
     const address = card?.querySelector(".activity-card-details div:first-child span")?.textContent?.trim() || "Olomouc";
-    const isShare = actionButton.matches(".sport-card-top-actions .sport-card-icon-action:nth-child(2)");
+    const ariaLabel = actionButton.getAttribute("aria-label") || "";
+    const isShare = /поделиться|share/i.test(ariaLabel) || actionButton.matches(".sport-card-top-actions .sport-card-icon-action:nth-child(2)");
 
     event.preventDefault();
     event.stopPropagation();
