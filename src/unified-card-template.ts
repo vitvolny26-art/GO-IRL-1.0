@@ -63,6 +63,11 @@ const openReminderSheet = (title: string) => {
   ]);
 };
 
+const openMap = (address: string) => {
+  const query = encodeURIComponent(address || "Olomouc");
+  openUrl(`https://mapy.cz/zakladni?q=${query}`);
+};
+
 const iconForTitle = (title: string, fallback: string) => {
   const value = title.toLowerCase();
   if (/run|running|бег|běh/.test(value)) return "🏃";
@@ -145,6 +150,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
   const participants = fields.participants || stripEmoji(spotsText).replace(/[^0-9/ ]/g, "").trim() || "1 / 8";
   const duration = eventDuration(title);
   const status = genericStatus(title, spotsText);
+  const safeAddress = fields.address || "Olomouc";
 
   card.setAttribute(processedAttr, "1");
   card.classList.add("compact-sport-card", "unified-event-card");
@@ -175,7 +181,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
   });
   topActions.querySelector("[aria-label='Поделиться']")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openShareSheet(title, fields.date || duration, fields.address || "Olomouc");
+    openShareSheet(title, fields.date || duration, safeAddress);
   });
   card.insertBefore(topActions, main);
 
@@ -199,11 +205,19 @@ const normalizeGenericCard = (card: HTMLElement) => {
   if (details) {
     details.classList.add("sport-details-grid");
     details.innerHTML = `
-      <div>${svg.calendar}<span>${fields.date || "Сегодня"}</span></div>
+      <button type="button">${svg.calendar}<span>${fields.date || "Сегодня"}</span></button>
       <div>${svg.ticket}<span>${fields.price || "Бесплатно"}</span></div>
-      <div>${svg.map}<span>${fields.address || "Olomouc"}</span></div>
+      <button type="button">${svg.map}<span>${safeAddress}</span></button>
       <div class="unified-status-cell">${svg.shield}${svg.star}<span>${status}</span></div>
     `;
+    details.querySelector("button:first-child")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openReminderSheet(title);
+    });
+    details.querySelector("button:nth-child(3)")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openMap(safeAddress);
+    });
   }
 
   footer.classList.add("compact-sport-actions");
