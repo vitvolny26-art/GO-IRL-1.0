@@ -18,28 +18,39 @@
 }
 
 .unified-card-icon-grid {
+  width: 100% !important;
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 12px !important;
+  grid-template-columns: repeat(4, minmax(54px, 1fr)) !important;
+  gap: 8px !important;
+  align-items: start !important;
 }
 
 .unified-card-icon-option {
+  min-width: 0 !important;
   min-height: auto !important;
   display: grid !important;
   justify-items: center !important;
-  gap: 8px !important;
+  gap: 7px !important;
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
   color: var(--text) !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
   line-height: 1.1 !important;
+  overflow: visible !important;
+}
+
+.unified-card-icon-option > span:last-child {
+  max-width: 66px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
 }
 
 .unified-card-icon-circle {
-  width: 56px !important;
-  height: 56px !important;
+  width: 54px !important;
+  height: 54px !important;
   border-radius: 999px !important;
   display: grid !important;
   place-items: center !important;
@@ -47,13 +58,10 @@
 }
 
 .unified-card-icon-circle svg {
-  width: 30px !important;
-  height: 30px !important;
-  fill: none !important;
-  stroke: #fff !important;
-  stroke-width: 2.4 !important;
-  stroke-linecap: round !important;
-  stroke-linejoin: round !important;
+  width: 31px !important;
+  height: 31px !important;
+  fill: #fff !important;
+  stroke: none !important;
 }
 
 .unified-card-icon-option--telegram .unified-card-icon-circle {
@@ -65,7 +73,7 @@
 }
 
 .unified-card-icon-option--messenger .unified-card-icon-circle {
-  background: linear-gradient(135deg, #00b2ff, #7b2cff) !important;
+  background: radial-gradient(circle at 70% 20%, #ff5bd8 0, #a033ff 30%, #006aff 72%, #00c6ff 100%) !important;
 }
 
 .unified-card-icon-option--viber .unified-card-icon-circle {
