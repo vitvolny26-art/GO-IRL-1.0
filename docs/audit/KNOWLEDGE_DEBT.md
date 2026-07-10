@@ -3,8 +3,8 @@ title: Knowledge Debt
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-09
-next_review: 2026-07-16
+last_review: 2026-07-10
+next_review: 2026-07-17
 ---
 
 # Knowledge Debt
@@ -55,14 +55,16 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 | KD-010 | AI onboarding docs reference missing market and Bible files | Broken onboarding references | High | Project Archivist | Open | 2026-07-23 | Fix after missing Bible chapters are created or explicitly deferred. |
 | KD-011 | Root legacy docs are referenced in `DOCS_INDEX.md` although some are absent | Registry conflict | Medium | Project Archivist | Open | 2026-07-31 | Either restore historical snapshots or remove from active registry. |
 | KD-012 | `docs/governance/KNOWLEDGE_PLATFORM_2_0.md` and `docs/audit/KNOWLEDGE_PLATFORM_EPIC.md` overlap | Duplication | Medium | Project Archivist | Open | 2026-08-09 | Merge, archive, or define distinct purpose. |
+| KD-013 | Beta category scope mismatch across UI, CHANGELOG, ROADMAP, and Bible | Scope conflict | High | Product Lead | Open | 2026-07-17 | Canonical MVP categories remain Volleyball, Running, Walking, Coffee meetup, Board games, Language exchange. Extra options such as Pub quiz, Table tennis, `Пиво после работы`, Dancing, Swimming, and Nature must be classified as experimental, future, or removed from beta docs before beta-ready claims. |
 
 ## Immediate correction order
 
 1. Restore or rewrite missing Bible chapters.
 2. Add YAML frontmatter to P0/P1 source-of-truth documents.
-3. Create ADR registry.
-4. Align security/release/Supabase wording.
-5. Add docs audit automation.
+3. Resolve beta category scope mismatch across code-facing docs and product docs.
+4. Create ADR registry.
+5. Align security/release/Supabase wording.
+6. Add docs audit automation.
 
 ## Closed history
 
