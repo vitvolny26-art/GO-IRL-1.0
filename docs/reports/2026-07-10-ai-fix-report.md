@@ -397,3 +397,44 @@ Medium. UI-only runtime adapter; no backend/data changes, but DOM normalization 
 
 ## Follow-up
 Run quality gates and visually verify Walking / Board games cards match Running/Volleyball.
+
+---
+
+## Summary
+Aligned unified generic card icons with compact sport template.
+
+## Root cause
+Inline SVG icons in runtime-normalized generic cards inherited browser defaults and appeared black/filled. Existing sport CSS also overrode the second top action button with pseudo-elements, causing generic top actions to differ from sport cards.
+
+## Files changed
+- `src/all-event-card-template.css`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Forced unified-card inline SVGs to use `currentColor`, no fill, and consistent stroke styling.
+- Restored actual SVG display for top action buttons on generic unified cards.
+- Overrode sport-only pseudo-elements for generic unified cards.
+- Restored correct detail grid order for generic unified cards.
+- Removed pseudo star duplication in the status cell.
+- Constrained footer coach icon size.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium-low. CSS-only layer on top of the runtime adapter; no backend/data changes.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and visually verify Walking / Board games cards against Running/Volleyball.
