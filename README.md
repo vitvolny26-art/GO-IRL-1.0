@@ -154,6 +154,7 @@ The build command runs `tsc -b` and then creates the production Vite bundle.
 - `DOCS_INDEX.md` - documentation status registry and source-of-truth map
 - `docs/MVP_DOC_AUDIT.md` - MVP documentation conflict registry
 - `docs/MISSING_SECTIONS.md` - missing documentation boundary registry
+- `docs/audit/KNOWLEDGE_DEBT.md` - active knowledge debt registry
 - `docs/PRODUCT_PHILOSOPHY.md` - product manifesto and mission
 - `docs/GO_IRL_CONSTITUTION.md` - product and architecture source of truth
 - `docs/MARKET_POSITIONING.md` - market positioning source of truth and MVP feature filter
@@ -162,8 +163,8 @@ The build command runs `tsc -b` and then creates the production Vite bundle.
 - `docs/COACH_CHAT_TRUST_LAYER.md` - trust layer concept for keeping role/helper support next to Activity Chat
 - `CHANGELOG.md` - shipped changes
 - `ROADMAP.md` - product and engineering direction
-- `SPRINTS.md` - sprint-by-sprint delivery plan
-- `SPRINT0_STATUS.md` - historical Sprint 0 snapshot, not current deployment source of truth
+- `docs/roadmap/SPRINTS.md` - sprint-by-sprint delivery plan
+- `docs/roadmap/SPRINT_0.md` - historical Sprint 0 record, not current deployment source of truth
 - `BACKLOG.md` - confirmed work queue
 - `RELEASE_NOTES.md` - release-ready notes for deployment
 - `DEPLOYMENT.md` - production deployment and smoke-test checklist
