@@ -11,6 +11,7 @@ import "./sport-avatar-fixes.css";
 import "./compact-sport-card.css";
 import "./compact-sport-card-final.css";
 import "./all-event-card-template.css";
+import "./unified-card-actions.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
