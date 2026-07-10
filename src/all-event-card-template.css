@@ -152,6 +152,82 @@
   border: 1px solid rgba(201, 255, 61, .22) !important;
 }
 
+.unified-event-card svg {
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.4 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.unified-event-card .sport-card-top-actions .sport-card-icon-action svg {
+  display: block !important;
+  width: 24px !important;
+  height: 24px !important;
+  color: var(--lime) !important;
+}
+
+.unified-event-card .sport-card-top-actions .sport-card-icon-action::before,
+.unified-event-card .sport-card-top-actions .sport-card-icon-action::after {
+  content: none !important;
+  display: none !important;
+}
+
+.unified-event-card .sport-card-chip svg,
+.unified-event-card .sport-card-participants-chip svg {
+  width: 14px !important;
+  height: 14px !important;
+  color: var(--lime) !important;
+  flex: 0 0 auto !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(1) {
+  order: 1 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(2) {
+  order: 2 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(3) {
+  order: 3 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(4) {
+  order: 4 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(4)::after {
+  content: none !important;
+  display: none !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(4) svg {
+  grid-column: auto !important;
+  grid-row: auto !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(4) span {
+  grid-column: auto !important;
+  grid-row: auto !important;
+  font-size: 14px !important;
+  white-space: pre-line !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > div:nth-child(4) span::before {
+  content: none !important;
+  display: none !important;
+}
+
+.unified-event-card .sport-coach-action svg {
+  width: 20px !important;
+  height: 20px !important;
+  color: var(--lime) !important;
+  flex: 0 0 auto !important;
+}
+
 @media (max-width: 430px) {
   .activity-stack .activity-card:not(.compact-sport-card) .activity-card-main {
     grid-template-columns: 78px minmax(0, 1fr) !important;
