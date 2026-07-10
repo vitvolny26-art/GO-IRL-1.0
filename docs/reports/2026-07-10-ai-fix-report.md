@@ -19,9 +19,9 @@ The compact sport card had a real bell button, but it had no user-facing action.
 
 ## Verification
 ```text
-pnpm run lint   PENDING
-pnpm run build  PENDING
-pnpm run test   PENDING
+pnpm run lint   PASS
+pnpm run build  PASS
+pnpm run test   PASS
 ```
 
 ## Risks
@@ -36,4 +36,4 @@ Low. Local UI-only state inside `SportActivityCard`; no persistence and no backe
 - dependencies
 
 ## Follow-up
-Run quality gates in Codespaces. Next small fix: replace share button with a messenger icon sheet after checks are green.
+Next small fix: replace share button with a messenger icon sheet.
