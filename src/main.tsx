@@ -8,6 +8,7 @@ import "./weather-ui-fixes.css";
 import "./generic-sheet-fixes.css";
 import "./sport-avatar-fixes.css";
 import "./compact-sport-card.css";
+import "./compact-sport-card-final.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
