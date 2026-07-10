@@ -36,15 +36,6 @@
   text-indent: 0 !important;
 }
 
-.sport-card-symbol {
-  font-size: 0 !important;
-}
-
-.sport-card-symbol::before {
-  content: "🏆";
-  font-size: 34px !important;
-}
-
 .activity-card .activity-copy,
 .discover-card-main > div:nth-child(2),
 .sport-card-main > div:nth-child(2) {
@@ -247,14 +238,23 @@
 }
 
 .danger-action {
-  width: 54px !important;
-  min-height: 54px !important;
-  border-radius: 18px !important;
-  margin-left: auto !important;
+  width: 50px !important;
+  min-height: 50px !important;
+  border-radius: 16px !important;
+  margin: 8px 0 0 auto !important;
   background: rgba(255, 75, 75, .13) !important;
   border: 1px solid rgba(255, 75, 75, .28) !important;
   color: #ff5f5f !important;
   font-size: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.sport-sheet .danger-action {
+  position: sticky !important;
+  bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+  transform: translateY(-8px) !important;
+  z-index: 12 !important;
 }
 
 .danger-action svg {
@@ -291,10 +291,10 @@
 .activity-sheet.sport-sheet .detail-list > div,
 .activity-sheet.sport-sheet .detail-list > button {
   display: grid !important;
-  grid-template-columns: 34px 1fr !important;
+  grid-template-columns: 32px 1fr !important;
   align-content: center !important;
-  min-height: 72px !important;
-  padding: 12px !important;
+  min-height: 64px !important;
+  padding: 10px !important;
   border: 1px solid rgba(255, 255, 255, .08) !important;
   border-radius: 14px !important;
   background: rgba(255, 255, 255, .02) !important;
