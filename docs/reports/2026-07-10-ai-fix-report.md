@@ -357,3 +357,43 @@ Medium. UI-only runtime adapter; no data or backend changes, but it mutates rend
 
 ## Follow-up
 Run quality gates and visually verify Walking / Board games cards match Volleyball.
+
+---
+
+## Summary
+Normalized generic card data parsing for unified template.
+
+## Root cause
+Generic cards expose date, time, address, participants and price in different DOM positions than sport cards. The first adapter reused positional parsing, which caused Walking to render with wrong block order, missing duration, and mixed emoji/lucide-style icons.
+
+## Files changed
+- `src/unified-card-template.ts`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Replaced positional parsing with text-based field detection.
+- Added duration fallback by event type.
+- Rebuilt detail grid in the sport template order: date, price, address, status.
+- Replaced emoji controls/detail icons with inline SVG icons.
+- Kept original open/join handlers.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium. UI-only runtime adapter; no backend/data changes, but DOM normalization still needs mobile visual QA.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and visually verify Walking / Board games cards match Running/Volleyball.
