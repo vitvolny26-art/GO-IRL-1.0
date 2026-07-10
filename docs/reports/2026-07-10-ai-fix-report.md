@@ -1,10 +1,10 @@
 # AI Fix Report — 2026-07-10
 
 ## Summary
-Unified event card visual template across sport and generic cards, then wired the visible generic card controls.
+Unified event card visual template across sport and generic cards, then wired visible generic card controls and detail cells.
 
 ## Root cause
-Sport cards and generic cards used different DOM structure and different CSS layers. The runtime adapter added visual buttons to generic cards, but only the coach button had a click handler. Bell, share, duration and participants chips were visible but inert.
+Sport cards and generic cards used different DOM structure and different CSS layers. The runtime adapter added visual buttons to generic cards, but only some controls had click handlers. Date/time and address cells were still informational only.
 
 ## Files changed
 - `src/verticals/SportVertical.tsx`
@@ -12,6 +12,7 @@ Sport cards and generic cards used different DOM structure and different CSS lay
 - `src/compact-sport-card-final.css`
 - `src/all-event-card-template.css`
 - `src/unified-card-template.ts`
+- `src/unified-card-actions.css`
 - `src/main.tsx`
 - `docs/reports/2026-07-10-ai-fix-report.md`
 
@@ -27,6 +28,9 @@ Sport cards and generic cards used different DOM structure and different CSS lay
 - Wired generic share button to a messenger mini-sheet with Telegram, WhatsApp, Messenger and Viber actions.
 - Wired generic duration chip to the reminder placeholder.
 - Wired generic participants chip to open the event detail flow through the preserved main card click.
+- Wired generic date/time detail cell to reminder placeholder, not calendar navigation.
+- Wired generic address cell to Mapy.cz search.
+- Added CSS for clickable detail cells so button cells match normal info blocks.
 
 ## Button dependency map
 
@@ -36,9 +40,9 @@ Sport cards and generic cards used different DOM structure and different CSS lay
 | Share | `.sport-card-icon-action[aria-label="Поделиться"]` | Opens messenger share sheet: Telegram, WhatsApp, Messenger, Viber. | `unified-card-template.ts`, browser `window.open` |
 | Duration chip | `.sport-duration-chip` | Opens reminder messenger placeholder sheet. | generic `eventDuration(title)` fallback |
 | Participants chip | `.sport-card-participants-chip` | Opens event detail through preserved main-card click. | original card open handler via `main.click()` |
-| Date/time block | first detail block | Informational only. No calendar navigation. | event date/time or parsed generic DOM |
+| Date/time block | first detail block | Opens reminder messenger placeholder sheet. No calendar navigation. | parsed generic DOM, `openReminderSheet()` |
 | Price block | second detail block | Informational. | event price or fallback `Бесплатно` |
-| Address block | third detail block | Informational now; later map handler. | event location/address or parsed generic DOM |
+| Address block | third detail block | Opens Mapy.cz search. | parsed generic DOM, `openMap()` |
 | Status block | `.unified-status-cell` or sport status cell | Informational level/environment/status. | sport metadata or `genericStatus(title, spotsText)` fallback |
 | Coach | `.sport-coach-action` | Opens event detail/chat flow through preserved main click. | `ActivityChatPanel`, `CoachRequestPanel`, original card open handler |
 | Join/open | `.card-join` | Preserves original join/open handler. | `onJoin`, `joinedIds`, `pendingIds`, original button event handler |
@@ -63,4 +67,4 @@ Medium. The generic card unification currently uses a runtime DOM adapter to avo
 - store architecture
 
 ## Follow-up
-Next small fix: connect address to maps and keep date/time as notification placeholder, not calendar navigation.
+Next small fix: wire sport-card address/date/participants to the same behavior, or replace runtime adapter with a shared React card component when beta pressure is lower.
