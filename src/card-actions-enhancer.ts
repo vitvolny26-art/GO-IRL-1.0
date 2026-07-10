@@ -1,6 +1,5 @@
 const shareIcon = "⤴";
 
-const isEmojiLike = (value: string) => /\p{Extended_Pictographic}/u.test(value.trim());
 
 const appLanguage = () => document.documentElement.lang || document.querySelector("[data-language]")?.getAttribute("data-language") || "ru";
 

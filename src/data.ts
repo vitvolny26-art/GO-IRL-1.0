@@ -63,6 +63,20 @@ export const activityOptions: Record<string, Array<{ icon: string; name: Categor
   ],
 };
 
+type ClosedBetaCategoryId = "sport" | "activities" | "social";
+
+const hasEnglishName = (names) => (option) => names.includes(option.name.en);
+
+export const closedBetaCategories = categories.filter((category) =>
+  (["sport", "activities", "social"]).includes(category.id),
+);
+
+export const closedBetaActivityOptions = {
+  sport: activityOptions.sport.filter(hasEnglishName(["Volleyball", "Running"])),
+  activities: activityOptions.activities.filter(hasEnglishName(["Coffee", "Board games"])),
+  social: activityOptions.social.filter(hasEnglishName(["Walk", "Language exchange"])),
+} satisfies Record<ClosedBetaCategoryId, Array<{ icon: string; name: Category["name"] }>>;
+
 const sportSeed = (
   id: string,
   icon: string,

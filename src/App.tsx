@@ -26,7 +26,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { activityOptions, categories } from "./data";
+import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
 import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
@@ -654,14 +654,15 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
   const selectedCity = getCity(cityId);
   const today = new Date().toISOString().slice(0, 10);
   const initialSport = initialActivity?.metadata?.sport || {};
+  const createCategories = initialActivity ? categories : closedBetaCategories;
+  const createActivityOptions: Partial<typeof activityOptions> = initialActivity ? activityOptions : closedBetaActivityOptions;
   const quickTemplates = [
+    { id: "volleyball", label: t.favoriteVolleyball, icon: "🏐", categoryId: "sport", activity: "🏐", title: t.favoriteVolleyball, description: t.favoriteVolleyball, capacity: 8 },
+    { id: "running", label: t.favoriteRunning, icon: "🏃", categoryId: "sport", activity: "🏃", title: t.favoriteRunning, description: t.favoriteRunning, capacity: 6 },
     { id: "coffee", label: t.templateCoffee, icon: "☕", categoryId: "activities", activity: "☕", title: t.templateCoffee, description: t.templateCoffee, capacity: 4 },
     { id: "walk", label: t.templateWalk, icon: "🚶", categoryId: "social", activity: "🚶", title: t.templateWalk, description: t.templateWalk, capacity: 6 },
-    { id: "sport", label: t.templateSport, icon: "🏐", categoryId: "sport", activity: "🏐", title: t.templateSport, description: t.templateSport, capacity: 8 },
-    { id: "skating", label: t.templateSkating, icon: "🛼", categoryId: "activities", activity: "🛼", title: t.templateSkating, description: t.templateSkating, capacity: 6 },
-    { id: "food", label: t.templateFood, icon: "🍽️", categoryId: "social", activity: "🍽️", title: t.templateFood, description: t.templateFood, capacity: 4 },
     { id: "board-games", label: t.templateBoardGames, icon: "🎲", categoryId: "activities", activity: "🎲", title: t.templateBoardGames, description: t.templateBoardGames, capacity: 6 },
-    { id: "other", label: t.templateOther, icon: "✨", categoryId: "activities", activity: "☕", title: t.templateOther, description: t.templateOther, capacity: 4 },
+    { id: "language-exchange", label: t.favoriteLanguageExchange, icon: "🗣️", categoryId: "social", activity: "🗣️", title: t.favoriteLanguageExchange, description: t.favoriteLanguageExchange, capacity: 6 },
   ];
 
   const setFieldValue = (name: string, value: string) => {
@@ -670,7 +671,8 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
   };
 
   const applyTemplate = (template: (typeof quickTemplates)[number]) => {
-    const option = activityOptions[template.categoryId].find((item) => item.icon === template.activity) || activityOptions[template.categoryId][0];
+    const options = createActivityOptions[template.categoryId] || closedBetaActivityOptions.sport;
+    const option = options.find((item) => item.icon === template.activity) || options[0];
     setCategoryId(template.categoryId);
     window.requestAnimationFrame(() => {
       setFieldValue("activityText", `${option.icon} ${option.name[language]}`);
@@ -765,8 +767,8 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
             ))}
           </div>
         </div>
-        <label><span>{t.category}</span><select name="categoryId" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>{categories.map((category) => <option key={category.id} value={category.id}>{category.icon} {category.name[language]}</option>)}</select></label>
-        <label><span>{t.activity}</span><select key={`${categoryId}-${language}`} name="activityText" defaultValue={initialActivity?.categoryId === categoryId ? initialActivity.activity[language] : undefined} required>{activityOptions[categoryId].map((option) => <option key={`${option.icon}-${option.name[language]}`} value={`${option.icon} ${option.name[language]}`}>{option.icon} {option.name[language]}</option>)}</select></label>
+        <label><span>{t.category}</span><select name="categoryId" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>{createCategories.map((category) => <option key={category.id} value={category.id}>{category.icon} {category.name[language]}</option>)}</select></label>
+        <label><span>{t.activity}</span><select key={`${categoryId}-${language}`} name="activityText" defaultValue={initialActivity?.categoryId === categoryId ? initialActivity.activity[language] : undefined} required>{(createActivityOptions[categoryId] || []).map((option) => <option key={`${option.icon}-${option.name[language]}`} value={`${option.icon} ${option.name[language]}`}>{option.icon} {option.name[language]}</option>)}</select></label>
         {categoryId === "sport" && (
           <Suspense fallback={<div className="sport-create-panel">{t.loadingEvents}</div>}>
             <LazySportCreateFields language={language} initialSport={initialSport} />

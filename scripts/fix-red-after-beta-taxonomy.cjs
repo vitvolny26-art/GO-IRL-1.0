@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+const fs = require("fs");
+
+fs.writeFileSync("src/data.test.ts", `import { describe, expect, it } from "vitest";
 import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
 import { languageOptions } from "./i18n";
 
@@ -45,3 +47,16 @@ describe("activity taxonomy", () => {
     );
   });
 });
+`);
+
+for (const file of ["src/card-actions-enhancer.ts", "src/verticals/SportVertical.tsx"]) {
+  let s = fs.readFileSync(file, "utf8");
+  s = s.replace(/,\s*Dumbbell/g, "");
+  s = s.replace(/Dumbbell,\s*/g, "");
+  s = s.replace(/^const isEmojiLike.*\n/m, "");
+  fs.writeFileSync(file, s);
+}
+
+let weather = fs.readFileSync("src/services/weather.ts", "utf8");
+weather = weather.replace(/\bany\b/g, "unknown");
+fs.writeFileSync("src/services/weather.ts", weather);

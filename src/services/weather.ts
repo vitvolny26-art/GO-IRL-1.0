@@ -42,7 +42,7 @@ const addMinutesToIsoHour = (date: string, time: string, minutes: number) => {
   return next.getTime();
 };
 
-const weatherHourFromData = (data: any, times: string[], index: number): WeatherHour | null => {
+const weatherHourFromData = (data: unknown, times: string[], index: number): WeatherHour | null => {
   const time = times[index];
   if (!time) return null;
 
@@ -57,7 +57,7 @@ const weatherHourFromData = (data: any, times: string[], index: number): Weather
   };
 };
 
-const detailHoursForEventWindow = (data: any, times: string[], input: { date: string; time: string; durationMinutes?: number }) => {
+const detailHoursForEventWindow = (data: unknown, times: string[], input: { date: string; time: string; durationMinutes?: number }) => {
   const startMs = addMinutesToIsoHour(input.date, input.time, -120);
   const endMs = addMinutesToIsoHour(input.date, input.time, (input.durationMinutes || 90) + 120);
   const hours: WeatherHour[] = [];
