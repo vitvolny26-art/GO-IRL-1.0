@@ -76,3 +76,43 @@ Medium-low. This is CSS-only and scoped to `.compact-sport-card`, but uses visua
 
 ## Follow-up
 Run quality gates and visually verify the sport card on mobile.
+
+---
+
+## Summary
+Applied final compact sport card visual polish batch.
+
+## Root cause
+The approved mobile layout still had five visual inconsistencies: the top eyebrow duplicated data, time/participants were too low, the level/status cell icons were misaligned, footer actions were not visually split, and the share icon did not match the requested curved arrow reference.
+
+## Files changed
+- `src/compact-sport-card.css`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Hid the top `level · environment` eyebrow on compact sport cards.
+- Raised the duration/participants stack on the right side.
+- Rebuilt the share icon visually as a curved arrow using scoped CSS pseudo-elements.
+- Aligned the two icons and two text rows in the lower-right sport info cell.
+- Reworked the footer as a clear 50/50 split: dark coach side and lime join/status side.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium-low. CSS-only, scoped to `.compact-sport-card`; no data or business-flow changes.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and verify the compact sport card on mobile after Vercel deploy.
