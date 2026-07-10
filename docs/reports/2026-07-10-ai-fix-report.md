@@ -116,3 +116,43 @@ Medium-low. CSS-only, scoped to `.compact-sport-card`; no data or business-flow 
 
 ## Follow-up
 Run quality gates and verify the compact sport card on mobile after Vercel deploy.
+
+---
+
+## Summary
+Refined compact sport card actions without restoring the top eyebrow.
+
+## Root cause
+The previous visual pass still had a rough share arrow, oversized right-side metadata chips, slightly misaligned lower-right icons, and a footer that did not read as two equal one-line actions.
+
+## Files changed
+- `src/compact-sport-card.css`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Kept the top `level · environment` eyebrow hidden.
+- Rebuilt the share arrow with smaller rounded pseudo-elements.
+- Raised and reduced the duration/participants chips.
+- Aligned lower-right level/status icons closer to their text rows.
+- Forced the footer into two equal one-line buttons.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium-low. CSS-only and scoped to `.compact-sport-card`.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and visually verify the compact sport card on mobile after Vercel deploy.
