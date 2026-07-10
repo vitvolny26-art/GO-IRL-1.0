@@ -1,10 +1,10 @@
 # AI Fix Report — 2026-07-10
 
 ## Summary
-Unified event card visual template across sport and generic cards, then changed share/reminder actions into a compact vertical messenger flyout with real app logo assets and forced positioning.
+Unified event card visual template across sport and generic cards, then changed share/reminder actions into a compact vertical messenger flyout with brand-colored app logo assets and stricter circular styling.
 
 ## Root cause
-Sport cards and generic cards used different DOM structure and different action behavior. The previous flyout used hand-drawn SVG approximations for messenger logos. After switching to app logo assets, the flyout still appeared on the left because older `.unified-card-mini-sheet` rules used `left/right/bottom: !important`, which overrode normal inline positioning.
+Sport cards and generic cards used different DOM structure and different action behavior. The previous flyout used hand-drawn SVG approximations for messenger logos. After switching to app logo assets, old `.unified-card-mini-sheet button` rules still leaked into the flyout and rendered grey rectangular button backgrounds.
 
 ## Files changed
 - `src/verticals/SportVertical.tsx`
@@ -28,8 +28,9 @@ Sport cards and generic cards used different DOM structure and different action 
 - Removed title text, subtitles, labels and the `Закрыть` button from the flyout UI.
 - Anchored the flyout to the tapped card action button.
 - Added toggle behavior: tapping the same button closes the current flyout.
-- Replaced custom messenger SVG drawings with Simple Icons CDN app logo assets.
+- Replaced custom messenger SVG drawings with Simple Icons CDN app logo assets using brand colors.
 - Forced flyout `top/left/right/bottom` through `style.setProperty(..., "important")` so old sheet CSS cannot pin it to the left.
+- Added stronger CSS overrides so flyout buttons are only transparent wrappers around circular app icons.
 
 ## Button dependency map
 
