@@ -53,15 +53,15 @@ next_review:
 
 | Документ | Тип | Статус | Source of Truth | Известные конфликты |
 |---|---|---|---|---|
-| `README.md` | Core / Code Scope | Current | Да | Must stay aligned with `RELEASE_NOTES.md` on Trusted Auth and release blockers. |
-| `DOCS_INDEX.md` | Registry | Current | Да | Must be updated after every doc move/status change. |
-| `ROADMAP.md` | Product Planning | Current | Да | Broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
+| `README.md` | Core / Code Scope | Active | Да | Must stay aligned with `RELEASE_NOTES.md` on Trusted Auth and release blockers. |
+| `DOCS_INDEX.md` | Registry | Active | Да | Must be updated after every doc move/status change. |
+| `ROADMAP.md` | Product Planning | Active | Да | Broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
 | `BACKLOG.md` | Product Planning | Draft | Нет | Future items must remain tagged. |
 | `CHANGELOG.md` | Release History | Draft | Нет | Needs quality-gate verification before release claims. |
-| `RELEASE_NOTES.md` | Release Status | Current | Да | Trusted Auth is `[SHIPPED/PRODUCTION PATH]`; operational smoke checks remain. |
-| `DEPLOYMENT.md` | Release / Deploy | Current | Да | Must remain Vercel-first; old Netlify references are historical only. |
-| `BETA_CHECKLIST.md` | QA / Beta | Current | Да | Needs sync after deployment wording changes. |
-| `BETA_TESTING.md` | QA / Beta | Current | Да | Browser Demo Mode should be documented. |
+| `RELEASE_NOTES.md` | Release Status | Active | Да | Trusted Auth is `[SHIPPED/PRODUCTION PATH]`; operational smoke checks remain. |
+| `DEPLOYMENT.md` | Release / Deploy | Active | Да | Must remain Vercel-first; old Netlify references are historical only. |
+| `BETA_CHECKLIST.md` | QA / Beta | Active | Да | Needs sync after deployment wording changes. |
+| `BETA_TESTING.md` | QA / Beta | Active | Да | Browser Demo Mode should be documented. |
 | `SPRINTS.md` | Roadmap / Sprint History | Draft | Нет | Root historical plan; canonical roadmap-folder copy exists in `docs/roadmap/SPRINTS.md`. |
 | `SPRINT0_STATUS.md` | Historical Snapshot | Deprecated | Нет | Contains Sprint 0 / Netlify-era proof; not current Vercel release truth. |
 | `CHECKLIST.md` | Historical Local Checklist | Deprecated | Нет | Old local branch/Docker/Prisma/Turbo assumptions; do not generate code from it. |
@@ -69,18 +69,18 @@ next_review:
 | `SETUP_RU.md` | Legacy Setup | Deprecated | Нет | Old Windows paths and `.bat` / `.ps1` workflow. |
 | `PATCH_REPORT.md` | Historical Patch Report | Deprecated | Нет | Trusted Auth implementation history, not current release truth. |
 | `GO_IRL_DOCUMENTATION.md` | Generated Snapshot | Deprecated | Нет | Old generated snapshot; may contain outdated README/Roadmap excerpts. |
-| `docs/GO_IRL_CONSTITUTION.md` | Product / Architecture Constitution | Current | Да | Absolute philosophy and architecture source of truth. |
-| `docs/MARKET_POSITIONING.md` | Market / Feature Filter | Current | Да | Must gate new feature categories before MVP expansion. |
-| `docs/COMPETITOR_WATCH.md` | Market Watch | Current | Да | Competitor signals must not auto-create MVP scope. |
-| `docs/MVP_DOC_AUDIT.md` | Audit / Conflict Registry | Current | Да | Registry for documentation conflicts and resolutions. |
-| `docs/MISSING_SECTIONS.md` | Audit / Missing Boundaries | Current | Да | Registry for undocumented MVP boundaries. |
-| `docs/DATABASE_SCHEMA_AUDIT.md` | Audit / Supabase Schema | Current | Да | Separates current Supabase schema/migrations from future database architecture. |
+| `docs/GO_IRL_CONSTITUTION.md` | Product / Architecture Constitution | Active | Да | Absolute philosophy and architecture source of truth. |
+| `docs/MARKET_POSITIONING.md` | Market / Feature Filter | Active | Да | Must gate new feature categories before MVP expansion. |
+| `docs/COMPETITOR_WATCH.md` | Market Watch | Active | Да | Competitor signals must not auto-create MVP scope. |
+| `docs/MVP_DOC_AUDIT.md` | Audit / Conflict Registry | Active | Да | Registry for documentation conflicts and resolutions. |
+| `docs/MISSING_SECTIONS.md` | Audit / Missing Boundaries | Active | Да | Registry for undocumented MVP boundaries. |
+| `docs/DATABASE_SCHEMA_AUDIT.md` | Audit / Supabase Schema | Active | Да | Separates current Supabase schema/migrations from future database architecture. |
 | `docs/audit/KNOWLEDGE_DEBT.md` | Audit / Knowledge Debt | Active | Да | Tracks missing, stale, conflicting, duplicated, or misleading project knowledge. |
-| `docs/SPORT_COACH_MVP.md` | Product Scope / Coach | Current | Да | `CoachRequestPanel.tsx` is current UI basis; Role Choice and Review Flow are future. |
-| `docs/MVP_STABILIZATION_PLAN.md` | MVP Plan | Current | Да | Stabilization plan and weather/share/join/profile/demo boundaries. |
+| `docs/SPORT_COACH_MVP.md` | Product Scope / Coach | Active | Да | `CoachRequestPanel.tsx` is current UI basis; Role Choice and Review Flow are future. |
+| `docs/MVP_STABILIZATION_PLAN.md` | MVP Plan | Active | Да | Stabilization plan and weather/share/join/profile/demo boundaries. |
 | `docs/GO_IRL_1_1_STABILIZATION.md` | Stabilization Ledger | Draft | Нет | Task statuses may become historical. |
-| `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Current | Да | pnpm, small patches, no unsafe changes. |
-| `docs/onboarding/ARCHIVIST_CHARTER.md` | Onboarding / Role Charter | Current | Да | Source of truth for Project Archivist duties, reading order, market intelligence duty, and memory rules. |
+| `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Active | Да | pnpm, small patches, no unsafe changes. |
+| `docs/onboarding/ARCHIVIST_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for Project Archivist duties, reading order, market intelligence duty, and memory rules. |
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, and escalation. |
 | `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
@@ -99,17 +99,17 @@ next_review:
 | `docs/AI.md` | AI / Future | Draft | Нет | AI discovery is not current MVP. |
 | `docs/reputation.md` | Reputation / Future | Draft | Нет | RLI/Trust future model, not current complete runtime. |
 | `docs/vertical-experiences.md` | Product / Future Architecture | Draft | Нет | Current MVP is Olomouc-first with six beta categories. |
-| `docs/bible/00-completion-audit.md` | Bible Audit | Current | Да | Bible expanded and structured, not final. |
-| `docs/bible/00-bible-roadmap.md` | Bible Roadmap | Current | Да | How to finish Bible without rewriting from scratch. |
-| `docs/bible/01-foundation/03-mvp-scope-and-market-positioning.md` | Bible / MVP Boundary | Current | Да | MVP 1.0 scope, market positioning, Olomouc beta, six categories, non-goals. |
-| `docs/bible/04-modules-mvp-audit.md` | Bible / MVP Boundary | Current | Да | Six-category beta module boundary and future module containment. |
-| `docs/bible/05-product-requirements-mvp-split.md` | Bible / MVP Boundary | Current | Да | PRD split: MVP 1.0, MVP 1.1 stabilization, future, blocked-before-beta. |
-| `docs/bible/07-beta-readiness-and-operations.md` | Bible / Beta Ops | Current | Да | Beta operations, QA gates, release gates, Browser Demo Mode, MVP non-goals. |
-| `docs/bible/08-runtime-boundaries.md` | Bible / Runtime Boundary | Current | Да | Runtime/auth/Supabase/demo/profile/chat/share/weather boundaries. |
-| `supabase/README.md` | Supabase Setup | Current | Да | Must reflect Trusted Auth and migration reality. |
-| `supabase/schema.sql` | Supabase Schema | Current | Да | Production-sensitive. Read-only during documentation cleanup. |
+| `docs/bible/00-completion-audit.md` | Bible Audit | Active | Да | Bible expanded and structured, not final. |
+| `docs/bible/00-bible-roadmap.md` | Bible Roadmap | Active | Да | How to finish Bible without rewriting from scratch. |
+| `docs/bible/01-foundation/03-mvp-scope-and-market-positioning.md` | Bible / MVP Boundary | Active | Да | MVP 1.0 scope, market positioning, Olomouc beta, six categories, non-goals. |
+| `docs/bible/04-modules-mvp-audit.md` | Bible / MVP Boundary | Active | Да | Six-category beta module boundary and future module containment. |
+| `docs/bible/05-product-requirements-mvp-split.md` | Bible / MVP Boundary | Active | Да | PRD split: MVP 1.0, MVP 1.1 stabilization, future, blocked-before-beta. |
+| `docs/bible/07-beta-readiness-and-operations.md` | Bible / Beta Ops | Active | Да | Beta operations, QA gates, release gates, Browser Demo Mode, MVP non-goals. |
+| `docs/bible/08-runtime-boundaries.md` | Bible / Runtime Boundary | Active | Да | Runtime/auth/Supabase/demo/profile/chat/share/weather boundaries. |
+| `supabase/README.md` | Supabase Setup | Active | Да | Must reflect Trusted Auth and migration reality. |
+| `supabase/schema.sql` | Supabase Schema | Active | Да | Production-sensitive. Read-only during documentation cleanup. |
 | `supabase/schema_next.sql` | Future Schema | Draft | Нет | Do not apply without review. |
-| `supabase/migration_v*.sql` | Supabase Migration History | Current | Да | Read-only for docs cleanup. No destructive SQL. |
+| `supabase/migration_v*.sql` | Supabase Migration History | Active | Да | Read-only for docs cleanup. No destructive SQL. |
 
 ## Current documentation conflicts
 
