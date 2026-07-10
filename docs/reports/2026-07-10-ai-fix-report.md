@@ -1,10 +1,10 @@
 # AI Fix Report — 2026-07-10
 
 ## Summary
-Unified event card visual template across sport and generic cards, then standardized card action sheets to four messenger icons.
+Unified event card visual template across sport and generic cards, then standardized card action sheets to four messenger icons and polished the icons.
 
 ## Root cause
-Sport cards and generic cards used different DOM structure and different action behavior. Generic cards already had a bottom sheet, but sport cards still used inline reminder UI/native share behavior. The share/reminder sheet also needed to be visually icon-based and limited to four messengers.
+Sport cards and generic cards used different DOM structure and different action behavior. Generic cards already had a bottom sheet, but sport cards still used inline reminder UI/native share behavior. The first icon pass used simplified custom line icons that did not look close enough to recognizable messenger brand icons.
 
 ## Files changed
 - `src/verticals/SportVertical.tsx`
@@ -27,8 +27,9 @@ Sport cards and generic cards used different DOM structure and different action 
 - Wired generic reminder/share/duration/participants/date/address controls.
 - Added shared action-sheet helpers for card reminder/share flows.
 - Standardized reminder/share sheets to exactly four messenger options: Telegram, WhatsApp, Messenger, Viber.
-- Added round messenger icon UI for the four options.
 - Routed sport-card top reminder/share buttons to the shared bottom sheets.
+- Replaced simplified line icons with more recognizable filled messenger-style symbols.
+- Forced the four messenger icons to stay in one row on mobile.
 
 ## Button dependency map
 
