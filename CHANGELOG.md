@@ -19,7 +19,7 @@ All notable confirmed changes to GO IRL are tracked here.
 - Aligned `README.md`, `DOCS_INDEX.md`, `ROADMAP.md`, and `BACKLOG.md` with the Telegram-first local meetup positioning.
 - Added beta guardrails that block ticketing, payments, club CRM, AI recommendations, dating, broad social feed, complex profiles, and multi-city expansion before the Olomouc loop is stable.
 - Clarified the canonical beta categories: Volleyball, Running, Walking, Coffee meetup, Board games, and Language exchange.
-- Cleaned up create-event activity options: moved Swimming to Nature, removed Inline skating and Hiking from Sport, renamed `PIVO` to `Пиво после работы`, replaced generic Bar with Pub quiz, and added GO IRL-aligned options such as Park walk, Table tennis, and Dancing.
+- Cleaned up create-event activity options for testing and taxonomy review: moved Swimming to Nature, removed Inline skating and Hiking from Sport, renamed `PIVO` to `Пиво после работы`, replaced generic Bar with Pub quiz, and added GO IRL-aligned options such as Park walk, Table tennis, and Dancing. These options are **not canonical closed-beta categories** unless later approved by `DOCS_INDEX.md`, `ROADMAP.md`, and the Bible MVP boundary docs.
 - Clarified that Coach means sport-only in MVP 1.1.
 - Clarified that guides, tutors, language buddies, game masters, hosts, referees, and paid role marketplace work belong to future Event Roles phases.
 - Clarified that generic Coach/Role placement near Activity Chat is a temporary trust-layer bridge, not a universal Coach model.
@@ -38,6 +38,19 @@ All notable confirmed changes to GO IRL are tracked here.
 - Bug report opens a dedicated Telegram support start link using the configured bot username instead of a hard-coded plain bot URL.
 - Static beta/dev marker and debug panel were removed from `index.html`.
 - `BETA_CHECKLIST.md` now matches the current local demo-write behavior.
+
+### Scope note
+
+Canonical closed-beta categories remain limited to:
+
+- Volleyball
+- Running
+- Walking
+- Coffee meetup
+- Board games
+- Language exchange
+
+Extra activity options mentioned above are taxonomy/test candidates, not approved MVP category expansion.
 
 ### Verification
 
