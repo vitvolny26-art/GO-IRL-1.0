@@ -30,11 +30,20 @@ const getTriggerId = (trigger?: HTMLElement) => {
 
 const positionFlyout = (sheet: HTMLElement, trigger?: HTMLElement) => {
   if (!trigger) return;
+
   const rect = trigger.getBoundingClientRect();
-  const top = Math.max(8, Math.min(rect.top, window.innerHeight - 260));
-  const left = Math.max(8, Math.min(rect.right + 8, window.innerWidth - 64));
-  sheet.style.top = `${top}px`;
-  sheet.style.left = `${left}px`;
+  const flyoutWidth = 56;
+  const flyoutHeight = 248;
+  const gap = 8;
+  const canOpenRight = rect.right + gap + flyoutWidth <= window.innerWidth;
+  const left = canOpenRight ? rect.right + gap : rect.left - flyoutWidth - gap;
+  const safeLeft = Math.max(8, Math.min(left, window.innerWidth - flyoutWidth - 8));
+  const safeTop = Math.max(8, Math.min(rect.top, window.innerHeight - flyoutHeight - 8));
+
+  sheet.style.setProperty("top", `${safeTop}px`, "important");
+  sheet.style.setProperty("left", `${safeLeft}px`, "important");
+  sheet.style.setProperty("right", "auto", "important");
+  sheet.style.setProperty("bottom", "auto", "important");
 };
 
 const showCardActionSheet = (actions: SheetAction[], trigger?: HTMLElement) => {
