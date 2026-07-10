@@ -40,16 +40,20 @@ docs/bible/02-platform-architecture.md
 docs/bible/03-database-and-supabase-boundaries.md
 docs/bible/04-modules-architecture.md
 docs/bible/04-modules-mvp-audit.md
+docs/bible/05-product-requirements.md
 docs/bible/05-product-requirements-mvp-split.md
 docs/bible/06-ux-interaction-guidelines.md
 docs/bible/07-beta-readiness-and-operations.md
 docs/bible/08-runtime-boundaries.md
 ```
 
-Missing or not confirmed:
+No current Bible 1.0 MVP boundary chapter is missing from Books I-VIII.
+
+Remaining target chapters:
 
 ```text
-docs/bible/05-product-requirements.md
+docs/bible/09-governance-and-ai-organization.md
+docs/bible/10-operations-and-release.md
 ```
 
 `03-database-design.md` is treated as replaced for current Bible 1.0 by:
@@ -72,13 +76,12 @@ Status: done for current pass.
 
 The completion audit separates confirmed files from missing/not-confirmed files.
 
-### Step 3 — Complete Bible 1.0 critical gaps
+### Step 3 — Complete Bible 1.0 remaining target chapters
 
 Current writing order:
 
-1. `docs/bible/05-product-requirements.md`
-2. `docs/bible/09-governance-and-ai-organization.md`
-3. `docs/bible/10-operations-and-release.md`
+1. `docs/bible/09-governance-and-ai-organization.md`
+2. `docs/bible/10-operations-and-release.md`
 
 ## Bible 1.0 target structure
 
@@ -185,5 +188,5 @@ Current status: **Bible 1.0 in progress**.
 Next file:
 
 ```text
-docs/bible/05-product-requirements.md
+docs/bible/09-governance-and-ai-organization.md
 ```
