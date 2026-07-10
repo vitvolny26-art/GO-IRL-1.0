@@ -174,11 +174,64 @@
   font-weight: 900 !important;
 }
 
+.card-share-corner:active {
+  transform: scale(.96) !important;
+}
+
 .discover-card .card-join::after,
 .activity-card .card-join::after,
 .sport-card .card-join::after {
   content: "" !important;
 }
+
+.go-irl-share-panel,
+.go-irl-time-placeholder {
+  position: fixed !important;
+  left: 16px !important;
+  right: 16px !important;
+  bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+  z-index: 9999 !important;
+  display: grid !important;
+  gap: 10px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(201,255,61,.22) !important;
+  border-radius: 22px !important;
+  background: rgba(12, 15, 22, .97) !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,.45) !important;
+}
+
+.go-irl-share-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.go-irl-share-panel strong,
+.go-irl-time-placeholder strong {
+  color: var(--text) !important;
+  font-size: 18px !important;
+}
+
+.go-irl-time-placeholder span {
+  color: var(--muted) !important;
+  line-height: 1.35 !important;
+}
+
+.go-irl-share-panel button,
+.go-irl-time-placeholder button {
+  min-height: 44px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.06) !important;
+  color: var(--text) !important;
+  font-weight: 900 !important;
+}
+
+.go-irl-share-panel button[data-share="telegram"] { color: #64d8ff !important; }
+.go-irl-share-panel button[data-share="whatsapp"] { color: #7dff9f !important; }
+.go-irl-share-panel button[data-share="messenger"] { color: #8fb1ff !important; }
+.go-irl-share-panel button[data-share="viber"] { color: #c79bff !important; }
 
 .activity-sheet,
 .activity-sheet.sport-sheet {
