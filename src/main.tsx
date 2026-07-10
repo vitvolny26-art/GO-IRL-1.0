@@ -1,6 +1,7 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { enableSportCardActionSheets } from "./card-action-sheets";
 import { enableUnifiedCardTemplate } from "./unified-card-template";
 import "./styles.css";
 import "./mobile-card-fixes.css";
@@ -17,6 +18,7 @@ const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 
 enableUnifiedCardTemplate();
+enableSportCardActionSheets();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
