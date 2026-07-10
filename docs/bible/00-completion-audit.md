@@ -3,8 +3,8 @@ title: GO IRL Bible Completion Audit
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-09
-next_review: 2026-07-16
+last_review: 2026-07-10
+next_review: 2026-07-17
 ---
 
 # GO IRL Bible Completion Audit
@@ -13,7 +13,7 @@ next_review: 2026-07-16
 
 The GO IRL Bible is **partly completed for MVP 1.0 / MVP 1.1 beta boundaries**, but it is **not final**.
 
-The Foundation book is now materially stronger, but the Bible still has missing architecture, database, UX, governance, and operations chapters.
+Foundation and Platform Architecture are now materially stronger. The Bible still has missing database, UX, modules, product requirements, governance, and operations chapters.
 
 Do not rewrite from scratch. Preserve, classify, reconcile, and complete only missing parts.
 
@@ -29,6 +29,7 @@ GO IRL Bible
 │   ├── 01-why-we-exist.md
 │   ├── 02-core-principles.md
 │   └── 03-mvp-scope-and-market-positioning.md
+├── docs/bible/02-platform-architecture.md
 ├── docs/bible/04-modules-mvp-audit.md
 ├── docs/bible/05-product-requirements-mvp-split.md
 ├── docs/bible/07-beta-readiness-and-operations.md
@@ -40,14 +41,17 @@ GO IRL Bible
 These files were referenced by earlier Bible audit/roadmap text but are not confirmed as present in `GO-IRL-1.0` at the time of this audit update:
 
 ```text
-docs/bible/02-platform-architecture.md
 docs/bible/03-database-design.md
 docs/bible/04-modules-architecture.md
 docs/bible/05-product-requirements.md
 docs/bible/06-ux-interaction-guidelines.md
 ```
 
-They must be recreated, restored from the source project, or explicitly replaced by new current-scope chapters.
+Preferred current-scope replacement for the database chapter:
+
+```text
+docs/bible/03-database-and-supabase-boundaries.md
+```
 
 ## Completeness status
 
@@ -60,7 +64,7 @@ They must be recreated, restored from the source project, or explicitly replaced
 | Book I — Why we exist | `01-foundation/01-why-we-exist.md` | Active | Defines the real-life attendance problem and why GO IRL exists. |
 | Book I — Core principles | `01-foundation/02-core-principles.md` | Active | Defines the core product and technical guardrails. |
 | Book I — MVP scope and market positioning | `01-foundation/03-mvp-scope-and-market-positioning.md` | Active | Current MVP boundary for Olomouc beta and market guardrails. |
-| Book II — Platform Architecture | Missing | Critical gap | Needs current React/Supabase/Telegram Mini App architecture chapter. |
+| Book II — Platform Architecture | `02-platform-architecture.md` | Active | Current React/Supabase/Telegram Mini App architecture and beta stabilization boundaries. |
 | Book III — Database Design | Missing | Critical gap | Needs current Supabase/schema/RLS boundary chapter, not future-only DB vision. |
 | Book IV — Modules MVP Audit | `04-modules-mvp-audit.md` | Active | Current six-category beta module boundary. |
 | Book IV — Modules Architecture | Missing | High gap | Needs current module/vertical architecture with Sport reference and Generic fallback. |
@@ -77,7 +81,7 @@ They must be recreated, restored from the source project, or explicitly replaced
 | Foundation | 85% |
 | Product philosophy | 85% |
 | MVP market boundary | 90% |
-| Platform architecture | 20% |
+| Platform architecture | 80% |
 | Database / Supabase boundary | 25% |
 | Modules / verticals | 55% |
 | Product requirements | 60% |
@@ -85,15 +89,14 @@ They must be recreated, restored from the source project, or explicitly replaced
 | Beta operations | 75% |
 | Runtime boundaries | 80% |
 | Governance / AI organization link | 40% |
-| Overall Bible 1.0 | 55% |
+| Overall Bible 1.0 | 60% |
 
 ## Current priorities
 
 ### Critical
 
-1. Create `docs/bible/02-platform-architecture.md`.
-2. Create `docs/bible/03-database-and-supabase-boundaries.md` or restore `03-database-design.md` with current-scope corrections.
-3. Create `docs/bible/06-ux-interaction-guidelines.md`.
+1. Create `docs/bible/03-database-and-supabase-boundaries.md`.
+2. Create `docs/bible/06-ux-interaction-guidelines.md`.
 
 ### High
 
