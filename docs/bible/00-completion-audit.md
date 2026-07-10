@@ -11,9 +11,9 @@ next_review: 2026-07-17
 
 ## Verdict
 
-The GO IRL Bible is **partly completed for MVP 1.0 / MVP 1.1 beta boundaries**, but it is **not final**.
+The GO IRL Bible is **mostly completed for MVP 1.0 / MVP 1.1 beta boundaries**, but it is **not final**.
 
-Foundation, Platform Architecture, Database/Supabase Boundaries, UX/Interaction, and Modules Architecture are now materially stronger. The Bible still has missing product requirements, governance, and operations chapters.
+Foundation, Platform Architecture, Database/Supabase Boundaries, Modules Architecture, Product Requirements, and UX/Interaction are now materially stronger. The Bible still needs governance and operations/release chapters before it can be treated as complete.
 
 Do not rewrite from scratch. Preserve, classify, reconcile, and complete only missing parts.
 
@@ -33,6 +33,7 @@ GO IRL Bible
 ├── docs/bible/03-database-and-supabase-boundaries.md
 ├── docs/bible/04-modules-architecture.md
 ├── docs/bible/04-modules-mvp-audit.md
+├── docs/bible/05-product-requirements.md
 ├── docs/bible/05-product-requirements-mvp-split.md
 ├── docs/bible/06-ux-interaction-guidelines.md
 ├── docs/bible/07-beta-readiness-and-operations.md
@@ -41,10 +42,13 @@ GO IRL Bible
 
 ## Missing or not confirmed in this repository
 
-These files were referenced by earlier Bible audit/roadmap text but are not confirmed as present in `GO-IRL-1.0` at the time of this audit update:
+No current Bible 1.0 MVP boundary chapter is missing from Books I-VIII.
+
+Remaining target chapters:
 
 ```text
-docs/bible/05-product-requirements.md
+docs/bible/09-governance-and-ai-organization.md
+docs/bible/10-operations-and-release.md
 ```
 
 `03-database-design.md` is replaced for current Bible 1.0 by:
@@ -68,8 +72,8 @@ docs/bible/03-database-and-supabase-boundaries.md
 | Book III — Database and Supabase Boundaries | `03-database-and-supabase-boundaries.md` | Active | Current Supabase/schema/RLS/auth/demo safety boundary. |
 | Book IV — Modules Architecture | `04-modules-architecture.md` | Active | Current module/vertical boundaries, Sport-first specialization, Generic fallback, runtime panels. |
 | Book IV — Modules MVP Audit | `04-modules-mvp-audit.md` | Active | Current six-category beta module boundary. |
+| Book V — Product Requirements | `05-product-requirements.md` | Active | Consolidated current PRD for MVP 1.0 / MVP 1.1 beta stabilization. |
 | Book V — PRD MVP Split | `05-product-requirements-mvp-split.md` | Active | Classifies MVP 1.0, MVP 1.1, future, blocked-before-beta. |
-| Book V — Full PRD | Missing | High gap | Needs consolidated product requirements or explicit replacement by PRD split. |
 | Book VI — UX and Interaction | `06-ux-interaction-guidelines.md` | Active | Current Telegram Mini App, Browser Demo, cards, create/join/share/chat/profile/weather UX boundary. |
 | Book VII — Beta Readiness and Operations | `07-beta-readiness-and-operations.md` | Active | Defines beta ops, QA gates, release gates, demo mode, Telegram constraints. |
 | Book VIII — Runtime Boundaries | `08-runtime-boundaries.md` | Active | Defines trusted auth, Supabase, demo, profile, chat, share/join, weather, admin boundaries. |
@@ -84,20 +88,19 @@ docs/bible/03-database-and-supabase-boundaries.md
 | Platform architecture | 80% |
 | Database / Supabase boundary | 80% |
 | Modules / verticals | 80% |
-| Product requirements | 60% |
+| Product requirements | 85% |
 | UX / interaction | 80% |
 | Beta operations | 75% |
 | Runtime boundaries | 80% |
 | Governance / AI organization link | 40% |
-| Overall Bible 1.0 | 73% |
+| Overall Bible 1.0 | 78% |
 
 ## Current priorities
 
 ### High
 
-1. Create or replace `docs/bible/05-product-requirements.md`.
-2. Add Bible governance chapter or link governance docs explicitly.
-3. Add operations and release chapter.
+1. Add Bible governance chapter or link governance docs explicitly.
+2. Add operations and release chapter.
 
 ### Medium
 
@@ -123,4 +126,4 @@ docs/bible/03-database-and-supabase-boundaries.md
 
 ## Status
 
-Current status: **expanded and structured, not final**.
+Current status: **mostly expanded and structured, not final**.
