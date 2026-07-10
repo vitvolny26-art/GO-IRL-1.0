@@ -173,6 +173,30 @@
   display: none !important;
 }
 
+.unified-event-card .sport-chip-row {
+  top: 48px !important;
+}
+
+.unified-event-card .sport-card-chip:first-child,
+.unified-event-card .sport-duration-chip {
+  display: inline-flex !important;
+  order: 1 !important;
+}
+
+.unified-event-card .sport-card-participants-chip {
+  order: 2 !important;
+}
+
+.unified-event-card .sport-card-chip,
+.unified-event-card .sport-card-participants-chip,
+.unified-event-card .sport-duration-chip {
+  width: 82px !important;
+  min-width: 82px !important;
+  min-height: 31px !important;
+  font-size: 12px !important;
+  color: var(--lime) !important;
+}
+
 .unified-event-card .sport-card-chip svg,
 .unified-event-card .sport-card-participants-chip svg {
   width: 14px !important;
