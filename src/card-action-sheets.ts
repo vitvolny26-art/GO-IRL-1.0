@@ -7,10 +7,10 @@ type SheetAction = {
 };
 
 const messengerIconUrl: Record<MessengerKind, string> = {
-  telegram: "https://cdn.simpleicons.org/telegram",
-  whatsapp: "https://cdn.simpleicons.org/whatsapp",
-  messenger: "https://cdn.simpleicons.org/messenger",
-  viber: "https://cdn.simpleicons.org/viber",
+  telegram: "https://cdn.simpleicons.org/telegram/26A5E4",
+  whatsapp: "https://cdn.simpleicons.org/whatsapp/25D366",
+  messenger: "https://cdn.simpleicons.org/messenger/00B2FF",
+  viber: "https://cdn.simpleicons.org/viber/7360F2",
 };
 
 const triggerIdAttr = "data-card-action-trigger-id";
@@ -32,11 +32,13 @@ const positionFlyout = (sheet: HTMLElement, trigger?: HTMLElement) => {
   if (!trigger) return;
 
   const rect = trigger.getBoundingClientRect();
-  const flyoutWidth = 56;
-  const flyoutHeight = 248;
-  const gap = 8;
-  const canOpenRight = rect.right + gap + flyoutWidth <= window.innerWidth;
-  const left = canOpenRight ? rect.right + gap : rect.left - flyoutWidth - gap;
+  const flyoutWidth = 52;
+  const flyoutHeight = 232;
+  const gap = 6;
+  const card = trigger.closest<HTMLElement>(".sport-card, .activity-card");
+  const cardRect = card?.getBoundingClientRect();
+  const rightInsideCard = cardRect ? cardRect.right - flyoutWidth - 8 : window.innerWidth - flyoutWidth - 8;
+  const left = Math.min(rect.left - flyoutWidth - gap, rightInsideCard);
   const safeLeft = Math.max(8, Math.min(left, window.innerWidth - flyoutWidth - 8));
   const safeTop = Math.max(8, Math.min(rect.top, window.innerHeight - flyoutHeight - 8));
 
