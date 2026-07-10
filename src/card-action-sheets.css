@@ -1,65 +1,63 @@
 .unified-card-icon-sheet {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.unified-card-icon-sheet strong,
+.unified-card-sheet-subtitle,
+.unified-card-sheet-close {
+  display: none !important;
+}
+
+.unified-card-icon-flyout {
+  position: fixed !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 9999 !important;
+  display: grid !important;
   grid-template-columns: 1fr !important;
-  gap: 14px !important;
-  padding: 18px !important;
-  border-radius: 26px !important;
-}
-
-.unified-card-icon-sheet strong {
-  font-size: 20px !important;
-  line-height: 1.1 !important;
-}
-
-.unified-card-sheet-subtitle {
-  color: var(--muted) !important;
-  font-size: 14px !important;
-  line-height: 1.25 !important;
-  margin-top: -8px !important;
+  gap: 8px !important;
+  width: 56px !important;
+  pointer-events: auto !important;
 }
 
 .unified-card-icon-grid {
-  width: 100% !important;
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(54px, 1fr)) !important;
-  gap: 8px !important;
-  align-items: start !important;
+  width: auto !important;
+  display: contents !important;
 }
 
 .unified-card-icon-option {
-  min-width: 0 !important;
-  min-height: auto !important;
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  min-height: 56px !important;
   display: grid !important;
-  justify-items: center !important;
-  gap: 7px !important;
+  place-items: center !important;
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
-  color: var(--text) !important;
-  font-size: 11px !important;
-  font-weight: 900 !important;
-  line-height: 1.1 !important;
   overflow: visible !important;
 }
 
 .unified-card-icon-option > span:last-child {
-  max-width: 66px !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
+  display: none !important;
 }
 
 .unified-card-icon-circle {
-  width: 54px !important;
-  height: 54px !important;
+  width: 52px !important;
+  height: 52px !important;
   border-radius: 999px !important;
   display: grid !important;
   place-items: center !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, .28) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .32) !important;
 }
 
 .unified-card-icon-circle svg {
-  width: 31px !important;
-  height: 31px !important;
+  width: 30px !important;
+  height: 30px !important;
   fill: #fff !important;
   stroke: none !important;
 }
@@ -78,14 +76,4 @@
 
 .unified-card-icon-option--viber .unified-card-icon-circle {
   background: linear-gradient(135deg, #8f5db7, #665cac) !important;
-}
-
-.unified-card-sheet-close {
-  min-height: 44px !important;
-  border-radius: 18px !important;
-  border: 1px solid rgba(255, 255, 255, .10) !important;
-  background: rgba(255, 255, 255, .045) !important;
-  color: var(--muted) !important;
-  font-size: 16px !important;
-  font-weight: 1000 !important;
 }
