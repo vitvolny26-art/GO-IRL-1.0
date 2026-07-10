@@ -33,6 +33,24 @@ const weatherSummaryLines = (weather: WeatherResult) => [
   `💨 ${weather.wind} km/h`,
 ];
 
+const sportAvatar = (value: string | null | undefined) => {
+  const text = String(value || "").toLowerCase();
+  if (/volley|волей|volej/.test(text)) return "🏐";
+  if (/football|футбол|fotbal/.test(text)) return "⚽";
+  if (/basket|баскет/.test(text)) return "🏀";
+  if (/tennis|теннис|tenis/.test(text)) return "🎾";
+  if (/running|run|бег|běh/.test(text)) return "🏃";
+  if (/bike|cycle|velo|велосипед|kolo/.test(text)) return "🚴";
+  if (/swim|плав|plav/.test(text)) return "🏊";
+  if (/badminton|бадминтон/.test(text)) return "🏸";
+  if (/gym|зал|posil/.test(text)) return "🏋️";
+  if (/yoga|йога|jóga/.test(text)) return "🧘";
+  return "🏆";
+};
+
+const sportAvatarForActivity = (activity: Activity, language: Language, meta: SportMetadata) =>
+  sportAvatar([meta.sportType, activity.activity[language], activity.title[language]].filter(Boolean).join(" "));
+
 type SportCardProps = {
   activity: Activity;
   language: Language;
@@ -125,6 +143,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   const action = isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [hasConfirmedCoach, setHasConfirmedCoach] = useState(false);
+  const avatar = sportAvatarForActivity(activity, language, meta);
 
   const joinedMembers = activity.members.filter(m => m.status === "joined");
 
@@ -161,7 +180,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   return (
     <article className="sport-card">
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
-        <div className="sport-card-symbol">{activity.activity[language].split(" ")[0] || "🏆"}</div>
+        <div className="sport-card-symbol">{avatar}</div>
         <div>
           <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
           <h3>{cleanSportLabel(activity.activity[language])}</h3>
@@ -259,6 +278,7 @@ export function SportActivitySheet({
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
+  const avatar = sportAvatarForActivity(activity, language, meta);
 
   useEffect(() => {
     setMembersOpen(initialMembersOpen);
@@ -312,7 +332,7 @@ export function SportActivitySheet({
         {loading && <SportDetailsSkeleton />}
         {error && <div className="details-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
         <div className="sport-sheet-hero">
-          <div className="sport-card-symbol large">{activity.activity[language].split(" ")[0] || ""}</div>
+          <div className="sport-card-symbol large">{avatar}</div>
           <div>
             <div className="sport-eyebrow">{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</div>
             <h2>{activity.title[language]}</h2>
