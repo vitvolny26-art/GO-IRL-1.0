@@ -17,7 +17,8 @@ const iconForTitle = (title: string, fallback: string) => {
 
 const fieldKind = (value: string) => {
   const lower = value.toLowerCase();
-  if (/\d{1,2}:\d{2}/.test(value) || /сегодня|завтра|июл|jul|today|tomorrow/.test(lower)) return "date";
+  if (/\d{1,2}:\d{2}/.test(value)) return "time";
+  if (/\d{1,2}\s*(июл|jul|янв|фев|мар|апр|май|июн|авг|сен|окт|ноя|дек)|сегодня|завтра|today|tomorrow/.test(lower)) return "date";
   if (/free|zdarma|бесплатно|kč|czk/.test(lower)) return "price";
   if (/\d+\s*\/\s*\d+|осталось|left|zb/.test(lower)) return "participants";
   if (/olomouc|sad|sady|zs |zš|demlova|zeyerova|адрес|address/.test(lower)) return "address";
@@ -27,8 +28,10 @@ const fieldKind = (value: string) => {
 const pickFields = (items: HTMLElement[]) => {
   const values = items.map((item) => stripEmoji(text(item))).filter(Boolean);
   const byKind = (kind: string) => values.find((value) => fieldKind(value) === kind) || "";
+  const date = byKind("date");
+  const time = byKind("time");
   return {
-    date: byKind("date"),
+    date: date && time ? `${date} · ${time}` : date || time,
     price: byKind("price"),
     address: byKind("address"),
     participants: byKind("participants"),
@@ -124,7 +127,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
       <div>${svg.calendar}<span>${fields.date || "Сегодня"}</span></div>
       <div>${svg.ticket}<span>${fields.price || "Бесплатно"}</span></div>
       <div>${svg.map}<span>${fields.address || "Olomouc"}</span></div>
-      <div>${svg.shield}<span>${status}</span></div>
+      <div class="unified-status-cell">${svg.shield}${svg.star}<span>${status}</span></div>
     `;
   }
 
