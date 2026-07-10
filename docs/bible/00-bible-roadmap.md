@@ -3,8 +3,8 @@ title: GO IRL Bible Completion Roadmap
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-09
-next_review: 2026-07-16
+last_review: 2026-07-10
+next_review: 2026-07-17
 ---
 
 # GO IRL Bible Completion Roadmap
@@ -36,6 +36,7 @@ docs/bible/01-foundation/01-product-philosophy.md
 docs/bible/01-foundation/01-why-we-exist.md
 docs/bible/01-foundation/02-core-principles.md
 docs/bible/01-foundation/03-mvp-scope-and-market-positioning.md
+docs/bible/02-platform-architecture.md
 docs/bible/04-modules-mvp-audit.md
 docs/bible/05-product-requirements-mvp-split.md
 docs/bible/07-beta-readiness-and-operations.md
@@ -45,11 +46,16 @@ docs/bible/08-runtime-boundaries.md
 Missing or not confirmed:
 
 ```text
-docs/bible/02-platform-architecture.md
 docs/bible/03-database-design.md
 docs/bible/04-modules-architecture.md
 docs/bible/05-product-requirements.md
 docs/bible/06-ux-interaction-guidelines.md
+```
+
+Preferred current-scope replacement:
+
+```text
+docs/bible/03-database-and-supabase-boundaries.md
 ```
 
 ## Completion strategy
@@ -64,19 +70,18 @@ Existing useful Bible content must not be deleted blindly.
 
 Status: done for current pass.
 
-The completion audit now separates confirmed files from missing/not-confirmed files.
+The completion audit separates confirmed files from missing/not-confirmed files.
 
 ### Step 3 — Complete Bible 1.0 critical gaps
 
 Current writing order:
 
-1. `docs/bible/02-platform-architecture.md`
-2. `docs/bible/03-database-and-supabase-boundaries.md`
-3. `docs/bible/06-ux-interaction-guidelines.md`
-4. `docs/bible/04-modules-architecture.md`
-5. `docs/bible/05-product-requirements.md`
-6. `docs/bible/09-governance-and-ai-organization.md`
-7. `docs/bible/10-operations-and-release.md`
+1. `docs/bible/03-database-and-supabase-boundaries.md`
+2. `docs/bible/06-ux-interaction-guidelines.md`
+3. `docs/bible/04-modules-architecture.md`
+4. `docs/bible/05-product-requirements.md`
+5. `docs/bible/09-governance-and-ai-organization.md`
+6. `docs/bible/10-operations-and-release.md`
 
 ## Bible 1.0 target structure
 
@@ -183,5 +188,5 @@ Current status: **Bible 1.0 in progress**.
 Next file:
 
 ```text
-docs/bible/02-platform-architecture.md
+docs/bible/03-database-and-supabase-boundaries.md
 ```
