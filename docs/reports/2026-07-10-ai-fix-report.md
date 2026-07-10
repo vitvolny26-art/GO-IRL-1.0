@@ -1,10 +1,10 @@
 # AI Fix Report — 2026-07-10
 
 ## Summary
-Unified event card visual template across sport and generic cards, then changed share/reminder actions into a compact vertical messenger flyout with brand-colored app logo assets and stricter circular styling.
+Unified event card visual template across sport and generic cards, then fixed top action click handling after card unification.
 
 ## Root cause
-Sport cards and generic cards used different DOM structure and different action behavior. The previous flyout used hand-drawn SVG approximations for messenger logos. After switching to app logo assets, old `.unified-card-mini-sheet button` rules still leaked into the flyout and rendered grey rectangular button backgrounds.
+Sport cards and generic cards used different DOM structure and different action behavior. The previous delegated handler only listened to `.sport-card:not(.unified-event-card) .sport-card-top-actions .sport-card-icon-action`. After generic cards were converted to `.unified-event-card`, the visible top action buttons no longer matched that selector, so they stopped responding.
 
 ## Files changed
 - `src/verticals/SportVertical.tsx`
@@ -29,8 +29,8 @@ Sport cards and generic cards used different DOM structure and different action 
 - Anchored the flyout to the tapped card action button.
 - Added toggle behavior: tapping the same button closes the current flyout.
 - Replaced custom messenger SVG drawings with Simple Icons CDN app logo assets using brand colors.
-- Forced flyout `top/left/right/bottom` through `style.setProperty(..., "important")` so old sheet CSS cannot pin it to the left.
 - Added stronger CSS overrides so flyout buttons are only transparent wrappers around circular app icons.
+- Broadened the delegated handler to all `.sport-card-top-actions .sport-card-icon-action` buttons so both sport and unified generic cards respond.
 
 ## Button dependency map
 
@@ -55,7 +55,7 @@ pnpm run test   PENDING
 ```
 
 ## Risks
-Medium. The flyout now loads four external app logo SVGs from Simple Icons CDN. This avoids a new npm dependency but requires network access for the logos.
+Medium. The flyout now loads four external app logo SVGs from Simple Icons CDN. This avoids a new npm dependency but requires network access for the logos. The delegated handler captures top action clicks globally and should be checked on mobile.
 
 ## Not touched
 - Supabase schema/RLS/auth
