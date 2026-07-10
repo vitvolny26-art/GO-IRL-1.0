@@ -1,10 +1,10 @@
 # AI Fix Report — 2026-07-10
 
 ## Summary
-Unified event card visual template across sport and generic cards, then changed share/reminder actions into a compact vertical messenger flyout with real app logo assets.
+Unified event card visual template across sport and generic cards, then changed share/reminder actions into a compact vertical messenger flyout with real app logo assets and forced positioning.
 
 ## Root cause
-Sport cards and generic cards used different DOM structure and different action behavior. The previous flyout used hand-drawn SVG approximations for messenger logos. The requested UX requires recognizable app icons without invented custom shapes.
+Sport cards and generic cards used different DOM structure and different action behavior. The previous flyout used hand-drawn SVG approximations for messenger logos. After switching to app logo assets, the flyout still appeared on the left because older `.unified-card-mini-sheet` rules used `left/right/bottom: !important`, which overrode normal inline positioning.
 
 ## Files changed
 - `src/verticals/SportVertical.tsx`
@@ -29,6 +29,7 @@ Sport cards and generic cards used different DOM structure and different action 
 - Anchored the flyout to the tapped card action button.
 - Added toggle behavior: tapping the same button closes the current flyout.
 - Replaced custom messenger SVG drawings with Simple Icons CDN app logo assets.
+- Forced flyout `top/left/right/bottom` through `style.setProperty(..., "important")` so old sheet CSS cannot pin it to the left.
 
 ## Button dependency map
 
@@ -65,4 +66,4 @@ Medium. The flyout now loads four external app logo SVGs from Simple Icons CDN. 
 - store architecture
 
 ## Follow-up
-Next small fix: wire sport-card address/date/duration to the same behavior, or replace runtime adapter with a shared React card component when beta pressure is lower.
+Next small fix: if external CDN icons are blocked on Telegram WebView, replace them with local app logo SVG assets.
