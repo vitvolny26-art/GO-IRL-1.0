@@ -15,6 +15,23 @@ export type WeatherResult = {
   hours: WeatherHour[];
 };
 
+type OpenMeteoHourly = {
+  time?: string[];
+  temperature_2m?: number[];
+  precipitation_probability?: number[];
+  wind_speed_10m?: number[];
+  weather_code?: number[];
+};
+
+type OpenMeteoForecast = {
+  hourly?: OpenMeteoHourly;
+};
+
+type OpenMeteoGeocodeResult = {
+  lat?: string | number;
+  lon?: string | number;
+};
+
 const geoCache = new Map<string, Promise<{ lat: number; lon: number } | null>>();
 const weatherCache = new Map<string, Promise<WeatherResult | null>>();
 
@@ -34,30 +51,41 @@ const toIsoHour = (date: string, time: string) => {
   return `${date}T${normalizedTime}`;
 };
 
-const weatherHourFromData = (data: any, times: string[], index: number): WeatherHour | null => {
+const addMinutesToIsoHour = (date: string, time: string, minutes: number) => {
+  const normalizedTime = formatEventTime(time) || "12:00";
+  const next = new Date(`${date}T${normalizedTime}:00`);
+  next.setMinutes(next.getMinutes() + minutes);
+  next.setMinutes(0, 0, 0);
+  return next.getTime();
+};
+
+const weatherHourFromData = (data: OpenMeteoForecast, times: string[], index: number): WeatherHour | null => {
   const time = times[index];
   if (!time) return null;
 
-  const temperature = Math.round(data.hourly.temperature_2m?.[index]);
+  const temperature = Math.round(data.hourly?.temperature_2m?.[index] ?? Number.NaN);
   if (Number.isNaN(temperature)) return null;
 
   return {
     time,
     temperature,
-    rain: Number(data.hourly.precipitation_probability?.[index] ?? 0),
-    wind: Math.round(data.hourly.wind_speed_10m?.[index] ?? 0),
+    rain: Number(data.hourly?.precipitation_probability?.[index] ?? 0),
+    wind: Math.round(data.hourly?.wind_speed_10m?.[index] ?? 0),
   };
 };
 
-const detailHoursAround = (data: any, times: string[], targetIndex: number) => {
-  const start = Math.max(targetIndex - 2, 0);
-  const end = Math.min(targetIndex + 2, times.length - 1);
+const detailHoursForEventWindow = (data: OpenMeteoForecast, times: string[], input: { date: string; time: string; durationMinutes?: number }) => {
+  const startMs = addMinutesToIsoHour(input.date, input.time, -120);
+  const endMs = addMinutesToIsoHour(input.date, input.time, (input.durationMinutes || 90) + 120);
   const hours: WeatherHour[] = [];
 
-  for (let index = start; index <= end; index += 1) {
+  times.forEach((time, index) => {
+    const currentMs = new Date(time).getTime();
+    if (currentMs < startMs || currentMs > endMs) return;
+
     const hour = weatherHourFromData(data, times, index);
     if (hour) hours.push(hour);
-  }
+  });
 
   return hours;
 };
@@ -76,7 +104,7 @@ async function geocode(address: string, city: string) {
       headers: { "Accept": "application/json" },
     }).then(async (res) => {
       if (!res.ok) return null;
-      const data = await res.json();
+      const data = await res.json() as OpenMeteoGeocodeResult[];
       const first = data?.[0];
       if (!first) return null;
       return { lat: Number(first.lat), lon: Number(first.lon) };
@@ -90,11 +118,12 @@ export async function getEventWeather(input: {
   time: string;
   address?: string;
   city: string;
+  durationMinutes?: number;
 }): Promise<WeatherResult | null> {
   const offset = daysFromNow(input.date);
   if (offset < 0 || offset > 7) return null;
 
-  const cacheKey = `${input.date}|${input.time}|${input.address || ""}|${input.city}`;
+  const cacheKey = `${input.date}|${input.time}|${input.durationMinutes || 90}|${input.address || ""}|${input.city}`;
   if (weatherCache.has(cacheKey)) return weatherCache.get(cacheKey)!;
 
   const promise = (async () => {
@@ -111,8 +140,8 @@ export async function getEventWeather(input: {
     const response = await fetch(url);
     if (!response.ok) return null;
 
-    const data = await response.json();
-    const times: string[] = data?.hourly?.time || [];
+    const data = await response.json() as OpenMeteoForecast;
+    const times: string[] = data.hourly?.time || [];
     if (!times.length) return null;
 
     const target = toIsoHour(input.date, input.time);
@@ -127,14 +156,14 @@ export async function getEventWeather(input: {
       }, 0);
     }
 
-    const temp = Math.round(data.hourly.temperature_2m?.[index]);
-    const rain = data.hourly.precipitation_probability?.[index];
-    const wind = Math.round(data.hourly.wind_speed_10m?.[index]);
-    const code = Number(data.hourly.weather_code?.[index] || 0);
+    const temp = Math.round(data.hourly?.temperature_2m?.[index] ?? Number.NaN);
+    const rain = data.hourly?.precipitation_probability?.[index];
+    const wind = Math.round(data.hourly?.wind_speed_10m?.[index] ?? 0);
+    const code = Number(data.hourly?.weather_code?.[index] || 0);
 
     if (Number.isNaN(temp)) return null;
 
-    const hours = detailHoursAround(data, times, index);
+    const hours = detailHoursForEventWindow(data, times, input);
 
     return {
       text: `${codeIcon(code)} ${temp}°C · ☔ ${rain ?? 0}% · 💨 ${wind || 0} km/h`,
