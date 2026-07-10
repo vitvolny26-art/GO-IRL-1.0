@@ -16,6 +16,7 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/MVP_DOC_AUDIT.md` is the source of truth for known documentation conflicts.
 - `docs/MISSING_SECTIONS.md` is the source of truth for missing documentation boundaries.
 - `docs/DATABASE_SCHEMA_AUDIT.md` is the source of truth for current schema-vs-future-schema documentation conflicts.
+- `docs/audit/KNOWLEDGE_DEBT.md` is the source of truth for open documentation and knowledge debt.
 - `docs/governance/KNOWLEDGE_PLATFORM.md` is the source of truth for knowledge status model, review cadence, knowledge debt, and Project Memory Bus.
 - `docs/onboarding/ARCHIVIST_CHARTER.md` is the source of truth for the Project Archivist role.
 - `docs/onboarding/AI_ROLES.md` is the working registry for reusable AI roles.
@@ -74,6 +75,7 @@ next_review:
 | `docs/MVP_DOC_AUDIT.md` | Audit / Conflict Registry | Current | Да | Registry for documentation conflicts and resolutions. |
 | `docs/MISSING_SECTIONS.md` | Audit / Missing Boundaries | Current | Да | Registry for undocumented MVP boundaries. |
 | `docs/DATABASE_SCHEMA_AUDIT.md` | Audit / Supabase Schema | Current | Да | Separates current Supabase schema/migrations from future database architecture. |
+| `docs/audit/KNOWLEDGE_DEBT.md` | Audit / Knowledge Debt | Active | Да | Tracks missing, stale, conflicting, duplicated, or misleading project knowledge. |
 | `docs/SPORT_COACH_MVP.md` | Product Scope / Coach | Current | Да | `CoachRequestPanel.tsx` is current UI basis; Role Choice and Review Flow are future. |
 | `docs/MVP_STABILIZATION_PLAN.md` | MVP Plan | Current | Да | Stabilization plan and weather/share/join/profile/demo boundaries. |
 | `docs/GO_IRL_1_1_STABILIZATION.md` | Stabilization Ledger | Draft | Нет | Task statuses may become historical. |
@@ -123,6 +125,7 @@ next_review:
 | AI roles and Archivist rules existed only in chat. | Chat history, onboarding docs | Added `ARCHIVIST_CHARTER.md`, `AI_ROLES.md`, and `AI_ORGANIZATION.md`. |
 | Knowledge architecture existed only in discussion. | Chat history, governance docs | Added `KNOWLEDGE_PLATFORM.md` with status model, KPIs, review cadence, and Project Memory Bus. |
 | Sprint structure existed as loose root-level docs. | `SPRINTS.md`, `SPRINT0_STATUS.md` | Added `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md` through `SPRINT_5.md`. |
+| Knowledge debt was known only from audit discussion. | Deep Research audit, chat history | Added `docs/audit/KNOWLEDGE_DEBT.md` as active tracking source. |
 
 ## Sprint documentation decision
 
@@ -181,6 +184,8 @@ GO IRL Documentation
 ├── Audit
 │   ├── docs/MVP_DOC_AUDIT.md
 │   ├── docs/MISSING_SECTIONS.md
+│   ├── docs/DATABASE_SCHEMA_AUDIT.md
+│   ├── docs/audit/KNOWLEDGE_DEBT.md
 │   ├── docs/DOCUMENTATION_AUDIT.md
 │   └── project-audit/
 ├── Bible
@@ -225,4 +230,5 @@ Update this registry when:
 - Supabase migration/auth/RLS docs are audited;
 - Sprint docs are moved into `docs/roadmap/`;
 - AI roles or councils are added/changed;
-- Knowledge Platform status model or governance rules change.
+- Knowledge Platform status model or governance rules change;
+- Knowledge Debt items are opened or closed.
