@@ -180,37 +180,6 @@
   content: "" !important;
 }
 
-.go-irl-reminder-panel {
-  position: fixed !important;
-  left: 18px !important;
-  right: 18px !important;
-  bottom: calc(86px + env(safe-area-inset-bottom)) !important;
-  z-index: 9999 !important;
-  display: grid !important;
-  grid-template-columns: 1fr repeat(3, auto) !important;
-  gap: 8px !important;
-  align-items: center !important;
-  padding: 12px !important;
-  border: 1px solid rgba(201,255,61,.26) !important;
-  border-radius: 18px !important;
-  background: rgba(12, 15, 22, .96) !important;
-  box-shadow: 0 18px 50px rgba(0,0,0,.45) !important;
-}
-
-.go-irl-reminder-panel strong,
-.go-irl-reminder-panel span {
-  color: var(--text) !important;
-}
-
-.go-irl-reminder-panel button {
-  min-height: 38px !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  background: rgba(255,255,255,.06) !important;
-  color: var(--lime) !important;
-  font-weight: 900 !important;
-}
-
 .activity-sheet,
 .activity-sheet.sport-sheet {
   max-height: calc(100dvh - 76px) !important;
