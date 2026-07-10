@@ -20,7 +20,9 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/governance/KNOWLEDGE_PLATFORM.md` is the source of truth for knowledge status model, review cadence, knowledge debt, and Project Memory Bus.
 - `docs/onboarding/ARCHIVIST_CHARTER.md` is the source of truth for the Project Archivist role.
 - `docs/onboarding/AI_ROLES.md` is the working registry for reusable AI roles.
+- `docs/onboarding/AI_FIXER_AGENT.md` is the source of truth for the AI Fixer / QA + UX Polish Agent.
 - `docs/governance/AI_ORGANIZATION.md` is the working source for AI councils, escalation, and role interaction.
+- `docs/reports/README.md` defines AI/task report naming and required report sections.
 - Historical snapshot files must not be used for code generation.
 - Bible files are preserved product sources. New Bible boundary chapters can describe MVP scope, but Bible files must not override current code, Supabase schema, auth, or RLS.
 - Do not change `.env`, secrets, Supabase RLS, auth, or destructive SQL without explicit approval.
@@ -82,6 +84,8 @@ next_review:
 | `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Active | Да | pnpm, small patches, no unsafe changes. |
 | `docs/onboarding/ARCHIVIST_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for Project Archivist duties, reading order, market intelligence duty, and memory rules. |
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
+| `docs/onboarding/AI_FIXER_AGENT.md` | Onboarding / AI Agent Prompt | Active | Да | Source of truth for small bug, QA, and UX polish agent behavior and safety limits. |
+| `docs/reports/README.md` | Reports / AI Work Logs | Active | Нет | Defines report location and format for AI Fixer task reports. |
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, and escalation. |
 | `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
 | `docs/roadmap/SPRINTS.md` | Roadmap / Sprint Overview | Draft | Нет | Roadmap-folder copy of sprint plan; not current MVP scope by itself. |
@@ -123,6 +127,7 @@ next_review:
 | Bible files could be mistaken for current MVP/schema/implementation plan. | `docs/bible/*`, `ROADMAP.md`, `BACKLOG.md` | Current MVP boundary chapters/audits added; Bible remains not final. |
 | Future DB architecture conflicted with current Supabase migrations. | `docs/Database.md`, `docs/bible/03-database-design.md`, `supabase/migration_v8_activity_chat.sql` | `docs/DATABASE_SCHEMA_AUDIT.md` created; `docs/Database.md` should stay marked future architecture. |
 | AI roles and Archivist rules existed only in chat. | Chat history, onboarding docs | Added `ARCHIVIST_CHARTER.md`, `AI_ROLES.md`, and `AI_ORGANIZATION.md`. |
+| AI Fixer reporting existed only in chat. | Chat history, onboarding docs, reports docs | Added `AI_FIXER_AGENT.md` and `docs/reports/README.md`. |
 | Knowledge architecture existed only in discussion. | Chat history, governance docs | Added `KNOWLEDGE_PLATFORM.md` with status model, KPIs, review cadence, and Project Memory Bus. |
 | Sprint structure existed as loose root-level docs. | `SPRINTS.md`, `SPRINT0_STATUS.md` | Added `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md` through `SPRINT_5.md`. |
 | Knowledge debt was known only from audit discussion. | Deep Research audit, chat history | Added `docs/audit/KNOWLEDGE_DEBT.md` as active tracking source. |
@@ -197,7 +202,11 @@ GO IRL Documentation
 ├── Onboarding
 │   └── docs/onboarding/
 │       ├── ARCHIVIST_CHARTER.md
-│       └── AI_ROLES.md
+│       ├── AI_ROLES.md
+│       └── AI_FIXER_AGENT.md
+├── Reports
+│   └── docs/reports/
+│       └── README.md
 ├── Roadmap / Sprints
 │   ├── ROADMAP.md
 │   ├── BACKLOG.md
@@ -229,6 +238,6 @@ Update this registry when:
 - Bible files are audited or reclassified;
 - Supabase migration/auth/RLS docs are audited;
 - Sprint docs are moved into `docs/roadmap/`;
-- AI roles or councils are added/changed;
+- AI roles, AI agents, councils, or reporting rules are added/changed;
 - Knowledge Platform status model or governance rules change;
 - Knowledge Debt items are opened or closed.
