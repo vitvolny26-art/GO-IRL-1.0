@@ -1,6 +1,7 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { enableUnifiedCardTemplate } from "./unified-card-template";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -13,6 +14,8 @@ import "./all-event-card-template.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
+
+enableUnifiedCardTemplate();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
