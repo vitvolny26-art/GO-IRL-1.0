@@ -276,3 +276,44 @@ Low. CSS-only and scoped to `.compact-sport-card`.
 
 ## Follow-up
 Run quality gates and visually verify the compact sport card on mobile after Vercel deploy.
+
+---
+
+## Summary
+Rolled compact template onto generic event cards in event stacks.
+
+## Root cause
+Only sport cards had the approved compact visual template. Generic event cards on the same page still used the older taller layout, creating inconsistent card design on the All Events page.
+
+## Files changed
+- `src/all-event-card-template.css`
+- `src/main.tsx`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Added a scoped CSS layer for `.activity-stack .activity-card:not(.compact-sport-card)`.
+- Matched generic card header/avatar sizing to the compact sport layout.
+- Reworked generic details into compact 2-column info blocks.
+- Limited extra generic detail rows to avoid oversized cards.
+- Reworked generic footer into two compact actions: spots and join/status action.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium-low. CSS-only and scoped to activity-stack generic cards; no data or business logic changes.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and visually verify Board games / Walking cards on All Events.
