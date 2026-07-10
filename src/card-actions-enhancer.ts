@@ -1,4 +1,4 @@
-const shareIcon = "↗";
+const shareIcon = "⤴";
 
 const isEmojiLike = (value: string) => /\p{Extended_Pictographic}/u.test(value.trim());
 
@@ -24,8 +24,66 @@ const openGoogleCalendar = (title: string) => {
   const url = new URL("https://calendar.google.com/calendar/render");
   url.searchParams.set("action", "TEMPLATE");
   url.searchParams.set("text", title || "GO IRL event");
-  url.searchParams.set("details", "GO IRL — Less scrolling. More living. Настройте напоминание в Google Calendar.");
+  url.searchParams.set("details", "GO IRL — Less scrolling. More living.");
   openExternal(url.toString());
+};
+
+const closeTransientPanels = () => {
+  document.querySelector(".go-irl-share-panel")?.remove();
+  document.querySelector(".go-irl-time-placeholder")?.remove();
+};
+
+const openTimePlaceholder = () => {
+  closeTransientPanels();
+
+  const panel = document.createElement("div");
+  panel.className = "go-irl-time-placeholder";
+  panel.innerHTML = `
+    <strong>Уведомления скоро</strong>
+    <span>Здесь будет выбор мессенджера для напоминания.</span>
+    <button type="button">Понятно</button>
+  `;
+  panel.querySelector("button")?.addEventListener("click", () => panel.remove());
+  document.body.appendChild(panel);
+};
+
+const shareUrl = () => window.location.href.split("#")[0];
+
+const openMessengerShare = (target: string, title: string) => {
+  const text = encodeURIComponent(`${title}\n${shareUrl()}`);
+  const url = encodeURIComponent(shareUrl());
+
+  if (target === "telegram") openExternal(`https://t.me/share/url?url=${url}&text=${encodeURIComponent(title)}`);
+  if (target === "whatsapp") openExternal(`https://wa.me/?text=${text}`);
+  if (target === "messenger") openExternal(`https://www.facebook.com/dialog/send?link=${url}&app_id=291494419107518&redirect_uri=${url}`);
+  if (target === "viber") openExternal(`viber://forward?text=${text}`);
+};
+
+const openSharePanel = (title: string) => {
+  closeTransientPanels();
+
+  const panel = document.createElement("div");
+  panel.className = "go-irl-share-panel";
+  panel.innerHTML = `
+    <div class="go-irl-share-head">
+      <strong>Поделиться</strong>
+      <button type="button" aria-label="Закрыть">×</button>
+    </div>
+    <button type="button" data-share="telegram">Telegram</button>
+    <button type="button" data-share="whatsapp">WhatsApp</button>
+    <button type="button" data-share="messenger">Messenger</button>
+    <button type="button" data-share="viber">Viber</button>
+  `;
+
+  panel.querySelector(".go-irl-share-head button")?.addEventListener("click", () => panel.remove());
+  panel.querySelectorAll<HTMLButtonElement>("button[data-share]").forEach((button) => {
+    button.addEventListener("click", () => {
+      openMessengerShare(button.dataset.share || "telegram", title);
+      panel.remove();
+    });
+  });
+
+  document.body.appendChild(panel);
 };
 
 const openCardDetails = (card: HTMLElement) => {
@@ -69,11 +127,7 @@ const enhanceCard = (card: HTMLElement) => {
   share.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    openCardDetails(card);
-    window.setTimeout(() => {
-      const shareButton = document.querySelector<HTMLButtonElement>(".event-more-menu button:first-child, .sheet-actions button[aria-label='Поделиться']");
-      shareButton?.click();
-    }, 180);
+    openSharePanel(cardTitle(card));
   });
   card.appendChild(share);
 
@@ -111,7 +165,17 @@ const enhanceCard = (card: HTMLElement) => {
       });
     }
 
-    if (/завтра|сегодня|\d{1,2}:\d{2}|пон|вт|ср|чт|пт|сб|вс|jul|июл/i.test(text)) {
+    if (/\d{1,2}:\d{2}/.test(text)) {
+      item.classList.add("is-clickable-meta");
+      item.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openTimePlaceholder();
+      });
+      return;
+    }
+
+    if (/завтра|сегодня|пон|вт|ср|чт|пт|сб|вс|jul|июл/i.test(text)) {
       item.classList.add("is-clickable-meta");
       item.addEventListener("click", (event) => {
         event.preventDefault();
