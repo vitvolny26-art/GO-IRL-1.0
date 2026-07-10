@@ -13,7 +13,7 @@ next_review: 2026-07-17
 
 The GO IRL Bible is **partly completed for MVP 1.0 / MVP 1.1 beta boundaries**, but it is **not final**.
 
-Foundation, Platform Architecture, and Database/Supabase Boundaries are now materially stronger. The Bible still has missing UX, modules, product requirements, governance, and operations chapters.
+Foundation, Platform Architecture, Database/Supabase Boundaries, and UX/Interaction are now materially stronger. The Bible still has missing modules, product requirements, governance, and operations chapters.
 
 Do not rewrite from scratch. Preserve, classify, reconcile, and complete only missing parts.
 
@@ -33,6 +33,7 @@ GO IRL Bible
 ├── docs/bible/03-database-and-supabase-boundaries.md
 ├── docs/bible/04-modules-mvp-audit.md
 ├── docs/bible/05-product-requirements-mvp-split.md
+├── docs/bible/06-ux-interaction-guidelines.md
 ├── docs/bible/07-beta-readiness-and-operations.md
 └── docs/bible/08-runtime-boundaries.md
 ```
@@ -45,7 +46,6 @@ These files were referenced by earlier Bible audit/roadmap text but are not conf
 docs/bible/03-database-design.md
 docs/bible/04-modules-architecture.md
 docs/bible/05-product-requirements.md
-docs/bible/06-ux-interaction-guidelines.md
 ```
 
 `03-database-design.md` is replaced for current Bible 1.0 by:
@@ -71,7 +71,7 @@ docs/bible/03-database-and-supabase-boundaries.md
 | Book IV — Modules Architecture | Missing | High gap | Needs current module/vertical architecture with Sport reference and Generic fallback. |
 | Book V — PRD MVP Split | `05-product-requirements-mvp-split.md` | Active | Classifies MVP 1.0, MVP 1.1, future, blocked-before-beta. |
 | Book V — Full PRD | Missing | High gap | Needs consolidated product requirements or explicit replacement by PRD split. |
-| Book VI — UX and Interaction | Missing | Critical gap | Needs Telegram Mini App UX, browser demo, cards, create/join/share/chat/profile/weather boundaries. |
+| Book VI — UX and Interaction | `06-ux-interaction-guidelines.md` | Active | Current Telegram Mini App, Browser Demo, cards, create/join/share/chat/profile/weather UX boundary. |
 | Book VII — Beta Readiness and Operations | `07-beta-readiness-and-operations.md` | Active | Defines beta ops, QA gates, release gates, demo mode, Telegram constraints. |
 | Book VIII — Runtime Boundaries | `08-runtime-boundaries.md` | Active | Defines trusted auth, Supabase, demo, profile, chat, share/join, weather, admin boundaries. |
 
@@ -86,17 +86,13 @@ docs/bible/03-database-and-supabase-boundaries.md
 | Database / Supabase boundary | 80% |
 | Modules / verticals | 55% |
 | Product requirements | 60% |
-| UX / interaction | 20% |
+| UX / interaction | 80% |
 | Beta operations | 75% |
 | Runtime boundaries | 80% |
 | Governance / AI organization link | 40% |
-| Overall Bible 1.0 | 65% |
+| Overall Bible 1.0 | 70% |
 
 ## Current priorities
-
-### Critical
-
-1. Create `docs/bible/06-ux-interaction-guidelines.md`.
 
 ### High
 
