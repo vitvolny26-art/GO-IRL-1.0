@@ -4,6 +4,65 @@ const text = (el: Element | null) => el?.textContent?.trim() || "";
 const compactSpaces = (value: string) => value.replace(/\s+/g, " ").trim();
 const stripEmoji = (value: string) => compactSpaces(value.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""));
 
+const openUrl = (url: string) => {
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
+const showMiniSheet = (title: string, actions: Array<{ label: string; action: () => void }>) => {
+  document.querySelector(".unified-card-mini-sheet")?.remove();
+
+  const sheet = document.createElement("div");
+  sheet.className = "unified-card-mini-sheet";
+  sheet.innerHTML = `<strong>${title}</strong>`;
+
+  actions.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = item.label;
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      sheet.remove();
+      item.action();
+    });
+    sheet.append(button);
+  });
+
+  const close = document.createElement("button");
+  close.type = "button";
+  close.textContent = "Закрыть";
+  close.addEventListener("click", (event) => {
+    event.stopPropagation();
+    sheet.remove();
+  });
+  sheet.append(close);
+  document.body.append(sheet);
+};
+
+const shareText = (title: string, date: string, address: string) => {
+  const url = window.location.href.split("?")[0];
+  return `GO IRL: ${title}\n${date}\n${address}\n${url}`;
+};
+
+const openShareSheet = (title: string, date: string, address: string) => {
+  const message = shareText(title, date, address);
+  const encoded = encodeURIComponent(message);
+  showMiniSheet("Поделиться", [
+    { label: "Telegram", action: () => openUrl(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encoded}`) },
+    { label: "WhatsApp", action: () => openUrl(`https://wa.me/?text=${encoded}`) },
+    { label: "Messenger", action: () => openUrl(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`) },
+    { label: "Viber", action: () => openUrl(`viber://forward?text=${encoded}`) },
+  ]);
+};
+
+const openReminderSheet = (title: string) => {
+  showMiniSheet("Напоминание", [
+    { label: "Telegram", action: () => undefined },
+    { label: "WhatsApp", action: () => undefined },
+    { label: "Messenger", action: () => undefined },
+    { label: "Viber", action: () => undefined },
+  ]);
+};
+
 const iconForTitle = (title: string, fallback: string) => {
   const value = title.toLowerCase();
   if (/run|running|бег|běh/.test(value)) return "🏃";
@@ -110,14 +169,30 @@ const normalizeGenericCard = (card: HTMLElement) => {
     <button class="sport-card-icon-action" type="button" aria-label="Напоминание">${svg.bell}</button>
     <button class="sport-card-icon-action" type="button" aria-label="Поделиться">${svg.share}</button>
   `;
+  topActions.querySelector("[aria-label='Напоминание']")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openReminderSheet(title);
+  });
+  topActions.querySelector("[aria-label='Поделиться']")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openShareSheet(title, fields.date || duration, fields.address || "Olomouc");
+  });
   card.insertBefore(topActions, main);
 
   const chips = document.createElement("div");
   chips.className = "sport-chip-row";
   chips.innerHTML = `
-    <span class="sport-card-chip sport-duration-chip">${svg.calendar}<span>${duration}</span></span>
-    <span class="sport-card-participants-chip">${svg.users}<span>${participants}</span></span>
+    <button class="sport-card-chip sport-duration-chip" type="button">${svg.calendar}<span>${duration}</span></button>
+    <button class="sport-card-participants-chip" type="button">${svg.users}<span>${participants}</span></button>
   `;
+  chips.querySelector(".sport-duration-chip")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openReminderSheet(title);
+  });
+  chips.querySelector(".sport-card-participants-chip")?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    main.click();
+  });
   main.after(chips);
 
   const details = card.querySelector<HTMLElement>(".activity-card-details");
