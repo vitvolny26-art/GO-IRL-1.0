@@ -38,8 +38,10 @@ docs/bible/01-foundation/02-core-principles.md
 docs/bible/01-foundation/03-mvp-scope-and-market-positioning.md
 docs/bible/02-platform-architecture.md
 docs/bible/03-database-and-supabase-boundaries.md
+docs/bible/04-modules-architecture.md
 docs/bible/04-modules-mvp-audit.md
 docs/bible/05-product-requirements-mvp-split.md
+docs/bible/06-ux-interaction-guidelines.md
 docs/bible/07-beta-readiness-and-operations.md
 docs/bible/08-runtime-boundaries.md
 ```
@@ -47,10 +49,7 @@ docs/bible/08-runtime-boundaries.md
 Missing or not confirmed:
 
 ```text
-docs/bible/03-database-design.md
-docs/bible/04-modules-architecture.md
 docs/bible/05-product-requirements.md
-docs/bible/06-ux-interaction-guidelines.md
 ```
 
 `03-database-design.md` is treated as replaced for current Bible 1.0 by:
@@ -77,11 +76,9 @@ The completion audit separates confirmed files from missing/not-confirmed files.
 
 Current writing order:
 
-1. `docs/bible/06-ux-interaction-guidelines.md`
-2. `docs/bible/04-modules-architecture.md`
-3. `docs/bible/05-product-requirements.md`
-4. `docs/bible/09-governance-and-ai-organization.md`
-5. `docs/bible/10-operations-and-release.md`
+1. `docs/bible/05-product-requirements.md`
+2. `docs/bible/09-governance-and-ai-organization.md`
+3. `docs/bible/10-operations-and-release.md`
 
 ## Bible 1.0 target structure
 
@@ -188,5 +185,5 @@ Current status: **Bible 1.0 in progress**.
 Next file:
 
 ```text
-docs/bible/06-ux-interaction-guidelines.md
+docs/bible/05-product-requirements.md
 ```
