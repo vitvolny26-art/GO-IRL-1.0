@@ -1,7 +1,13 @@
-# GO IRL Bible Completion Roadmap
+---
+title: GO IRL Bible Completion Roadmap
+owner: Project Archivist
+status: Active
+source_of_truth: true
+last_review: 2026-07-09
+next_review: 2026-07-16
+---
 
-Generated: 2026-07-08
-Updated: 2026-07-08
+# GO IRL Bible Completion Roadmap
 
 ## Purpose
 
@@ -13,242 +19,169 @@ Market scope is controlled by:
 
 - `docs/MARKET_POSITIONING.md`
 - `docs/COMPETITOR_WATCH.md`
+- `docs/market/README.md`
+- `docs/market/CONTINUOUS_COMPETITOR_INTELLIGENCE.md`
 
-These files must prevent competitor-inspired or future-platform ideas from entering MVP scope without passing the beta guardrail.
+These files prevent competitor-inspired or future-platform ideas from entering MVP scope without passing the beta guardrail.
 
-## Search result
+## Current Bible state
 
-Repository contains these confirmed Bible files:
+Confirmed active Bible files:
 
 ```text
+docs/bible/00-completion-audit.md
+docs/bible/00-bible-roadmap.md
+docs/bible/01-foundation/00-foundation-overview.md
+docs/bible/01-foundation/01-product-philosophy.md
 docs/bible/01-foundation/01-why-we-exist.md
 docs/bible/01-foundation/02-core-principles.md
 docs/bible/01-foundation/03-mvp-scope-and-market-positioning.md
-docs/bible/02-platform-architecture.md
-docs/bible/03-database-design.md
-docs/bible/04-modules-architecture.md
 docs/bible/04-modules-mvp-audit.md
-docs/bible/05-product-requirements.md
 docs/bible/05-product-requirements-mvp-split.md
-docs/bible/06-ux-interaction-guidelines.md
 docs/bible/07-beta-readiness-and-operations.md
 docs/bible/08-runtime-boundaries.md
 ```
 
-Additional related snapshot:
+Missing or not confirmed:
 
 ```text
-GO_IRL_DOCUMENTATION.md
+docs/bible/02-platform-architecture.md
+docs/bible/03-database-design.md
+docs/bible/04-modules-architecture.md
+docs/bible/05-product-requirements.md
+docs/bible/06-ux-interaction-guidelines.md
 ```
 
-## Current verdict
-
-The Bible is expanded and structured, but not final.
-
-Current MVP boundary chapters/audits added:
-
-- `01-foundation/03-mvp-scope-and-market-positioning.md`
-- `04-modules-mvp-audit.md`
-- `05-product-requirements-mvp-split.md`
-- `07-beta-readiness-and-operations.md`
-- `08-runtime-boundaries.md`
-
-Existing historical books remain valuable drafts. They are not automatic implementation mandates.
-
-## Completion plan
+## Completion strategy
 
 ### Step 1 — Preserve
 
 Status: done.
 
-- Old root filenames were moved into `docs/bible/`.
-- Original content was preserved.
-- Historical files must not be deleted during cleanup.
+Existing useful Bible content must not be deleted blindly.
 
-### Step 2 — Classify
+### Step 2 — Correct actual file state
 
-Status: in progress.
+Status: done for current pass.
 
-Each book must be marked as one of:
+The completion audit now separates confirmed files from missing/not-confirmed files.
 
-```text
-Current
-Partly current
-Outdated
-Future vision
-Needs rewrite
-Needs code/schema audit
-Needs market-scope audit
-```
+### Step 3 — Complete Bible 1.0 critical gaps
 
-Current classification:
+Current writing order:
 
-| Book | File | Classification |
-|---|---|---|
-| Foundation | `01-foundation/01-why-we-exist.md` | partly current / philosophy source |
-| Core principles | `01-foundation/02-core-principles.md` | partly current / needs beta guardrail alignment |
-| MVP scope and market positioning | `01-foundation/03-mvp-scope-and-market-positioning.md` | current MVP boundary |
-| Platform architecture | `02-platform-architecture.md` | partly current / future vision |
-| Database design | `03-database-design.md` | contained future vision / schema-audited externally |
-| Modules architecture | `04-modules-architecture.md` | contained future vision / audited by `04-modules-mvp-audit.md` |
-| Modules MVP audit | `04-modules-mvp-audit.md` | current MVP boundary |
-| Product requirements | `05-product-requirements.md` | historical PRD draft / audited by PRD split |
-| PRD MVP split | `05-product-requirements-mvp-split.md` | current MVP boundary |
-| UX guidelines | `06-ux-interaction-guidelines.md` | draft / needs Telegram Mini App audit |
-| Beta readiness and operations | `07-beta-readiness-and-operations.md` | current MVP boundary |
-| Runtime boundaries | `08-runtime-boundaries.md` | current MVP boundary |
+1. `docs/bible/02-platform-architecture.md`
+2. `docs/bible/03-database-and-supabase-boundaries.md`
+3. `docs/bible/06-ux-interaction-guidelines.md`
+4. `docs/bible/04-modules-architecture.md`
+5. `docs/bible/05-product-requirements.md`
+6. `docs/bible/09-governance-and-ai-organization.md`
+7. `docs/bible/10-operations-and-release.md`
 
-### Step 3 — Compare with current MVP
-
-Compare Bible content with:
+## Bible 1.0 target structure
 
 ```text
-README.md
-DOCS_INDEX.md
-ROADMAP.md
-BACKLOG.md
-docs/DOCUMENTATION_AUDIT.md
-docs/MARKET_POSITIONING.md
-docs/COMPETITOR_WATCH.md
-docs/GO_IRL_1_1_STABILIZATION.md
-docs/MVP_STABILIZATION_PLAN.md
-docs/SPORT_COACH_MVP.md
-docs/DATABASE_SCHEMA_AUDIT.md
-supabase/schema.sql
-supabase/migration_v*.sql
-src/types.ts
-src/store.ts
-src/verticals/SportVertical.tsx
+docs/bible/
+├── 00-completion-audit.md
+├── 00-bible-roadmap.md
+├── 01-foundation/
+│   ├── 00-foundation-overview.md
+│   ├── 01-product-philosophy.md
+│   ├── 01-why-we-exist.md
+│   ├── 02-core-principles.md
+│   └── 03-mvp-scope-and-market-positioning.md
+├── 02-platform-architecture.md
+├── 03-database-and-supabase-boundaries.md
+├── 04-modules-architecture.md
+├── 04-modules-mvp-audit.md
+├── 05-product-requirements.md
+├── 05-product-requirements-mvp-split.md
+├── 06-ux-interaction-guidelines.md
+├── 07-beta-readiness-and-operations.md
+├── 08-runtime-boundaries.md
+├── 09-governance-and-ai-organization.md
+└── 10-operations-and-release.md
 ```
 
-Do not modify code, SQL, RLS, auth, or migrations during this comparison.
+## Naming decision
 
-### Step 4 — Define Bible 1.0 scope
+Use current-scope names for newly written Bible files.
 
-Status: mostly covered by new MVP boundary chapters, but not final.
-
-Bible 1.0 should describe the beta-ready product, not the entire far-future platform.
-
-Required Bible 1.0 sections:
+Preferred replacement name:
 
 ```text
-Book I — Foundation
-Book I / Chapter 3 — MVP Scope and Market Positioning
-Book II — Platform Architecture for current MVP
-Book III — Current Data Model and Supabase boundaries
-Book IV — Current Modules and Sport-first / six-category beta logic
-Book V — Product Requirements for MVP 1.0 / 1.1
-Book VI — Telegram Mini App UX and Interaction
-Book VII — Beta Readiness and Operations
-Book VIII — Runtime Boundaries
+docs/bible/03-database-and-supabase-boundaries.md
 ```
 
-Bible 1.0 must explicitly cover:
+instead of restoring future-only:
+
+```text
+docs/bible/03-database-design.md
+```
+
+Reason: current Bible 1.0 must describe actual Supabase boundaries, trusted auth, demo safety, and RLS constraints, not only future database vision.
+
+## Bible 1.0 must explicitly cover
 
 - GO IRL as Telegram-first local meetup layer.
-- Not an event calendar, ticketing platform, sport-only app, dating app, or social feed.
 - Olomouc closed beta.
 - Six beta categories: Volleyball, Running, Walking, Coffee meetup, Board games, Language exchange.
-- Event creation, share, join, event chat, real-life attendance loop.
+- Core event loop: create, share, join, chat, attend.
 - Browser Demo Mode.
 - Telegram Mini App constraints.
-- Supabase trusted auth current reality.
-- Current QA and release gates.
-- What is not included in App 1.0.
+- Trusted Telegram auth reality.
+- Supabase current schema boundary.
+- Sport Coach MVP 1.1.
+- Activity Chat boundaries.
+- Share / join boundaries.
+- Weather widget boundaries.
+- QA and release gates.
+- What is not included in MVP.
 
-### Step 5 — Define Bible 1.1+ scope
+## Bible 1.1+ scope
 
-Bible 1.1+ should describe the next layer without pretending it is already shipped.
+Future material must be clearly marked as future vision.
 
-Future / 1.1+ sections:
+Future-only topics include:
 
-```text
-Sport Coach MVP
-Coach request lifecycle
-Coach reviews and trust model
-Event Roles after Sport Coach validation
-Expanded moderation
-Notifications
-Recommendation engine
-AI event discovery
-Multi-vertical platform
-Admin surface
-```
+- universal Event Roles;
+- paid coach marketplace;
+- ticketing;
+- subscriptions;
+- public ratings;
+- direct messages;
+- AI recommendations;
+- AI event discovery;
+- multi-city catalog;
+- friends vertical;
+- travel vertical;
+- dating vertical.
 
-Every future section must be tagged as:
+## Required checks before marking Bible final
 
-```text
-Status: Future / 1.1+ / Not current MVP
-```
+1. Check against current code and Supabase schema.
+2. Check against `README.md` and `RELEASE_NOTES.md`.
+3. Check against `DOCS_INDEX.md` source-of-truth rules.
+4. Check against `ROADMAP.md` and `BACKLOG.md`.
+5. Check against `docs/MARKET_POSITIONING.md` and `docs/COMPETITOR_WATCH.md`.
+6. Check against `docs/audit/KNOWLEDGE_DEBT.md`.
 
-### Step 6 — Write missing parts only
+## Do not do from Bible cleanup
 
-Do not rewrite the existing chapters unless they contradict the current project.
+- Do not touch `.env`.
+- Do not change secrets.
+- Do not run or edit destructive SQL.
+- Do not change Supabase RLS.
+- Do not change auth.
+- Do not refactor code.
+- Do not mark beta-ready without quality gates.
 
-Covered or mostly covered for 1.0:
+## Status
 
-```text
-Market positioning
-Competitor boundaries
-MVP 1.0 scope
-Browser Demo Mode
-Olomouc beta scope
-Six beta categories
-Modules architecture alignment with six categories
-PRD split for MVP 1.0 vs 1.1
-Supabase trusted auth reality inside Bible
-Profile/avatar/demo boundary
-Activity Chat boundaries
-Weather Widget boundaries
-Share/join flow
-QA and release gates
-Explicit non-goals before beta
-```
+Current status: **Bible 1.0 in progress**.
 
-Still weak for 1.0:
+Next file:
 
 ```text
-Telegram Mini App UX detail
-Event lifecycle inside Bible
+docs/bible/02-platform-architecture.md
 ```
-
-Missing or weak areas for 1.1+:
-
-```text
-Sport Coach MVP boundaries
-Coach request lifecycle
-Coach reviews
-Event Roles after Sport Coach validation
-Moderation
-Notifications
-AI event discovery
-Multi-vertical platform
-Admin surface
-```
-
-Recommendation engine is now explicitly classified as future in the PRD split.
-
-### Step 7 — Finalize
-
-Only after audit and product review:
-
-- remove draft wording;
-- fix numbering;
-- remove leftover mixed-language fragments;
-- add explicit status blocks to future material;
-- ensure `MARKET_POSITIONING.md` and `COMPETITOR_WATCH.md` are reflected;
-- mark the set as `GO IRL Bible 1.0`.
-
-## Immediate next audit tasks
-
-1. Audit `06-ux-interaction-guidelines.md` against Telegram Mini App UX.
-2. Add or sync a final event lifecycle Bible chapter if needed.
-3. Extract useful current content from `GO_IRL_DOCUMENTATION.md` into current docs if needed.
-
-## Do not do
-
-- Do not make Bible the source of truth over current code without audit.
-- Do not delete preserved drafts.
-- Do not merge future vision into MVP scope without labeling it.
-- Do not import competitor features into MVP without passing `MARKET_POSITIONING.md`.
-- Do not change Supabase SQL, RLS, auth, or secrets from Bible cleanup.
