@@ -1,38 +1,74 @@
-.sport-card {
+.compact-sport-card {
+  position: relative !important;
   padding: 14px !important;
   border-radius: 26px !important;
 }
 
-.sport-card .sport-card-main {
-  grid-template-columns: 92px minmax(0, 1fr) 64px !important;
+.compact-sport-card .sport-card-top-actions {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  z-index: 6 !important;
+  display: flex !important;
+  gap: 8px !important;
+}
+
+.compact-sport-card .sport-card-icon-action {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, .12) !important;
+  background: rgba(255, 255, 255, .045) !important;
+  color: var(--lime) !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+}
+
+.compact-sport-card .sport-card-main {
+  grid-template-columns: 86px minmax(0, 1fr) !important;
   gap: 12px !important;
   align-items: start !important;
+  padding-right: 82px !important;
 }
 
-.sport-card .sport-card-symbol {
-  width: 92px !important;
-  height: 92px !important;
-  max-width: 92px !important;
-  max-height: 92px !important;
+.compact-sport-card .sport-card-symbol {
+  width: 86px !important;
+  height: 86px !important;
+  max-width: 86px !important;
+  max-height: 86px !important;
   border-radius: 22px !important;
-  font-size: 42px !important;
+  font-size: 0 !important;
+  line-height: 1 !important;
 }
 
-.sport-card .sport-eyebrow {
+.compact-sport-card .sport-card-symbol::before,
+.compact-sport-card .sport-card-symbol::after {
+  content: "" !important;
+  display: none !important;
+}
+
+.compact-sport-card .sport-avatar-glyph {
+  display: block !important;
+  font-size: 42px !important;
+  line-height: 1 !important;
+}
+
+.compact-sport-card .sport-eyebrow {
   margin-top: 2px !important;
   font-size: 13px !important;
   line-height: 1.1 !important;
 }
 
-.sport-card h3 {
+.compact-sport-card h3 {
   margin-top: 8px !important;
   font-size: clamp(34px, 9vw, 44px) !important;
   line-height: .96 !important;
 }
 
-.sport-card p {
+.compact-sport-card p {
   margin-top: 8px !important;
-  padding-right: 4px !important;
+  padding-right: 0 !important;
   font-size: 17px !important;
   line-height: 1.25 !important;
   display: -webkit-box !important;
@@ -40,61 +76,42 @@
   -webkit-box-orient: vertical !important;
 }
 
-.sport-card .card-arrow {
-  position: relative !important;
-  justify-self: end !important;
-  margin-top: 6px !important;
-  width: 24px !important;
-  height: 24px !important;
-  opacity: .9 !important;
-  transform: rotate(-45deg) !important;
+.compact-sport-card .card-arrow,
+.compact-sport-card .sport-card-main::after {
+  display: none !important;
 }
 
-.sport-card .sport-card-main::after {
-  content: "🔔" !important;
-  position: absolute !important;
-  top: 18px !important;
-  right: 48px !important;
-  width: 28px !important;
-  height: 28px !important;
-  display: grid !important;
-  place-items: center !important;
-  color: var(--lime) !important;
-  font-size: 18px !important;
-  opacity: .9 !important;
-}
-
-.sport-card .sport-chip-row {
+.compact-sport-card .sport-chip-row {
   display: flex !important;
   gap: 8px !important;
-  margin: 10px 0 0 104px !important;
+  margin: 10px 0 0 98px !important;
   position: static !important;
   right: auto !important;
   top: auto !important;
   z-index: auto !important;
 }
 
-.sport-card .sport-card-chip:first-child {
+.compact-sport-card .sport-card-chip:first-child {
   display: none !important;
 }
 
-.sport-card .sport-card-participants-chip,
-.sport-card .sport-card-chip:last-child {
+.compact-sport-card .sport-card-participants-chip,
+.compact-sport-card .sport-duration-chip {
   min-height: 40px !important;
   width: auto !important;
-  min-width: 92px !important;
+  min-width: 88px !important;
   padding: 6px 12px !important;
   border-radius: 16px !important;
   justify-content: center !important;
-  font-size: 16px !important;
+  font-size: 15px !important;
   font-weight: 900 !important;
 }
 
-.sport-card .sport-card-chip:last-child svg {
+.compact-sport-card .sport-duration-chip svg {
   display: inline !important;
 }
 
-.sport-card .activity-card-details.sport-details-grid {
+.compact-sport-card .activity-card-details.sport-details-grid {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 8px !important;
@@ -103,17 +120,17 @@
   border-top: 1px solid rgba(255, 255, 255, .08) !important;
 }
 
-.sport-card .activity-card-details.sport-details-grid > div {
+.compact-sport-card .activity-card-details.sport-details-grid > div {
   min-height: 54px !important;
   border-radius: 16px !important;
   padding: 8px 10px !important;
 }
 
-.sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span::before {
-  content: "Новичок · " !important;
+.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span::before {
+  content: "" !important;
 }
 
-.sport-card .activity-card-footer {
+.compact-sport-card .compact-sport-actions {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   gap: 1px !important;
@@ -124,67 +141,59 @@
   background: var(--lime) !important;
 }
 
-.sport-card .activity-card-footer .spots {
-  display: flex !important;
-  min-height: 52px !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  color: #0b0f14 !important;
-  font-size: 0 !important;
-  font-weight: 1000 !important;
-}
-
-.sport-card .activity-card-footer .spots::before {
-  content: "Тренер" !important;
-  font-size: 18px !important;
-}
-
-.sport-card .activity-card-footer .card-status {
-  display: none !important;
-}
-
-.sport-card .activity-card-footer .card-join {
+.compact-sport-card .sport-coach-action,
+.compact-sport-card .compact-sport-actions .card-join {
   width: 100% !important;
   min-height: 52px !important;
   border: 0 !important;
-  border-left: 1px solid rgba(0, 0, 0, .22) !important;
   border-radius: 0 !important;
   margin: 0 !important;
   background: transparent !important;
   color: #0b0f14 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
   font-size: 18px !important;
   font-weight: 1000 !important;
 }
 
+.compact-sport-card .compact-sport-actions .card-join {
+  border-left: 1px solid rgba(0, 0, 0, .22) !important;
+}
+
 @media (max-width: 430px) {
-  .sport-card .sport-card-main {
-    grid-template-columns: 86px minmax(0, 1fr) 58px !important;
+  .compact-sport-card .sport-card-main {
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+    padding-right: 78px !important;
   }
 
-  .sport-card .sport-card-symbol {
-    width: 86px !important;
-    height: 86px !important;
-    max-width: 86px !important;
-    max-height: 86px !important;
+  .compact-sport-card .sport-card-symbol {
+    width: 82px !important;
+    height: 82px !important;
+    max-width: 82px !important;
+    max-height: 82px !important;
+  }
+
+  .compact-sport-card .sport-avatar-glyph {
     font-size: 40px !important;
   }
 
-  .sport-card h3 {
-    font-size: 36px !important;
+  .compact-sport-card h3 {
+    font-size: 35px !important;
   }
 
-  .sport-card p {
+  .compact-sport-card p {
     font-size: 16px !important;
   }
 
-  .sport-card .sport-chip-row {
-    margin-left: 98px !important;
+  .compact-sport-card .sport-chip-row {
+    margin-left: 94px !important;
   }
 
-  .sport-card .sport-card-participants-chip,
-  .sport-card .sport-card-chip:last-child {
-    min-width: 84px !important;
-    font-size: 15px !important;
+  .compact-sport-card .sport-card-participants-chip,
+  .compact-sport-card .sport-duration-chip {
+    min-width: 82px !important;
+    font-size: 14px !important;
   }
 }
