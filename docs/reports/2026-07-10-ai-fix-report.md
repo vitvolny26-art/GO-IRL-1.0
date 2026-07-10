@@ -195,3 +195,45 @@ Medium-low. CSS-only and scoped to `.compact-sport-card`.
 
 ## Follow-up
 Run quality gates and verify the compact sport card footer on mobile after Vercel deploy.
+
+---
+
+## Summary
+Added final compact sport card override layer.
+
+## Root cause
+The existing compact sport card CSS accumulated several overrides, and the requested visual order still needed a safer final layer: a proper share arrow, slightly lower metadata chips, separated footer buttons, and reordered info cells.
+
+## Files changed
+- `src/compact-sport-card-final.css`
+- `src/main.tsx`
+- `docs/reports/2026-07-10-ai-fix-report.md`
+
+## Fix applied
+- Added a final scoped CSS override loaded after `compact-sport-card.css`.
+- Replaced share icon with an SVG-mask curved arrow.
+- Moved duration/participants slightly lower.
+- Reordered info cells visually: date, price, address, level/status.
+- Forced address wrapping for two-line display.
+- Split bottom actions into two separate rounded buttons.
+
+## Verification
+```text
+pnpm run lint   PENDING
+pnpm run build  PENDING
+pnpm run test   PENDING
+```
+
+## Risks
+Medium. CSS-only, but adds one new loaded stylesheet to avoid rewriting the accumulated old CSS.
+
+## Not touched
+- Supabase schema/RLS/auth
+- Telegram auth flow
+- store architecture
+- migrations
+- env/secrets
+- dependencies
+
+## Follow-up
+Run quality gates and visually verify the compact sport card on mobile after Vercel deploy.
