@@ -6,11 +6,11 @@ type SheetAction = {
   action: () => void;
 };
 
-const messengerSvg: Record<MessengerKind, string> = {
-  telegram: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.7 4.4 18.4 20c-.2 1-.8 1.2-1.6.7l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L6.9 14 2.4 12.6c-1-.3-1-.9.2-1.4L20.1 4c.8-.3 1.5.2 1.6.4Z"/></svg>`,
-  whatsapp: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6a9.3 9.3 0 0 0-8 14l-1 3.7 3.8-1A9.3 9.3 0 1 0 12 2.6Z"/><path d="M8.8 7.6c-.2-.4-.4-.4-.7-.4h-.6c-.2 0-.6.1-.9.4-.3.4-1.1 1.1-1.1 2.6s1.1 3 1.3 3.2c.2.2 2.2 3.4 5.4 4.6 2.7 1.1 3.2.9 3.8.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.7-.5l-2.2-1.1c-.3-.1-.6-.2-.8.2l-.9 1.1c-.2.3-.4.3-.8.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.4 0-.6.1-.7l.6-.7c.2-.2.2-.4.3-.6.1-.2.1-.4 0-.7L8.8 7.6Z"/></svg>`,
-  messenger: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7c-5.4 0-9.6 3.9-9.6 9.1 0 2.8 1.4 5.3 3.5 6.9v3.4l3.2-1.8c.9.2 1.9.4 2.9.4 5.4 0 9.6-3.9 9.6-9.1S17.4 2.7 12 2.7Z"/><path d="m6.5 14.5 4.1-4.3 3.1 3.2 3.8-4.1-4.1 7-3.1-3.2-3.8 1.4Z"/></svg>`,
-  viber: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 3.5h9.6A3.7 3.7 0 0 1 20.5 7v6.8a3.7 3.7 0 0 1-3.7 3.7h-3.1l-3.4 3.1v-3.1H7.2a3.7 3.7 0 0 1-3.7-3.7V7a3.7 3.7 0 0 1 3.7-3.5Z"/><path d="M8.4 7.3c-.4.2-.7.9-.6 1.5.5 3.1 2.9 5.5 6 6 .6.1 1.3-.2 1.5-.6l.4-.7c.2-.4.1-.8-.3-1l-1.3-.8c-.4-.2-.8-.1-1 .2l-.4.5a5.2 5.2 0 0 1-2.6-2.6l.5-.4c.3-.3.4-.7.2-1l-.8-1.3c-.2-.4-.7-.5-1-.3l-.7.4Z"/><path d="M13.5 7.2c1.8.4 2.9 1.5 3.3 3.3M13.7 9.4c.7.2 1.1.6 1.3 1.3"/></svg>`,
+const messengerIconUrl: Record<MessengerKind, string> = {
+  telegram: "https://cdn.simpleicons.org/telegram",
+  whatsapp: "https://cdn.simpleicons.org/whatsapp",
+  messenger: "https://cdn.simpleicons.org/messenger",
+  viber: "https://cdn.simpleicons.org/viber",
 };
 
 const triggerIdAttr = "data-card-action-trigger-id";
@@ -55,7 +55,7 @@ const showCardActionSheet = (actions: SheetAction[], trigger?: HTMLElement) => {
     button.type = "button";
     button.className = `unified-card-icon-option unified-card-icon-option--${item.kind}`;
     button.setAttribute("aria-label", item.label);
-    button.innerHTML = `<span class="unified-card-icon-circle">${messengerSvg[item.kind]}</span>`;
+    button.innerHTML = `<span class="unified-card-icon-circle"><img src="${messengerIconUrl[item.kind]}" alt="" loading="lazy" decoding="async" /></span>`;
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       sheet.remove();
