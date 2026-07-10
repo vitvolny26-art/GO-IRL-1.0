@@ -122,13 +122,13 @@ const normalizeGenericCard = (card: HTMLElement) => {
     <button class="sport-card-icon-action" type="button" aria-label="Напоминание">${svg.bell}</button>
     <button class="sport-card-icon-action" type="button" aria-label="Поделиться">${svg.share}</button>
   `;
-  topActions.querySelector("[aria-label='Напоминание']")?.addEventListener("click", (event) => {
+  topActions.querySelector<HTMLElement>("[aria-label='Напоминание']")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openCardReminderSheet();
+    openCardReminderSheet(event.currentTarget as HTMLElement);
   });
-  topActions.querySelector("[aria-label='Поделиться']")?.addEventListener("click", (event) => {
+  topActions.querySelector<HTMLElement>("[aria-label='Поделиться']")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openCardShareSheet(title, fields.date || duration, safeAddress);
+    openCardShareSheet(title, fields.date || duration, safeAddress, event.currentTarget as HTMLElement);
   });
   card.insertBefore(topActions, main);
 
@@ -140,7 +140,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
   `;
   chips.querySelector(".sport-duration-chip")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openCardReminderSheet();
+    openCardReminderSheet(event.currentTarget as HTMLElement);
   });
   chips.querySelector(".sport-card-participants-chip")?.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -159,7 +159,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
     `;
     details.querySelector("button:first-child")?.addEventListener("click", (event) => {
       event.stopPropagation();
-      openCardReminderSheet();
+      openCardReminderSheet(event.currentTarget as HTMLElement);
     });
     details.querySelector("button:nth-child(3)")?.addEventListener("click", (event) => {
       event.stopPropagation();
