@@ -46,8 +46,6 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 
 | ID | Debt item | Type | Severity | Owner | Status | Due date | Notes |
 |---|---|---|---|---|---|---|---|
-| KD-001 | `DOCS_INDEX.md` still uses non-model status `Current` | Governance conflict | Critical | Project Archivist | Open | 2026-07-16 | Must normalize to Draft / Review / Approved / Active / Deprecated / Archived. |
-| KD-002 | README references missing root sprint files | Broken reference | Critical | Project Archivist | Open | 2026-07-16 | Replace root references with `docs/roadmap/*` links. |
 | KD-003 | Bible audit and roadmap reference missing Bible books | Missing source files | Critical | Project Archivist | Open | 2026-07-23 | Restore missing files or rewrite audit to actual state. |
 | KD-004 | `docs/market/*` is referenced by onboarding/governance docs but folder is absent | Missing documentation package | High | Market Analyst | Open | 2026-07-23 | Create market package or remove references. |
 | KD-005 | Strategic docs lack YAML frontmatter | Metadata debt | High | Project Archivist | Open | 2026-07-31 | Add `title`, `owner`, `status`, `source_of_truth`, `last_review`, `next_review`. |
@@ -61,15 +59,16 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 
 ## Immediate correction order
 
-1. Normalize `DOCS_INDEX.md` to the Knowledge Status Model.
-2. Register this file in `DOCS_INDEX.md`.
-3. Create missing `docs/market/*` package.
-4. Restore or rewrite missing Bible chapters.
-5. Add YAML frontmatter to P0/P1 source-of-truth documents.
-6. Create ADR registry.
-7. Add docs audit automation.
+1. Create missing `docs/market/*` package.
+2. Restore or rewrite missing Bible chapters.
+3. Add YAML frontmatter to P0/P1 source-of-truth documents.
+4. Create ADR registry.
+5. Align security/release/Supabase wording.
+6. Add docs audit automation.
 
 ## Closed history
 
 | ID | Closed on | Resolution |
 |---|---|---|
+| KD-001 | 2026-07-09 | `DOCS_INDEX.md` status registry normalized from `Current` to `Active` under Knowledge Status Model. |
+| KD-002 | 2026-07-09 | `README.md` root sprint references replaced with `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md`; Knowledge Debt link added. |
