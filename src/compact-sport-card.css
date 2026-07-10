@@ -30,13 +30,24 @@
 }
 
 .compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2)::before {
-  content: "↪" !important;
-  display: block !important;
-  color: var(--lime) !important;
-  font-size: 28px !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
-  transform: translateY(-1px) rotate(-12deg) !important;
+  content: "" !important;
+  width: 19px !important;
+  height: 15px !important;
+  border: 3px solid currentColor !important;
+  border-left: 0 !important;
+  border-bottom: 0 !important;
+  border-radius: 0 12px 0 0 !important;
+  transform: translate(-2px, 2px) rotate(-8deg) skewX(-8deg) !important;
+}
+
+.compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2)::after {
+  content: "" !important;
+  position: absolute !important;
+  width: 11px !important;
+  height: 11px !important;
+  border-top: 3px solid currentColor !important;
+  border-right: 3px solid currentColor !important;
+  transform: translate(8px, -4px) rotate(45deg) !important;
 }
 
 .compact-sport-card .sport-reminder-placeholder {
@@ -95,9 +106,7 @@
 }
 
 .compact-sport-card .sport-eyebrow {
-  margin-top: 2px !important;
-  font-size: 13px !important;
-  line-height: 1.1 !important;
+  display: none !important;
 }
 
 .compact-sport-card h3 {
@@ -123,12 +132,12 @@
 
 .compact-sport-card .sport-chip-row {
   position: absolute !important;
-  top: 88px !important;
+  top: 58px !important;
   right: 16px !important;
   z-index: 5 !important;
   display: grid !important;
   grid-template-columns: 1fr !important;
-  gap: 8px !important;
+  gap: 7px !important;
   margin: 0 !important;
 }
 
@@ -146,11 +155,11 @@
 
 .compact-sport-card .sport-card-participants-chip,
 .compact-sport-card .sport-duration-chip {
-  min-height: 40px !important;
-  width: 96px !important;
-  min-width: 96px !important;
-  padding: 6px 10px !important;
-  border-radius: 16px !important;
+  min-height: 36px !important;
+  width: 92px !important;
+  min-width: 92px !important;
+  padding: 5px 9px !important;
+  border-radius: 15px !important;
   justify-content: center !important;
   font-size: 15px !important;
   font-weight: 900 !important;
@@ -177,13 +186,20 @@
 
 .compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) {
   display: grid !important;
-  grid-template-columns: 24px minmax(0, 1fr) !important;
+  grid-template-columns: 22px minmax(0, 1fr) !important;
   grid-template-rows: 1fr 1fr !important;
-  row-gap: 6px !important;
+  column-gap: 8px !important;
+  row-gap: 4px !important;
+  align-items: center !important;
 }
 
 .compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) svg {
+  grid-column: 1 !important;
   grid-row: 1 !important;
+  width: 19px !important;
+  height: 19px !important;
+  align-self: center !important;
+  justify-self: center !important;
 }
 
 .compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4)::after {
@@ -191,8 +207,10 @@
   grid-column: 1 !important;
   grid-row: 2 !important;
   color: var(--lime) !important;
-  font-size: 25px !important;
+  font-size: 20px !important;
   line-height: 1 !important;
+  align-self: center !important;
+  justify-self: center !important;
 }
 
 .compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span {
@@ -200,29 +218,25 @@
   grid-row: 1 / span 2 !important;
   white-space: pre-line !important;
   line-height: 1.35 !important;
-}
-
-.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span::before {
-  content: "Новичок\A На улице" !important;
-}
-
-.compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span {
+  align-self: center !important;
   font-size: 0 !important;
 }
 
 .compact-sport-card .activity-card-details.sport-details-grid > div:nth-child(4) span::before {
+  content: "Новичок\A На улице" !important;
   font-size: 15px !important;
 }
 
 .compact-sport-card .compact-sport-actions {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 1px !important;
+  gap: 0 !important;
   margin-top: 10px !important;
   min-height: 52px !important;
   border-radius: 16px !important;
   overflow: hidden !important;
-  background: var(--lime) !important;
+  background: transparent !important;
+  border: 1px solid rgba(201, 255, 61, .26) !important;
 }
 
 .compact-sport-card .sport-coach-action,
@@ -232,8 +246,6 @@
   border: 0 !important;
   border-radius: 0 !important;
   margin: 0 !important;
-  background: transparent !important;
-  color: #0b0f14 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -242,8 +254,15 @@
   font-weight: 1000 !important;
 }
 
+.compact-sport-card .sport-coach-action {
+  background: rgba(201, 255, 61, .08) !important;
+  color: var(--lime) !important;
+}
+
 .compact-sport-card .compact-sport-actions .card-join {
-  border-left: 1px solid rgba(0, 0, 0, .22) !important;
+  background: var(--lime) !important;
+  color: #0b0f14 !important;
+  border-left: 1px solid rgba(0, 0, 0, .25) !important;
 }
 
 @media (max-width: 430px) {
@@ -272,7 +291,7 @@
   }
 
   .compact-sport-card .sport-chip-row {
-    top: 86px !important;
+    top: 56px !important;
     right: 14px !important;
   }
 
