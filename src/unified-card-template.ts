@@ -1,3 +1,5 @@
+import { openCardReminderSheet, openCardShareSheet } from "./card-action-sheets";
+
 const processedAttr = "data-go-irl-unified-card";
 
 const text = (el: Element | null) => el?.textContent?.trim() || "";
@@ -6,61 +8,6 @@ const stripEmoji = (value: string) => compactSpaces(value.replace(/[\p{Emoji_Pre
 
 const openUrl = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
-};
-
-const showMiniSheet = (title: string, actions: Array<{ label: string; action: () => void }>) => {
-  document.querySelector(".unified-card-mini-sheet")?.remove();
-
-  const sheet = document.createElement("div");
-  sheet.className = "unified-card-mini-sheet";
-  sheet.innerHTML = `<strong>${title}</strong>`;
-
-  actions.forEach((item) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = item.label;
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      sheet.remove();
-      item.action();
-    });
-    sheet.append(button);
-  });
-
-  const close = document.createElement("button");
-  close.type = "button";
-  close.textContent = "Закрыть";
-  close.addEventListener("click", (event) => {
-    event.stopPropagation();
-    sheet.remove();
-  });
-  sheet.append(close);
-  document.body.append(sheet);
-};
-
-const shareText = (title: string, date: string, address: string) => {
-  const url = window.location.href.split("?")[0];
-  return `GO IRL: ${title}\n${date}\n${address}\n${url}`;
-};
-
-const openShareSheet = (title: string, date: string, address: string) => {
-  const message = shareText(title, date, address);
-  const encoded = encodeURIComponent(message);
-  showMiniSheet("Поделиться", [
-    { label: "Telegram", action: () => openUrl(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encoded}`) },
-    { label: "WhatsApp", action: () => openUrl(`https://wa.me/?text=${encoded}`) },
-    { label: "Messenger", action: () => openUrl(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`) },
-    { label: "Viber", action: () => openUrl(`viber://forward?text=${encoded}`) },
-  ]);
-};
-
-const openReminderSheet = (title: string) => {
-  showMiniSheet("Напоминание", [
-    { label: "Telegram", action: () => undefined },
-    { label: "WhatsApp", action: () => undefined },
-    { label: "Messenger", action: () => undefined },
-    { label: "Viber", action: () => undefined },
-  ]);
 };
 
 const openMap = (address: string) => {
@@ -177,11 +124,11 @@ const normalizeGenericCard = (card: HTMLElement) => {
   `;
   topActions.querySelector("[aria-label='Напоминание']")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openReminderSheet(title);
+    openCardReminderSheet();
   });
   topActions.querySelector("[aria-label='Поделиться']")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openShareSheet(title, fields.date || duration, safeAddress);
+    openCardShareSheet(title, fields.date || duration, safeAddress);
   });
   card.insertBefore(topActions, main);
 
@@ -193,7 +140,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
   `;
   chips.querySelector(".sport-duration-chip")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openReminderSheet(title);
+    openCardReminderSheet();
   });
   chips.querySelector(".sport-card-participants-chip")?.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -212,7 +159,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
     `;
     details.querySelector("button:first-child")?.addEventListener("click", (event) => {
       event.stopPropagation();
-      openReminderSheet(title);
+      openCardReminderSheet();
     });
     details.querySelector("button:nth-child(3)")?.addEventListener("click", (event) => {
       event.stopPropagation();
