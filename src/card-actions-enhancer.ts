@@ -24,38 +24,8 @@ const openGoogleCalendar = (title: string) => {
   const url = new URL("https://calendar.google.com/calendar/render");
   url.searchParams.set("action", "TEMPLATE");
   url.searchParams.set("text", title || "GO IRL event");
-  url.searchParams.set("details", "GO IRL — Less scrolling. More living.");
+  url.searchParams.set("details", "GO IRL — Less scrolling. More living. Настройте напоминание в Google Calendar.");
   openExternal(url.toString());
-};
-
-const createReminderPanel = () => {
-  const existing = document.querySelector<HTMLElement>(".go-irl-reminder-panel");
-  if (existing) {
-    existing.remove();
-    return;
-  }
-
-  const panel = document.createElement("div");
-  panel.className = "go-irl-reminder-panel";
-  panel.innerHTML = `
-    <strong>Напомнить</strong>
-    <button type="button" data-reminder="15">За 15 мин</button>
-    <button type="button" data-reminder="60">За 1 час</button>
-    <button type="button" data-reminder="1440">За день</button>
-  `;
-
-  panel.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement | null;
-    const button = target?.closest<HTMLButtonElement>("button[data-reminder]");
-    if (!button) return;
-
-    const minutes = button.dataset.reminder || "15";
-    window.localStorage.setItem("go-irl:last-reminder", minutes);
-    panel.innerHTML = `<strong>Напоминание сохранено</strong><span>За ${minutes} мин.</span>`;
-    window.setTimeout(() => panel.remove(), 1400);
-  });
-
-  document.body.appendChild(panel);
 };
 
 const openCardDetails = (card: HTMLElement) => {
@@ -146,8 +116,7 @@ const enhanceCard = (card: HTMLElement) => {
       item.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        if (/\d{1,2}:\d{2}/.test(text)) createReminderPanel();
-        else openGoogleCalendar(cardTitle(card));
+        openGoogleCalendar(cardTitle(card));
       });
     }
   });
