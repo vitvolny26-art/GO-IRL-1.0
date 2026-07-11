@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Bell, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
+import { openCardReminderSheet, openCardShareSheet } from "../card-action-sheets";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import { formatEventTime } from "../eventTime";
 import { useAppStore } from "../store";
@@ -148,22 +149,12 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   const full = activity.participants >= activity.capacity;
   const action = pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
-  const [reminderPreviewOpen, setReminderPreviewOpen] = useState(false);
   const [hasConfirmedCoach, setHasConfirmedCoach] = useState(false);
   const avatar = sportAvatarForActivity(activity, language, meta);
 
   const joinedMembers = activity.members.filter(m => m.status === "joined");
   const shareTitle = cleanSportLabel(activity.activity[language]);
-
-  const handleShare = async () => {
-    const url = activityInviteUrl(activity);
-    const text = `${shareTitle}\n${url}`;
-    if (navigator.share) {
-      await navigator.share({ title: shareTitle, text, url });
-      return;
-    }
-    await navigator.clipboard?.writeText(text);
-  };
+  const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
 
   useEffect(() => {
     let active = true;
@@ -198,15 +189,9 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   return (
     <article className="sport-card compact-sport-card">
       <div className="sport-card-top-actions">
-        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" aria-expanded={reminderPreviewOpen} onClick={(event) => { event.stopPropagation(); setReminderPreviewOpen((open) => !open); }}><Bell size={20} /></button>
-        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); void handleShare(); }}><Share2 size={20} /></button>
+        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><Bell size={20} /></button>
+        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); openCardShareSheet(shareTitle, shareDate, activity.address, event.currentTarget, activityInviteUrl(activity)); }}><Share2 size={20} /></button>
       </div>
-      {reminderPreviewOpen && (
-        <div className="sport-reminder-placeholder">
-          <strong>Уведомления скоро</strong>
-          <span>Тут будет выбор мессенджера для напоминания.</span>
-        </div>
-      )}
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className="sport-card-symbol"><span className="sport-avatar-glyph">{avatar}</span></div>
         <div>
@@ -255,7 +240,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       )}
       <div className="activity-card-details sport-details-grid">
         <div><MapPin /><span>{activity.address}</span></div>
-        <div><CalendarDays /><span>{compactDateLabel(activity.date, language)}{formatEventTime(activity.time) ? " · " + formatEventTime(activity.time) : ""}</span></div>
+        <div><CalendarDays /><span>{shareDate}</span></div>
         <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
         <div><ShieldCheck /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
       </div>
