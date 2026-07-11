@@ -1,3 +1,12 @@
+---
+title: GO IRL Market Positioning
+owner: Product Lead
+status: Active
+source_of_truth: true
+last_review: 2026-07-11
+next_review: 2026-07-18
+---
+
 # GO IRL Market Positioning
 
 Status: **current product source of truth for market positioning**
