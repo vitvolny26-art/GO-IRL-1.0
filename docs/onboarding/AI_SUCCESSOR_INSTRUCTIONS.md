@@ -52,16 +52,16 @@ Everything else is experimental, future, or out of beta scope unless approved in
 
 ## Repositories
 
-Main code repo:
-
-```text
-vitvolny26-art/GO-IRL
-```
-
-Clean documentation/rebuild repo:
+Canonical code, documentation, and production repo:
 
 ```text
 vitvolny26-art/GO-IRL-1.0
+```
+
+Legacy repo (historical reference only; do not deploy):
+
+```text
+vitvolny26-art/GO-IRL
 ```
 
 Default branch:

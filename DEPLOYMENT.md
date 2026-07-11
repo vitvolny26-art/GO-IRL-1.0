@@ -43,7 +43,7 @@ Use only the publishable/anon key in frontend hosting. Never put a service role 
 
 ## 3. Vercel production deployment
 
-1. Import the GitHub repository `vitvolny26-art/GO-IRL`.
+1. Import the canonical production GitHub repository `vitvolny26-art/GO-IRL-1.0`.
 2. Framework preset: `Vite`.
 3. Build command: `pnpm run build`.
 4. Install command: `pnpm install --frozen-lockfile`.
@@ -58,6 +58,8 @@ VITE_GO_IRL_LEGACY_DEMO_AUTH=false
 ```
 
 The repository includes `vercel.json`, so Vercel should pick up the SPA fallback settings automatically.
+
+The Vercel project connected to production must track `vitvolny26-art/GO-IRL-1.0`. The legacy `vitvolny26-art/GO-IRL` repository and its Vercel project must not be used for the current Telegram Mini App URL.
 
 After the GitHub connection is active, every push to `main` should trigger a production deploy automatically.
 
@@ -93,7 +95,7 @@ Do not use `SPRINT0_STATUS.md` as deployment truth. It contains historical Netli
 
 1. Open `@BotFather`.
 2. Select the GO IRL bot.
-3. Configure the Mini App web app URL to the current production Vercel URL.
+3. Configure the Mini App web app URL to the current production Vercel URL deployed from `vitvolny26-art/GO-IRL-1.0`.
 4. Configure the menu button title.
 5. Restart the Mini App in Telegram after changing the URL.
 6. Validate Telegram `startapp` share links through `@GOirl_bot`.
