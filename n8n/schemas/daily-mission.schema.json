@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://go-irl.local/schemas/daily-mission.schema.json",
+  "title": "GO IRL Daily Mission",
+  "description": "Report-only mission intake contract for GO IRL AI Staff OS Phase 1.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "title",
+    "objective",
+    "expected_deliverable"
+  ],
+  "properties": {
+    "mission_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{5,79}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "business_reason": {
+      "type": "string",
+      "maxLength": 1000
+    },
+    "expected_deliverable": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "normal", "high", "critical"],
+      "default": "normal"
+    },
+    "maximum_budget_usd": {
+      "type": "number",
+      "minimum": 0.01,
+      "maximum": 5,
+      "default": 0.75
+    },
+    "related_github_issue": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "string", "pattern": "^#?[0-9]+$" }
+      ]
+    },
+    "allowed_write_scope": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "string",
+        "maxLength": 160
+      },
+      "default": []
+    },
+    "forbidden_actions": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "maxLength": 160
+      },
+      "default": []
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "requested_by": {
+      "type": "string",
+      "maxLength": 100,
+      "default": "owner"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["owner", "github_issue", "manual", "scheduled"],
+      "default": "owner"
+    },
+    "metadata": {
+      "type": "object",
+      "default": {}
+    }
+  }
+}
