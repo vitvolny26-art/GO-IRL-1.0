@@ -3,7 +3,6 @@ const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..');
 const defaultWorkflow = path.join(repoRoot, 'n8n', 'workflows', 'go-irl-ai-staff-os-structural-test.json');
-const reportBusTemplate = path.join(repoRoot, 'docs', 'automation', 'go-irl-ai-report-bus-v1.template.json');
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -26,9 +25,12 @@ function removePrivateBindings(value) {
 
 function prepare(sourceFile, destinationFile) {
   const source = readJson(sourceFile);
-  const template = readJson(reportBusTemplate);
-  const safeParameters = new Map(template.nodes.map((node) => [node.name, node.parameters]));
   const prepared = removePrivateBindings(source);
+  const staffNodeNames = new Set(
+    prepared.nodes
+      .filter((node) => /^STAFF-(?:00|01|02)\b/.test(node.name))
+      .map((node) => node.name),
+  );
 
   prepared.name = 'GO IRL — AI Staff OS Structural Test (Sanitized)';
   prepared.active = false;
@@ -37,12 +39,16 @@ function prepare(sourceFile, destinationFile) {
   delete prepared.nodeGroups;
   delete prepared.tags;
 
-  for (const node of prepared.nodes) {
-    if (safeParameters.has(node.name)) {
-      node.parameters = structuredClone(safeParameters.get(node.name));
-    }
-    if (node.name === 'Schedule Trigger (Every 6h)') node.disabled = true;
+  prepared.nodes = prepared.nodes.filter((node) => staffNodeNames.has(node.name));
+  const staffConnections = {};
+  for (const [sourceName, connection] of Object.entries(prepared.connections || {})) {
+    if (!staffNodeNames.has(sourceName)) continue;
+    const main = (connection.main || []).map((slot) =>
+      (slot || []).filter((edge) => staffNodeNames.has(edge.node)),
+    );
+    staffConnections[sourceName] = { ...connection, main };
   }
+  prepared.connections = staffConnections;
 
   const noteName = 'STAFF-OS Single-Run Procedure';
   const note = {
@@ -137,18 +143,24 @@ function validate(file) {
 
   check(workflow.active === false, 'workflow must be inactive');
   for (const name of required) check(nodes.has(name), `missing required node: ${name}`);
-  check(nodes.get('Schedule Trigger (Every 6h)')?.disabled === true, 'schedule trigger must be disabled');
   for (const name of ['STAFF-01 Execute Role (DISABLED)', 'STAFF-02 Critic (DISABLED)', 'STAFF-01 Coordinator Synthesis (DISABLED)']) {
     check(nodes.get(name)?.disabled === true, `${name} must be disabled`);
   }
 
   const staffLane = reachable(workflow, 'STAFF-00 Mission Trigger (Manual)');
   const forbiddenTypes = /(?:googleDrive|gmail|github|telegram|supabase|httpRequest|openAi|langchain)/i;
-  for (const name of staffLane) {
-    const node = nodes.get(name);
-    check(node && !forbiddenTypes.test(node.type), `external/AI node is connected to Staff OS lane: ${name}`);
+  for (const node of workflow.nodes) {
+    check(!forbiddenTypes.test(node.type), `external/AI node remains in Staff-only workflow: ${node.name}`);
+    check(/^STAFF-(?:00|01|02)\b/.test(node.name) || node.name === 'STAFF-OS Single-Run Procedure', `non-Staff node remains: ${node.name}`);
   }
   check(!hasCycle(workflow, staffLane, 'STAFF-00 Mission Trigger (Manual)'), 'Staff OS lane contains a cycle');
+
+  const manualTriggers = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.manualTrigger');
+  check(manualTriggers.length === 1, `expected exactly one Manual Trigger, found ${manualTriggers.length}`);
+  check(manualTriggers[0]?.name === 'STAFF-00 Mission Trigger (Manual)', 'the only Manual Trigger must be STAFF-00 Mission Trigger (Manual)');
+  const triggerOut = outputs(workflow, 'STAFF-00 Mission Trigger (Manual)').flat();
+  check(triggerOut.length === 1 && triggerOut[0] === 'STAFF-00 Raw Mission Input (Sample)', 'Manual Trigger must connect directly to Raw Mission Input');
+  check(staffLane.size === workflow.nodes.filter((node) => node.type !== 'n8n-nodes-base.stickyNote').length, 'every executable node must be reachable from the Manual Trigger');
 
   const normalizeOut = outputs(workflow, 'STAFF-00 Normalize Mission').flat();
   const validOut = outputs(workflow, 'STAFF-00 Is Mission Valid?');
@@ -193,7 +205,8 @@ function validate(file) {
     return;
   }
   console.log(`PASS ${path.relative(repoRoot, file)}`);
-  console.log(`PASS ${required.length} required nodes; inactive; no cycle; no private bindings`);
+  console.log(`PASS ${required.length} required nodes; exactly one Manual Trigger; inactive; no cycle`);
+  console.log('PASS Staff-only graph; no external nodes, credentials, or private bindings');
   console.log('PASS validation-before-persistence; dual approval outputs; blocked-status guard');
 }
 
