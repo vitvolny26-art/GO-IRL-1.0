@@ -3,11 +3,14 @@ import { buildShareModel } from "./share-model-builder";
 import { closingLines, renderShareText } from "./share-renderer";
 import type { ShareBuildOptions } from "./types";
 
+const stableTemplateIndex = (activity: Activity) =>
+  [...activity.id].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+
 export const ShareTemplateService = {
   build(activity: Activity, language: Language, options: ShareBuildOptions = {}) {
     const model = buildShareModel(activity, language, options);
     const variants = closingLines[language];
-    const index = options.templateIndex ?? Math.floor(Math.random() * variants.length);
+    const index = options.templateIndex ?? stableTemplateIndex(activity);
     return renderShareText(model, language, variants[index % variants.length]);
   },
   buildPlainText(activity: Activity, language: Language, url: string, templateIndex?: number) {
@@ -17,4 +20,3 @@ export const ShareTemplateService = {
 
 export const buildActivityShareText = (activity: Activity, language: Language, templateIndex?: number) =>
   ShareTemplateService.build(activity, language, { templateIndex });
-
