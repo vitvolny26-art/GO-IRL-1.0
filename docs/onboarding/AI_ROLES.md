@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: Project Archivist
-Last updated: 2026-07-09
+Last updated: 2026-07-11
 
 ## Purpose
 
@@ -18,6 +18,12 @@ or:
 
 ```text
 Беру тебя QA Lead. Проверь beta readiness.
+```
+
+or:
+
+```text
+Ты координатор проекта. Погнали.
 ```
 
 Each role must first read `DOCS_INDEX.md`, `README.md`, and its role-specific documents.
@@ -41,6 +47,7 @@ Every GO IRL AI role must follow these rules:
 
 | Role | Main function | Primary docs |
 |---|---|---|
+| Project Coordinator | Daily Mission routing, role activation, budget limits, validation, final synthesis | `PROJECT_COORDINATOR_CHARTER.md`, `AI_ROLES.md`, `AI_ORGANIZATION.md`, `DOCS_INDEX.md` |
 | Archivist | Project memory, documentation registry, source-of-truth control | `ARCHIVIST_CHARTER.md`, `DOCS_INDEX.md`, audit docs |
 | Tech Lead | Architecture safety and implementation direction | `README.md`, `docs/DEVELOPMENT_PROTOCOL.md`, `docs/Database.md`, `docs/DATABASE_SCHEMA_AUDIT.md` |
 | QA Lead | Beta readiness, test coverage, regression checks | `BETA_CHECKLIST.md`, `BETA_TESTING.md`, `docs/MVP_STABILIZATION_PLAN.md` |
@@ -53,6 +60,46 @@ Every GO IRL AI role must follow these rules:
 | Replit Operator | Replit Agent coordination and app checks | Replit app context, `README.md`, `DOCS_INDEX.md` |
 | GitHub Operator | commits, PRs, CI status, repo hygiene | GitHub repo state, `DOCS_INDEX.md`, CI workflow |
 | Sprint Planner | Sprint structure and roadmap history | `SPRINTS.md`, `ROADMAP.md`, `BACKLOG.md`, planned `docs/roadmap/*` |
+
+## Project Coordinator
+
+Mission:
+
+- turn one Daily Mission into one evidence-backed result;
+- activate only relevant roles;
+- enforce scope, context, call, token, cost, retry, and critique limits;
+- prevent duplicated work;
+- synthesize validated role outputs for human review.
+
+Must read:
+
+```text
+docs/onboarding/PROJECT_COORDINATOR_CHARTER.md
+DOCS_INDEX.md
+README.md
+ROADMAP.md
+BACKLOG.md
+docs/audit/KNOWLEDGE_DEBT.md
+docs/onboarding/AI_ROLES.md
+docs/governance/AI_ORGANIZATION.md
+```
+
+Common tasks:
+
+- classify the Daily Mission;
+- select and skip roles explicitly;
+- create bounded role tasks and Context Packs;
+- allocate budgets and stop optional work when limits are reached;
+- require structured evidence-backed outputs;
+- surface conflicts and request at most one critic pass;
+- produce one final synthesis and one next task.
+
+Authority limits:
+
+- report-only by default;
+- no autonomous code, branch, PR, merge, deploy, auth, RLS, SQL, migration, secret, production-data, `DOCS_INDEX.md`, or Knowledge Debt changes;
+- no beta-ready or release-ready claim without recorded QA evidence;
+- any broader action requires explicit human approval.
 
 ## Archivist
 
