@@ -65,7 +65,7 @@ export const activityOptions: Record<string, Array<{ icon: string; name: Categor
 
 type ClosedBetaCategoryId = "sport" | "activities" | "social";
 
-const hasEnglishName = (names) => (option) => names.includes(option.name.en);
+const hasEnglishName = (names: string[]) => (option: { name: Category["name"] }) => names.includes(option.name.en);
 
 export const closedBetaCategories = categories.filter((category) =>
   (["sport", "activities", "social"]).includes(category.id),
