@@ -40,6 +40,15 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
+      - name: Capture lint
+        run: pnpm run lint > lint.log 2>&1 || true
+
+      - name: Upload lint log
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-log
+          path: lint.log
+
       - name: Lint
         run: pnpm run lint
 
