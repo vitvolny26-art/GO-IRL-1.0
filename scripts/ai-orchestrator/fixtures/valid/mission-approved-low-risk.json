@@ -8,7 +8,7 @@
     "docs/reports/2026-07-11-ai-developer-orchestrator-phase-0.md"
   ],
   "forbidden_paths": ["src/**", ".env*", "supabase/**", "docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md"],
-  "acceptance_criteria": ["Twelve fixtures match the contract matrix.", "All five quality-gate commands pass."],
+  "acceptance_criteria": ["The twelve baseline fixtures and five sensitive-scope fixtures match the contract matrix.", "All five quality-gate commands pass."],
   "maximum_budget_usd": 0.75,
   "requires_human_approval": true,
   "source_of_truth_refs": [

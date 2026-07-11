@@ -26,7 +26,20 @@
       "minItems": 1,
       "maxItems": 50,
       "uniqueItems": true,
-      "items": { "type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.env(?:[./*]|$))[A-Za-z0-9._/*?-]+$" }
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.env(?:[./*]|$))[A-Za-z0-9._/*?-]+$",
+        "allOf": [
+          { "not": { "pattern": "(?:^|/)(?:[Aa][Uu][Tt][Hh]|[Aa][Uu][Tt][Hh][Ee][Nn][Tt][Ii][Cc][Aa][Tt][Ii][Oo][Nn])(?:/|$)" } },
+          { "not": { "pattern": "(?:^|/)[Rr][Ll][Ss](?:/|$)" } },
+          { "not": { "pattern": "(?:^|/)[Ss][Qq][Ll](?:/|$)|\\.[Ss][Qq][Ll]$" } },
+          { "not": { "pattern": "(?:^|/)[Mm][Ii][Gg][Rr][Aa][Tt][Ii][Oo][Nn][Ss]?(?:/|$)" } },
+          { "not": { "pattern": "(?:^|/)(?:[Dd][Ee][Pp][Ll][Oo][Yy](?:[Mm][Ee][Nn][Tt])?|[Vv][Ee][Rr][Cc][Ee][Ll])(?:/|$)|(?:^|/)[Vv][Ee][Rr][Cc][Ee][Ll]\\.[Jj][Ss][Oo][Nn]$|(?:^|/)\\.[Vv][Ee][Rr][Cc][Ee][Ll](?:/|$)|(?:^|/)[Dd][Ee][Pp][Ll][Oo][Yy][Mm][Ee][Nn][Tt]\\.[Mm][Dd]$" } },
+          { "not": { "pattern": "(?:^|/)[Pp][Rr][Oo][Dd][Uu][Cc][Tt][Ii][Oo][Nn][-_]?[Dd][Aa][Tt][Aa](?:/|$)" } },
+          { "not": { "pattern": "(?:^|/)(?:[Ss][Ee][Cc][Rr][Ee][Tt][Ss]?|[Cc][Rr][Ee][Dd][Ee][Nn][Tt][Ii][Aa][Ll][Ss]?)(?:/|$)" } }
+        ]
+      }
     },
     "forbidden_paths": {
       "type": "array",

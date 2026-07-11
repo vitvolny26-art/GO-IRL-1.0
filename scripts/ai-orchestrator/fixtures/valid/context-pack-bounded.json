@@ -15,7 +15,7 @@
     "no_dependency_addition": true,
     "no_architecture_rewrite": true
   },
-  "acceptance_criteria": ["Twelve fixtures validate as expected.", "All five quality-gate commands pass."],
+  "acceptance_criteria": ["The twelve baseline fixtures and five sensitive-scope fixtures validate as expected.", "All five quality-gate commands pass."],
   "size_metadata": { "file_count": 2, "total_bytes": 21600, "max_bytes": 50000, "within_limit": true },
   "secret_redaction": { "status": "clean", "findings": [], "redacted_fields": [] }
 }

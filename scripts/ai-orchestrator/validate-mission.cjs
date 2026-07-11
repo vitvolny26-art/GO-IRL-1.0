@@ -41,6 +41,14 @@ function validateAgainstSchema(value, schema, currentPath = '$') {
     return errors;
   }
 
+  for (const childSchema of schema.allOf || []) {
+    errors.push(...validateAgainstSchema(value, childSchema, currentPath));
+  }
+
+  if (schema.not && validateAgainstSchema(value, schema.not, currentPath).length === 0) {
+    errors.push({ path: currentPath, code: 'not', message: 'matches a forbidden sensitive-scope pattern' });
+  }
+
   if (Object.hasOwn(schema, 'const') && !jsonEqual(value, schema.const)) {
     errors.push({ path: currentPath, code: 'const', message: `must equal ${JSON.stringify(schema.const)}` });
   }
@@ -128,24 +136,24 @@ function formatErrors(errors) {
   return errors.map((error) => `${error.path}: ${error.message}`).join('\n');
 }
 
-function runCli(argv) {
+function runContractCli(argv, options) {
   const target = argv[0];
   if (!target) {
-    console.error('Usage: node scripts/ai-orchestrator/validate-mission.cjs <mission.json>');
+    console.error(`Usage: node scripts/ai-orchestrator/${options.command} <${options.argument}>`);
     return 2;
   }
 
   const resolved = path.resolve(target);
-  let mission;
+  let value;
   try {
-    mission = readJson(resolved);
+    value = readJson(resolved);
   } catch (error) {
     console.error(`FAIL ${target}`);
     console.error(error instanceof Error ? error.message : String(error));
     return 1;
   }
 
-  const errors = validateMission(mission);
+  const errors = options.validate(value);
   if (errors.length > 0) {
     console.error(`FAIL ${target}`);
     console.error(formatErrors(errors));
@@ -156,6 +164,14 @@ function runCli(argv) {
   return 0;
 }
 
+function runCli(argv) {
+  return runContractCli(argv, {
+    argument: 'mission.json',
+    command: 'validate-mission.cjs',
+    validate: validateMission,
+  });
+}
+
 if (require.main === module) {
   process.exitCode = runCli(process.argv.slice(2));
 }
@@ -163,6 +179,7 @@ if (require.main === module) {
 module.exports = {
   formatErrors,
   readJson,
+  runContractCli,
   runCli,
   validateAgainstSchema,
   validateMission,

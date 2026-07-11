@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-SENSITIVE-AUTH-RLS",
+  "objective": "Attempt to modify authentication and RLS policy paths.",
+  "risk_level": "low",
+  "allowed_paths": ["src/Auth/**", "supabase/RLS/**"],
+  "forbidden_paths": [".env*"],
+  "acceptance_criteria": ["Sensitive paths must be rejected."],
+  "maximum_budget_usd": 0.5,
+  "requires_human_approval": true,
+  "source_of_truth_refs": ["docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md"]
+}
