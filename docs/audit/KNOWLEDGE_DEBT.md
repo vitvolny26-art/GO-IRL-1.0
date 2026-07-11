@@ -23,6 +23,17 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 - This file tracks documentation and knowledge debt only.
 - Code, `.env`, secrets, Supabase RLS, auth, and destructive SQL are out of scope unless explicitly approved elsewhere.
 - Assistant reports from NotebookLM, Gemini, or other AI tools are inputs for review, not source-of-truth documents.
+- AI audit claims must be verified against GitHub source-of-truth files before changing source-of-truth docs, roadmap status, implementation scope, or code.
+
+## AI audit verification discipline
+
+Before accepting NotebookLM, Gemini, ChatGPT, or other AI-generated audit findings:
+
+1. Check the claimed file/path directly in GitHub.
+2. Confirm whether the finding is still current on `main`.
+3. Prefer canonical docs in `DOCS_INDEX.md` over exported mirrors, chat history, or generated reports.
+4. Mark unverified claims as `Review`, not `Closed` or source-of-truth.
+5. Do not patch code from audit claims unless the affected source file confirms the issue.
 
 ## Severity model
 
@@ -57,16 +68,14 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 | KD-012 | `docs/governance/KNOWLEDGE_PLATFORM_2_0.md` and `docs/audit/KNOWLEDGE_PLATFORM_EPIC.md` overlap | Duplication | Medium | Project Archivist | Open | 2026-08-09 | Merge, archive, or define distinct purpose. |
 | KD-014 | Chat lifecycle wording may conflict with SQL/migration behavior | Docs/schema mismatch | High | Supabase Steward | Open | 2026-07-18 | NotebookLM audit flagged a possible mismatch between event lifecycle documentation and chat expiry behavior. Verify against migrations and product intent before any SQL work. Do not change Supabase/RLS/auth from this item alone. |
 | KD-015 | Legacy/demo identity fallback can confuse Trusted Auth documentation | Security documentation drift | Medium | Security Lead | Open | 2026-07-24 | Verify current production path, release wording, and legacy/demo header boundaries. Do not change `.env`, Vercel secrets, auth, or RLS from this item alone. |
-| KD-016 | Assistant reports may contain false positives if generated from incomplete exports | AI audit reliability | Medium | Project Archivist | Open | 2026-07-24 | NotebookLM reported missing files that may exist in GitHub. Add verification discipline: every AI audit claim must be checked against GitHub before changing source-of-truth docs. |
 
 ## Immediate correction order
 
 1. Add YAML frontmatter to P0/P1 source-of-truth documents.
-2. Verify NotebookLM findings against GitHub before accepting them into source-of-truth docs.
-3. Review chat lifecycle documentation versus current Supabase migration behavior without changing SQL yet.
-4. Align security/release/Supabase wording.
-5. Create ADR registry.
-6. Add docs audit automation.
+2. Review chat lifecycle documentation versus current Supabase migration behavior without changing SQL yet.
+3. Align security/release/Supabase wording.
+4. Create ADR registry.
+5. Add docs audit automation.
 
 ## Closed history
 
@@ -77,3 +86,4 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 | KD-003 | 2026-07-11 | Bible target chapters were completed and the audit/roadmap were rewritten to actual state. `docs/bible/09-governance-and-ai-organization.md` and `docs/bible/10-operations-and-release.md` now exist and are registered in `DOCS_INDEX.md`. |
 | KD-004 | 2026-07-09 | Created `docs/market/README.md`, `docs/market/CONTINUOUS_COMPETITOR_INTELLIGENCE.md`, and `docs/market/COMPETITOR_ANALYSIS_TEMPLATE.md`. |
 | KD-013 | 2026-07-11 | Category scope conflict moved from docs-only ambiguity to implemented closed-beta taxonomy guard: `CHANGELOG.md` labels extras as taxonomy/test candidates; `ROADMAP.md` and `BACKLOG.md` keep six-category guardrail; create-event UI now uses closed beta categories/options while broader taxonomy remains hidden/experimental data. |
+| KD-016 | 2026-07-11 | Added AI audit verification discipline: audit claims must be checked against GitHub source-of-truth files before source-of-truth docs, scope, or code changes. |
