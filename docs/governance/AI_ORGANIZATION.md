@@ -57,7 +57,7 @@ The Executive Council handles strategic decisions.
 
 | Role | Responsibility |
 |---|---|
-| Project Coordinator / Chief AI Officer | Coordinates roles, resolves conflicts, enforces limits, and produces the final human-review synthesis. |
+| Project Coordinator | Coordinates roles, resolves conflicts, enforces limits, and produces the final human-review synthesis. |
 | Product Lead | Protects product value, MVP scope, roadmap, and user outcomes. |
 | Tech Lead | Protects architecture, code quality, implementation safety. |
 | Archivist | Protects project memory, source-of-truth hierarchy, and documentation continuity. |
@@ -179,7 +179,7 @@ Use when:
 | `Беру тебя Product Lead` | Read roadmap, backlog, market positioning, Bible MVP scope. |
 | `Беру тебя QA Lead` | Read beta/testing docs and focus on verification. |
 | `Беру тебя Market Analyst` | Read market docs, competitor watch, and feature benchmarks. |
-| `Созови Executive Council` | Analyze from Coordinator/CAIO, Product, Tech, Archivist perspectives. |
+| `Созови Executive Council` | Analyze from Project Coordinator, Product, Tech, and Archivist perspectives. |
 | `Созови Engineering Council` | Analyze from Tech, Frontend, Backend, Supabase, Security perspectives. |
 | `Созови Market Council` | Analyze from market, research, business perspectives. |
 | `Созови Delivery Council` | Analyze from QA, release, sprint, incident perspectives. |
