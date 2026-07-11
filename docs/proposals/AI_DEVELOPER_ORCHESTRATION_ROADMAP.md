@@ -11,280 +11,306 @@ next_review: 2026-07-18
 
 ## Purpose
 
-Define the smallest safe implementation path for orchestrating AI developers around GO IRL 1.0 with n8n, GitHub, Codex, deterministic gates, specialist review, and human approval.
+Define the smallest safe path for orchestrating AI developers around GO IRL 1.0 with n8n, GitHub, Codex, deterministic gates, independent review, explicit human approval, and durable repository reports.
 
-This is a proposal for Codex implementation. Canonical priority remains in `ROADMAP.md`, `BACKLOG.md`, and `DOCS_INDEX.md`.
+Canonical priority remains in `DOCS_INDEX.md`, `README.md`, `ROADMAP.md`, and `BACKLOG.md`.
 
-## Target flow
+## Final workflow
 
 ```text
-Approved Mission
--> Validate
--> Build Context Pack
--> Plan
--> Implement
--> Review
--> Run Checks
--> Human Approval
--> Commit / Draft PR
--> Archive Report
+Mission Proposal
+-> Mission Validation
+-> Mission Approval
+-> Context Pack
+-> Planner
+-> Codex Implementer
+-> Independent Reviewer
+-> One Correction Pass
+-> QA Gate
+-> Change Approval
+-> Agent Report
+-> Commit Selected Files
+-> Push agent/*
+-> Draft PR
 ```
+
+## Approval model
+
+### Mission Approval
+
+Permission to begin work on one bounded mission.
+
+It approves:
+
+- objective;
+- risk level;
+- allowed paths;
+- forbidden paths;
+- acceptance criteria;
+- budget;
+- required checks.
+
+It does not authorize commit, push, PR creation, merge, deployment, or sensitive changes.
+
+### Change Approval
+
+Permission to preserve the reviewed implementation after the diff, reviewer result, Agent Report, and all required quality gates are available.
+
+It may authorize only:
+
+- committing selected files;
+- pushing an `agent/*` branch;
+- opening a Draft PR.
+
+It never authorizes merge or deployment.
 
 ## Non-negotiable rules
 
-1. One mission at a time.
-2. GitHub is source of truth.
-3. Codex changes only approved files on an approved branch.
-4. Inspect usage before editing files.
-5. Use `pnpm` only.
-6. Run `pnpm run lint`, `pnpm run build`, and `pnpm run test` after code changes.
-7. No commit when checks are red.
-8. No autonomous merge or deploy.
-9. No `.env`, secrets, auth, Supabase RLS, destructive SQL, or migrations without explicit approval.
-10. Large changes use a bounded `.cjs` patch script.
-11. Durable output is saved under `docs/reports/`.
-12. Every mission ends with exactly one next task.
+1. One active mission at a time.
+2. GitHub remains source of truth.
+3. Codex works only in an isolated branch or worktree.
+4. Exact allowed and forbidden file scopes are required.
+5. Inspect usage before editing.
+6. Use `pnpm` only.
+7. No dependency addition without approval.
+8. No architecture rewrite.
+9. Reviewer must be independent from implementer.
+10. Maximum one correction pass.
+11. No self-approval.
+12. No partial-green status.
+13. Agent Report is generated before commit and included in the same checked commit.
+14. No commit or push before Change Approval.
+15. No autonomous merge or deployment.
+16. No `.env`, secrets, Auth, Supabase RLS, SQL, migrations, deployment, or production-data changes without explicit separate approval.
+17. Issue #38 remains above optional AI infrastructure work.
 
-# Roles
+## Required quality gate
 
-## Technical Archivist
-
-Owns source-of-truth checks, context selection, documentation continuity, conflict detection, and the final archival report.
-
-Does not coordinate daily execution, approve security-sensitive work, or merge code.
-
-## Mission Planner
-
-Produces:
-
-- exact goal;
-- allowed file scope;
-- forbidden scope;
-- acceptance criteria;
-- dependency map;
-- check plan;
-- rollback plan.
-
-## Codex Implementer
-
-Owns the minimal patch only.
-
-Must:
-
-- inspect before editing;
-- stay inside allowed scope;
-- avoid architecture rewrites;
-- stop on missing evidence;
-- return changed files and rationale.
-
-## Independent Reviewer
-
-Checks:
-
-- correctness;
-- scope drift;
-- unnecessary complexity;
-- security boundary violations;
-- regression risk;
-- missing tests.
-
-The reviewer must not be the same execution as the implementer.
-
-## QA Gatekeeper
-
-Runs or verifies:
+Run in this order and stop on the first failure:
 
 ```text
+pnpm run typecheck
 pnpm run lint
 pnpm run build
 pnpm run test
+git diff --check
 ```
 
-Returns only `GREEN` or the exact first red error block.
+The system must return the exact complete first red error block. No commit, push, or Draft PR is allowed while any gate is red.
 
-## Human Owner
+## Core contracts
 
-Approves mission, sensitive scope, commit, PR readiness, merge, and deployment.
+### Mission
 
-# Core artifacts
+Required fields:
 
-## Mission
-
-```yaml
-mission_id: DEV-YYYYMMDD-NNN
-title: string
-goal: string
-source_issue: optional GitHub issue
-priority: P0|P1|P2|P3
-allowed_paths: []
-forbidden_paths: []
-acceptance: []
-checks:
-  - pnpm run lint
-  - pnpm run build
-  - pnpm run test
-requires_human_approval: true
+```text
+schema_version
+mission_id
+objective
+risk_level
+allowed_paths
+forbidden_paths
+acceptance_criteria
+maximum_budget_usd
+requires_human_approval
+source_of_truth_refs
+expires_at
 ```
 
-## Context Pack
+Required controls:
 
-Contains only:
+- explicit schema versioning;
+- idempotency key;
+- expiration;
+- path traversal rejection;
+- sensitive-scope rejection;
+- additional properties rejected where safe;
+- approved command allowlist;
+- no overlap between allowed and forbidden paths.
 
-- mission;
-- source-of-truth excerpts;
-- relevant files and grep output;
-- current red error block;
-- constraints;
-- acceptance criteria;
-- previous attempt summary when relevant.
+### Context Pack
 
-It must not contain full-repository dumps, secrets, unrelated history, or speculative future architecture.
+Required fields:
 
-## Agent result
-
-```yaml
-mission_id: string
-role: planner|implementer|reviewer|qa|archivist
-status: pass|fail|blocked
-summary: string
-evidence: []
-changed_files: []
-risks: []
-next_action: string
+```text
+schema_version
+mission_id
+source_of_truth_refs
+context_manifest
+constraints
+acceptance_criteria
+red_error_block
+previous_attempt
+maximum_serialized_bytes
 ```
+
+Each context-manifest entry contains:
+
+```text
+path
+hash
+reason
+excerpt_or_summary
+```
+
+Required controls:
+
+- allowlisted files only;
+- grep-based evidence preferred;
+- bounded serialized size;
+- secret redaction;
+- no `.env` content;
+- no full-repository dump;
+- every claim linked to evidence.
+
+### Agent Result
+
+Required fields:
+
+```text
+schema_version
+mission_id
+role
+status
+summary
+evidence
+changed_files
+risks
+next_action
+```
+
+Rules:
+
+- role is `planner`, `implementer`, `reviewer`, `qa`, or `archivist`;
+- status is `pass`, `fail`, or `blocked`;
+- `pass` requires evidence;
+- `fail` or `blocked` requires a concrete reason;
+- `changed_files` must remain inside Mission scope;
+- `next_action` contains exactly one action.
 
 # n8n workflow map
 
 ## DEV-00 Mission Intake
 
-Trigger: manual webhook, Telegram owner command, or approved GitHub label.
+Responsibilities:
 
-Steps:
+- schema validation;
+- idempotency;
+- duplicate detection;
+- same ID with changed payload conflict;
+- one active mission;
+- expired mission rejection;
+- forbidden-scope rejection;
+- durable mission state;
+- Mission Approval state.
 
-1. validate schema;
-2. reject duplicate `mission_id` with changed payload;
-3. enforce one active mission;
-4. store mission state;
-5. request human approval if missing.
+States:
 
-Acceptance:
-
-- new valid mission accepted;
-- exact duplicate skipped;
-- same ID with changed payload rejected;
-- forbidden scope rejected.
+```text
+proposed
+validated
+awaiting_mission_approval
+approved
+rejected
+expired
+conflict
+```
 
 ## DEV-01 Context Builder
 
-Steps:
+Responsibilities:
 
-1. read canonical docs in source-of-truth order;
-2. fetch issue or PR context;
-3. collect only relevant files or grep output;
-4. redact secrets and private data;
-5. produce bounded Context Pack.
-
-Acceptance:
-
-- pack remains under configured size;
-- all claims point to repository evidence;
-- no secret or `.env` content appears.
+- canonical source-of-truth order;
+- repository allowlist;
+- issue and PR evidence;
+- relevant grep output;
+- path and hash manifest;
+- size enforcement;
+- redaction;
+- validated Context Pack output.
 
 ## DEV-02 Planner
 
-Steps:
+Produces one implementation plan with:
 
-1. classify task as docs, code, QA, CI, or blocked;
-2. define exact file scope;
-3. generate acceptance criteria;
-4. identify sensitive boundaries;
-5. output one implementation task.
+- exact objective;
+- exact allowed paths;
+- exact forbidden paths;
+- acceptance criteria;
+- dependency decision;
+- implementation sequence;
+- check plan;
+- rollback plan.
 
-Acceptance:
+## DEV-03 Codex Handoff
 
-- one task only;
-- no vague "improve" instructions;
-- no unauthorized architecture change.
+Requirements:
 
-## DEV-03 Codex Implementer
-
-Recommended first implementation: Codex receives a GitHub issue plus Context Pack and works on an existing `agent/*` branch.
-
-Steps:
-
-1. inspect repo status and target usage;
-2. create minimal patch;
-3. report changed files;
-4. do not commit yet;
-5. hand off to reviewer.
-
-Acceptance:
-
-- patch remains inside allowed paths;
-- no forbidden file touched;
-- no unrequested dependency added;
-- diff is minimal and reversible.
+- isolated `agent/*` branch or worktree;
+- read-only specification access;
+- no writes outside approved paths;
+- no dependency additions without approval;
+- no commit or push;
+- structured implementer result.
 
 ## DEV-04 Independent Review
 
-Steps:
+Reviewer receives:
 
-1. inspect diff against mission;
-2. flag blockers by severity;
-3. reject scope drift;
-4. request one bounded correction pass maximum.
+- Mission;
+- Context Pack;
+- implementation plan;
+- complete diff;
+- acceptance criteria;
+- implementer result.
 
-Acceptance:
+Reviewer returns:
 
-- reviewer returns `PASS`, `CHANGES_REQUIRED`, or `BLOCKED`;
-- each objection cites a file and concrete reason;
-- no new feature scope is introduced.
+```text
+PASS
+CHANGES_REQUIRED
+BLOCKED
+```
+
+Only one bounded correction pass is allowed.
 
 ## DEV-05 QA Gate
 
-Steps:
+Runs:
 
-1. run lint;
-2. run build;
-3. run tests;
-4. stop on first red command;
-5. store exact error block.
+```text
+pnpm run typecheck
+pnpm run lint
+pnpm run build
+pnpm run test
+git diff --check
+```
 
-Acceptance:
+Returns only:
 
-- all three commands pass;
-- otherwise no commit or PR readiness claim.
+- `GREEN` with all command results; or
+- exact first red error block.
 
-## DEV-06 Human Approval
+## DEV-06 Change Approval
 
 Owner receives:
 
-- mission;
+- objective;
 - changed files;
+- diff summary;
 - reviewer result;
-- check results;
-- known risks;
-- proposed commit message.
+- correction-pass count;
+- quality-gate results;
+- risks;
+- proposed commit message;
+- generated Agent Report.
 
-Actions:
+Owner may approve, reject, or request a manual change. Automated work stops until explicit approval.
 
-- approve commit;
-- request correction;
-- reject mission.
+## DEV-07 Agent Report
 
-## DEV-07 Publish
-
-After approval:
-
-1. commit only mission files;
-2. push `agent/*` branch;
-3. create Draft PR;
-4. attach evidence and checks;
-5. never merge automatically.
-
-## DEV-08 Archive
-
-Create:
+Before commit, create:
 
 ```text
 docs/reports/YYYY-MM-DD-agent-report.md
@@ -299,19 +325,171 @@ Required sections:
 - Checks;
 - Next step.
 
-# Mission state machine
+The report is non-authoritative and included in the same final quality gate and commit.
+
+## DEV-08 Publish
+
+Only after Change Approval:
+
+1. commit selected files only;
+2. push only `agent/*`;
+3. create Draft PR;
+4. attach acceptance evidence and check results;
+5. do not merge or deploy.
+
+# Implementation roadmap
+
+## Phase 0 — Contracts
+
+Deliver:
+
+- Mission schema;
+- Context Pack schema;
+- Agent Result schema;
+- explicit schema versioning;
+- validators;
+- valid and invalid fixtures;
+- contract tests;
+- non-authoritative Agent Report.
+
+Read-only specification:
 
 ```text
-received
+docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md
+```
+
+Codex must stop with `BLOCKED: specification file not found` when this file is unavailable.
+
+Exit gate:
+
+- all valid fixtures pass;
+- all invalid fixtures fail for the expected reason;
+- all quality gates are green;
+- no commit or push occurs;
+- Codex returns diff summary and proposed commit message for Change Approval.
+
+## Phase 1 — DEV-00 Mission Intake
+
+Deliver:
+
+- idempotency;
+- duplicate detection;
+- mission conflict;
+- one active mission;
+- forbidden-scope rejection;
+- expired mission rejection;
+- durable mission state;
+- Mission Approval state.
+
+Exit gate: deterministic acceptance matrix passes in a real inactive n8n test workflow.
+
+## Phase 2 — Context Builder
+
+Deliver:
+
+- source-of-truth ordering;
+- allowlisted repository reads;
+- grep-based evidence;
+- secret redaction;
+- size limit;
+- context manifest with paths and hashes.
+
+Exit gate: a sample mission produces a bounded, evidence-backed Context Pack.
+
+## Phase 3 — Planner and Codex Handoff
+
+Deliver:
+
+- strict planner schema;
+- exact file scope;
+- acceptance criteria;
+- isolated branch/worktree contract;
+- no-write-outside-scope enforcement;
+- dependency approval gate;
+- Codex adapter.
+
+Exit gate: one docs-only mission completes without commit or push.
+
+## Phase 4 — Review and QA
+
+Deliver:
+
+- independent reviewer workflow;
+- severity model;
+- maximum one correction pass;
+- no self-approval;
+- exact first red error capture;
+- full quality gate.
+
+Exit gate: broken fixture is rejected; clean fixture reaches Change Approval.
+
+## Phase 5 — Approval and Draft PR
+
+Deliver:
+
+- Change Approval state;
+- Agent Report before commit;
+- explicit selected-file commit;
+- `agent/*` push restriction;
+- Draft PR creation;
+- attached checks and acceptance evidence.
+
+Exit gate: one low-risk docs mission creates a Draft PR only after explicit approval.
+
+## Phase 6 — Real Pilot
+
+Use one low-risk bug only.
+
+Forbidden:
+
+- Auth;
+- RLS;
+- SQL;
+- migrations;
+- secrets;
+- deployment;
+- production data;
+- architecture changes.
+
+Exit gate:
+
+- minimal diff;
+- reviewer pass;
+- maximum one correction pass;
+- all gates green;
+- explicit Change Approval;
+- Agent Report included;
+- human-approved Draft PR.
+
+## Phase 7 — Specialists
+
+Add roles sequentially and only when evidence shows need:
+
+1. QA Lead;
+2. UI/UX Reviewer;
+3. Technical Archivist;
+4. read-only Security Reviewer;
+5. read-only Supabase Reviewer.
+
+Do not activate all roles by default.
+
+# Full state machine
+
+```text
+proposed
 -> validated
+-> awaiting_mission_approval
 -> approved
 -> context_ready
 -> planned
 -> implementing
 -> reviewing
--> checking
--> awaiting_human
+-> correcting
+-> qa_gate
+-> awaiting_change_approval
+-> report_ready
 -> committed
+-> pushed
 -> draft_pr
 -> archived
 ```
@@ -319,170 +497,43 @@ received
 Failure states:
 
 ```text
-blocked
 rejected
-checks_failed
+expired
+conflict
+blocked
 scope_violation
+checks_failed
 budget_exceeded
 cancelled
 ```
 
-# Implementation roadmap for Codex
-
-## Phase 0 — Repository contract
-
-Codex tasks:
-
-1. add schemas for Mission, Context Pack, and Agent Result;
-2. add example fixtures;
-3. add validation script;
-4. add tests for valid, duplicate, conflict, and forbidden missions.
-
-Deliverables:
-
-```text
-scripts/ai-orchestrator/validate-mission.cjs
-scripts/ai-orchestrator/schemas/mission.schema.json
-scripts/ai-orchestrator/schemas/context-pack.schema.json
-scripts/ai-orchestrator/schemas/agent-result.schema.json
-scripts/ai-orchestrator/fixtures/
-```
-
-Exit gate: validation tests pass locally.
-
-## Phase 1 — DEV-00 Mission Intake
-
-Codex tasks:
-
-1. create inactive n8n workflow JSON;
-2. validate incoming mission;
-3. implement idempotency state;
-4. reject mission ID conflicts;
-5. enforce one active mission;
-6. add manual acceptance guide.
-
-Exit gate: deterministic acceptance matrix passes in a real n8n test instance.
-
-## Phase 2 — Context Builder
-
-Codex tasks:
-
-1. create allowlisted repository fetch step;
-2. implement source-of-truth document order;
-3. enforce pack size limit;
-4. add redaction checks;
-5. output one validated Context Pack.
-
-Exit gate: sample mission produces a bounded evidence-backed pack.
-
-## Phase 3 — Planner and Codex handoff
-
-Codex tasks:
-
-1. define planner prompt and strict output schema;
-2. create role-selection rules;
-3. implement Codex job handoff adapter;
-4. save implementer result;
-5. block work outside approved paths.
-
-Exit gate: one docs-only mission completes without repository write.
-
-## Phase 4 — Review and QA
-
-Codex tasks:
-
-1. add independent review workflow;
-2. add severity model;
-3. allow one correction pass;
-4. execute lint/build/test gate;
-5. store exact red error output.
-
-Exit gate: intentionally broken fixture is rejected; clean fixture passes.
-
-## Phase 5 — Approval and Draft PR
-
-Codex tasks:
-
-1. add owner approval state;
-2. prepare commit summary;
-3. commit explicit mission files only;
-4. push `agent/*` branch;
-5. create Draft PR;
-6. attach checks and report.
-
-Exit gate: one low-risk docs mission creates a Draft PR after approval.
-
-## Phase 6 — Small code mission pilot
-
-Use one real, low-risk bug with no auth, RLS, SQL, migration, secret, or architecture changes.
-
-Exit gate:
-
-- minimal patch;
-- reviewer pass;
-- lint/build/test green;
-- human-approved Draft PR;
-- archival report saved.
-
-## Phase 7 — Controlled specialization
-
-Add roles only when a real mission proves the need:
-
-1. QA specialist;
-2. UI/UX specialist;
-3. Supabase reviewer in read-only mode;
-4. security reviewer in read-only mode;
-5. documentation archivist.
-
-Maximum active roles per mission: planner, implementer, reviewer, QA, archivist.
-
-# What not to build yet
-
-- autonomous multi-agent swarm;
-- agent-to-agent free chat;
-- automatic merge;
-- production deployment;
-- self-modifying prompts;
-- long-term vector memory as authority;
-- automatic auth/RLS/SQL/migration changes;
-- more than one implementation agent per mission;
-- generic platform detached from GO IRL needs.
-
-# Metrics
-
-Track:
-
-- mission completion rate;
-- first-pass review rate;
-- check failure rate;
-- correction passes;
-- scope violations;
-- average Context Pack size;
-- time from approval to Draft PR;
-- human rejection rate;
-- token and model cost;
-- autonomous merges: always zero.
-
 # Stop conditions
 
-Stop the rollout when:
+Stop rollout when:
 
-- orchestration costs more effort than direct Codex work;
-- Context Packs routinely miss required evidence;
-- agents touch forbidden scope;
-- review becomes ceremonial;
-- failures cannot be reproduced;
-- beta product work is delayed;
-- the system requires broader architecture changes.
+- orchestration delays Issue #38 or beta stabilization;
+- Context Packs omit required evidence;
+- an agent touches forbidden scope;
+- a reviewer is not independent;
+- more than one correction pass is required;
+- quality gates cannot run reproducibly;
+- approval boundaries are bypassed;
+- orchestration costs more effort than direct Codex work.
 
 # First Codex task
 
-**Task:** Implement Phase 0 repository contracts only.
+Implement Phase 0 only, using this file as a read-only specification.
 
-**Allowed scope:** `scripts/ai-orchestrator/**`, tests for those scripts, and one non-authoritative implementation report.
+Allowed write scope:
 
-**Forbidden scope:** application code, `.env`, secrets, auth, Supabase RLS, SQL, migrations, deployment, `DOCS_INDEX.md`, `ROADMAP.md`, `BACKLOG.md`.
+```text
+scripts/ai-orchestrator/**
+tests covering scripts/ai-orchestrator/**
+docs/reports/2026-07-11-ai-developer-orchestrator-phase-0.md
+```
 
-**Acceptance:** Mission, Context Pack, and Agent Result schemas validate valid fixtures and reject invalid fixtures; `pnpm run lint`, `pnpm run build`, and `pnpm run test` remain green.
+Do not modify the proposal specification, application code, dependencies, canonical roadmap files, security-sensitive areas, or deployment configuration.
 
-**Stop condition:** stop on the first failing project check and return only the exact red error block.
+Do not commit, push, create a branch, or open a PR.
+
+Return the diff summary, full green quality-gate result, and proposed commit message. Wait for explicit Change Approval.
