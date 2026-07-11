@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-PHASE0-CONTRACTS",
+  "source_of_truth_refs": ["docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md", "docs/reports/README.md"],
+  "file_manifest": [
+    { "path": "docs/reports/README.md", "sha256": "0000000000000000000000000000000000000000000000000000000000000000", "size_bytes": 3200 },
+    { "path": "docs/onboarding/PROJECT_COORDINATOR_CHARTER.md", "sha256": "1111111111111111111111111111111111111111111111111111111111111111", "size_bytes": 18400 }
+  ],
+  "grep_evidence": [
+    { "query": "Required fields", "path": "docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md", "line": 67, "excerpt": "Required fields:" }
+  ],
+  "constraints": {
+    "allowed_paths": ["scripts/ai-orchestrator/**", "docs/reports/2026-07-11-ai-developer-orchestrator-phase-0.md"],
+    "forbidden_paths": ["src/**", ".env*", "supabase/**"],
+    "no_dependency_addition": true,
+    "no_architecture_rewrite": true
+  },
+  "acceptance_criteria": ["Twelve fixtures validate as expected.", "All five quality-gate commands pass."],
+  "size_metadata": { "file_count": 2, "total_bytes": 21600, "max_bytes": 50000, "within_limit": true },
+  "secret_redaction": { "status": "clean", "findings": [], "redacted_fields": [] }
+}

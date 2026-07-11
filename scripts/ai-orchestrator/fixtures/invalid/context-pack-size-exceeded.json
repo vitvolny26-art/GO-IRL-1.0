@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-SIZE-EXCEEDED",
+  "source_of_truth_refs": ["README.md"],
+  "file_manifest": [
+    { "path": "README.md", "sha256": "3333333333333333333333333333333333333333333333333333333333333333", "size_bytes": 60000 }
+  ],
+  "grep_evidence": [
+    { "query": "Verification", "path": "README.md", "line": 100, "excerpt": "Verification" }
+  ],
+  "constraints": {
+    "allowed_paths": ["scripts/ai-orchestrator/**"],
+    "forbidden_paths": ["src/**"],
+    "no_dependency_addition": true,
+    "no_architecture_rewrite": true
+  },
+  "acceptance_criteria": ["This fixture must fail the bounded-size contract."],
+  "size_metadata": { "file_count": 1, "total_bytes": 60000, "max_bytes": 50000, "within_limit": false },
+  "secret_redaction": { "status": "clean", "findings": [], "redacted_fields": [] }
+}

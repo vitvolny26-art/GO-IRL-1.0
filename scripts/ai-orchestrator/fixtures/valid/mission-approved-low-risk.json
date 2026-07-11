@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-PHASE0-CONTRACTS",
+  "objective": "Implement Phase 0 schemas, fixtures, deterministic validation, tests, and one report.",
+  "risk_level": "low",
+  "allowed_paths": [
+    "scripts/ai-orchestrator/**",
+    "docs/reports/2026-07-11-ai-developer-orchestrator-phase-0.md"
+  ],
+  "forbidden_paths": ["src/**", ".env*", "supabase/**", "docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md"],
+  "acceptance_criteria": ["Twelve fixtures match the contract matrix.", "All five quality-gate commands pass."],
+  "maximum_budget_usd": 0.75,
+  "requires_human_approval": true,
+  "source_of_truth_refs": [
+    "docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md",
+    "docs/onboarding/PROJECT_COORDINATOR_CHARTER.md"
+  ]
+}

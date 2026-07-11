@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-MISSING-OBJECTIVE",
+  "risk_level": "low",
+  "allowed_paths": ["scripts/ai-orchestrator/**"],
+  "forbidden_paths": ["src/**", ".env*"],
+  "acceptance_criteria": ["This fixture must fail because objective is missing."],
+  "maximum_budget_usd": 0.25,
+  "requires_human_approval": true,
+  "source_of_truth_refs": ["docs/onboarding/PROJECT_COORDINATOR_CHARTER.md"]
+}
