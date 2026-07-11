@@ -120,6 +120,7 @@ next_review:
 | `docs/bible/07-beta-readiness-and-operations.md` | Bible / Beta Ops | Active | Да | Beta operations, QA gates, release gates, Browser Demo Mode, MVP non-goals. |
 | `docs/bible/08-runtime-boundaries.md` | Bible / Runtime Boundary | Active | Да | Runtime/auth/Supabase/demo/profile/chat/share/weather boundaries. |
 | `docs/bible/09-governance-and-ai-organization.md` | Bible / Governance | Active | Да | AI roles, councils, Archivist, NotebookLM/Gemini boundaries, and source-of-truth governance. |
+| `docs/bible/10-operations-and-release.md` | Bible / Release Ops | Active | Да | Beta gates, release gates, Vercel/Supabase/Telegram smoke checks, and readiness rules. |
 | `supabase/README.md` | Supabase Setup | Active | Да | Must reflect Trusted Auth and migration reality. |
 | `supabase/schema.sql` | Supabase Schema | Active | Да | Production-sensitive. Read-only during documentation cleanup. |
 | `supabase/schema_next.sql` | Future Schema | Draft | Нет | Do not apply without review. |
@@ -205,7 +206,8 @@ GO IRL Documentation
 │   └── project-audit/
 ├── Bible
 │   └── docs/bible/
-│       └── 09-governance-and-ai-organization.md
+│       ├── 09-governance-and-ai-organization.md
+│       └── 10-operations-and-release.md
 ├── Governance
 │   └── docs/governance/
 │       ├── AI_ORGANIZATION.md
