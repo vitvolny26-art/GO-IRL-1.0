@@ -28,26 +28,8 @@ jobs:
       - name: Test
         run: pnpm run test
 
-      - name: Capture typecheck
-        run: pnpm run typecheck > typecheck.log 2>&1 || true
-
-      - name: Upload typecheck log
-        uses: actions/upload-artifact@v4
-        with:
-          name: typecheck-log
-          path: typecheck.log
-
       - name: Typecheck
         run: pnpm run typecheck
-
-      - name: Capture lint
-        run: pnpm run lint > lint.log 2>&1 || true
-
-      - name: Upload lint log
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-log
-          path: lint.log
 
       - name: Lint
         run: pnpm run lint
