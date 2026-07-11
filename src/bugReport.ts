@@ -3,7 +3,7 @@ import { getTelegramWebApp } from "./telegram";
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
 const bugReportUrl = `https://t.me/${telegramBotUsername}?start=bug_report`;
 
-export const openBugReport = () => {
+export const openBugReport = (..._context: unknown[]) => {
   const webApp = getTelegramWebApp();
 
   if (webApp?.openTelegramLink) {
