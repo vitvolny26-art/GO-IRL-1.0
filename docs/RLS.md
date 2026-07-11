@@ -1,3 +1,12 @@
+---
+title: Supabase RLS Design
+owner: Security Lead
+status: Draft
+source_of_truth: false
+last_review: 2026-07-11
+next_review: 2026-07-18
+---
+
 # Supabase RLS Design
 
 RLS is the core database safety layer for GO IRL. Frontend checks improve UX, but database policies must enforce real access.
