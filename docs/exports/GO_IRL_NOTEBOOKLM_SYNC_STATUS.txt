@@ -1,0 +1,41 @@
+GO IRL 1.0 — NOTEBOOKLM SYNC STATUS
+
+Updated: 2026-07-11
+Owner: Project Coordinator / Technical Archivist
+Source of truth: GitHub repository vitvolny26-art/GO-IRL-1.0
+Mirror purpose: NotebookLM search and Q&A only
+
+SYNC RULES
+1. GitHub is the only source of truth.
+2. Google Drive folder GO IRL DOC is an export mirror.
+3. NotebookLM reads exported files only and must not be treated as an authority.
+4. After every meaningful project change, update this TXT mirror.
+5. Every sync entry must include:
+   - date;
+   - task or mission;
+   - GitHub PR or commit;
+   - files changed;
+   - checks;
+   - next step.
+6. Do not export:
+   - .env files or secrets;
+   - .git;
+   - node_modules;
+   - dist;
+   - .vercel;
+   - package-lock.json;
+   - backups or local export folders.
+
+CURRENT PROJECT STATE
+- PR #40 merged: corrected GO IRL strategic review added under docs/reports/.
+- PR #41 merged: report-only Project Coordinator governance registered.
+- PR #43 merged: Chief AI Officer alias removed; Project Coordinator is the canonical role.
+- PR #42 remains Draft: STAFF-00 Daily Mission Intake workflow.
+- n8n is orchestration glue only.
+- Human approval remains required before repository writes, merges, auth/RLS/SQL changes, secrets, or deployment.
+
+CURRENT ACTIVE TASK
+Reconcile the live n8n workflow with GitHub PR #42 and run the documented STAFF-00 manual acceptance tests.
+
+NEXT SYNC
+Update this file after the next meaningful GitHub, ClickUp, n8n, or governance change.
