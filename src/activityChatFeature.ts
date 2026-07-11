@@ -1,30 +1,16 @@
-import { initializeTrustedAuth, getCurrentAuthSession, isBrowserMockMode, isTrustedAuthReady } from "./authSession";
+import {
+  browserMockDisplayName,
+  browserMockUserKey,
+  getCurrentAuthSession,
+  initializeTrustedAuth,
+  isBrowserMockMode,
+  isTrustedAuthReady,
+  readAuthDisplayName,
+  readAuthUserKey,
+} from "./authSession";
 import { supabase } from "./supabase";
 import type { ActivityChat, ActivityChatMessage } from "./types";
 
-type AuthLike = {
-  user?: {
-    userKey?: string;
-    firstName?: string | null;
-    username?: string | null;
-  };
-  userKey?: string;
-  firstName?: string | null;
-  username?: string | null;
-};
-
-const readAuthUserKey = (identity: unknown) => {
-  const auth = identity as AuthLike | null;
-  return auth?.user?.userKey || auth?.userKey || null;
-};
-
-const readDisplayName = (identity: unknown) => {
-  const auth = identity as AuthLike | null;
-  return auth?.user?.firstName || auth?.user?.username || auth?.firstName || auth?.username || "GO IRL User";
-};
-
-const demoUserKey = "telegram:999999";
-const demoDisplayName = "Vit_Test";
 const demoChatStorageKey = "go-irl-demo-activity-chat-v1";
 
 type DemoChatState = {
@@ -52,7 +38,7 @@ const demoChatExpiry = () => new Date(Date.now() + 48 * 60 * 60 * 1000).toISOStr
 
 export async function getCurrentChatIdentity() {
   if (isActivityChatDemoMode()) {
-    return { userKey: demoUserKey, displayName: demoDisplayName };
+    return { userKey: browserMockUserKey, displayName: browserMockDisplayName };
   }
 
   const existing = getCurrentAuthSession();
@@ -61,7 +47,7 @@ export async function getCurrentChatIdentity() {
   if (existingUserKey) {
     return {
       userKey: existingUserKey,
-      displayName: readDisplayName(existing),
+      displayName: readAuthDisplayName(existing),
     };
   }
 
@@ -69,7 +55,7 @@ export async function getCurrentChatIdentity() {
 
   return {
     userKey: readAuthUserKey(identity),
-    displayName: readDisplayName(identity),
+    displayName: readAuthDisplayName(identity),
   };
 }
 
@@ -83,7 +69,7 @@ export async function ensureActivityChat(activityId: string) {
     const chat: ActivityChat = {
       id: `demo-chat-${activityId}`,
       activityId,
-      createdByUserKey: demoUserKey,
+      createdByUserKey: browserMockUserKey,
       status: "active",
       expiresAt: demoChatExpiry(),
       createdAt: now,
