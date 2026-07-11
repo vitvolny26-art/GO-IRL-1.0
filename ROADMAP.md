@@ -1,3 +1,12 @@
+---
+title: Roadmap
+owner: Product Lead
+status: Active
+source_of_truth: true
+last_review: 2026-07-11
+next_review: 2026-07-18
+---
+
 # Roadmap
 
 GO IRL is being built as a platform, not a one-off Telegram Mini App. New work should stay compatible with future web, Android, and iOS clients.
