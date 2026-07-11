@@ -27,4 +27,4 @@ Current status:
 - Next task: Task 3 Browser Mock Mode
 
 New chat prompt:
-Work by GO IRL protocol. Project: GO IRL Telegram Mini App. Stack: React, TypeScript, Vite, pnpm, Supabase, Telegram Mini Apps, Vercel. Repo: vitvolny26-art/GO-IRL. Branch: main. Goal: stabilize MVP to version 1.1 for closed beta. Continue from docs/GO_IRL_1_1_STABILIZATION.md. Start next task only. Give short PowerShell commands. No big refactors.
+Work by GO IRL protocol. Project: GO IRL Telegram Mini App. Stack: React, TypeScript, Vite, pnpm, Supabase, Telegram Mini Apps, Vercel. Repo: vitvolny26-art/GO-IRL-1.0. Branch: main. Goal: stabilize MVP to version 1.1 for closed beta. Continue from docs/GO_IRL_1_1_STABILIZATION.md. Start next task only. Give short PowerShell commands. No big refactors.
