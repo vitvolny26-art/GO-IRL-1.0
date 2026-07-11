@@ -1,0 +1,37 @@
+version: 0.1
+status: proposal
+source_of_truth: false
+purpose: "Define the minimum operations used by humans, AI, and automation to work on GO IRL consistently."
+operations:
+  - name: observe
+    input: reality_change
+    output: signal
+  - name: verify
+    input: signal
+    output: evidence
+  - name: understand
+    input: evidence
+    output: model
+  - name: decide
+    input: model
+    output: decision
+    approval: human_required_for_sensitive_scope
+  - name: execute
+    input: approved_decision
+    output: action_result
+  - name: measure
+    input: action_result
+    output: metrics
+  - name: learn
+    input: metrics
+    output: knowledge
+  - name: align
+    input: knowledge
+    output: aligned_or_drift
+invariants:
+  - github_is_source_of_truth
+  - product_first
+  - one_task_at_a_time
+  - human_approval_for_sensitive_actions
+  - no_autonomous_merge_or_deploy
+  - no_auth_rls_sql_migration_or_secret_changes_without_explicit_approval
