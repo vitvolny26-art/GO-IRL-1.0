@@ -82,8 +82,14 @@ const showCardActionSheet = (actions: SheetAction[], trigger?: HTMLElement) => {
 const shareText = (title: string, date: string, address: string, url: string) =>
   `GO IRL: ${title}\n${date}\n${address}\n${url}`;
 
-export const openCardShareSheet = (title: string, date = "", address = "", trigger?: HTMLElement) => {
-  const url = window.location.href.split("?")[0];
+export const openCardShareSheet = (
+  title: string,
+  date = "",
+  address = "",
+  trigger?: HTMLElement,
+  shareUrl?: string,
+) => {
+  const url = shareUrl || window.location.href.split("?")[0];
   const message = shareText(title, date, address, url);
   const encoded = encodeURIComponent(message);
   const encodedUrl = encodeURIComponent(url);
@@ -103,32 +109,4 @@ export const openCardReminderSheet = (trigger?: HTMLElement) => {
     { kind: "messenger", label: "Messenger", action: () => undefined },
     { kind: "viber", label: "Viber", action: () => undefined },
   ], trigger);
-};
-
-export const enableSportCardActionSheets = () => {
-  if (typeof document === "undefined") return;
-
-  document.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement | null;
-    const actionButton = target?.closest<HTMLButtonElement>(".sport-card-top-actions .sport-card-icon-action");
-    if (!actionButton) return;
-
-    const card = actionButton.closest<HTMLElement>(".sport-card, .activity-card");
-    const title = card?.querySelector("h3")?.textContent?.trim() || "GO IRL";
-    const date = card?.querySelector(".activity-card-details span")?.textContent?.trim() || "";
-    const address = card?.querySelector(".activity-card-details div:first-child span")?.textContent?.trim() || "Olomouc";
-    const ariaLabel = actionButton.getAttribute("aria-label") || "";
-    const isShare = /поделиться|share/i.test(ariaLabel) || actionButton.matches(".sport-card-top-actions .sport-card-icon-action:nth-child(2)");
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-
-    if (isShare) {
-      openCardShareSheet(title, date, address, actionButton);
-      return;
-    }
-
-    openCardReminderSheet(actionButton);
-  }, true);
 };
