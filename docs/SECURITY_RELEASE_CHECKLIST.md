@@ -1,3 +1,12 @@
+---
+title: Security Release Checklist
+owner: Security Lead
+status: Active
+source_of_truth: true
+last_review: 2026-07-11
+next_review: 2026-07-18
+---
+
 # Security Release Checklist
 
 This checklist must be completed before every public production release of GO IRL.
