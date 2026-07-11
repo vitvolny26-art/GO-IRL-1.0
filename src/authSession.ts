@@ -5,8 +5,9 @@ import type { UserRole } from "./types";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const configuredDemoAuthEnabled = import.meta.env.DEV || import.meta.env.VITE_GO_IRL_LEGACY_DEMO_AUTH === "true";
-const browserMockTelegramId = 999999;
-const browserMockDisplayName = "Vit_Test";
+export const browserMockTelegramId = 999999;
+export const browserMockUserKey = `telegram:${browserMockTelegramId}`;
+export const browserMockDisplayName = "Vit_Test";
 const isBrowserMockAuthEnabled = () => typeof window !== "undefined" && !getTelegramInitData();
 const isDemoAuthEnabled = () => configuredDemoAuthEnabled || isBrowserMockAuthEnabled();
 const sessionStorageKey = "go-irl-trusted-session-v2";
@@ -32,6 +33,27 @@ export type TrustedAuthSession = {
 export type AppAuthIdentity =
   | TrustedAuthSession
   | (DemoIdentityResolution & { source: DemoIdentityResolution["source"]; legacy: true });
+
+type AuthIdentityLike = {
+  user?: {
+    userKey?: string | null;
+    firstName?: string | null;
+    username?: string | null;
+  };
+  userKey?: string | null;
+  firstName?: string | null;
+  username?: string | null;
+};
+
+export const readAuthUserKey = (identity: unknown) => {
+  const auth = identity as AuthIdentityLike | null;
+  return auth?.user?.userKey || auth?.userKey || null;
+};
+
+export const readAuthDisplayName = (identity: unknown) => {
+  const auth = identity as AuthIdentityLike | null;
+  return auth?.user?.firstName || auth?.user?.username || auth?.firstName || auth?.username || "GO IRL User";
+};
 
 let trustedSession: TrustedAuthSession | null = readTrustedSession();
 let legacyIdentity: DemoIdentityResolution | null = null;
