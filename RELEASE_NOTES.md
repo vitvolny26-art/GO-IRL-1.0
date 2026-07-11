@@ -71,13 +71,14 @@ Patched or verified in the current stabilization pass:
 
 ### Verification Status
 
-Latest local quality gates are **pending after the newest commits**:
+Latest local quality gates passed on `main` commit `34d1829` on 2026-07-11:
 
-- `pnpm run lint`: pending
-- `pnpm run build`: pending
-- `pnpm run test`: pending
+- `pnpm run typecheck`: PASS
+- `pnpm run lint`: PASS
+- `pnpm run build`: PASS
+- `pnpm run test`: PASS (12 files, 63 tests)
 
-Do not claim beta-ready until these pass on the latest `main`.
+Do not claim beta-ready until the remaining manual Telegram and Supabase production smoke checks pass.
 
 ## 0.1.0 - Internal Telegram Mini App MVP
 

@@ -114,22 +114,23 @@ Do not move these into beta implementation:
 ### Build Blocker
 
 - None confirmed.
-- Latest local quality gates are pending after the newest commits.
+- Latest local quality gates passed on `main` commit `34d1829` on 2026-07-11: typecheck, lint, build, and 63 tests.
 
 ### Typecheck Blocker
 
 - None confirmed.
-- Verify with `pnpm run build` in the source repo.
+- `pnpm run typecheck`: PASS on `main` commit `34d1829` (2026-07-11).
+- `pnpm run build`: PASS on `main` commit `34d1829` (2026-07-11).
 
 ### Lint Blocker
 
 - None confirmed.
-- Verify with `pnpm run lint` in the source repo.
+- `pnpm run lint`: PASS on `main` commit `34d1829` (2026-07-11).
 
 ### Test Blocker
 
 - None confirmed.
-- Verify with `pnpm run test` in the source repo.
+- `pnpm run test`: PASS on `main` commit `34d1829` (12 files, 63 tests; 2026-07-11).
 - Add deeper tests for activity creation, join/leave, waiting list, private pending requests, organizer approvals, and edit permissions.
 
 ### Runtime Bug

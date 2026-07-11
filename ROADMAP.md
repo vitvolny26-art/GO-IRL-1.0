@@ -34,9 +34,10 @@ Current stabilization state:
 
 Current release gate:
 
-- `pnpm run lint`: pending after latest commits.
-- `pnpm run build`: pending after latest commits.
-- `pnpm run test`: pending after latest commits.
+- `pnpm run typecheck`: PASS on `main` commit `34d1829` (2026-07-11).
+- `pnpm run lint`: PASS on `main` commit `34d1829` (2026-07-11).
+- `pnpm run build`: PASS on `main` commit `34d1829` (2026-07-11).
+- `pnpm run test`: PASS on `main` commit `34d1829` (12 files, 63 tests; 2026-07-11).
 - Real Telegram smoke test: pending.
 - Supabase production table/RLS verification: pending/manual.
 - Vercel may fail because of build-rate-limit; this is operational, not automatically a code failure.
