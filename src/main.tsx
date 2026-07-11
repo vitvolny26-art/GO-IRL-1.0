@@ -1,7 +1,7 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { enableUnifiedCardTemplate } from "./unified-card-template";
+import { enableBottomNavSwipe } from "./bottom-nav-swipe";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -17,7 +17,7 @@ import "./card-action-sheets.css";
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 
-enableUnifiedCardTemplate();
+enableBottomNavSwipe();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

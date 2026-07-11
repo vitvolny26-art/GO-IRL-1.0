@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
+  Bell,
   CalendarDays,
   CalendarPlus,
   Check,
@@ -31,6 +32,7 @@ import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
+import { openCardReminderSheet, openCardShareSheet } from "./card-action-sheets";
 import { initializeTrustedAuth } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
@@ -71,6 +73,22 @@ const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").repla
 const activityInviteUrl = (activity: Activity) => {
   const path = telegramAppName ? `/${telegramAppName}` : "";
   return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
+};
+
+const openActivityMap = (activity: Activity) => {
+  const query = [activity.address, getCity(activity.cityId).name.en].filter(Boolean).join(", ");
+  window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
+};
+
+const genericActivityAvatar = (activity: Activity, language: Language, fallback: string) => {
+  const value = `${activity.activity[language]} ${activity.title[language]}`.toLowerCase();
+  if (/run|running|бег|běh/.test(value)) return "🏃";
+  if (/walk|walking|прогул|ходь|proch/.test(value)) return "🚶";
+  if (/board|game|игр|hra/.test(value)) return "🎲";
+  if (/coffee|кафе|кофе|káva/.test(value)) return "☕";
+  if (/language|язык|jazyk/.test(value)) return "💬";
+  if (/party|вечерин|párty/.test(value)) return "🎉";
+  return fallback || "✨";
 };
 
 const activityIdFromJoinPath = () => {
@@ -585,34 +603,7 @@ function DiscoverSection({ title, activities, language, onOpen, onJoin }: { titl
 }
 
 function DiscoverActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
-  const { joinedIds, pendingIds } = useAppStore();
-  const t = getTranslation(language);
-  const category = getActivityCategory(activity);
-  const joined = joinedIds.includes(activity.id);
-  const pending = pendingIds.includes(activity.id);
-  const isOrganizer = activity.organizerKey === getUserKey();
-
-  return (
-    <article className="discover-card">
-      <button className="discover-card-main" onClick={() => onOpen(activity)} type="button">
-        <div className={`category-icon category-${category.id}`}>{category.icon}</div>
-        <div>
-          <span>{category.name[language]}</span>
-          <h3>{activity.activity[language]}</h3>
-          <p>{activity.title[language]}</p>
-        </div>
-      </button>
-      <div className="discover-card-meta">
-        <span><CalendarDays />{compactDateLabel(activity.date, language)}</span>
-        {formatEventTime(activity.time) ? <span><Clock3 />{formatEventTime(activity.time)}</span> : null}
-        <span><MapPin />{getCity(activity.cityId).name[language]}</span>
-        <span><UsersRound />{Math.max(activity.capacity - activity.participants, 0)} {t.left}</span>
-      </div>
-      <button className={joined || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button">
-        {isOrganizer ? t.open : pending ? t.requested : joined ? t.joined : activity.visibility === "invite" ? t.request : t.join}
-      </button>
-    </article>
-  );
+  return <ActivityCard activity={activity} language={language} onOpen={onOpen} onJoin={onJoin} />;
 }
 
 function ExploreView({ language, onOpen, onJoin }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
@@ -992,12 +983,16 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const { joinedIds, waitingIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const category = getActivityCategory(activity);
-  const free = activity.capacity - activity.participants;
   const joined = joinedIds.includes(activity.id);
   const waiting = waitingIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
+  const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
+  const joinedMembers = activity.members.filter((member) => member.status === "joined");
+  const shareTitle = activity.activity[language];
+  const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
+  const avatar = genericActivityAvatar(activity, language, category.icon);
   const action = isOrganizer
     ? t.open
     : pending
@@ -1030,32 +1025,61 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
                 : t.publicStatus;
 
   return (
-    <article className="activity-card">
-      <button className="activity-card-main" onClick={() => onOpen(activity)} type="button">
-        <div className={`category-icon category-${category.id}`}>{category.icon}</div>
-        <div className="activity-copy">
-          <div className="activity-label">{category.name[language]}</div>
-          <h3>{activity.activity[language]}</h3>
+    <article className="activity-card sport-card compact-sport-card unified-event-card">
+      <div className="sport-card-top-actions">
+        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><Bell size={20} /></button>
+        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); openCardShareSheet(shareTitle, shareDate, activity.address, event.currentTarget, activityInviteUrl(activity)); }}><Share2 size={20} /></button>
+      </div>
+      <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
+        <div className={`sport-card-symbol category-${category.id}`}><span className="sport-avatar-glyph">{avatar}</span></div>
+        <div>
+          <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /><span>{category.name[language]}</span></div>
+          <h3>{shareTitle}</h3>
           <p>{activity.title[language]}</p>
         </div>
-        <ChevronRight className="card-arrow" size={18} />
       </button>
-
-      <div className="activity-card-details">
-        <div><CalendarDays /><span>{compactDateLabel(activity.date, language)}</span></div>
-        {formatEventTime(activity.time) ? <div><Clock3 /><span>{formatEventTime(activity.time)}</span></div> : null}
-        <div><MapPin /><span>{activity.address}</span></div>
-        <div><UsersRound /><span>{activity.participants} / {activity.capacity}</span></div>
-        <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <div><Star /><span>{t.organizerRli}</span></div>
+      <div className="sport-chip-row">
+        <button
+          className="sport-card-participants-chip"
+          type="button"
+          aria-label={`${t.participants}: ${activity.participants} / ${activity.capacity}`}
+          aria-expanded={membersPreviewOpen}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setMembersPreviewOpen((open) => !open);
+          }}
+        ><UsersRound size={16} aria-hidden="true" /><span>{activity.participants} / {activity.capacity}</span></button>
+        <button
+          className="sport-card-chip sport-duration-chip"
+          type="button"
+          aria-label={`Напоминание: ${shareDate}`}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openCardReminderSheet(event.currentTarget);
+          }}
+        ><CalendarPlus size={16} aria-hidden="true" /><span>{formatEventTime(activity.time) || compactDateLabel(activity.date, language)}</span></button>
       </div>
-
-      <div className="activity-card-footer">
-        <span className={free <= 1 ? "spots urgent" : "spots"}>
-          <UsersRound />{free > 0 ? `${free} ${t.left}` : t.full}
-        </span>
-        <span className="card-status">{status}</span>
-        <button className={joined || waiting || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button">
+      {membersPreviewOpen && (
+        <div className="sport-card-members-preview">
+          {joinedMembers.length ? joinedMembers.map((member) => (
+            <div key={member.userKey} className="sport-card-member-preview-row">
+              <span className="sport-card-member-avatar">{member.name?.slice(0, 2).toUpperCase() || "GO"}</span>
+              <span className="sport-card-member-name">{member.name || "GO IRL User"}</span>
+            </div>
+          )) : <div className="sport-card-members-empty">{t.noParticipants || "Пока никого нет"}</div>}
+        </div>
+      )}
+      <div className="activity-card-details sport-details-grid">
+        <button type="button" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><CalendarDays /><span>{shareDate}</span></button>
+        <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
+        <button type="button" onClick={(event) => { event.stopPropagation(); openActivityMap(activity); }}><MapPin /><span>{activity.address}</span></button>
+        <div className="unified-status-cell"><ShieldCheck /><Star /><span>{status}</span></div>
+      </div>
+      <div className="activity-card-footer compact-sport-actions">
+        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{t.open}</button>
+        <button className={joined || waiting || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !waiting && !pending}>
           {action}
         </button>
       </div>

@@ -24,6 +24,11 @@ const activityInviteUrl = (activity: Activity) => {
   return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
 };
 
+const openActivityMap = (activity: Activity) => {
+  const query = encodeURIComponent(activity.address || "Olomouc");
+  window.open(`https://mapy.cz/zakladni?q=${query}`, "_blank", "noopener,noreferrer");
+};
+
 const cleanSportLabel = (value: string | null | undefined) => {
   const raw = String(value || "").trim();
   return raw.replace(/^[^A-Za-zА-Яа-яЁё0-9]+\s*/u, "").trim() || raw || "Спорт";
@@ -251,7 +256,21 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <div><MapPin /><span>{activity.address}</span></div>
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={`${t.address}: ${activity.address}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            openActivityMap(activity);
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            event.stopPropagation();
+            openActivityMap(activity);
+          }}
+        ><MapPin /><span>{activity.address}</span></div>
         <div
           role="button"
           tabIndex={0}

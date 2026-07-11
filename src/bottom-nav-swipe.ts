@@ -4,6 +4,18 @@ const maxVerticalDrift = 80;
 let startX = 0;
 let startY = 0;
 let tracking = false;
+let enabled = false;
+
+const blockedSwipeTarget = (target: EventTarget | null) =>
+  target instanceof Element && Boolean(target.closest(
+    ".horizontal-events, input, textarea, select, [contenteditable='true'], [data-no-tab-swipe]",
+  ));
+
+export const resolveSwipeDirection = (deltaX: number, deltaY: number): "next" | "prev" | null => {
+  if (Math.abs(deltaX) < minSwipeDistance) return null;
+  if (Math.abs(deltaY) > maxVerticalDrift || Math.abs(deltaY) >= Math.abs(deltaX)) return null;
+  return deltaX < 0 ? "next" : "prev";
+};
 
 const bottomNavButtons = () => Array.from(document.querySelectorAll<HTMLButtonElement>(".bottom-nav button"));
 
@@ -27,9 +39,14 @@ const switchTab = (direction: "next" | "prev") => {
 };
 
 export const enableBottomNavSwipe = () => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || enabled) return;
+  enabled = true;
 
   window.addEventListener("touchstart", (event) => {
+    if (blockedSwipeTarget(event.target)) {
+      tracking = false;
+      return;
+    }
     const touch = event.touches[0];
     if (!touch) return;
     startX = touch.clientX;
@@ -47,10 +64,7 @@ export const enableBottomNavSwipe = () => {
     const deltaX = touch.clientX - startX;
     const deltaY = touch.clientY - startY;
 
-    if (Math.abs(deltaX) < minSwipeDistance) return;
-    if (Math.abs(deltaY) > maxVerticalDrift) return;
-
-    if (deltaX < 0) switchTab("next");
-    if (deltaX > 0) switchTab("prev");
+    const direction = resolveSwipeDirection(deltaX, deltaY);
+    if (direction) switchTab(direction);
   }, { passive: true });
 };

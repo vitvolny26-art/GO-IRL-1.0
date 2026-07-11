@@ -5,6 +5,12 @@
   overflow: hidden !important;
 }
 
+.horizontal-events > .compact-sport-card {
+  flex: 0 0 min(92vw, 420px) !important;
+  width: min(92vw, 420px) !important;
+  scroll-snap-align: start !important;
+}
+
 .activity-stack .activity-card:not(.compact-sport-card) .activity-card-main {
   display: grid !important;
   grid-template-columns: 82px minmax(0, 1fr) !important;
