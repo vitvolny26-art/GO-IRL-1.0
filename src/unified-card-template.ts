@@ -1,10 +1,33 @@
 import { openCardReminderSheet, openCardShareSheet } from "./card-action-sheets";
+import { useAppStore } from "./store";
+import type { Activity } from "./types";
 
 const processedAttr = "data-go-irl-unified-card";
+const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
+const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
 const text = (el: Element | null) => el?.textContent?.trim() || "";
 const compactSpaces = (value: string) => value.replace(/\s+/g, " ").trim();
 const stripEmoji = (value: string) => compactSpaces(value.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""));
+const normalized = (value: string) => stripEmoji(value).toLowerCase();
+
+const activityInviteUrl = (activity: Activity) => {
+  const path = telegramAppName ? `/${telegramAppName}` : "";
+  return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
+};
+
+const findRenderedActivity = (title: string, subtitle: string, address: string) => {
+  const normalizedTitle = normalized(title);
+  const normalizedSubtitle = normalized(subtitle);
+  const normalizedAddress = compactSpaces(address).toLowerCase();
+
+  return useAppStore.getState().activities.find((activity) => {
+    const titleMatches = Object.values(activity.activity).some((value) => normalized(value) === normalizedTitle);
+    const subtitleMatches = Object.values(activity.title).some((value) => normalized(value) === normalizedSubtitle);
+    const addressMatches = !normalizedAddress || compactSpaces(activity.address).toLowerCase() === normalizedAddress;
+    return titleMatches && subtitleMatches && addressMatches;
+  });
+};
 
 const openUrl = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
@@ -98,6 +121,8 @@ const normalizeGenericCard = (card: HTMLElement) => {
   const duration = eventDuration(title);
   const status = genericStatus(title, spotsText);
   const safeAddress = fields.address || "Olomouc";
+  const renderedActivity = findRenderedActivity(title, subtitle, safeAddress);
+  const shareUrl = renderedActivity ? activityInviteUrl(renderedActivity) : undefined;
 
   card.setAttribute(processedAttr, "1");
   card.classList.add("compact-sport-card", "unified-event-card");
@@ -128,7 +153,7 @@ const normalizeGenericCard = (card: HTMLElement) => {
   });
   topActions.querySelector<HTMLElement>("[aria-label='Поделиться']")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openCardShareSheet(title, fields.date || duration, safeAddress, event.currentTarget as HTMLElement);
+    openCardShareSheet(title, fields.date || duration, safeAddress, event.currentTarget as HTMLElement, shareUrl);
   });
   card.insertBefore(topActions, main);
 
