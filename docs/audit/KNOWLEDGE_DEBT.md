@@ -47,7 +47,6 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 
 | ID | Debt item | Type | Severity | Owner | Status | Due date | Notes |
 |---|---|---|---|---|---|---|---|
-| KD-003 | Bible audit and roadmap reference missing Bible books | Missing source files | Critical | Project Archivist | Open | 2026-07-23 | Restore missing files or rewrite audit to actual state. |
 | KD-005 | Strategic docs lack YAML frontmatter | Metadata debt | High | Project Archivist | Open | 2026-07-31 | Add `title`, `owner`, `status`, `source_of_truth`, `last_review`, `next_review`. |
 | KD-006 | `docs/GO_IRL_PRODUCT.md` is not registered in the source-of-truth hierarchy | Orphaned document | High | Product Lead | Open | 2026-07-31 | Register as product narrative or archive/split into canonical docs. |
 | KD-007 | Security/release wording drifts across release and security docs | Consistency conflict | High | Security Lead | Open | 2026-07-16 | Align `RELEASE_NOTES.md`, `docs/Security.md`, `docs/SECURITY_RELEASE_CHECKLIST.md`, `supabase/README.md`. |
@@ -62,13 +61,12 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 
 ## Immediate correction order
 
-1. Restore or rewrite missing Bible chapters.
-2. Add YAML frontmatter to P0/P1 source-of-truth documents.
-3. Verify NotebookLM findings against GitHub before accepting them into source-of-truth docs.
-4. Review chat lifecycle documentation versus current Supabase migration behavior without changing SQL yet.
-5. Align security/release/Supabase wording.
-6. Create ADR registry.
-7. Add docs audit automation.
+1. Add YAML frontmatter to P0/P1 source-of-truth documents.
+2. Verify NotebookLM findings against GitHub before accepting them into source-of-truth docs.
+3. Review chat lifecycle documentation versus current Supabase migration behavior without changing SQL yet.
+4. Align security/release/Supabase wording.
+5. Create ADR registry.
+6. Add docs audit automation.
 
 ## Closed history
 
@@ -76,5 +74,6 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 |---|---|---|
 | KD-001 | 2026-07-09 | `DOCS_INDEX.md` status registry normalized from `Current` to `Active` under Knowledge Status Model. |
 | KD-002 | 2026-07-09 | `README.md` root sprint references replaced with `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md`; Knowledge Debt link added. |
+| KD-003 | 2026-07-11 | Bible target chapters were completed and the audit/roadmap were rewritten to actual state. `docs/bible/09-governance-and-ai-organization.md` and `docs/bible/10-operations-and-release.md` now exist and are registered in `DOCS_INDEX.md`. |
 | KD-004 | 2026-07-09 | Created `docs/market/README.md`, `docs/market/CONTINUOUS_COMPETITOR_INTELLIGENCE.md`, and `docs/market/COMPETITOR_ANALYSIS_TEMPLATE.md`. |
 | KD-013 | 2026-07-11 | Category scope conflict moved from docs-only ambiguity to implemented closed-beta taxonomy guard: `CHANGELOG.md` labels extras as taxonomy/test candidates; `ROADMAP.md` and `BACKLOG.md` keep six-category guardrail; create-event UI now uses closed beta categories/options while broader taxonomy remains hidden/experimental data. |
