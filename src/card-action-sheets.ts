@@ -7,10 +7,10 @@ type SheetAction = {
 };
 
 const messengerIconUrl: Record<MessengerKind, string> = {
-  telegram: "https://cdn.simpleicons.org/telegram/26A5E4",
-  whatsapp: "https://cdn.simpleicons.org/whatsapp/25D366",
-  messenger: "https://cdn.simpleicons.org/messenger/00B2FF",
-  viber: "https://cdn.simpleicons.org/viber/7360F2",
+  telegram: "/icons/telegram.svg",
+  whatsapp: "/icons/whatsapp.svg",
+  messenger: "/icons/messenger.svg",
+  viber: "/icons/viber.svg",
 };
 
 const triggerIdAttr = "data-card-action-trigger-id";
@@ -66,7 +66,7 @@ const showCardActionSheet = (actions: SheetAction[], trigger?: HTMLElement) => {
     button.type = "button";
     button.className = `unified-card-icon-option unified-card-icon-option--${item.kind}`;
     button.setAttribute("aria-label", item.label);
-    button.innerHTML = `<span class="unified-card-icon-circle"><img src="${messengerIconUrl[item.kind]}" alt="" loading="lazy" decoding="async" /></span>`;
+    button.innerHTML = `<span class="unified-card-icon-circle"><img src="${messengerIconUrl[item.kind]}" alt="" decoding="async" /></span>`;
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       sheet.remove();
