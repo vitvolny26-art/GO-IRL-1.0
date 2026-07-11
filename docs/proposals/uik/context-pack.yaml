@@ -1,0 +1,54 @@
+version: 0.1
+status: proposal
+source_of_truth: false
+context_pack:
+  mission_id: "MISSION-YYYYMMDD-001"
+  objective: "One bounded objective"
+  expected_deliverable: "One concrete output"
+  purpose:
+    project: "Less scrolling. More life."
+    task_alignment: "How this task supports real-life meetings"
+  constraints:
+    allowed_actions:
+      - read
+      - analyze
+      - report
+    forbidden_actions:
+      - merge
+      - deploy
+      - change_auth
+      - change_rls
+      - execute_sql
+      - create_or_apply_migration
+      - access_or_change_secrets
+  source_of_truth:
+    repository: "vitvolny26-art/GO-IRL-1.0"
+    files: []
+    issues: []
+    pull_requests: []
+  evidence:
+    verified: []
+    assumptions: []
+    unknowns: []
+  active_decisions: []
+  role:
+    id: "qa_lead"
+    capabilities: []
+    write_scope: []
+  limits:
+    maximum_calls: 2
+    maximum_budget_usd: 0.25
+    maximum_context_tokens: 12000
+    deadline: null
+  required_output:
+    schema: "agent-result-v0.1"
+    must_include:
+      - findings
+      - evidence
+      - risks
+      - next_single_task
+  stop_conditions:
+    - missing_required_evidence
+    - forbidden_action_required
+    - budget_exhausted
+    - conflicting_source_of_truth
