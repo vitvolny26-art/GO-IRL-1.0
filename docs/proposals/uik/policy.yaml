@@ -1,0 +1,58 @@
+version: 0.1
+status: proposal
+source_of_truth: false
+policies:
+  - id: require_human_approval_for_sensitive_scope
+    effect: require_approval
+    when:
+      any_action:
+        - repository_write
+        - production_action
+        - merge
+        - deploy
+        - change_auth
+        - change_rls
+        - execute_sql
+        - create_or_apply_migration
+        - access_or_change_secrets
+  - id: deny_autonomous_merge
+    effect: deny
+    when:
+      action: merge
+      actor_type_not: human
+  - id: deny_autonomous_deploy
+    effect: deny
+    when:
+      action: deploy
+      actor_type_not: human
+  - id: preserve_product_priority
+    effect: require_alignment
+    when:
+      task_domain_in:
+        - ai
+        - automation
+        - documentation
+    must_align_with:
+      - closed_beta_loop_stability
+      - current_product_roadmap
+  - id: protect_source_of_truth
+    effect: deny
+    when:
+      action_in:
+        - edit_docs_index
+        - close_knowledge_debt
+      explicit_owner_approval: false
+  - id: keep_reports_non_authoritative
+    effect: enforce
+    when:
+      artifact_type: report
+    set:
+      source_of_truth: false
+  - id: stop_on_missing_evidence
+    effect: stop
+    when:
+      required_evidence_missing: true
+  - id: one_task_at_a_time
+    effect: enforce
+    when:
+      active_mission_count_greater_than: 1
