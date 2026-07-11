@@ -1,20 +1,14 @@
-import { initializeTrustedAuth, getCurrentAuthSession, isBrowserMockMode, isTrustedAuthReady } from "./authSession";
+import {
+  browserMockUserKey,
+  getCurrentAuthSession,
+  initializeTrustedAuth,
+  isBrowserMockMode,
+  isTrustedAuthReady,
+  readAuthUserKey,
+} from "./authSession";
 import { supabase } from "./supabase";
 import type { Activity, CoachRequest, CoachRequestType } from "./types";
 
-type AuthLike = {
-  user?: {
-    userKey?: string;
-  };
-  userKey?: string;
-};
-
-const readAuthUserKey = (identity: unknown) => {
-  const auth = identity as AuthLike | null;
-  return auth?.user?.userKey || auth?.userKey || null;
-};
-
-const demoUserKey = "telegram:999999";
 const demoCoachStorageKey = "go-irl-demo-coach-requests-v1";
 
 const isCoachDemoMode = () =>
@@ -37,7 +31,7 @@ const isConfirmedOrganizerCoachRequest = (request: CoachRequest) =>
   request.requestType === "organizer_request" && request.status === "confirmed";
 
 export async function getCurrentCoachUserKey() {
-  if (isCoachDemoMode()) return demoUserKey;
+  if (isCoachDemoMode()) return browserMockUserKey;
 
   const existing = getCurrentAuthSession();
   const existingKey = readAuthUserKey(existing);
