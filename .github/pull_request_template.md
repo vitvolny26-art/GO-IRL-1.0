@@ -1,6 +1,14 @@
 ## Scope
 
-Describe one focused task.
+Describe one focused task and one branch.
+
+## Delivery workflow
+
+- [ ] One task in one branch.
+- [ ] No intermediate attempts or red states were pushed.
+- [ ] One final push only.
+- [ ] One focused PR only.
+- [ ] Squash merge only.
 
 ## Changes
 
@@ -8,20 +16,22 @@ Describe one focused task.
 
 ## Validation
 
-For code changes, record actual results:
+For code or runtime/config changes, record actual results in this order:
 
 ```text
+pnpm run typecheck  PASS/FAIL
 pnpm run lint       PASS/FAIL
 pnpm run build      PASS/FAIL
 pnpm run test       PASS/FAIL
-pnpm run typecheck  PASS/FAIL
 ```
 
-For documentation-only changes:
+For pure documentation-only changes:
 
 ```text
 Checks: NOT RUN — docs-only
 ```
+
+A PR is docs-only only when every changed file is Markdown or is under `docs/`. Docs-only PRs are skipped by Vercel through the repository ignore policy.
 
 For external blockers:
 
@@ -31,9 +41,8 @@ Checks: BLOCKED — <exact reason>
 
 ## Durable report
 
-- [ ] Added or updated a task report under `docs/reports/`.
+- [ ] Added one task report under `docs/reports/`.
 - [ ] Report follows `docs/reports/README.md`.
-- [ ] Report does not claim green status without evidence.
 - [ ] Historical reports were not silently rewritten.
 
 Report path:
