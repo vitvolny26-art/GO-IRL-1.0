@@ -49,7 +49,8 @@ Locally validate, test, sanitize, and minimally harden the inactive GO IRL AI St
 - Added `STAFF-OS Single-Run Procedure` sticky note with the unambiguous manual-trigger path and a warning not to execute the terminal node directly.
 - Added `scripts/validate-n8n-staff-os.cjs` using Node built-ins only.
 - Added `scripts/test-n8n-staff-os.cjs` using Node built-ins only.
-- Did not activate, publish, execute, or edit the live n8n workflow.
+- Added the same single-run instruction as a sticky note to the live structural-test workflow and confirmed it persisted after reload.
+- Did not activate, publish, execute, or change node configuration, connections, credentials, or the AI Report Bus branch in the live workflow.
 
 ## Structural validation
 
@@ -83,9 +84,9 @@ pnpm run test   PASS — 13 files, 65 tests
 
 ## Blockers
 
-None for the local structural validation.
+None for the local structural validation or the cloud sticky-note update.
 
-The live workflow remains intentionally unchanged. Importing the sanitized repository copy or editing the cloud workflow requires a separate explicit action and must remain inactive until reviewed.
+The cloud workflow remains inactive. The repository copy remains the sanitized portable review artifact; it was not imported over the account-bound workflow.
 
 ## Proposed commit message
 
@@ -95,4 +96,4 @@ test: validate n8n staff os workflow
 
 ## Next step
 
-Review the local diff. Commit locally only if all final checks remain green. Do not push or open a PR without explicit owner approval.
+Run any future n8n manual test only from `STAFF-00 Mission Trigger (Manual)`. Do not push or open a PR without explicit owner approval.
