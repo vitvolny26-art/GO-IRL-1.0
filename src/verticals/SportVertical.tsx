@@ -216,7 +216,19 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           <UsersRound size={16} aria-hidden="true" />
           <span>{activity.participants} / {activity.capacity}</span>
         </button>
-        <span className="sport-card-chip sport-duration-chip"><CalendarPlus size={16} aria-hidden="true" /><span>{meta.durationMinutes || 90} {t.minutesShort}</span></span>
+        <button
+          className="sport-card-chip sport-duration-chip"
+          type="button"
+          aria-label={`${t.sportDuration}: ${meta.durationMinutes || 90} ${t.minutesShort}`}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openCardReminderSheet(event.currentTarget);
+          }}
+        >
+          <CalendarPlus size={16} aria-hidden="true" />
+          <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
+        </button>
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
