@@ -3,17 +3,17 @@ title: GO IRL Bible Completion Roadmap
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-10
-next_review: 2026-07-17
+last_review: 2026-07-11
+next_review: 2026-07-18
 ---
 
 # GO IRL Bible Completion Roadmap
 
 ## Purpose
 
-This file defines how to finish the GO IRL Bible without rewriting it from scratch.
+This file defines how to finish and maintain the GO IRL Bible without rewriting it from scratch.
 
-Current rule: preserve existing material, classify it, compare it with the actual MVP and market positioning, then complete only the missing parts.
+Current rule: preserve existing material, classify it, compare it with the actual MVP and market positioning, then complete only missing parts.
 
 Market scope is controlled by:
 
@@ -45,11 +45,15 @@ docs/bible/05-product-requirements-mvp-split.md
 docs/bible/06-ux-interaction-guidelines.md
 docs/bible/07-beta-readiness-and-operations.md
 docs/bible/08-runtime-boundaries.md
+docs/bible/09-governance-and-ai-organization.md
+docs/bible/10-operations-and-release.md
 ```
 
-No current Bible 1.0 MVP boundary chapter is missing from Books I-VIII.
+No current Bible 1.0 MVP boundary chapter is missing.
 
-Remaining target chapters:
+## Completed target chapters
+
+The former remaining target chapters are now created and registered:
 
 ```text
 docs/bible/09-governance-and-ai-organization.md
@@ -76,12 +80,29 @@ Status: done for current pass.
 
 The completion audit separates confirmed files from missing/not-confirmed files.
 
-### Step 3 — Complete Bible 1.0 remaining target chapters
+### Step 3 — Complete Bible 1.0 target chapters
 
-Current writing order:
+Status: done for current pass.
+
+Completed chapters:
 
 1. `docs/bible/09-governance-and-ai-organization.md`
 2. `docs/bible/10-operations-and-release.md`
+
+### Step 4 — Maintain and reconcile
+
+Status: active.
+
+The Bible is now structurally complete for MVP 1.0 / MVP 1.1 beta boundaries, but it still needs periodic reconciliation against:
+
+- current code;
+- Supabase schema and migrations;
+- `README.md`;
+- `ROADMAP.md`;
+- `BACKLOG.md`;
+- `RELEASE_NOTES.md`;
+- `DOCS_INDEX.md`;
+- Knowledge Debt.
 
 ## Bible 1.0 target structure
 
@@ -141,6 +162,7 @@ Reason: current Bible 1.0 must describe actual Supabase boundaries, trusted auth
 - Share / join boundaries.
 - Weather widget boundaries.
 - QA and release gates.
+- AI roles, councils, Archivist, and external AI tool boundaries.
 - What is not included in MVP.
 
 ## Bible 1.1+ scope
@@ -157,36 +179,4 @@ Future-only topics include:
 - direct messages;
 - AI recommendations;
 - AI event discovery;
-- multi-city catalog;
-- friends vertical;
-- travel vertical;
-- dating vertical.
-
-## Required checks before marking Bible final
-
-1. Check against current code and Supabase schema.
-2. Check against `README.md` and `RELEASE_NOTES.md`.
-3. Check against `DOCS_INDEX.md` source-of-truth rules.
-4. Check against `ROADMAP.md` and `BACKLOG.md`.
-5. Check against `docs/MARKET_POSITIONING.md` and `docs/COMPETITOR_WATCH.md`.
-6. Check against `docs/audit/KNOWLEDGE_DEBT.md`.
-
-## Do not do from Bible cleanup
-
-- Do not touch `.env`.
-- Do not change secrets.
-- Do not run or edit destructive SQL.
-- Do not change Supabase RLS.
-- Do not change auth.
-- Do not refactor code.
-- Do not mark beta-ready without quality gates.
-
-## Status
-
-Current status: **Bible 1.0 in progress**.
-
-Next file:
-
-```text
-docs/bible/09-governance-and-ai-organization.md
-```
+- multi-city catalog.
