@@ -28,6 +28,15 @@ jobs:
       - name: Test
         run: pnpm run test
 
+      - name: Capture typecheck
+        run: pnpm run typecheck > typecheck.log 2>&1 || true
+
+      - name: Upload typecheck log
+        uses: actions/upload-artifact@v4
+        with:
+          name: typecheck-log
+          path: typecheck.log
+
       - name: Typecheck
         run: pnpm run typecheck
 
