@@ -30,6 +30,8 @@ CURRENT PROJECT STATE
 - PR #40 merged: corrected GO IRL strategic review added under docs/reports/.
 - PR #41 merged: report-only Project Coordinator governance registered.
 - PR #43 merged: Chief AI Officer alias removed; Project Coordinator is the canonical role.
+- PR #44 merged: NotebookLM sync status mirror added at docs/exports/GO_IRL_NOTEBOOKLM_SYNC_STATUS.txt.
+- Google Drive mirror synced: /GO IRL DOC/GO_IRL_NOTEBOOKLM_SYNC_STATUS.txt.
 - PR #42 remains Draft: STAFF-00 Daily Mission Intake workflow.
 - n8n is orchestration glue only.
 - Human approval remains required before repository writes, merges, auth/RLS/SQL changes, secrets, or deployment.
