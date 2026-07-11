@@ -1,10 +1,10 @@
 # AI Fix Report — 2026-07-11
 
 ## Summary
-Restored reliable sport-card reminder/share actions, removed the conflicting global click interceptor, cleared existing TypeScript/lint blockers discovered by CI, fixed generic-card sharing to use the exact Telegram event deep link, removed the external CDN dependency for messenger icons, and aligned the sport duration chip with the reminder picker contract.
+Restored reliable sport-card reminder/share actions, removed the conflicting global click interceptor, cleared existing TypeScript/lint blockers discovered by CI, fixed generic-card sharing to use the exact Telegram event deep link, removed the external CDN dependency for messenger icons, and aligned sport duration plus date/time cells with the reminder picker contract.
 
 ## Root cause
-`enableSportCardActionSheets()` intercepted sport-card clicks in capture phase and called `stopImmediatePropagation()`, preventing React handlers from running reliably. Generic cards then used `window.location.href` for sharing because the runtime adapter had no direct event ID. Messenger icons also depended on `cdn.simpleicons.org`, which could fail inside Telegram WebView or restricted networks. The sport duration chip remained a non-interactive `<span>` even though the documented card contract requires it to open the reminder picker. CI also exposed unrelated typing issues in weather parsing, avatar path generation, chat status values, bug-report handler arguments, and Vite environment access.
+`enableSportCardActionSheets()` intercepted sport-card clicks in capture phase and called `stopImmediatePropagation()`, preventing React handlers from running reliably. Generic cards then used `window.location.href` for sharing because the runtime adapter had no direct event ID. Messenger icons also depended on `cdn.simpleicons.org`, which could fail inside Telegram WebView or restricted networks. The sport duration chip and date/time cell remained non-interactive even though the documented card contract requires both to open the reminder picker. CI also exposed unrelated typing issues in weather parsing, avatar path generation, chat status values, bug-report handler arguments, and Vite environment access.
 
 ## Files changed
 - `src/main.tsx`
@@ -32,6 +32,7 @@ Restored reliable sport-card reminder/share actions, removed the conflicting glo
 - Kept generic duration/date reminder actions, participant/detail action, Mapy.cz address action, informational price/status cells, Coach/detail action, and original Join/Open handler.
 - Replaced external Simple Icons CDN URLs with local SVG assets under `public/icons/`.
 - Changed the sport duration chip from a static span to an accessible button that opens the reminder picker.
+- Added click, Enter, and Space reminder behavior to the sport date/time cell without changing its visual layout.
 - Added safe Open-Meteo response types.
 - Aligned chat message status typing with current demo behavior.
 - Fixed avatar path ID typing.
@@ -61,4 +62,4 @@ pnpm run typecheck PASS
 - card CSS/layout
 
 ## Next small fix
-Make the sport-card date/time block open the reminder picker so all documented reminder entry points behave consistently.
+Make the sport-card address cell open Mapy.cz so all documented card actions behave consistently.
