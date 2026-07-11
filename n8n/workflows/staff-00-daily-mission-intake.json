@@ -1,0 +1,14 @@
+{
+  "name": "GO IRL / Staff OS / STAFF-00 Daily Mission Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "go-irl/staff-os/daily-mission",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
