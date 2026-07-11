@@ -10,3 +10,7 @@ go-irl-*.png
 old/
 
 .env
+
+GO IRL DOC/
+GO IRL DOC FULL/
+GO_IRL_NOTEBOOKLM_*.txt
