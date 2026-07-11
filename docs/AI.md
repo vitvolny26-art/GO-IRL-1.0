@@ -1,3 +1,12 @@
+---
+title: AI Architecture
+owner: AI Platform Lead
+status: Draft
+source_of_truth: false
+last_review: 2026-07-11
+next_review: 2026-08-11
+---
+
 # AI Architecture
 
 GO IRL uses AI as a platform helper, not as the owner of business logic.
