@@ -119,6 +119,7 @@ next_review:
 | `docs/bible/05-product-requirements-mvp-split.md` | Bible / MVP Boundary | Active | Да | PRD split: MVP 1.0, MVP 1.1 stabilization, future, blocked-before-beta. |
 | `docs/bible/07-beta-readiness-and-operations.md` | Bible / Beta Ops | Active | Да | Beta operations, QA gates, release gates, Browser Demo Mode, MVP non-goals. |
 | `docs/bible/08-runtime-boundaries.md` | Bible / Runtime Boundary | Active | Да | Runtime/auth/Supabase/demo/profile/chat/share/weather boundaries. |
+| `docs/bible/09-governance-and-ai-organization.md` | Bible / Governance | Active | Да | AI roles, councils, Archivist, NotebookLM/Gemini boundaries, and source-of-truth governance. |
 | `supabase/README.md` | Supabase Setup | Active | Да | Must reflect Trusted Auth and migration reality. |
 | `supabase/schema.sql` | Supabase Schema | Active | Да | Production-sensitive. Read-only during documentation cleanup. |
 | `supabase/schema_next.sql` | Future Schema | Draft | Нет | Do not apply without review. |
@@ -204,6 +205,7 @@ GO IRL Documentation
 │   └── project-audit/
 ├── Bible
 │   └── docs/bible/
+│       └── 09-governance-and-ai-organization.md
 ├── Governance
 │   └── docs/governance/
 │       ├── AI_ORGANIZATION.md
