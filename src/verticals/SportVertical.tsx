@@ -252,7 +252,21 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       )}
       <div className="activity-card-details sport-details-grid">
         <div><MapPin /><span>{activity.address}</span></div>
-        <div><CalendarDays /><span>{shareDate}</span></div>
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={`Напоминание: ${shareDate}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            openCardReminderSheet(event.currentTarget);
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            event.stopPropagation();
+            openCardReminderSheet(event.currentTarget);
+          }}
+        ><CalendarDays /><span>{shareDate}</span></div>
         <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
         <div><ShieldCheck /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
       </div>
