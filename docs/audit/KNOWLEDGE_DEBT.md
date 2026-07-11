@@ -3,8 +3,8 @@ title: Knowledge Debt
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-10
-next_review: 2026-07-17
+last_review: 2026-07-11
+next_review: 2026-07-18
 ---
 
 # Knowledge Debt
@@ -22,6 +22,7 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 - Closed items move to the history section.
 - This file tracks documentation and knowledge debt only.
 - Code, `.env`, secrets, Supabase RLS, auth, and destructive SQL are out of scope unless explicitly approved elsewhere.
+- Assistant reports from NotebookLM, Gemini, or other AI tools are inputs for review, not source-of-truth documents.
 
 ## Severity model
 
@@ -55,16 +56,19 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 | KD-010 | AI onboarding docs reference missing market and Bible files | Broken onboarding references | High | Project Archivist | Open | 2026-07-23 | Fix after missing Bible chapters are created or explicitly deferred. |
 | KD-011 | Root legacy docs are referenced in `DOCS_INDEX.md` although some are absent | Registry conflict | Medium | Project Archivist | Open | 2026-07-31 | Either restore historical snapshots or remove from active registry. |
 | KD-012 | `docs/governance/KNOWLEDGE_PLATFORM_2_0.md` and `docs/audit/KNOWLEDGE_PLATFORM_EPIC.md` overlap | Duplication | Medium | Project Archivist | Open | 2026-08-09 | Merge, archive, or define distinct purpose. |
-| KD-013 | Beta category scope mismatch across UI, CHANGELOG, ROADMAP, and Bible | Scope conflict | High | Product Lead | Review | 2026-07-17 | `CHANGELOG.md` now marks extra options as taxonomy/test candidates, not canonical MVP category expansion. `ROADMAP.md` and `BACKLOG.md` keep the six-category beta guardrail. Remaining check/fix: `src/data.ts` still exposes broad non-canonical activity options and needs a separate code decision before this item can close. |
+| KD-014 | Chat lifecycle wording may conflict with SQL/migration behavior | Docs/schema mismatch | High | Supabase Steward | Open | 2026-07-18 | NotebookLM audit flagged a possible mismatch between event lifecycle documentation and chat expiry behavior. Verify against migrations and product intent before any SQL work. Do not change Supabase/RLS/auth from this item alone. |
+| KD-015 | Legacy/demo identity fallback can confuse Trusted Auth documentation | Security documentation drift | Medium | Security Lead | Open | 2026-07-24 | Verify current production path, release wording, and legacy/demo header boundaries. Do not change `.env`, Vercel secrets, auth, or RLS from this item alone. |
+| KD-016 | Assistant reports may contain false positives if generated from incomplete exports | AI audit reliability | Medium | Project Archivist | Open | 2026-07-24 | NotebookLM reported missing files that may exist in GitHub. Add verification discipline: every AI audit claim must be checked against GitHub before changing source-of-truth docs. |
 
 ## Immediate correction order
 
 1. Restore or rewrite missing Bible chapters.
 2. Add YAML frontmatter to P0/P1 source-of-truth documents.
-3. Decide whether `src/data.ts` must hide non-canonical activity options in closed beta or only label them as experimental/demo.
-4. Create ADR registry.
+3. Verify NotebookLM findings against GitHub before accepting them into source-of-truth docs.
+4. Review chat lifecycle documentation versus current Supabase migration behavior without changing SQL yet.
 5. Align security/release/Supabase wording.
-6. Add docs audit automation.
+6. Create ADR registry.
+7. Add docs audit automation.
 
 ## Closed history
 
@@ -73,3 +77,4 @@ It exists to prevent AI agents, contributors, and future maintainers from treati
 | KD-001 | 2026-07-09 | `DOCS_INDEX.md` status registry normalized from `Current` to `Active` under Knowledge Status Model. |
 | KD-002 | 2026-07-09 | `README.md` root sprint references replaced with `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md`; Knowledge Debt link added. |
 | KD-004 | 2026-07-09 | Created `docs/market/README.md`, `docs/market/CONTINUOUS_COMPETITOR_INTELLIGENCE.md`, and `docs/market/COMPETITOR_ANALYSIS_TEMPLATE.md`. |
+| KD-013 | 2026-07-11 | Category scope conflict moved from docs-only ambiguity to implemented closed-beta taxonomy guard: `CHANGELOG.md` labels extras as taxonomy/test candidates; `ROADMAP.md` and `BACKLOG.md` keep six-category guardrail; create-event UI now uses closed beta categories/options while broader taxonomy remains hidden/experimental data. |
