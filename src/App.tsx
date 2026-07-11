@@ -82,7 +82,15 @@ const openActivityMap = (activity: Activity) => {
 
 const genericActivityAvatar = (activity: Activity, language: Language, fallback: string) => {
   const value = `${activity.activity[language]} ${activity.title[language]}`.toLowerCase();
+  if (/volley|волей|volej/.test(value)) return "🏐";
+  if (/football|футбол|fotbal/.test(value)) return "⚽";
+  if (/basket|баскет/.test(value)) return "🏀";
+  if (/tennis|теннис|tenis/.test(value)) return "🎾";
   if (/run|running|бег|běh/.test(value)) return "🏃";
+  if (/bike|cycle|velo|велосипед|kolo/.test(value)) return "🚴";
+  if (/swim|плав|plav/.test(value)) return "🏊";
+  if (/badminton|бадминтон/.test(value)) return "🏸";
+  if (/yoga|йога|jóga/.test(value)) return "🧘";
   if (/walk|walking|прогул|ходь|proch/.test(value)) return "🚶";
   if (/board|game|игр|hra/.test(value)) return "🎲";
   if (/coffee|кафе|кофе|káva/.test(value)) return "☕";
