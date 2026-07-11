@@ -12,3 +12,78 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
+        -520,
+        0
+      ],
+      "id": "d50b88ec-11be-4d36-a459-bda1d0751c71",
+      "name": "Daily Mission Webhook",
+      "webhookId": "8f7b42f2-218d-4e3c-8e31-5716383904a8"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object' && !Array.isArray($json.body))\n  ? $json.body\n  : $json;\n\nconst now = new Date();\nconst nowIso = now.toISOString();\nconst defaultForbiddenActions = [\n  'architecture_change',\n  'code_write',\n  'branch_create',\n  'pull_request_create',\n  'merge',\n  'production_deploy',\n  'auth_change',\n  'rls_change',\n  'sql_execute',\n  'migration_create_or_apply',\n  'secret_access_or_change',\n  'production_private_data_access',\n  'docs_index_edit',\n  'knowledge_debt_close',\n  'beta_ready_claim',\n  'release_ready_claim'\n];\n\nfunction cleanString(value, maxLength = 4000) {\n  if (typeof value !== 'string') return '';\n  return value.trim().replace(/\\s+/g, ' ').slice(0, maxLength);\n}\n\nfunction cleanStringArray(value, maxItems = 30, maxLength = 120) {\n  if (!Array.isArray(value)) return [];\n  return [...new Set(value\n    .filter((item) => typeof item === 'string')\n    .map((item) => cleanString(item, maxLength))\n    .filter(Boolean))]\n    .slice(0, maxItems);\n}\n\nfunction stableValue(value) {\n  if (Array.isArray(value)) return value.map(stableValue);\n  if (value && typeof value === 'object') {\n    return Object.keys(value).sort().reduce((out, key) => {\n      out[key] = stableValue(value[key]);\n      return out;\n    }, {});\n  }\n  return value;\n}\n\nfunction stableStringify(value) {\n  return JSON.stringify(stableValue(value));\n}\n\nfunction fnv1a(value) {\n  let hash = 0x811c9dc5;\n  for (let index = 0; index < value.length; index += 1) {\n    hash ^= value.charCodeAt(index);\n    hash = Math.imul(hash, 0x01000193);\n  }\n  return (hash >>> 0).toString(16).padStart(8, '0');\n}\n\nfunction roundMoney(value) {\n  return Math.round((value + Number.EPSILON) * 100) / 100;\n}\n\nconst errors = [];\nconst title = cleanString(input.title, 200);\nconst objective = cleanString(input.objective, 2000);\nconst businessReason = cleanString(input.business_reason, 1000);\nconst expectedDeliverable = cleanString(input.expected_deliverable, 1000);\nconst requestedBy = cleanString(input.requested_by || 'owner', 100);\nconst source = ['owner', 'github_issue', 'manual', 'scheduled'].includes(input.source)\n  ? input.source\n  : 'owner';\nconst priority = ['low', 'normal', 'high', 'critical'].includes(input.priority)\n  ? input.priority\n  : 'normal';\n\nif (!title) errors.push({ field: 'title', code: 'required' });\nif (!objective) errors.push({ field: 'objective', code: 'required' });\nif (!expectedDeliverable) errors.push({ field: 'expected_deliverable', code: 'required' });\n\nconst parsedBudget = Number(input.maximum_budget_usd ?? 0.75);\nconst maximumBudgetUsd = Number.isFinite(parsedBudget) ? roundMoney(parsedBudget) : NaN;\nif (!Number.isFinite(maximumBudgetUsd) || maximumBudgetUsd < 0.01 || maximumBudgetUsd > 5) {\n  errors.push({ field: 'maximum_budget_usd', code: 'must_be_between_0.01_and_5' });\n}\n\nlet deadline = null;\nif (input.deadline !== undefined && input.deadline !== null && input.deadline !== '') {\n  const parsedDeadline = new Date(input.deadline);\n  if (Number.isNaN(parsedDeadline.getTime())) {\n    errors.push({ field: 'deadline', code: 'invalid_date_time' });\n  } else {\n    deadline = parsedDeadline.toISOString();\n  }\n}\n\nlet relatedGithubIssue = null;\nif (input.related_github_issue !== undefined && input.related_github_issue !== null && input.related_github_issue !== '') {\n  const issueText = String(input.related_github_issue).trim().replace(/^#/, '');\n  if (!/^\\d+$/.test(issueText) || Number(issueText) < 1) {\n    errors.push({ field: 'related_github_issue', code: 'invalid_issue_number' });\n  } else {\n    relatedGithubIssue = Number(issueText);\n  }\n}\n\nconst suppliedMissionId = cleanString(input.mission_id, 80);\nif (suppliedMissionId && !/^[A-Za-z0-9][A-Za-z0-9._-]{5,79}$/.test(suppliedMissionId)) {\n  errors.push({ field: 'mission_id', code: 'invalid_format' });\n}\n\nconst allowedWriteScope = cleanStringArray(input.allowed_write_scope, 30, 160);\nconst forbiddenActions = cleanStringArray(input.forbidden_actions, 50, 160);\nconst effectiveForbiddenActions = [...new Set([...defaultForbiddenActions, ...forbiddenActions])];\nconst metadata = input.metadata && typeof input.metadata === 'object' && !Array.isArray(input.metadata)\n  ? input.metadata\n  : {};\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      accepted: false,\n      duplicate: false,\n      status: 'invalid',\n      http_status: 400,\n      received_at: nowIso,\n      error: {\n        code: 'VALIDATION_FAILED',\n        message: 'Daily Mission input failed validation.',\n        fields: errors\n      },\n      routing: {\n        mode: 'report-only',\n        ready: false,\n        next_workflow: null\n      }\n    }\n  }];\n}\n\nconst canonicalMission = {\n  title,\n  objective,\n  business_reason: businessReason || null,\n  expected_deliverable: expectedDeliverable,\n  priority,\n  maximum_budget_usd: maximumBudgetUsd,\n  related_github_issue: relatedGithubIssue,\n  allowed_write_scope: allowedWriteScope,\n  forbidden_actions: effectiveForbiddenActions,\n  deadline,\n  requested_by: requestedBy,\n  source,\n  metadata\n};\n\nconst missionHash = fnv1a(stableStringify(canonicalMission));\nconst dateStamp = nowIso.slice(0, 10).replace(/-/g, '');\nconst missionId = suppliedMissionId || ('MISSION-' + dateStamp + '-' + missionHash.toUpperCase());\nconst mission = {\n  mission_id: missionId,\n  mission_hash: missionHash,\n  received_at: nowIso,\n  ...canonicalMission\n};\n\nconst workflowData = $getWorkflowStaticData('global');\nif (!workflowData.staff00 || typeof workflowData.staff00 !== 'object') {\n  workflowData.staff00 = { records: {} };\n}\nif (!workflowData.staff00.records || typeof workflowData.staff00.records !== 'object') {\n  workflowData.staff00.records = {};\n}\n\nconst records = workflowData.staff00.records;\nconst retentionCutoff = now.getTime() - (7 * 24 * 60 * 60 * 1000);\nfor (const [hash, record] of Object.entries(records)) {\n  const timestamp = Date.parse(record.received_at || '');\n  if (!Number.isFinite(timestamp) || timestamp < retentionCutoff) {\n    delete records[hash];\n  }\n}\n\nconst existing = records[missionHash];\nif (existing) {\n  existing.last_seen_at = nowIso;\n  existing.duplicate_count = Number(existing.duplicate_count || 0) + 1;\n  return [{\n    json: {\n      accepted: true,\n      duplicate: true,\n      status: 'duplicate',\n      http_status: 200,\n      received_at: nowIso,\n      mission: existing.mission,\n      duplicate_guard: {\n        storage: 'workflow_static_data',\n        original_received_at: existing.received_at,\n        duplicate_count: existing.duplicate_count\n      },\n      routing: {\n        mode: 'report-only',\n        ready: false,\n        next_workflow: null,\n        reason: 'cached_mission_hash'\n      }\n    }\n  }];\n}\n\nconst record = {\n  mission_id: missionId,\n  mission_hash: missionHash,\n  received_at: nowIso,\n  last_seen_at: nowIso,\n  duplicate_count: 0,\n  mission\n};\nrecords[missionHash] = record;\n\nconst sortedRecords = Object.entries(records)\n  .sort((a, b) => Date.parse(b[1].received_at) - Date.parse(a[1].received_at));\nfor (const [hash] of sortedRecords.slice(100)) {\n  delete records[hash];\n}\n\nconst reservedUsd = roundMoney(maximumBudgetUsd * 0.25);\nconst dispatchBudgetUsd = roundMoney(maximumBudgetUsd - reservedUsd);\n\nreturn [{\n  json: {\n    accepted: true,\n    duplicate: false,\n    status: 'received',\n    http_status: 201,\n    mission,\n    budget_policy: {\n      maximum_budget_usd: maximumBudgetUsd,\n      reserve_percent: 25,\n      reserved_usd: reservedUsd,\n      dispatch_budget_usd: dispatchBudgetUsd,\n      optional_roles_stop_at_percent: 75,\n      malformed_output_repairs_max: 1,\n      provider_fallbacks_max: 1,\n      critic_cycles_max: 1\n    },\n    guardrails: {\n      report_only: true,\n      allowed_write_scope: allowedWriteScope,\n      forbidden_actions: effectiveForbiddenActions,\n      private_or_secret_data_allowed: false\n    },\n    duplicate_guard: {\n      storage: 'workflow_static_data',\n      retention_days: 7,\n      maximum_records: 100\n    },\n    routing: {\n      mode: 'report-only',\n      ready: true,\n      next_workflow: 'STAFF-01 Project Coordinator'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        0
+      ],
+      "id": "55af7fe8-b7d7-43a2-9e8e-0f0c4de58011",
+      "name": "Normalize Validate and Guard"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        100,
+        0
+      ],
+      "id": "d61fcc14-36ca-47fe-b971-35604fe249c2",
+      "name": "Return Intake Result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Mission Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Validate and Guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Validate and Guard": {
+      "main": [
+        [
+          {
+            "node": "Return Intake Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Prague"
+  },
+  "versionId": "51dc557e-acde-4da3-95f9-207bc7bbcb4a",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
