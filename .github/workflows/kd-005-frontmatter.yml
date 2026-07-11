@@ -1,0 +1,26 @@
+name: KD-005 frontmatter
+
+on:
+  push:
+    branches:
+      - agent/kd-005-frontmatter
+
+permissions:
+  contents: write
+
+jobs:
+  apply-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add frontmatter
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+
+          const metadata = {
+            "docs/GO_IRL_CONSTITUTION.md": ["GO IRL Constitution
