@@ -1,10 +1,30 @@
 import { openCardReminderSheet, openCardShareSheet } from "./card-action-sheets";
+import { useAppStore } from "./store";
 
 const processedAttr = "data-go-irl-unified-card";
+const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
+const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
 const text = (el: Element | null) => el?.textContent?.trim() || "";
 const compactSpaces = (value: string) => value.replace(/\s+/g, " ").trim();
 const stripEmoji = (value: string) => compactSpaces(value.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""));
+
+const activityInviteUrl = (activityId: string) => {
+  const path = telegramAppName ? `/${telegramAppName}` : "";
+  return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activityId)}`;
+};
+
+const matchesLocalizedText = (values: Record<string, string>, value: string) => {
+  const normalized = compactSpaces(value);
+  return Object.values(values).some((item) => compactSpaces(item) === normalized);
+};
+
+const findActivityForCard = (title: string, subtitle: string, address: string) =>
+  useAppStore.getState().activities.find((activity) =>
+    matchesLocalizedText(activity.activity, title)
+    && matchesLocalizedText(activity.title, subtitle)
+    && compactSpaces(activity.address) === compactSpaces(address)
+  );
 
 const openUrl = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
@@ -98,9 +118,11 @@ const normalizeGenericCard = (card: HTMLElement) => {
   const duration = eventDuration(title);
   const status = genericStatus(title, spotsText);
   const safeAddress = fields.address || "Olomouc";
+  const activity = findActivityForCard(title, subtitle, safeAddress);
 
   card.setAttribute(processedAttr, "1");
   card.classList.add("compact-sport-card", "unified-event-card");
+  if (activity) card.dataset.activityId = activity.id;
 
   const avatar = iconForTitle(title, text(icon));
   icon.textContent = avatar;
@@ -128,7 +150,13 @@ const normalizeGenericCard = (card: HTMLElement) => {
   });
   topActions.querySelector<HTMLElement>("[aria-label='Поделиться']")?.addEventListener("click", (event) => {
     event.stopPropagation();
-    openCardShareSheet(title, fields.date || duration, safeAddress, event.currentTarget as HTMLElement);
+    openCardShareSheet(
+      title,
+      fields.date || duration,
+      safeAddress,
+      event.currentTarget as HTMLElement,
+      activity ? activityInviteUrl(activity.id) : undefined,
+    );
   });
   card.insertBefore(topActions, main);
 
