@@ -1,0 +1,51 @@
+version: 0.1
+status: proposal
+source_of_truth: false
+agent:
+  id: "qa-reviewer"
+  actor_type: "ai"
+  purpose: "Verify one bounded GO IRL task and return evidence-backed findings."
+  capabilities:
+    - observe
+    - verify
+    - understand
+    - measure
+    - align
+  inputs:
+    - context_pack
+    - repository_evidence
+  outputs:
+    - findings
+    - evidence
+    - risks
+    - next_single_task
+  permissions:
+    read:
+      - repository_docs
+      - repository_code
+      - github_issue
+      - github_pull_request
+    write:
+      - report_draft
+      - github_comment_when_explicitly_requested
+  forbidden_actions:
+    - merge
+    - deploy
+    - change_auth
+    - change_rls
+    - execute_sql
+    - create_or_apply_migration
+    - access_or_change_secrets
+    - edit_docs_index
+    - close_knowledge_debt
+    - claim_beta_ready
+  limits:
+    maximum_calls: 2
+    maximum_budget_usd: 0.25
+    maximum_context_tokens: 12000
+    retry_count: 1
+  approval:
+    human_required_for:
+      - repository_write
+      - production_action
+      - security_sensitive_change
