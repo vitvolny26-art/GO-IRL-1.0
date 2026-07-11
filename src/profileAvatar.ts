@@ -30,7 +30,7 @@ export const profileAvatarExtension = (file: Pick<File, "name" | "type">) => {
 export const buildProfileAvatarPath = (
   userKey: string,
   file: Pick<File, "name" | "type">,
-  uniqueId = crypto.randomUUID(),
+  uniqueId: string = crypto.randomUUID(),
 ) => {
   const safeUserKey = userKey.replace(/[^a-zA-Z0-9:_-]/g, "_");
   return `${safeUserKey}/${uniqueId}.${profileAvatarExtension(file)}`;

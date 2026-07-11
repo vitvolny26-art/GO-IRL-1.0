@@ -15,6 +15,18 @@ export type WeatherResult = {
   hours: WeatherHour[];
 };
 
+type OpenMeteoHourly = {
+  time?: string[];
+  temperature_2m?: number[];
+  precipitation_probability?: number[];
+  wind_speed_10m?: number[];
+  weather_code?: number[];
+};
+
+type OpenMeteoResponse = {
+  hourly?: OpenMeteoHourly;
+};
+
 const geoCache = new Map<string, Promise<{ lat: number; lon: number } | null>>();
 const weatherCache = new Map<string, Promise<WeatherResult | null>>();
 
@@ -42,22 +54,22 @@ const addMinutesToIsoHour = (date: string, time: string, minutes: number) => {
   return next.getTime();
 };
 
-const weatherHourFromData = (data: unknown, times: string[], index: number): WeatherHour | null => {
+const weatherHourFromData = (data: OpenMeteoResponse, times: string[], index: number): WeatherHour | null => {
   const time = times[index];
   if (!time) return null;
 
-  const temperature = Math.round(data.hourly.temperature_2m?.[index]);
+  const temperature = Math.round(data.hourly?.temperature_2m?.[index] ?? Number.NaN);
   if (Number.isNaN(temperature)) return null;
 
   return {
     time,
     temperature,
-    rain: Number(data.hourly.precipitation_probability?.[index] ?? 0),
-    wind: Math.round(data.hourly.wind_speed_10m?.[index] ?? 0),
+    rain: Number(data.hourly?.precipitation_probability?.[index] ?? 0),
+    wind: Math.round(data.hourly?.wind_speed_10m?.[index] ?? 0),
   };
 };
 
-const detailHoursForEventWindow = (data: unknown, times: string[], input: { date: string; time: string; durationMinutes?: number }) => {
+const detailHoursForEventWindow = (data: OpenMeteoResponse, times: string[], input: { date: string; time: string; durationMinutes?: number }) => {
   const startMs = addMinutesToIsoHour(input.date, input.time, -120);
   const endMs = addMinutesToIsoHour(input.date, input.time, (input.durationMinutes || 90) + 120);
   const hours: WeatherHour[] = [];
@@ -84,11 +96,11 @@ async function geocode(address: string, city: string) {
   const query = [address, city, "Czech Republic"].filter(Boolean).join(", ");
   if (!geoCache.has(query)) {
     geoCache.set(query, fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`, {
-      headers: { "Accept": "application/json" },
+      headers: { Accept: "application/json" },
     }).then(async (res) => {
       if (!res.ok) return null;
-      const data = await res.json();
-      const first = data?.[0];
+      const data = await res.json() as Array<{ lat?: string; lon?: string }>;
+      const first = data[0];
       if (!first) return null;
       return { lat: Number(first.lat), lon: Number(first.lon) };
     }).catch(() => null));
@@ -123,8 +135,8 @@ export async function getEventWeather(input: {
     const response = await fetch(url);
     if (!response.ok) return null;
 
-    const data = await response.json();
-    const times: string[] = data?.hourly?.time || [];
+    const data = await response.json() as OpenMeteoResponse;
+    const times = data.hourly?.time || [];
     if (!times.length) return null;
 
     const target = toIsoHour(input.date, input.time);
@@ -139,10 +151,10 @@ export async function getEventWeather(input: {
       }, 0);
     }
 
-    const temp = Math.round(data.hourly.temperature_2m?.[index]);
-    const rain = data.hourly.precipitation_probability?.[index];
-    const wind = Math.round(data.hourly.wind_speed_10m?.[index]);
-    const code = Number(data.hourly.weather_code?.[index] || 0);
+    const temp = Math.round(data.hourly?.temperature_2m?.[index] ?? Number.NaN);
+    const rain = data.hourly?.precipitation_probability?.[index];
+    const wind = Math.round(data.hourly?.wind_speed_10m?.[index] ?? 0);
+    const code = Number(data.hourly?.weather_code?.[index] || 0);
 
     if (Number.isNaN(temp)) return null;
 
