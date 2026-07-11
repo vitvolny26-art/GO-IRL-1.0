@@ -100,6 +100,11 @@ export async function initializeTrustedAuth() {
     return null;
   }
 
+  if (!supabaseUrl || !publishableKey) {
+    authError = "trusted_auth_env_missing";
+    return null;
+  }
+
   try {
     const response = await fetch(`${supabaseUrl}/functions/v1/verifyTelegramInitData`, {
       method: "POST",
