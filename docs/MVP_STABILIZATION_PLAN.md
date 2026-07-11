@@ -1,3 +1,12 @@
+---
+title: GO IRL MVP Stabilization Plan
+owner: Tech Lead
+status: Active
+source_of_truth: true
+last_review: 2026-07-11
+next_review: 2026-07-18
+---
+
 # GO IRL MVP Stabilization Plan
 
 Generated: 2026-07-07T14:00:40.297Z
