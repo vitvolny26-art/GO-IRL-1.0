@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://go-irl.local/uik/event.schema.json",
+  "title": "GO IRL Intelligence Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "event_type", "occurred_at", "source", "payload"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{5,79}$"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "signal.detected",
+        "evidence.verified",
+        "model.updated",
+        "decision.requested",
+        "decision.approved",
+        "decision.rejected",
+        "action.started",
+        "action.completed",
+        "action.failed",
+        "metrics.collected",
+        "knowledge.stored",
+        "alignment.checked"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_id", "actor_type"],
+      "properties": {
+        "actor_id": {"type": "string", "maxLength": 120},
+        "actor_type": {
+          "type": "string",
+          "enum": ["human", "ai", "automation", "system"]
+        }
+      }
+    },
+    "mission_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{5,79}$"
+    },
+    "correlation_id": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "causation_id": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "payload": {
+      "type": "object"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {"type": "string", "maxLength": 240}
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {"type": "boolean"},
+        "status": {
+          "type": "string",
+          "enum": ["not_required", "pending", "approved", "rejected"]
+        },
+        "approved_by": {"type": "string", "maxLength": 120}
+      }
+    }
+  }
+}
