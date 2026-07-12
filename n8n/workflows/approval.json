@@ -1,0 +1,50 @@
+{
+  "name": "GO IRL - Human Approval (Mock)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b799b3ec-b504-4ea9-ac64-8fffb76fc932",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "mission-id", "name": "mission_id", "value": "mock-mission-001", "type": "string" },
+            { "id": "approval", "name": "approval", "value": "pending", "type": "string" },
+            { "id": "allowed", "name": "allowed_approvals", "value": "approved,rejected,pending", "type": "string" },
+            { "id": "human-action", "name": "human_action_received", "value": false, "type": "boolean" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bd135f7a-5948-4f15-aa50-0e5f38c87edf",
+      "name": "Human Approval (Mock)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const approval = String($json.approval || 'pending');\nconst allowed = ['approved', 'rejected', 'pending'];\nconst normalized = allowed.includes(approval) ? approval : 'pending';\nconst status = normalized === 'approved' ? 'Mission completed' : normalized === 'rejected' ? 'Mission failed' : 'Mission blocked';\nreturn [{ json: { ...$json, approval: normalized, status, publish_called: false, published: false, mock_only: true } }];"
+      },
+      "id": "a47ba64f-e637-492f-9591-87c2af53ed15",
+      "name": "Call Publish (Mock)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Human Approval (Mock)", "type": "main", "index": 0 }]] },
+    "Human Approval (Mock)": { "main": [[{ "node": "Call Publish (Mock)", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
