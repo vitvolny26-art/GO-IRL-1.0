@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableBottomNavSwipe } from "./bottom-nav-swipe";
 import { enableCardTextCleanup } from "./cardText";
+import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -19,6 +20,7 @@ const queryClient = new QueryClient();
 
 enableBottomNavSwipe();
 enableCardTextCleanup();
+enableFullCreateTaxonomy();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
