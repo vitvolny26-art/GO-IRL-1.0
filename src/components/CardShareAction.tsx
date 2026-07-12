@@ -66,7 +66,7 @@ export function CardShareAction({ title, date, address, url, label }: CardShareA
                 share(channel.id);
               }}
             >
-              <span className="unified-card-icon-circle">
+              <span className="card-share-icon-circle">
                 <img src={channel.icon} alt="" decoding="async" />
               </span>
             </button>
