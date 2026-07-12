@@ -13,8 +13,6 @@ const {
   submitReviewerResult,
 } = require('./runtime/workflow.cjs');
 const { publishDraft } = require('./runtime/publisher.cjs');
-const { runCodexImplementer, runCodexReviewer } = require('./runtime/codex-adapter.cjs');
-const { runBridgeCli } = require('./bridge.cjs');
 
 function parseArguments(argv) {
   const positionals = [];
@@ -115,6 +113,7 @@ function present(command, output, full) {
 
 function usage() {
   return `Usage:
+  echo <mission.json> | node scripts/ai-orchestrator/orchestrator.cjs mission intake --actor <human>
   echo <request.json> | node scripts/ai-orchestrator/orchestrator.cjs bridge <resource> <action>
   node scripts/ai-orchestrator/orchestrator.cjs intake <mission.json> [--state-dir .ai-orchestrator]
   node scripts/ai-orchestrator/orchestrator.cjs approve-mission <mission-id> --actor <human>
@@ -136,7 +135,10 @@ function usage() {
 }
 
 function runCli(argv) {
-  if (argv[0] === 'bridge') return runBridgeCli(argv.slice(1));
+  if (argv[0] === 'mission' && argv[1] === 'intake') {
+    return require('./mission-intake.cjs').runMissionIntakeCli(argv.slice(2));
+  }
+  if (argv[0] === 'bridge') return require('./bridge.cjs').runBridgeCli(argv.slice(1));
   const { positionals, options } = parseArguments(argv);
   const command = positionals[0];
   if (!command) {
@@ -186,6 +188,7 @@ function runCli(argv) {
     });
   } else if (command === 'run-implementer' || command === 'run-reviewer') {
     if (options.execute_agent !== true) throw new Error('--execute-agent is required for a real Codex execution.');
+    const { runCodexImplementer, runCodexReviewer } = require('./runtime/codex-adapter.cjs');
     const runAgent = command === 'run-implementer' ? runCodexImplementer : runCodexReviewer;
     output = runAgent({
       missionId: required(positionals[1], 'mission-id'),
