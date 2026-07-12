@@ -26,13 +26,15 @@ Collect the current related UI fixes in PR #73 before the final quality-gate run
 - `src/data.ts`
 - `src/main.tsx`
 - `src/store.ts`
+- `src/styles.css`
 - `src/verticals/SportVertical.tsx`
 
 ## Findings
 
 - Event card text can contain a leading emoji while the card already renders a dedicated large event icon.
 - The create-event flow was limited to three categories with two subcategories each despite the full taxonomy already existing in `src/data.ts`.
-- These are related UI/data-exposure fixes and can remain in one draft PR without touching auth, RLS, Supabase schema, migrations, or secrets.
+- Profile photo selection immediately stored the full image without giving the user a way to frame the face for the circular avatar.
+- These are related mobile UI/data-exposure fixes and can remain in one draft PR without touching auth, RLS, Supabase schema, migrations, or secrets.
 
 ## Changes made
 
@@ -41,6 +43,10 @@ Collect the current related UI fixes in PR #73 before the final quality-gate run
 - Added coverage for coffee, volleyball, language exchange, plain text, and empty text.
 - Exposed all existing event categories and all existing subcategories in the create-event flow.
 - Added coverage that verifies the full taxonomy is available.
+- Added a mobile avatar cropper after image selection.
+- Added zoom, horizontal focus, and vertical focus controls so the face can be positioned inside a circular preview.
+- Cropped output is exported as a square JPEG before the existing profile image handler saves it.
+- Added unit coverage for landscape, portrait, zoom, and focal-position crop calculations.
 
 ## Current PR scope
 
@@ -50,6 +56,7 @@ Included:
 
 - duplicate emoji cleanup in unified event cards;
 - full event category and subcategory list in create-event;
+- profile avatar crop/framing flow;
 - related tests;
 - this agent report.
 
@@ -59,6 +66,7 @@ Excluded:
 - Supabase RLS;
 - database schema;
 - migrations;
+- production avatar storage;
 - secrets and `.env`;
 - unrelated feature work.
 
