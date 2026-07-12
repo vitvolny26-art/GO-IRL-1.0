@@ -1,0 +1,40 @@
+{
+  "name": "GO IRL - Context Builder (Mock)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "702c0ba4-b74a-4b1a-b159-66f0bb2f3463",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "mission-id", "name": "mission_id", "value": "mock-mission-001", "type": "string" },
+            { "id": "status", "name": "status", "value": "context_ready", "type": "string" },
+            { "id": "context-source", "name": "context_source", "value": "mock", "type": "string" },
+            { "id": "runtime-access", "name": "runtime_access", "value": false, "type": "boolean" },
+            { "id": "external-access", "name": "external_access", "value": false, "type": "boolean" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7ffeed5c-c8bb-4cd4-bdca-464f5ac2a54c",
+      "name": "Context Builder",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Context Builder", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
