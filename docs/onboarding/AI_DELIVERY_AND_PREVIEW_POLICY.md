@@ -11,9 +11,9 @@ next_review: 2026-08-12
 
 ## Purpose
 
-Reduce unnecessary Vercel Preview deployments without weakening QA, review, or production safety.
+Reduce unnecessary GitHub Actions and Vercel builds without weakening QA, review, or production safety.
 
-This policy applies to every GO IRL role that can prepare, commit, push, review, or release code, especially:
+This policy applies to every GO IRL role that can prepare, commit, push, review, or release changes, especially:
 
 - AI Fixer;
 - GitHub Operator;
@@ -22,78 +22,110 @@ This policy applies to every GO IRL role that can prepare, commit, push, review,
 - QA Lead;
 - Project Coordinator when preparing execution instructions.
 
-GitHub remains source of truth. Vercel Preview is a validation checkpoint, not a build for every micro-commit.
+GitHub remains source of truth.
 
 ## Core rule
 
-Small logical commits are allowed locally.
+Do not use `[skip ci]` as the normal workflow.
 
-Do not push after every tiny fix.
+Repository configuration must decide whether a change needs CI or a Vercel build.
 
-Collect one coherent batch, run the required checks, then push the batch once.
+Small logical commits are allowed locally, but related code fixes should normally be pushed as one validated batch.
 
 Recommended loop:
 
 1. Inspect and patch one focused problem at a time.
 2. Keep local commits small and understandable when useful.
-3. Group related fixes into one push checkpoint.
+3. Group related code fixes into one push checkpoint.
 4. Run `pnpm run lint`, `pnpm run build`, and `pnpm run test` before the push.
-5. Push only when the current batch is green.
-6. Request a Vercel Preview only when visual, runtime, integration, or stakeholder validation is needed.
+5. Push only when the current code batch is green.
+6. Let GitHub Actions and Vercel filters skip documentation-only changes automatically.
 
-## Preview deployment rule
+## Documentation-only changes
 
-The intended GO IRL policy is:
+A documentation-only change means every changed file is either:
 
-- every merge to `main` may create the production deployment;
-- ordinary commits in a PR branch should not automatically consume a Preview build after opt-in preview filtering is implemented;
-- a commit with `[preview]` in its message is the explicit checkpoint that requests a Preview deployment;
-- one PR may have several local commits but normally only one or a few deliberate Preview checkpoints.
+- under `docs/**`; or
+- a Markdown file matching `**/*.md`.
 
-Examples:
+For documentation-only changes:
 
-```text
-fix: align card actions
-fix: keep avatar crop inside viewport
-fix: complete mobile UI batch [preview]
-```
+- GitHub Actions CI should not run;
+- Vercel should skip the build;
+- agents must not add `[skip ci]` merely to suppress automation;
+- local application build checks are not required unless the documentation change also modifies executable configuration, generated code, package metadata, or runtime behavior.
 
-Until the repository implements the Vercel `ignoreCommand` policy, roles must still reduce pushes manually by batching related fixes locally.
+The repository implements this through:
+
+- `paths-ignore` in `.github/workflows/ci.yml`;
+- `ignoreCommand` in `vercel.json`.
+
+## Code and configuration changes
+
+Changes outside `docs/**` and `**/*.md` are not documentation-only.
+
+They must continue to trigger the normal quality path, including relevant GitHub Actions and Vercel deployment behavior.
+
+Examples that must not be treated as docs-only:
+
+- `src/**`;
+- `tests/**`;
+- `scripts/**`;
+- `supabase/**` SQL or functions;
+- `.github/workflows/**`;
+- `vercel.json`;
+- `package.json` or `pnpm-lock.yaml`;
+- root JSON, YAML, TypeScript, JavaScript, or configuration files.
+
+## Push batching rule
+
+CI filtering does not replace disciplined delivery.
+
+For code work:
+
+- do not push after every micro-fix;
+- collect one coherent batch;
+- run required checks;
+- push the validated batch once;
+- do not force-push or rewrite shared history merely to reduce build count.
+
+A PR may contain several logical commits, but repeated remote pushes should be intentional.
 
 ## Role responsibilities
 
 ### AI Fixer
 
-- Fix one bug at a time, but do not push every micro-fix separately.
-- Build a coherent local batch.
-- Run all quality gates before pushing.
-- Add `[preview]` only when the batch needs a real Preview deployment.
+- Fix one bug at a time during implementation.
+- Do not use `[skip ci]` as routine practice.
+- Group related code fixes into one validated push batch.
+- Documentation-only reports may be pushed without application checks when they do not change executable files.
 
 ### GitHub Operator
 
 - Preserve small logical commits when useful.
-- Prefer one push per validated batch.
-- Do not force-push or rewrite history only to reduce Preview count.
-- Do not create empty commits merely to trigger deployments unless explicitly approved.
+- Prefer one push per validated code batch.
+- Verify that docs-only automation filters remain narrow and do not hide code changes.
+- Do not force-push or create empty commits merely to manipulate deployments.
 
 ### QA Lead
 
-- Use local checks for intermediate iterations.
-- Request Preview only for browser, mobile, Telegram, integration, or stakeholder validation.
-- Record which commit SHA was actually tested.
+- Require local checks for code/configuration changes.
+- Do not require app builds for pure docs-only edits.
+- Record the commit SHA used for Preview, Telegram, integration, or production smoke testing.
 
 ### Release Manager
 
 - Keep production deployment tied to `main`.
-- Monitor Vercel build quota and distinguish quota failures from application failures.
-- Treat Preview deployment history as disposable validation history, not production state.
-- Do not delete old Preview deployments unless retention cleanup is explicitly requested and rollback/reference impact is understood.
+- Monitor Vercel quota and distinguish quota failures from application failures.
+- Confirm that docs-only changes are skipped while code/configuration changes still build.
+- Treat historical Preview deployments as validation history, not production state.
 
 ### Project Coordinator
 
-- Include a push/preview budget in coding missions.
+- Include a push budget in coding missions.
 - Avoid assigning several agents to push separate fixes into the same PR.
-- Prefer one validated integration checkpoint over many independent Preview builds.
+- Classify each mission as docs-only or code/configuration before selecting checks.
+- Never classify workflow, Vercel, package, Supabase, or runtime configuration changes as docs-only.
 
 ## Existing Preview deployments
 
@@ -107,24 +139,30 @@ Old Preview deployments created by previous PR commits:
 
 Do not spend engineering time deleting historical previews unless quota, security, retention, or compliance requires it.
 
+## Branch protection caution
+
+If GitHub branch protection requires the CI check by name, verify that a skipped docs-only workflow does not leave the pull request blocked in a permanently pending state.
+
+If it does, adjust the branch protection rule or use a lightweight always-present docs check rather than removing quality gates from code changes.
+
 ## Forbidden shortcuts
 
 Do not:
 
-- skip lint/build/test merely to save Vercel quota;
+- use `[skip ci]` routinely;
+- skip lint/build/test for code changes merely to save quota;
+- broaden docs-only filters so they hide executable configuration;
 - disable production deployments from `main`;
 - force-push or squash shared history without explicit approval;
-- hide a failing Preview by creating repeated deployments;
+- hide a failing build by repeatedly creating deployments;
 - treat Vercel success as a replacement for local quality gates;
 - treat local green checks as proof of Telegram or production smoke behavior.
 
-## Planned repository implementation
+## Verification after policy changes
 
-A separate small infrastructure patch may add:
+When CI or Vercel filtering changes, verify both paths:
 
-- `scripts/vercel-ignore-build.cjs`;
-- `ignoreCommand` in `vercel.json`;
-- production builds always enabled for `main`;
-- Preview builds enabled only for explicit `[preview]` checkpoints.
+1. A docs-only commit skips GitHub Actions and Vercel.
+2. A code or configuration commit still triggers the required checks and deployment.
 
-That implementation must be reviewed separately and must not modify auth, RLS, migrations, secrets, or application architecture.
+Do not mark the policy complete from configuration review alone.
