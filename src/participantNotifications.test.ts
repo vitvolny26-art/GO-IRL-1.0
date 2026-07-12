@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Activity } from "./types";
-import { deriveParticipantJoinNotifications } from "./participantNotifications";
+import { deriveParticipantJoinNotifications } from "./participantNotificationLogic";
 
 const activity = (members: Activity["members"]): Activity => ({
   id: "event-1",
@@ -34,7 +34,7 @@ describe("deriveParticipantJoinNotifications", () => {
       123,
     );
 
-    expect(result).toEqual([{ 
+    expect(result).toEqual([{
       id: "participant-joined:event-1:telegram:guest",
       activityId: "event-1",
       memberKey: "telegram:guest",
