@@ -6,6 +6,7 @@
   white-space: nowrap !important;
 }
 
+.sport-card-symbol::before,
 .sport-card-symbol::after {
   content: none !important;
   display: none !important;
