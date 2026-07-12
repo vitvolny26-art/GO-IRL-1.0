@@ -1,0 +1,50 @@
+{
+  "name": "GO IRL - Mission Intake (Mock)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d270bcd1-ff15-4bf2-8b10-38dafcc9b0ab",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "mission-id", "name": "mission_id", "value": "mock-mission-001", "type": "string" },
+            { "id": "title", "name": "title", "value": "Mock GO IRL mission", "type": "string" },
+            { "id": "objective", "name": "objective", "value": "Validate orchestration structure", "type": "string" },
+            { "id": "status", "name": "status", "value": "accepted", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "570458c6-7b2f-4608-a23f-cee5307b23ee",
+      "name": "Mission Intake",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const mission = $json || {};\nconst required = ['mission_id', 'title', 'objective', 'status'];\nconst missing = required.filter((key) => typeof mission[key] !== 'string' || mission[key].trim() === '');\nif (missing.length > 0) {\n  return [{ json: { ...mission, valid: false, result: 'Mission failed', error: `Missing fields: ${missing.join(', ')}` } }];\n}\nreturn [{ json: { ...mission, valid: true, result: 'Mission accepted' } }];"
+      },
+      "id": "0b71a0c8-8302-4a73-a477-d7bbdf64a3b3",
+      "name": "Validate JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Mission Intake", "type": "main", "index": 0 }]] },
+    "Mission Intake": { "main": [[{ "node": "Validate JSON", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
