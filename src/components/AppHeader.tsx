@@ -1,7 +1,13 @@
-import { useState } from "react";
-import { Bell, Check, ChevronDown, Globe2, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Check, ChevronDown, Globe2, MapPin, UserRoundPlus } from "lucide-react";
 import { cities, getCity } from "../config/cities";
-import { languageOptions, type Translation } from "../i18n";
+import { languageOptions, localeByLanguage, type Translation } from "../i18n";
+import {
+  getParticipantJoinNotifications,
+  markParticipantJoinNotificationsRead,
+  participantNotificationsChangedEvent,
+  type ParticipantJoinNotification,
+} from "../participantNotifications";
 import type { Language } from "../types";
 
 type HeaderMenu = "city" | "language" | "notifications" | null;
@@ -15,6 +21,27 @@ type AppHeaderProps = {
   onLanguageChange: (language: Language) => void;
 };
 
+const notificationCopy: Record<Language, { joined: string }> = {
+  ru: { joined: "Новый участник" },
+  uk: { joined: "Новий учасник" },
+  cs: { joined: "Nový účastník" },
+  en: { joined: "New participant" },
+};
+
+const notificationTitle = (notification: ParticipantJoinNotification, language: Language) =>
+  notification.activityTitle[language]
+  || notification.activityTitle.ru
+  || Object.values(notification.activityTitle)[0]
+  || "GO IRL";
+
+const notificationTime = (createdAt: number, language: Language) =>
+  new Intl.DateTimeFormat(localeByLanguage[language], {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(createdAt));
+
 export function AppHeader({
   language,
   selectedCityId,
@@ -24,11 +51,25 @@ export function AppHeader({
   onLanguageChange,
 }: AppHeaderProps) {
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
+  const [notifications, setNotifications] = useState(getParticipantJoinNotifications);
   const selectedCity = getCity(selectedCityId);
   const selectedLanguage = languageOptions.find((item) => item.id === language) ?? languageOptions[0];
+  const unreadCount = notifications.filter((item) => !item.read).length;
+
+  useEffect(() => {
+    const refreshNotifications = () => setNotifications(getParticipantJoinNotifications());
+    window.addEventListener(participantNotificationsChangedEvent, refreshNotifications);
+    return () => window.removeEventListener(participantNotificationsChangedEvent, refreshNotifications);
+  }, []);
 
   const toggleMenu = (menu: Exclude<HeaderMenu, null>) => {
     setOpenMenu((current) => current === menu ? null : menu);
+  };
+
+  const toggleNotifications = () => {
+    const opening = openMenu !== "notifications";
+    setOpenMenu(opening ? "notifications" : null);
+    if (opening) setNotifications(markParticipantJoinNotificationsRead());
   };
 
   return (
@@ -66,13 +107,14 @@ export function AppHeader({
 
             <button
               className={openMenu === "notifications" ? "header-icon-button is-active" : "header-icon-button"}
-              onClick={() => toggleMenu("notifications")}
+              onClick={toggleNotifications}
               type="button"
-              aria-label={translation.notifications}
+              aria-label={`${translation.notifications}${unreadCount ? ` (${unreadCount})` : ""}`}
               aria-expanded={openMenu === "notifications"}
               title={translation.notifications}
             >
               <Bell />
+              {unreadCount ? <span className="notification-badge">{unreadCount > 9 ? "9+" : unreadCount}</span> : null}
             </button>
           </div>
 
@@ -105,7 +147,22 @@ export function AppHeader({
           {openMenu === "notifications" && (
             <div className="header-popover notifications-popover" role="status">
               <div className="popover-title">{translation.notifications}</div>
-              <div className="notification-empty"><Bell /><span>{translation.noNotifications}</span></div>
+              {notifications.length ? (
+                <div className="notification-list">
+                  {notifications.map((notification) => (
+                    <div className={notification.read ? "notification-item" : "notification-item is-unread"} key={notification.id}>
+                      <span className="notification-item-icon"><UserRoundPlus /></span>
+                      <span className="notification-item-copy">
+                        <strong>{notificationCopy[language].joined}: {notification.memberName}</strong>
+                        <span>{notificationTitle(notification, language)}</span>
+                        <small>{notificationTime(notification.createdAt, language)}</small>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="notification-empty"><Bell /><span>{translation.noNotifications}</span></div>
+              )}
             </div>
           )}
         </div>
