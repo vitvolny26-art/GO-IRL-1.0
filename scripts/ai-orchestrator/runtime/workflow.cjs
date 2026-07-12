@@ -80,7 +80,7 @@ function readWorktreeBaseline(record) {
   return record.worktree_baseline || {};
 }
 
-function prepareMission({ missionId, stateDir, repoRoot, includePatterns, grepQueries, maxBytes, now = new Date() }) {
+function buildMissionContext({ missionId, stateDir, repoRoot, includePatterns, grepQueries, maxBytes, now = new Date() }) {
   const state = loadState(stateDir);
   const record = requireMission(state, missionId);
   if (record.state !== 'approved') {
@@ -97,6 +97,20 @@ function prepareMission({ missionId, stateDir, repoRoot, includePatterns, grepQu
   writeJsonAtomic(contextFile, contextPack);
   record.artifacts.context_pack = { path: contextFile, sha256: sha256(stableStringify(contextPack)) };
   transition(record, 'context_ready', now);
+  saveState(stateDir, state);
+  return { contextPack, record };
+}
+
+function planMission({ missionId, stateDir, repoRoot, now = new Date() }) {
+  const state = loadState(stateDir);
+  const record = requireMission(state, missionId);
+  if (record.state !== 'context_ready' || !record.artifacts.context_pack?.path) {
+    throw new OrchestratorError('CONTEXT_NOT_READY', 'Planning requires a completed Context Pack.', { state: record.state });
+  }
+  const contextPack = JSON.parse(fs.readFileSync(record.artifacts.context_pack.path, 'utf8'));
+  if (sha256(stableStringify(contextPack)) !== record.artifacts.context_pack.sha256) {
+    throw new OrchestratorError('CONTEXT_ARTIFACT_CHANGED', 'Context Pack changed after it was recorded.');
+  }
 
   const plan = createPlan(record.mission, contextPack);
   const planFile = artifactFile(stateDir, missionId, 'plan.json');
@@ -111,6 +125,11 @@ function prepareMission({ missionId, stateDir, repoRoot, includePatterns, grepQu
   transition(record, 'planned', now);
   saveState(stateDir, state);
   return { contextPack, plan, handoff, record };
+}
+
+function prepareMission(options) {
+  buildMissionContext(options);
+  return planMission(options);
 }
 
 function refreshBaseline({ missionId, stateDir, repoRoot, actor, now = new Date() }) {
@@ -364,11 +383,13 @@ function generateReport({ missionId, stateDir, repoRoot, reportPath, now = new D
 module.exports = {
   QUALITY_COMMANDS,
   approveChange,
+  buildMissionContext,
   createCodexHandoff,
   createPlan,
   consumeBudget,
   defaultCommandRunner,
   generateReport,
+  planMission,
   prepareMission,
   refreshBaseline,
   runQa,

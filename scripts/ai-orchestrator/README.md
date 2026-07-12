@@ -12,6 +12,48 @@ It implements:
 
 The runtime never merges or deploys. Real Codex and GitHub mutations require explicit execution flags.
 
+## JSON bridge v0.1
+
+Any external orchestrator, including n8n, can drive the runtime through one JSON-only entrypoint:
+
+```powershell
+Get-Content -Raw request.json | node scripts/ai-orchestrator/orchestrator.cjs bridge mission create
+```
+
+The command name is carried by the CLI arguments and its request is one JSON object on standard input. The process writes exactly one JSON object to standard output and uses exit code `0` for success or `1` for a rejected request/runtime operation. It does not write progress text to standard output.
+
+Supported commands:
+
+| Command | Required request fields | Resulting purpose |
+| --- | --- | --- |
+| `mission create` | `mission` | Validate and durably intake a Mission. |
+| `mission status` | `mission_id` | Return only the public Mission state. |
+| `mission approve` | `mission_id`, `actor`; optional `approval_type: "change"` | Record Mission Approval or Change Approval. |
+| `context build` | `mission_id`; optional `include_patterns`, `grep_queries`, `max_bytes` | Build the bounded Context Pack. |
+| `planner run` | `mission_id` | Create the exact-scope plan and Codex handoff. |
+| `implementer run` | `mission_id`, `execution_id`, and inline `result`; or `mode: "codex"`, `execute_agent: true`, `cost_usd` | Submit an external implementer result or explicitly run Codex. |
+| `review run` | `mission_id`, `execution_id`, and inline `result`; or `mode: "codex"`, `execute_agent: true`, `cost_usd` | Submit an independent review or explicitly run Codex. |
+| `qa run` | `mission_id`; optional `final: true`; after a failed gate, `retry_actor` | Run the first-red quality gate or its single audited retry. |
+| `report create` | `mission_id`, `report_path` | Create the required Agent Report after Change Approval. |
+| `publish preview` | `mission_id`, `selected_files`, `commit_message`, `pr_title`; optional `pr_body` | Validate and return a guarded publication preview without executing Git or GitHub writes. |
+| `archive` | `mission_id`, `actor` | Release a Mission already recorded as `draft_pr`. |
+
+Every successful response has exactly this public envelope:
+
+```json
+{
+  "success": true,
+  "mission_id": "MISSION-EXAMPLE",
+  "status": "approved",
+  "next_action": "context build",
+  "artifacts": []
+}
+```
+
+Rejected calls use the same five fields plus a sanitized `error` object. `artifacts` contains logical artifact names only. Responses never contain state-file paths, artifact paths, SHA-256 metadata, command plans, absolute local paths, credentials, or private runtime data. The machine-readable response contract is `schemas/bridge-response.schema.json`.
+
+The bridge intentionally supports publication preview only. It cannot commit, push, create a PR, merge, deploy, publish/activate n8n, or bypass Mission Approval, Change Approval, scope, budget, review, or QA gates.
+
 ## Working directory
 
 ```powershell
