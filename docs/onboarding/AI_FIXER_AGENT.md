@@ -95,29 +95,31 @@ Do not:
 6. Do not hide errors.
 7. Small logical commits may be created locally.
 8. Do not push after every micro-fix.
-9. Group related fixes into one validated push checkpoint.
-10. Use `[preview]` in the commit message only when a real Vercel Preview is intentionally required.
+9. Group related code fixes into one validated push checkpoint.
+10. Do not use `[skip ci]` as routine workflow control.
 
-## Vercel Preview quota rule
+## CI and Vercel quota rule
 
-Vercel Preview is a validation checkpoint, not a build for every local commit.
+Repository configuration handles documentation-only automation filtering.
 
-Required behavior:
+For changes limited to `docs/**` and `**/*.md`:
 
-- keep fixes small during implementation;
-- collect one coherent batch before pushing;
-- run all required checks before the push;
-- prefer one push for one validated batch;
-- request Preview only for visual, runtime, integration, Telegram, or stakeholder validation;
-- production deployment remains tied to `main`;
-- never force-push or rewrite history only to reduce Preview count;
-- old Preview deployments do not need manual deletion during normal work.
+- GitHub Actions CI is expected to skip;
+- Vercel is expected to skip the build;
+- do not add `[skip ci]` merely to suppress automation;
+- application checks are not required unless executable configuration or runtime files also changed.
 
-Until repository-level `ignoreCommand` filtering is implemented, reduce Preview builds by batching pushes manually.
+For code or configuration changes:
+
+- run required checks locally;
+- prefer one push for one coherent validated batch;
+- allow GitHub Actions and Vercel to run normally;
+- never classify `.github/workflows/**`, `vercel.json`, package files, scripts, Supabase files, or runtime configuration as docs-only;
+- never force-push or rewrite history only to reduce build count.
 
 ## Required verification
 
-After every completed patch batch run:
+After every completed code or configuration patch batch run:
 
 ```bash
 pnpm run lint
@@ -125,7 +127,9 @@ pnpm run build
 pnpm run test
 ```
 
-If any command fails, do not commit or push the batch.
+If any command fails, do not commit or push the batch as complete.
+
+Pure documentation-only updates do not require application checks. State that explicitly in the report.
 
 ## Reporting location
 
@@ -155,9 +159,9 @@ Use `docs/audit/KNOWLEDGE_DEBT.md` only if a new unresolved documentation or kno
 ## Verification
 
 ```text
-pnpm run lint   PASS/FAIL
-pnpm run build  PASS/FAIL
-pnpm run test   PASS/FAIL
+pnpm run lint   PASS/FAIL/NOT REQUIRED
+pnpm run build  PASS/FAIL/NOT REQUIRED
+pnpm run test   PASS/FAIL/NOT REQUIRED
 ```
 
 ## Risks
@@ -169,7 +173,7 @@ pnpm run test   PASS/FAIL
 
 ## Commit and push rule
 
-If checks pass:
+If code/configuration checks pass:
 
 ```bash
 git status
@@ -178,17 +182,11 @@ git commit -m "fix: short description"
 git push
 ```
 
-The command block is illustrative. Several small local commits may be included in one push when they form one coherent verified batch.
-
-Use `[preview]` only on the intended Preview checkpoint commit, for example:
-
-```text
-fix: complete mobile UI batch [preview]
-```
+Several small local commits may be included in one push when they form one coherent verified batch.
 
 If checks fail:
 
-- do not commit the failing state as complete;
+- do not mark the failing state complete;
 - do not push merely to obtain another Vercel build;
 - add the red error block to the report;
 - propose the smallest next fix.
@@ -196,5 +194,7 @@ If checks fail:
 ## Principle
 
 A small safe patch is better than a large clever refactor.
+
+Configured docs-only filtering is better than routinely using `[skip ci]`.
 
 A validated batch push is better than many quota-consuming micro-pushes.
