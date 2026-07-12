@@ -88,6 +88,23 @@ function greenRunner() {
   return { status: 0, stdout: 'PASS', stderr: '' };
 }
 
+function preparePublishableMission(sandbox) {
+  prepareApprovedMission(sandbox);
+  submitGreenAgents(sandbox);
+  workflow.runQa({
+    missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot, runner: greenRunner,
+  });
+  workflow.approveChange({ missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, actor: 'human-owner' });
+  workflow.generateReport({
+    missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot,
+    reportPath: 'docs/reports/runtime-e2e.md',
+  });
+  workflow.runQa({
+    missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot, runner: greenRunner, final: true,
+  });
+  return ['scripts/ai-orchestrator/runtime-target.cjs', 'docs/reports/runtime-e2e.md'];
+}
+
 afterEach(() => {
   for (const directory of temporaryDirectories.splice(0)) fs.rmSync(directory, { recursive: true, force: true });
 });
@@ -299,22 +316,7 @@ describe('Phases 4 and 5 Review, QA, approval, report, and Draft PR', () => {
 
   it('runs the complete green path and executes only guarded Draft PR commands', () => {
     const sandbox = createSandbox();
-    prepareApprovedMission(sandbox);
-    submitGreenAgents(sandbox);
-    expect(workflow.runQa({
-      missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot, runner: greenRunner,
-    }).green).toBe(true);
-
-    workflow.approveChange({ missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, actor: 'human-owner' });
-    workflow.generateReport({
-      missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot,
-      reportPath: 'docs/reports/runtime-e2e.md',
-    });
-    expect(workflow.runQa({
-      missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot, runner: greenRunner, final: true,
-    }).green).toBe(true);
-
-    const selectedFiles = ['scripts/ai-orchestrator/runtime-target.cjs', 'docs/reports/runtime-e2e.md'];
+    const selectedFiles = preparePublishableMission(sandbox);
     const preview = publisher.publishDraft({
       missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot,
       selectedFiles, commitMessage: 'feat: run guarded pilot', prTitle: 'Guarded pilot',
@@ -326,12 +328,17 @@ describe('Phases 4 and 5 Review, QA, approval, report, and Draft PR', () => {
     expect(preview.plan.deploy).toBe(false);
 
     const calls = [];
+    const staged = new Set();
     const executed = publisher.publishDraft({
       missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot,
       selectedFiles, commitMessage: 'feat: run guarded pilot', prTitle: 'Guarded pilot',
       branch: 'agent/runtime-pilot', dirtyFiles: selectedFiles, execute: true,
       runner(command, args) {
         calls.push([command, ...args]);
+        if (command === 'git' && args[0] === 'diff' && args.includes('--name-only')) return [...staged].join('\n');
+        if (command === 'git' && args[0] === 'add') {
+          for (const file of args.slice(args.indexOf('--') + 1)) staged.add(file);
+        }
         return command === 'gh' ? 'https://github.test/pull/1' : '';
       },
     });
@@ -345,5 +352,43 @@ describe('Phases 4 and 5 Review, QA, approval, report, and Draft PR', () => {
     });
     expect(archived.state).toBe('archived');
     expect(core.loadState(sandbox.stateDir).active_mission_id).toBeNull();
+  });
+
+  it('blocks unrelated pre-staged files before git add and never commits, pushes, or creates a PR', () => {
+    const sandbox = createSandbox();
+    const selectedFiles = preparePublishableMission(sandbox);
+    const calls = [];
+    expect(() => publisher.publishDraft({
+      missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot,
+      selectedFiles, commitMessage: 'feat: run guarded pilot', prTitle: 'Guarded pilot',
+      branch: 'agent/runtime-pilot', dirtyFiles: selectedFiles, execute: true,
+      runner(command, args) {
+        calls.push([command, ...args]);
+        if (command === 'git' && args[0] === 'diff' && args.includes('--name-only')) return 'unrelated-pre-staged.txt';
+        return '';
+      },
+    })).toThrowError(expect.objectContaining({ code: 'PREEXISTING_STAGED_FILES' }));
+    expect(calls.some((call) => call[1] === 'add' || call[1] === 'commit' || call[1] === 'push' || call[0] === 'gh')).toBe(false);
+  });
+
+  it('blocks a post-add staged selection mismatch before commit, push, or PR creation', () => {
+    const sandbox = createSandbox();
+    const selectedFiles = preparePublishableMission(sandbox);
+    const calls = [];
+    let stagedReadCount = 0;
+    expect(() => publisher.publishDraft({
+      missionId: 'MISSION-RUNTIME-E2E', stateDir: sandbox.stateDir, repoRoot: sandbox.repoRoot,
+      selectedFiles, commitMessage: 'feat: run guarded pilot', prTitle: 'Guarded pilot',
+      branch: 'agent/runtime-pilot', dirtyFiles: selectedFiles, execute: true,
+      runner(command, args) {
+        calls.push([command, ...args]);
+        if (command === 'git' && args[0] === 'diff' && args.includes('--name-only')) {
+          stagedReadCount += 1;
+          return stagedReadCount === 1 ? '' : [...selectedFiles, 'unrelated-after-add.txt'].join('\n');
+        }
+        return '';
+      },
+    })).toThrowError(expect.objectContaining({ code: 'STAGED_SELECTION_MISMATCH' }));
+    expect(calls.some((call) => call[1] === 'commit' || call[1] === 'push' || call[0] === 'gh')).toBe(false);
   });
 });

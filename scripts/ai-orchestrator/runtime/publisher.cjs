@@ -75,6 +75,23 @@ function readDirtyFiles(repoRoot, runner) {
   return uniqueSorted([...tracked, ...untracked]);
 }
 
+function readStagedFiles(repoRoot, runner) {
+  const output = runner('git', ['diff', '--cached', '--name-only', '--relative'], repoRoot);
+  return uniqueSorted(output.split(/\r?\n/).filter(Boolean));
+}
+
+function assertExactStagedSelection(stagedFiles, selectedFiles) {
+  const staged = uniqueSorted(stagedFiles);
+  const selected = uniqueSorted(selectedFiles);
+  if (JSON.stringify(staged) !== JSON.stringify(selected)) {
+    throw new OrchestratorError('STAGED_SELECTION_MISMATCH', 'Git index must contain exactly the selected publish files.', {
+      selected,
+      staged,
+    });
+  }
+  return staged;
+}
+
 function publishDraft({
   missionId,
   stateDir,
@@ -107,7 +124,9 @@ function publishDraft({
     merge: false,
     deploy: false,
     commands: [
+      ['git', 'diff', '--cached', '--name-only', '--relative'],
       ['git', 'add', '--', ...selected],
+      ['git', 'diff', '--cached', '--name-only', '--relative'],
       ['git', 'diff', '--cached', '--check'],
       ['git', 'commit', '-m', commitMessage],
       ['git', 'push', '-u', 'origin', currentBranch],
@@ -116,7 +135,14 @@ function publishDraft({
   };
   if (!execute) return { executed: false, plan };
 
+  const preexistingStagedFiles = readStagedFiles(repoRoot, runner);
+  if (preexistingStagedFiles.length > 0) {
+    throw new OrchestratorError('PREEXISTING_STAGED_FILES', 'Git index must be empty before selected files are staged.', {
+      staged: preexistingStagedFiles,
+    });
+  }
   runner('git', ['add', '--', ...selected], repoRoot);
+  assertExactStagedSelection(readStagedFiles(repoRoot, runner), selected);
   runner('git', ['diff', '--cached', '--check'], repoRoot);
   runner('git', ['commit', '-m', commitMessage], repoRoot);
   transition(record, 'committed', now);
@@ -138,9 +164,11 @@ function publishDraft({
 }
 
 module.exports = {
+  assertExactStagedSelection,
   defaultPublisherRunner,
   publishDraft,
   readDirtyFiles,
+  readStagedFiles,
   requiredPublishFiles,
   validatePublishRequest,
 };
