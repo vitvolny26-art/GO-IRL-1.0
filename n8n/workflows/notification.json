@@ -1,0 +1,41 @@
+{
+  "name": "GO IRL - Notification (Mock)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "dbe97c6d-b736-4a57-a34b-3855f82c4a03",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "mission-id", "name": "mission_id", "value": "mock-mission-001", "type": "string" },
+            { "id": "message", "name": "message", "value": "Mission completed", "type": "string" },
+            { "id": "supported", "name": "supported_messages", "value": "Mission accepted,Mission running,Mission blocked,Mission failed,Mission completed", "type": "string" },
+            { "id": "channel", "name": "channel", "value": "mock", "type": "string" },
+            { "id": "sent", "name": "sent", "value": false, "type": "boolean" },
+            { "id": "external", "name": "external_request_made", "value": false, "type": "boolean" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b842254c-294f-4f43-9445-024f27a38b32",
+      "name": "Notify (Mock)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Notify (Mock)", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
