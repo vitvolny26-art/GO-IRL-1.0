@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Bell, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Star, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Dumbbell, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Star, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
-import { openCardReminderSheet, openCardShareSheet } from "../card-action-sheets";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import { formatEventTime } from "../eventTime";
 import { useAppStore } from "../store";
@@ -11,7 +10,11 @@ import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
-import { hasConfirmedCoachForActivity } from "../coachFeature";
+import { getOrganizerRoleRequestState } from "../coachFeature";
+import { getCity } from "../config/cities";
+import { buildGoogleCalendarUrl } from "../calendar/googleCalendar";
+import { getTelegramWebApp } from "../telegram";
+import { CardShareAction } from "../components/CardShareAction";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -25,8 +28,29 @@ const activityInviteUrl = (activity: Activity) => {
 };
 
 const openActivityMap = (activity: Activity) => {
-  const query = encodeURIComponent(activity.address || "Olomouc");
+  const city = getCity(activity.cityId).name.en;
+  const query = encodeURIComponent(activity.address.trim() || city);
   window.open(`https://mapy.cz/zakladni?q=${query}`, "_blank", "noopener,noreferrer");
+};
+
+const openActivityCalendar = (activity: Activity, language: Language) => {
+  const url = buildGoogleCalendarUrl(activity, {
+    language,
+    eventUrl: activityInviteUrl(activity),
+  });
+  const webApp = getTelegramWebApp();
+  if (webApp?.openLink) {
+    webApp.openLink(url, { try_instant_view: false });
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
+const coachCardCopy: Record<Language, { needed: string; requested: string; confirmed: string }> = {
+  ru: { needed: "Нужен тренер", requested: "Тренер запрошен", confirmed: "Есть тренер" },
+  uk: { needed: "Потрібен тренер", requested: "Тренера запитано", confirmed: "Є тренер" },
+  cs: { needed: "Potřebujeme trenéra", requested: "Trenér vyžádán", confirmed: "Trenér potvrzen" },
+  en: { needed: "Coach needed", requested: "Coach requested", confirmed: "Coach confirmed" },
 };
 
 const cleanSportLabel = (value: string | null | undefined) => {
@@ -145,17 +169,44 @@ function SportDetailsSkeleton() {
 }
 
 export function SportActivityCard({ activity, language, onOpen, onJoin }: SportCardProps) {
-  const { joinedIds, pendingIds } = useAppStore();
+  const { joinedIds, waitingIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const meta = getSportMetadata(activity);
   const joined = joinedIds.includes(activity.id);
+  const waiting = waitingIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
-  const action = pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
+  const action = isOrganizer
+    ? t.open
+    : pending
+      ? t.cardRequestSent
+      : joined
+        ? t.cardOpenChat
+        : waiting
+          ? t.cardWaitlist
+          : activity.visibility === "private"
+            ? t.cardInviteOnly
+            : full
+              ? t.cardNoSpots
+              : activity.visibility === "invite"
+                ? t.cardJoinRequest
+                : t.cardJoin;
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
-  const [hasConfirmedCoach, setHasConfirmedCoach] = useState(false);
+  const [coachState, setCoachState] = useState<"none" | "requested" | "confirmed">("none");
   const avatar = sportAvatarForActivity(activity, language, meta);
+  const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
+  const hasCardState = isOrganizer || joined || waiting || pending;
+  const joinDisabled = !hasCardState && (full || activity.visibility === "private");
+  const coachAction = isOrganizer
+    ? coachState === "confirmed"
+      ? coachCardCopy[language].confirmed
+      : coachState === "requested"
+        ? coachCardCopy[language].requested
+        : coachCardCopy[language].needed
+    : coachState === "confirmed"
+      ? coachCardCopy[language].confirmed
+      : t.details;
 
   const joinedMembers = activity.members.filter(m => m.status === "joined");
   const shareTitle = cleanSportLabel(activity.activity[language]);
@@ -165,13 +216,12 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     let active = true;
 
     const refreshConfirmedCoach = () => {
-      setHasConfirmedCoach(false);
-      void hasConfirmedCoachForActivity(activity.id)
-        .then((confirmed) => {
-          if (active) setHasConfirmedCoach(confirmed);
+      void getOrganizerRoleRequestState(activity.id)
+        .then((state) => {
+          if (active) setCoachState(state);
         })
         .catch(() => {
-          if (active) setHasConfirmedCoach(false);
+          if (active) setCoachState("none");
         });
     };
 
@@ -192,10 +242,9 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   }, [activity.id]);
 
   return (
-    <article className="sport-card compact-sport-card">
+    <article className="sport-card compact-sport-card unified-event-card">
       <div className="sport-card-top-actions">
-        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><Bell size={20} /></button>
-        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); openCardShareSheet(shareTitle, shareDate, activity.address, event.currentTarget, activityInviteUrl(activity)); }}><Share2 size={20} /></button>
+        <CardShareAction title={shareTitle} date={shareDate} address={activity.address} url={activityInviteUrl(activity)} label={t.share} />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className="sport-card-symbol"><span className="sport-avatar-glyph">{avatar}</span></div>
@@ -206,7 +255,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         </div>
       </button>
       <div className="sport-chip-row">
-        {hasConfirmedCoach ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>Есть тренер</span></span> : null}
+        {coachState === "confirmed" ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>{coachCardCopy[language].confirmed}</span></span> : null}
         <button
           className="sport-card-participants-chip"
           type="button"
@@ -221,19 +270,13 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           <UsersRound size={16} aria-hidden="true" />
           <span>{activity.participants} / {activity.capacity}</span>
         </button>
-        <button
+        <span
           className="sport-card-chip sport-duration-chip"
-          type="button"
           aria-label={`${t.sportDuration}: ${meta.durationMinutes || 90} ${t.minutesShort}`}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
-          }}
         >
           <CalendarPlus size={16} aria-hidden="true" />
           <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
-        </button>
+        </span>
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -259,39 +302,39 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         <div
           role="button"
           tabIndex={0}
-          aria-label={`${t.address}: ${activity.address}`}
+          aria-label={t.addToGoogleCalendar}
           onClick={(event) => {
             event.stopPropagation();
-            openActivityMap(activity);
+            openActivityCalendar(activity, language);
           }}
           onKeyDown={(event) => {
             if (event.key !== "Enter" && event.key !== " ") return;
             event.preventDefault();
             event.stopPropagation();
-            openActivityMap(activity);
-          }}
-        ><MapPin /><span>{activity.address}</span></div>
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label={`Напоминание: ${shareDate}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-            event.preventDefault();
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
+            openActivityCalendar(activity, language);
           }}
         ><CalendarDays /><span>{shareDate}</span></div>
         <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={`${t.address}: ${mapLabel}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            openActivityMap(activity);
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            event.stopPropagation();
+            openActivityMap(activity);
+          }}
+        ><MapPin /><span>{mapLabel}</span></div>
         <div className="unified-status-cell"><ShieldCheck /><Star /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
       </div>
       <div className="activity-card-footer compact-sport-actions">
-        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />Тренер</button>
-        <button className={joined || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{action}</button>
+        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} />{coachAction}</button>
+        <button className={hasCardState ? "card-join secondary" : "card-join"} onClick={() => hasCardState ? onOpen(activity) : onJoin(activity)} type="button" disabled={joinDisabled}>{action}</button>
       </div>
     </article>
   );

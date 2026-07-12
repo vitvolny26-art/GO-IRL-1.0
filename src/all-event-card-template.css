@@ -35,6 +35,16 @@
   display: none !important;
 }
 
+/* The event avatar is the explicit card-details trigger; adjacent copy stays inert. */
+.compact-sport-card .sport-card-main {
+  pointer-events: none !important;
+}
+
+.compact-sport-card .sport-card-symbol {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
 .compact-sport-card .activity-card-details.sport-details-grid > .unified-status-cell {
   display: grid !important;
   grid-template-columns: 20px minmax(0, 1fr) !important;
@@ -269,14 +279,14 @@
   min-width: 82px !important;
   min-height: 31px !important;
   font-size: 12px !important;
-  color: var(--lime) !important;
+  color: #e8ffad !important;
 }
 
 .unified-event-card .sport-card-chip svg,
 .unified-event-card .sport-card-participants-chip svg {
   width: 14px !important;
   height: 14px !important;
-  color: var(--lime) !important;
+  color: #e8ffad !important;
   flex: 0 0 auto !important;
 }
 
