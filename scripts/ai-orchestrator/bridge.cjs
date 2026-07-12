@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 const { approveMission, closeMission, intakeMission, loadState, requireMission } = require('./runtime/core.cjs');
 const {
@@ -15,6 +14,7 @@ const {
 } = require('./runtime/workflow.cjs');
 const { publishDraft } = require('./runtime/publisher.cjs');
 const { runCodexImplementer, runCodexReviewer } = require('./runtime/codex-adapter.cjs');
+const { defaultStateDirectory } = require('./runtime/locations.cjs');
 
 const BRIDGE_VERSION = '0.1';
 const COMMANDS = new Set([
@@ -30,15 +30,6 @@ const COMMANDS = new Set([
   'publish preview',
   'archive',
 ]);
-
-function defaultStateDirectory() {
-  if (process.env.GO_IRL_ORCHESTRATOR_STATE_DIR) return path.resolve(process.env.GO_IRL_ORCHESTRATOR_STATE_DIR);
-  if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
-    return path.join(process.env.LOCALAPPDATA, 'GO-IRL', 'ai-orchestrator');
-  }
-  if (process.env.XDG_STATE_HOME) return path.join(process.env.XDG_STATE_HOME, 'go-irl', 'ai-orchestrator');
-  return path.join(os.homedir(), '.local', 'state', 'go-irl', 'ai-orchestrator');
-}
 
 function requireString(value, name) {
   if (typeof value !== 'string' || value.trim() === '') {

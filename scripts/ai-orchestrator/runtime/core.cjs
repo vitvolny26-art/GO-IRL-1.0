@@ -157,9 +157,11 @@ function stateFile(stateDir) {
 function loadState(stateDir) {
   const file = stateFile(stateDir);
   if (!fs.existsSync(file)) {
-    return { schema_version: '1.0', active_mission_id: null, missions: {} };
+    return { schema_version: '1.0', active_mission_id: null, missions: {}, events: [] };
   }
-  return readJson(file);
+  const state = readJson(file);
+  if (!Array.isArray(state.events)) state.events = [];
+  return state;
 }
 
 function saveState(stateDir, state) {
@@ -197,7 +199,31 @@ function semanticMissionHash(mission) {
   return sha256(stableStringify(semanticPayload));
 }
 
-function intakeMission({ mission, stateDir, now = new Date() }) {
+function acceptMissionRecord({ state, record, actor, now = new Date() }) {
+  if (!actor || actor.trim() === '') {
+    throw new OrchestratorError('HUMAN_ACTOR_REQUIRED', 'Accepted Mission intake requires the upstream human approval actor.');
+  }
+  const eventId = `${record.mission.mission_id}:MissionAccepted`;
+  if (state.events.some((event) => event.event_id === eventId)) return record;
+  if (record.state === 'awaiting_mission_approval') {
+    transition(record, 'approved', now);
+    record.mission_approval = { actor: actor.trim(), approved_at: now.toISOString(), source: 'mission_intake' };
+  } else if (record.state !== 'approved') {
+    throw new OrchestratorError('MISSION_ACCEPTANCE_NOT_EXPECTED', 'Mission cannot be accepted from its current state.', {
+      state: record.state,
+    });
+  }
+  state.events.push({
+    event_id: eventId,
+    type: 'MissionAccepted',
+    mission_id: record.mission.mission_id,
+    status: 'accepted',
+    occurred_at: now.toISOString(),
+  });
+  return record;
+}
+
+function intakeMission({ mission, stateDir, acceptedBy, now = new Date() }) {
   const errors = validateMission(mission);
   if (errors.length > 0) {
     throw new OrchestratorError('MISSION_INVALID', 'Mission contract validation failed.', { errors });
@@ -208,7 +234,13 @@ function intakeMission({ mission, stateDir, now = new Date() }) {
   const semanticHash = semanticMissionHash(mission);
   const existing = state.missions[mission.mission_id];
   if (existing) {
-    if (existing.payload_hash === payloadHash) return { idempotent: true, record: existing };
+    if (existing.payload_hash === payloadHash) {
+      if (acceptedBy) {
+        acceptMissionRecord({ state, record: existing, actor: acceptedBy, now });
+        saveState(stateDir, state);
+      }
+      return { idempotent: true, record: existing };
+    }
     throw new OrchestratorError('MISSION_CONFLICT', 'Mission ID already exists with a changed payload.', {
       mission_id: mission.mission_id,
     });
@@ -256,6 +288,7 @@ function intakeMission({ mission, stateDir, now = new Date() }) {
   transition(record, 'validated', now);
   transition(record, 'awaiting_mission_approval', now);
   state.active_mission_id = mission.mission_id;
+  if (acceptedBy) acceptMissionRecord({ state, record, actor: acceptedBy, now });
   saveState(stateDir, state);
   return { idempotent: false, record };
 }
@@ -291,6 +324,7 @@ function closeMission({ missionId, actor, stateDir, action = 'cancel', now = new
 module.exports = {
   OrchestratorError,
   TERMINAL_STATES,
+  acceptMissionRecord,
   artifactFile,
   approveMission,
   assertPathsAllowed,

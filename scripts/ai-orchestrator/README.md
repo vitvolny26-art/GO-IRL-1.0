@@ -12,6 +12,37 @@ It implements:
 
 The runtime never merges or deploys. Real Codex and GitHub mutations require explicit execution flags.
 
+## EGF-102 approved Mission Intake
+
+The no-LLM Mission Intake boundary connects an upstream human-approved Mission to the runtime and JSON bridge:
+
+```powershell
+Get-Content -Raw approved-mission.json | node scripts/ai-orchestrator/orchestrator.cjs mission intake --actor "human-owner"
+```
+
+The input is the Mission JSON object itself. When `mission_id` is omitted, the runtime creates a deterministic `MISSION-<20 hex>` identifier from the canonical Mission payload, making transport retries idempotent. A supplied valid Mission ID is retained for compatibility.
+
+`--actor` is mandatory. It records the human who approved the Mission upstream; the CLI does not infer or bypass approval. Intake performs, in order:
+
+1. Mission Schema validation;
+2. runtime Policy validation, including root-wide write-scope and source-of-truth write rejection;
+3. semantic duplicate, changed-payload conflict, expiry, and one-active-Mission checks;
+4. atomic runtime persistence in the existing OS user-state directory;
+5. one durable, idempotent `MissionAccepted` outbox event.
+
+The successful stdout response is exactly one JSON line:
+
+```json
+{
+  "success": true,
+  "mission_id": "MISSION-0123456789ABCDEF0123",
+  "status": "accepted",
+  "next_action": "context_build"
+}
+```
+
+Internally, the Mission is stored as `approved`, so the existing bridge can immediately report it and Context Builder can run. The event outbox is internal runtime state; state files and event storage paths are never returned to callers. Intake contains no Codex/LLM invocation, GitHub operation, or n8n mutation.
+
 ## JSON bridge v0.1
 
 Any external orchestrator, including n8n, can drive the runtime through one JSON-only entrypoint:
