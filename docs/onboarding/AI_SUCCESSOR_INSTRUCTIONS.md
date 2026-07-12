@@ -3,8 +3,8 @@ title: AI Successor Instructions
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-10
-next_review: 2026-07-17
+last_review: 2026-07-12
+next_review: 2026-07-19
 ---
 
 # AI Successor Instructions
@@ -198,41 +198,22 @@ Documentation:
 
 Category scope:
 
-- Opened `KD-013` for beta category mismatch.
-- Updated `CHANGELOG.md` to mark extra activity options as taxonomy/test candidates, not approved MVP scope.
-- Moved `KD-013` to Review after docs review.
-- ROADMAP/BACKLOG keep six-category beta guardrail.
-- Remaining unresolved part: UI/category source in `src/data.ts` still exposes broad non-canonical options.
+- `KD-013` is closed in `docs/audit/KNOWLEDGE_DEBT.md`.
+- `CHANGELOG.md` marks extra activity options as taxonomy/test candidates, not approved MVP scope.
+- `ROADMAP.md` and `BACKLOG.md` keep the six-category beta guardrail.
+- Create-event UI uses `closedBetaCategories` and `closedBetaActivityOptions`.
+- Broader taxonomy remains hidden/experimental data and must not be exposed in closed beta without approval.
 
-Code patch in progress:
+Resolved beta taxonomy red state:
 
-- User attempted beta create taxonomy patch.
-- Current red state included:
-  - nested test in `src/data.test.ts`
-  - lint errors in `src/card-actions-enhancer.ts`
-  - `any` in `src/services/weather.ts`
-  - unused `Dumbbell` in `src/verticals/SportVertical.tsx`
-- Need fix red state before commit.
+- Commit `35e622ca22642814b9e259710e0af4349ebcf9bf` fixed and committed the beta taxonomy red block.
+- `src/data.test.ts` keeps each `it(...)` directly inside `describe(...)`.
+- Unused `isEmojiLike` is absent from `src/card-actions-enhancer.ts`.
+- `src/services/weather.ts` uses narrow Open-Meteo response types instead of explicit `any`.
+- Unused `Dumbbell` is absent from `src/verticals/SportVertical.tsx`.
+- Verified project report records `lint`, `build`, `test`, and `typecheck` as PASS after the related fixes.
 
-## Known red-state fix direction
-
-Fix `src/data.test.ts` so every `it(...)` is directly inside `describe(...)`.
-
-Fix lint:
-
-- Remove unused `isEmojiLike` from `src/card-actions-enhancer.ts` if unused.
-- Replace explicit `any` in `src/services/weather.ts` with narrow types or safe `unknown` parsing.
-- Remove unused `Dumbbell` import from `src/verticals/SportVertical.tsx`.
-
-Then run:
-
-```bash
-pnpm run lint
-pnpm run build
-pnpm run test
-```
-
-Do not commit until all pass.
+Do not rerun `scripts/fix-red-after-beta-taxonomy.cjs` on current `main` unless a new matching regression is confirmed.
 
 ## Faster and cheaper work pattern
 
@@ -300,8 +281,8 @@ Export rules:
 
 Primary mission now:
 
-1. Fix current red state.
-2. Finish beta create taxonomy filter safely.
-3. Run lint/build/test.
-4. Commit only if green.
-5. Continue documentation cleanup after code is stable.
+1. Do not reopen the resolved beta taxonomy red block without evidence from current `main`.
+2. Run the latest local `lint`, `build`, `test`, and `typecheck` gates after the newest commits.
+3. Complete the real Telegram smoke test and remaining manual release verification.
+4. Keep the six-category closed-beta scope locked.
+5. Continue documentation cleanup after the latest quality gates are green.
