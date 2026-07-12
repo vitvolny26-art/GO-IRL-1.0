@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI Developer Agent Result Structured Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mission_id",
+    "role",
+    "status",
+    "evidence",
+    "changed_files",
+    "risks",
+    "validation_errors",
+    "next_action"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["1.0"] },
+    "mission_id": { "type": "string" },
+    "role": { "type": "string" },
+    "status": { "type": "string", "enum": ["PASS", "CHANGES_REQUIRED", "BLOCKED"] },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "line", "claim"],
+        "properties": {
+          "path": { "type": "string" },
+          "line": { "type": "integer" },
+          "claim": { "type": "string" }
+        }
+      }
+    },
+    "changed_files": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "validation_errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "path", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "path": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "next_action": { "type": "string" }
+  }
+}

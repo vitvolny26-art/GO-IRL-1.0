@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-MULTIPLE-NEXT",
+  "role": "Independent Reviewer",
+  "status": "PASS",
+  "evidence": [
+    { "path": "README.md", "line": 1, "claim": "Evidence exists." }
+  ],
+  "changed_files": [],
+  "risks": [],
+  "validation_errors": [],
+  "next_action": ["Commit", "Push", "Open PR"]
+}

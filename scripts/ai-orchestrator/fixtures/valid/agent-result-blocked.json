@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-BLOCKED",
+  "role": "QA Gatekeeper",
+  "status": "BLOCKED",
+  "evidence": [
+    { "path": "docs/proposals/AI_DEVELOPER_ORCHESTRATION_ROADMAP.md", "line": 44, "claim": "The first red quality-gate command stops the task." }
+  ],
+  "changed_files": [],
+  "risks": ["Continuing after a red command would violate the proposal."],
+  "validation_errors": [
+    { "code": "checks_failed", "path": "pnpm run typecheck", "message": "The exact first red block must be returned." }
+  ],
+  "next_action": "Return the first complete red error block to the owner."
+}

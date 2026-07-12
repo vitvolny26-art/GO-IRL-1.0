@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-UNDECLARED",
+  "role": "Codex Implementer",
+  "status": "GREEN",
+  "evidence": [
+    { "path": "../outside", "line": 0, "claim": "Invalid evidence." }
+  ],
+  "changed_files": ["/absolute/path"],
+  "risks": [],
+  "validation_errors": [],
+  "next_action": "Continue automatically.",
+  "self_approved": true
+}
