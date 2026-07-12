@@ -3,8 +3,8 @@ title: Backlog
 owner: Product Lead
 status: Draft
 source_of_truth: false
-last_review: 2026-07-09
-next_review: 2026-08-09
+last_review: 2026-07-12
+next_review: 2026-07-19
 ---
 
 # Backlog
@@ -138,6 +138,7 @@ Do not move these into beta implementation:
 - Verify Supabase realtime is enabled for `activities` and `activity_members` in production.
 - Verify Telegram `startapp` links open the exact shared activity from a second account.
 - Verify `Telegram.WebApp.close()` behavior on iOS, Android, and Telegram Desktop.
+- Complete and verify `SHARE-001` before closed beta opens.
 
 ### Security / Release Gate
 
@@ -148,6 +149,49 @@ Trusted Telegram auth is implemented as the production path, but live release st
 - Trusted auth migration applied and verified.
 - RLS behavior checked with at least two Telegram accounts.
 - Public frontend admin allowlist not used as production moderation security.
+
+## Closed Beta UX Tasks
+
+### SHARE-001 — Design and implement a polished four-channel event Share card
+
+Priority: P0 — must be completed before closed beta.
+
+Release gate: closed beta must not open until this task meets all acceptance criteria and the four-channel Share flow is verified on real target devices.
+
+Status: Review — implementation, automated URL tests, accessibility behavior, and 320/390/560px responsive checks are complete. Real Telegram iOS/Android/Desktop and installed-app smoke tests remain before closure.
+
+Goal: make event sharing feel intentional, trustworthy, and visually consistent while preserving the exact event deep link.
+
+Channels:
+
+- Telegram;
+- WhatsApp;
+- Messenger;
+- Viber.
+
+Scope:
+
+- design a compact mobile-first Share card/panel that fits the existing dark GO IRL visual system;
+- use recognizable local brand icons and clear accessible names;
+- show useful event context without turning the panel into a separate event-details screen;
+- preserve the Telegram Mini App `startapp` URL with the exact activity ID;
+- keep WhatsApp and Viber message bodies readable and include the event URL once;
+- keep Messenger compatible with its supported URL-sharing flow;
+- support second-tap close, outside-click close, keyboard focus, and Telegram WebView safe areas;
+- verify placement on generic and Sport cards without horizontal overflow or card-content obstruction;
+- define loading/error/fallback behavior when a target messenger cannot open;
+- keep bug reporting and future reminder delivery separate from Share.
+
+Acceptance criteria:
+
+- exactly four channel actions are visible in a deliberate, visually balanced layout;
+- the shared event opens the correct activity from a second account/device;
+- the event URL is not duplicated in the generated message;
+- the panel works at 320px, 390px, and 560px widths;
+- Telegram Android, Telegram iOS, Telegram Desktop, and browser fallback receive smoke coverage;
+- screen-reader labels and keyboard navigation pass review;
+- no new icon dependency is added unless the current local assets are insufficient and the change is approved;
+- lint, typecheck, tests, production build, and screenshot regression checks pass.
 
 ## Sport Coach MVP 1.1
 

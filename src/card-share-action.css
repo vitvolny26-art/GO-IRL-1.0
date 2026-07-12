@@ -8,11 +8,31 @@
 .card-share-channel-list {
   position: absolute;
   z-index: 30;
-  top: 0;
-  right: 42px;
+  top: -8px;
+  right: 44px;
   display: grid;
   grid-template-columns: 52px;
   gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(201, 255, 61, .22);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(24, 29, 22, .97), rgba(10, 12, 16, .97));
+  box-shadow: 0 22px 54px rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: blur(18px);
+  animation: card-share-in 140ms ease-out;
+}
+
+.card-share-channel-list::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: -6px;
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid rgba(201, 255, 61, .22);
+  border-right: 1px solid rgba(201, 255, 61, .22);
+  background: #171c15;
+  transform: rotate(45deg);
 }
 
 .card-share-channel-list > button {
@@ -24,6 +44,15 @@
   place-items: center;
   border: 0;
   background: transparent;
+  border-radius: 999px;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+.card-share-channel-list > button:hover,
+.card-share-channel-list > button:focus-visible {
+  outline: none;
+  background: rgba(201, 255, 61, .09);
+  transform: translateX(-2px);
 }
 
 .card-share-icon-circle {
@@ -31,10 +60,16 @@
   width: 48px;
   height: 48px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .2);
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, .32);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .36), inset 0 0 0 2px rgba(0, 0, 0, .035);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.card-share-channel-list > button:active .card-share-icon-circle {
+  transform: scale(.93);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, .34);
 }
 
 .card-share-icon-circle img {
@@ -42,4 +77,25 @@
   width: 30px;
   height: 30px;
   object-fit: contain;
+}
+
+.card-share-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes card-share-in {
+  from { opacity: 0; transform: translateX(6px) scale(.96); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-share-channel-list { animation: none; }
+  .card-share-channel-list > button,
+  .card-share-icon-circle { transition: none; }
 }

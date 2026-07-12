@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
+import { buildCardShareTarget, type CardShareChannel } from "../share/card-share-targets";
 
 type CardShareActionProps = {
   title: string;
@@ -14,36 +15,60 @@ const channels = [
   { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
   { id: "viber", label: "Viber", icon: "/icons/viber.svg" },
-] as const;
+] as const satisfies ReadonlyArray<{ id: CardShareChannel; label: string; icon: string }>;
 
 export function CardShareAction({ title, date, address, url, label }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
-  const message = [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n");
-  const messageWithUrl = `${message}\n${url}`;
+  const [status, setStatus] = useState("");
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const firstChannelRef = useRef<HTMLButtonElement>(null);
+  const menuId = useId();
 
-  const share = (channel: typeof channels[number]["id"]) => {
-    const encodedUrl = encodeURIComponent(url);
-    const encodedMessage = encodeURIComponent(message);
-    const encodedWithUrl = encodeURIComponent(messageWithUrl);
-    const target = channel === "telegram"
-      ? `https://t.me/share/url?url=${encodedUrl}&text=${encodedMessage}`
-      : channel === "whatsapp"
-        ? `https://wa.me/?text=${encodedWithUrl}`
-        : channel === "messenger"
-          ? `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
-          : `viber://forward?text=${encodedWithUrl}`;
+  useEffect(() => {
+    if (!open) return;
 
+    firstChannelRef.current?.focus();
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      triggerRef.current?.focus();
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  const share = async (channel: CardShareChannel) => {
+    const target = buildCardShareTarget(channel, { title, date, address, url });
     setOpen(false);
-    window.open(target, "_blank", "noopener,noreferrer");
+    const opened = window.open(target, "_blank", "noopener,noreferrer");
+    if (opened) return;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setStatus("Ссылка скопирована");
+    } catch {
+      setStatus("Не удалось открыть приложение");
+    }
   };
 
   return (
-    <span className="card-share-action">
+    <span className="card-share-action" ref={rootRef}>
       <button
+        ref={triggerRef}
         className="sport-card-icon-action"
         type="button"
         aria-label={label}
         aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -53,17 +78,19 @@ export function CardShareAction({ title, date, address, url, label }: CardShareA
         <Share2 size={20} aria-hidden="true" />
       </button>
       {open ? (
-        <span className="card-share-channel-list" role="menu" aria-label={label}>
-          {channels.map((channel) => (
+        <span className="card-share-channel-list" id={menuId} role="menu" aria-label={label}>
+          {channels.map((channel, index) => (
             <button
+              ref={index === 0 ? firstChannelRef : undefined}
               key={channel.id}
               type="button"
               role="menuitem"
               aria-label={channel.label}
+              data-channel={channel.id}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                share(channel.id);
+                void share(channel.id);
               }}
             >
               <span className="card-share-icon-circle">
@@ -73,6 +100,7 @@ export function CardShareAction({ title, date, address, url, label }: CardShareA
           ))}
         </span>
       ) : null}
+      <span className="card-share-status" aria-live="polite">{status}</span>
     </span>
   );
 }

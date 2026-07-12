@@ -67,7 +67,7 @@
 
 .compact-sport-card h3 {
   margin-top: 8px !important;
-  font-size: clamp(34px, 9vw, 44px) !important;
+  font-size: clamp(28px, 7.5vw, 36px) !important;
   line-height: .96 !important;
 }
 
@@ -262,10 +262,6 @@
 
   .compact-sport-card .sport-avatar-glyph {
     font-size: 40px !important;
-  }
-
-  .compact-sport-card h3 {
-    font-size: 35px !important;
   }
 
   .compact-sport-card p {
