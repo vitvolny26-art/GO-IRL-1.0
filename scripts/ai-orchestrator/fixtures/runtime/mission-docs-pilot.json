@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-RUNTIME-DOCS-PILOT",
+  "objective": "Create one non-authoritative Agent Report proving the local AI developer orchestration runtime can complete a low-risk docs-only pilot.",
+  "risk_level": "low",
+  "allowed_paths": ["docs/reports/2026-07-12-agent-report-runtime-docs-pilot.md"],
+  "forbidden_paths": ["src/**", ".env*", "supabase/**", "vercel.json", "DEPLOYMENT.md", "DOCS_INDEX.md", "ROADMAP.md", "BACKLOG.md"],
+  "acceptance_criteria": [
+    "The output follows docs/reports/README.md.",
+    "No application, security, database, deployment, canonical documentation, merge, or deploy change occurs."
+  ],
+  "maximum_budget_usd": 1,
+  "requires_human_approval": true,
+  "source_of_truth_refs": ["scripts/ai-orchestrator/README.md", "docs/reports/README.md"],
+  "expires_at": "2026-07-19T23:59:59.000Z"
+}

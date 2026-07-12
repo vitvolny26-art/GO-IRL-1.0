@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-FORBIDDEN-SCOPE",
+  "objective": "Attempt work outside the approved boundary.",
+  "risk_level": "critical",
+  "allowed_paths": ["../src", ".env.production"],
+  "forbidden_paths": ["src/**"],
+  "acceptance_criteria": ["This fixture must fail scope validation."],
+  "maximum_budget_usd": 10,
+  "requires_human_approval": false,
+  "source_of_truth_refs": ["/absolute/spec.md"]
+}

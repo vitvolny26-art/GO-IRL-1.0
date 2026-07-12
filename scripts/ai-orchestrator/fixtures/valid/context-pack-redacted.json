@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-REDACTED-CONTEXT",
+  "source_of_truth_refs": ["docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md"],
+  "file_manifest": [
+    { "path": "docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md", "sha256": "2222222222222222222222222222222222222222222222222222222222222222", "size_bytes": 12000 }
+  ],
+  "grep_evidence": [
+    { "query": "secrets", "path": "docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md", "line": 72, "excerpt": "Do not touch .env or secrets without explicit approval." }
+  ],
+  "constraints": {
+    "allowed_paths": ["scripts/ai-orchestrator/**"],
+    "forbidden_paths": [".env*", "supabase/**"],
+    "no_dependency_addition": true,
+    "no_architecture_rewrite": true
+  },
+  "acceptance_criteria": ["Sensitive values are excluded while the redaction fact is recorded."],
+  "size_metadata": { "file_count": 1, "total_bytes": 12000, "max_bytes": 50000, "within_limit": true },
+  "secret_redaction": {
+    "status": "redacted",
+    "findings": ["One environment-value example was excluded before context assembly."],
+    "redacted_fields": ["environment_value_example"]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "mission_id": "MISSION-DOCS-REPORT",
+  "objective": "Create one non-authoritative report after deterministic checks pass.",
+  "risk_level": "low",
+  "allowed_paths": ["docs/reports/2026-07-11-ai-developer-orchestrator-phase-0.md"],
+  "forbidden_paths": ["src/**", ".env*", "supabase/**", "ROADMAP.md", "BACKLOG.md", "DOCS_INDEX.md"],
+  "acceptance_criteria": ["The report follows docs/reports/README.md.", "No canonical document changes."],
+  "maximum_budget_usd": 0.1,
+  "requires_human_approval": true,
+  "source_of_truth_refs": ["docs/reports/README.md"]
+}
