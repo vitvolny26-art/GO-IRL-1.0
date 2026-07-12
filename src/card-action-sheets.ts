@@ -79,8 +79,8 @@ const showCardActionSheet = (actions: SheetAction[], trigger?: HTMLElement) => {
   positionFlyout(sheet, trigger);
 };
 
-const shareText = (title: string, date: string, address: string, url: string) =>
-  `GO IRL: ${title}\n${date}\n${address}\n${url}`;
+const shareText = (title: string, date: string, address: string) =>
+  [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n");
 
 export const openCardShareSheet = (
   title: string,
@@ -90,15 +90,17 @@ export const openCardShareSheet = (
   shareUrl?: string,
 ) => {
   const url = shareUrl || window.location.href.split("?")[0];
-  const message = shareText(title, date, address, url);
+  const message = shareText(title, date, address);
+  const messageWithUrl = `${message}\n${url}`;
   const encoded = encodeURIComponent(message);
+  const encodedWithUrl = encodeURIComponent(messageWithUrl);
   const encodedUrl = encodeURIComponent(url);
 
   showCardActionSheet([
     { kind: "telegram", label: "Telegram", action: () => openUrl(`https://t.me/share/url?url=${encodedUrl}&text=${encoded}`) },
-    { kind: "whatsapp", label: "WhatsApp", action: () => openUrl(`https://wa.me/?text=${encoded}`) },
+    { kind: "whatsapp", label: "WhatsApp", action: () => openUrl(`https://wa.me/?text=${encodedWithUrl}`) },
     { kind: "messenger", label: "Messenger", action: () => openUrl(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`) },
-    { kind: "viber", label: "Viber", action: () => openUrl(`viber://forward?text=${encoded}`) },
+    { kind: "viber", label: "Viber", action: () => openUrl(`viber://forward?text=${encodedWithUrl}`) },
   ], trigger);
 };
 
