@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
-  Bell,
   CalendarDays,
   CalendarPlus,
   Check,
@@ -33,7 +32,6 @@ import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
-import { openCardReminderSheet, openCardShareSheet } from "./card-action-sheets";
 import { initializeTrustedAuth } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
@@ -66,6 +64,8 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
+import { getOrganizerRoleRequestState } from "./coachFeature";
+import { CardShareAction } from "./components/CardShareAction";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -77,8 +77,21 @@ const activityInviteUrl = (activity: Activity) => {
 };
 
 const openActivityMap = (activity: Activity) => {
-  const query = [activity.address, getCity(activity.cityId).name.en].filter(Boolean).join(", ");
+  const query = activity.address.trim() || getCity(activity.cityId).name.en;
   window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
+};
+
+const openActivityCalendar = (activity: Activity, language: Language) => {
+  const url = buildGoogleCalendarUrl(activity, {
+    language,
+    eventUrl: activityInviteUrl(activity),
+  });
+  const webApp = getTelegramWebApp();
+  if (webApp?.openLink) {
+    webApp.openLink(url, { try_instant_view: false });
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
 };
 
 const genericActivityAvatar = (activity: Activity, language: Language, fallback: string) => {
@@ -98,6 +111,13 @@ const genericActivityAvatar = (activity: Activity, language: Language, fallback:
   if (/language|язык|jazyk/.test(value)) return "💬";
   if (/party|вечерин|párty/.test(value)) return "🎉";
   return fallback || "✨";
+};
+
+const eventHelperCardCopy: Record<Language, { needed: string; requested: string; confirmed: string }> = {
+  ru: { needed: "Нужен помощник", requested: "Помощник запрошен", confirmed: "Есть помощник" },
+  uk: { needed: "Потрібен помічник", requested: "Помічника запитано", confirmed: "Є помічник" },
+  cs: { needed: "Potřebujeme pomocníka", requested: "Pomocník vyžádán", confirmed: "Pomocník potvrzen" },
+  en: { needed: "Helper needed", requested: "Helper requested", confirmed: "Helper confirmed" },
 };
 
 const activityIdFromJoinPath = () => {
@@ -998,25 +1018,57 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
+  const [helperState, setHelperState] = useState<"none" | "requested" | "confirmed">("none");
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
   const shareTitle = activity.activity[language];
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
   const avatar = genericActivityAvatar(activity, language, category.icon);
+  const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
   const action = isOrganizer
     ? t.open
     : pending
-      ? t.requested
+      ? t.cardRequestSent
       : joined
-        ? t.joined
+        ? t.cardOpenChat
         : waiting
-          ? t.waiting
+          ? t.cardWaitlist
           : activity.visibility === "private"
-            ? t.privateAccess
+            ? t.cardInviteOnly
             : full
-              ? t.eventFull
+              ? t.cardNoSpots
               : activity.visibility === "invite"
-                ? t.request
-                : t.join;
+                ? t.cardJoinRequest
+                : t.cardJoin;
+  const helperAction = isOrganizer
+    ? helperState === "confirmed"
+      ? eventHelperCardCopy[language].confirmed
+      : helperState === "requested"
+        ? eventHelperCardCopy[language].requested
+        : eventHelperCardCopy[language].needed
+    : helperState === "confirmed"
+      ? eventHelperCardCopy[language].confirmed
+      : t.details;
+  const hasCardState = isOrganizer || joined || waiting || pending;
+  const joinDisabled = !hasCardState && (full || activity.visibility === "private");
+
+  useEffect(() => {
+    let active = true;
+    const refresh = () => {
+      void getOrganizerRoleRequestState(activity.id)
+        .then((state) => { if (active) setHelperState(state); })
+        .catch(() => { if (active) setHelperState("none"); });
+    };
+    const onChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ activityId?: string }>).detail;
+      if (!detail?.activityId || detail.activityId === activity.id) refresh();
+    };
+    refresh();
+    window.addEventListener("go-irl-coach-requests-changed", onChanged);
+    return () => {
+      active = false;
+      window.removeEventListener("go-irl-coach-requests-changed", onChanged);
+    };
+  }, [activity.id]);
   const status = isOrganizer
     ? t.organizerStatus
     : pending
@@ -1036,8 +1088,7 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   return (
     <article className="activity-card sport-card compact-sport-card unified-event-card">
       <div className="sport-card-top-actions">
-        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><Bell size={20} /></button>
-        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); openCardShareSheet(shareTitle, shareDate, activity.address, event.currentTarget, activityInviteUrl(activity)); }}><Share2 size={20} /></button>
+        <CardShareAction title={shareTitle} date={shareDate} address={activity.address} url={activityInviteUrl(activity)} label={t.share} />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className={`sport-card-symbol category-${category.id}`}><span className="sport-avatar-glyph">{avatar}</span></div>
@@ -1059,16 +1110,10 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
             setMembersPreviewOpen((open) => !open);
           }}
         ><UsersRound size={16} aria-hidden="true" /><span>{activity.participants} / {activity.capacity}</span></button>
-        <button
+        <span
           className="sport-card-chip sport-duration-chip"
-          type="button"
-          aria-label={`Напоминание: ${shareDate}`}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
-          }}
-        ><CalendarPlus size={16} aria-hidden="true" /><span>{formatEventTime(activity.time) || compactDateLabel(activity.date, language)}</span></button>
+          aria-label={`${t.time}: ${formatEventTime(activity.time) || compactDateLabel(activity.date, language)}`}
+        ><CalendarPlus size={16} aria-hidden="true" /><span>{formatEventTime(activity.time) || compactDateLabel(activity.date, language)}</span></span>
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -1081,14 +1126,14 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <button type="button" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><CalendarDays /><span>{shareDate}</span></button>
+        <button type="button" onClick={(event) => { event.stopPropagation(); openActivityCalendar(activity, language); }}><CalendarDays /><span>{shareDate}</span></button>
         <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <button type="button" onClick={(event) => { event.stopPropagation(); openActivityMap(activity); }}><MapPin /><span>{activity.address}</span></button>
+        <button type="button" onClick={(event) => { event.stopPropagation(); openActivityMap(activity); }}><MapPin /><span>{mapLabel}</span></button>
         <div className="unified-status-cell"><ShieldCheck /><Star /><span>{status}</span></div>
       </div>
       <div className="activity-card-footer compact-sport-actions">
-        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{t.open}</button>
-        <button className={joined || waiting || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !waiting && !pending}>
+        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{helperAction}</button>
+        <button className={hasCardState ? "card-join secondary" : "card-join"} onClick={() => hasCardState ? onOpen(activity) : onJoin(activity)} type="button" disabled={joinDisabled}>
           {action}
         </button>
       </div>

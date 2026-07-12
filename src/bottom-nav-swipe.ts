@@ -25,7 +25,7 @@ const activeIndex = (buttons: HTMLButtonElement[]) => {
 };
 
 const switchTab = (direction: "next" | "prev") => {
-  if (document.querySelector(".activity-sheet, .sheet-backdrop, .go-irl-share-panel, .go-irl-time-placeholder")) return;
+  if (document.querySelector(".activity-sheet, .sheet-backdrop, .card-share-channel-list")) return;
 
   const buttons = bottomNavButtons();
   if (buttons.length < 2) return;

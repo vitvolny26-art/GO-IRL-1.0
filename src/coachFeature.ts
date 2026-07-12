@@ -78,6 +78,18 @@ export async function hasConfirmedCoachForActivity(activityId: string) {
   return requests.some(isConfirmedOrganizerCoachRequest);
 }
 
+export async function getOrganizerRoleRequestState(activityId: string) {
+  const requests = await loadCoachRequestsForActivity(activityId);
+  const request = requests.find((item) =>
+    item.requestType === "organizer_request" &&
+    !["cancelled", "completed", "rejected"].includes(item.status),
+  );
+
+  if (request?.status === "confirmed") return "confirmed" as const;
+  if (request) return "requested" as const;
+  return "none" as const;
+}
+
 export async function requestCoachForActivity(
   activity: Activity,
   requestType: CoachRequestType,
