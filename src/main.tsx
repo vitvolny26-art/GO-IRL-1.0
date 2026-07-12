@@ -2,6 +2,7 @@ import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableBottomNavSwipe } from "./bottom-nav-swipe";
+import { enableCardTextCleanup } from "./cardText";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -17,6 +18,7 @@ const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 
 enableBottomNavSwipe();
+enableCardTextCleanup();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
