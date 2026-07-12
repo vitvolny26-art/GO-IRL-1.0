@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Star, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { Bell, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Star, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
 import { openCardReminderSheet, openCardShareSheet } from "../card-action-sheets";
@@ -498,7 +498,7 @@ export function SportActivitySheet({
         <div className="sheet-actions compact-sheet-actions">
           <button className="main-action" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>
           <details className="event-more-actions">
-            <summary className="square-action" aria-label="Еще" title="Еще">⋯</summary>
+            <summary className="square-action" aria-label="Еще" title="Еще"><Ellipsis aria-hidden="true" /></summary>
             <div className="event-more-menu">
               <button onClick={() => void onShare(activity)} type="button"><Share2 size={18} />{t.share}</button>
               <button onClick={() => onCalendar(activity)} type="button"><CalendarPlus size={18} />{t.addToGoogleCalendar}</button>

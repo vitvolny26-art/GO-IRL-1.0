@@ -15,7 +15,7 @@
 .compact-sport-card svg {
   fill: none !important;
   stroke: currentColor !important;
-  stroke-width: 2.25 !important;
+  stroke-width: 2 !important;
   stroke-linecap: round !important;
   stroke-linejoin: round !important;
 }
@@ -230,15 +230,15 @@
 .unified-event-card svg {
   fill: none !important;
   stroke: currentColor !important;
-  stroke-width: 2.4 !important;
+  stroke-width: 2 !important;
   stroke-linecap: round !important;
   stroke-linejoin: round !important;
 }
 
 .unified-event-card .sport-card-top-actions .sport-card-icon-action svg {
   display: block !important;
-  width: 24px !important;
-  height: 24px !important;
+  width: 20px !important;
+  height: 20px !important;
   color: var(--lime) !important;
 }
 
