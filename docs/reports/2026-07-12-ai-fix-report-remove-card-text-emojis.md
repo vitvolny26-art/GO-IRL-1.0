@@ -11,7 +11,7 @@ next_review: 2026-07-19
 
 ## Task
 
-Remove duplicate leading emoji from event card title and subtitle text while keeping the large event icon.
+Collect the current related UI fixes in PR #73 before the final quality-gate run.
 
 ## Files inspected
 
@@ -23,28 +23,54 @@ Remove duplicate leading emoji from event card title and subtitle text while kee
 - `docs/bible/08-runtime-boundaries.md`
 - `docs/onboarding/AI_FIXER_AGENT.md`
 - `src/App.tsx`
-- `src/verticals/SportVertical.tsx`
+- `src/data.ts`
 - `src/main.tsx`
+- `src/store.ts`
+- `src/verticals/SportVertical.tsx`
 
 ## Findings
 
-Older and newly created activities can contain a leading emoji inside activity/title strings. The card already renders a dedicated large event icon, so this creates a duplicate emoji in card text.
+- Event card text can contain a leading emoji while the card already renders a dedicated large event icon.
+- The create-event flow was limited to three categories with two subcategories each despite the full taxonomy already existing in `src/data.ts`.
+- These are related UI/data-exposure fixes and can remain in one draft PR without touching auth, RLS, Supabase schema, migrations, or secrets.
 
 ## Changes made
 
-- Added `stripLeadingEmoji()` for safe leading-emoji cleanup.
-- Added a small card-text observer for sport and generic unified cards.
+- Added `stripLeadingEmoji()` cleanup for event card title and subtitle text.
 - Kept the large event avatar/icon unchanged.
-- Added unit coverage for coffee, volleyball, language exchange, plain text, and empty text.
+- Added coverage for coffee, volleyball, language exchange, plain text, and empty text.
+- Exposed all existing event categories and all existing subcategories in the create-event flow.
+- Added coverage that verifies the full taxonomy is available.
+
+## Current PR scope
+
+Draft PR: `#73`
+
+Included:
+
+- duplicate emoji cleanup in unified event cards;
+- full event category and subcategory list in create-event;
+- related tests;
+- this agent report.
+
+Excluded:
+
+- auth;
+- Supabase RLS;
+- database schema;
+- migrations;
+- secrets and `.env`;
+- unrelated feature work.
 
 ## Checks
 
 ```text
-pnpm run lint   PENDING CI
-pnpm run build  PENDING CI
-pnpm run test   PENDING CI
+pnpm run lint       PENDING
+pnpm run typecheck  PENDING
+pnpm run build      PENDING
+pnpm run test       PENDING
 ```
 
 ## Next step
 
-Review CI on the draft pull request. Merge only after all checks pass.
+Run all quality gates. Update this report with PASS/FAIL results before marking the PR ready or merging it.
