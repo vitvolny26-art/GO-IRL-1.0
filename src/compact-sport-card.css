@@ -26,23 +26,10 @@
   padding: 0 !important;
 }
 
-.compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2) svg {
-  display: none !important;
-}
-
-.compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2)::before {
-  content: "⤴" !important;
-  display: block !important;
-  color: var(--lime) !important;
-  font-size: 29px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  transform: translate(1px, -2px) !important;
-}
-
-.compact-sport-card .sport-card-top-actions .sport-card-icon-action:nth-child(2)::after {
-  content: none !important;
-  display: none !important;
+.compact-sport-card .sport-card-icon-action svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke-width: 2 !important;
 }
 
 .compact-sport-card .sport-reminder-placeholder {
