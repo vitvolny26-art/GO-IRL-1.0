@@ -1,0 +1,59 @@
+{
+  "name": "GO IRL - Mission Runner (Mock)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "0f0073ab-0391-4749-86f3-89b94733fd34",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "mission-id", "name": "mission_id", "value": "mock-mission-001", "type": "string" },
+            { "id": "mock-only", "name": "mock_only", "value": true, "type": "boolean" },
+            { "id": "command-executed", "name": "command_executed", "value": false, "type": "boolean" },
+            { "id": "mock-status", "name": "mock_status", "value": "Mission running", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "69d8f7cc-c55b-4411-98c9-f13b41d094f7",
+      "name": "Call Runtime CLI (Mock)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {},
+      "id": "74cb40c4-0db6-4c0a-926d-5aecae6ece6c",
+      "name": "Wait (Mock)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [480, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allowed = ['Mission running', 'Mission blocked', 'Mission failed', 'Mission completed'];\nconst requested = String($json.mock_status || 'Mission running');\nconst status = allowed.includes(requested) ? requested : 'Mission failed';\nreturn [{ json: { ...$json, status, available_statuses: allowed, polled_external_service: false } }];"
+      },
+      "id": "52db1dcb-6c3c-4229-bc47-fb0b2bf7bdb2",
+      "name": "Poll Status (Mock)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 0]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Call Runtime CLI (Mock)", "type": "main", "index": 0 }]] },
+    "Call Runtime CLI (Mock)": { "main": [[{ "node": "Wait (Mock)", "type": "main", "index": 0 }]] },
+    "Wait (Mock)": { "main": [[{ "node": "Poll Status (Mock)", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
