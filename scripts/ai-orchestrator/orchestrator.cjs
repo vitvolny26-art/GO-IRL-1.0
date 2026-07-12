@@ -14,6 +14,7 @@ const {
 } = require('./runtime/workflow.cjs');
 const { publishDraft } = require('./runtime/publisher.cjs');
 const { runCodexImplementer, runCodexReviewer } = require('./runtime/codex-adapter.cjs');
+const { runBridgeCli } = require('./bridge.cjs');
 
 function parseArguments(argv) {
   const positionals = [];
@@ -114,6 +115,7 @@ function present(command, output, full) {
 
 function usage() {
   return `Usage:
+  echo <request.json> | node scripts/ai-orchestrator/orchestrator.cjs bridge <resource> <action>
   node scripts/ai-orchestrator/orchestrator.cjs intake <mission.json> [--state-dir .ai-orchestrator]
   node scripts/ai-orchestrator/orchestrator.cjs approve-mission <mission-id> --actor <human>
   node scripts/ai-orchestrator/orchestrator.cjs prepare <mission-id> --include <csv> --grep <csv>
@@ -134,6 +136,7 @@ function usage() {
 }
 
 function runCli(argv) {
+  if (argv[0] === 'bridge') return runBridgeCli(argv.slice(1));
   const { positionals, options } = parseArguments(argv);
   const command = positionals[0];
   if (!command) {
