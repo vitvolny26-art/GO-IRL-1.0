@@ -23,6 +23,7 @@ Collect the current related UI fixes in PR #73 before the final quality-gate run
 - `docs/bible/08-runtime-boundaries.md`
 - `docs/onboarding/AI_FIXER_AGENT.md`
 - `src/App.tsx`
+- `src/components/AppHeader.tsx`
 - `src/data.ts`
 - `src/main.tsx`
 - `src/store.ts`
@@ -34,6 +35,7 @@ Collect the current related UI fixes in PR #73 before the final quality-gate run
 - Event card text can contain a leading emoji while the card already renders a dedicated large event icon.
 - The create-event flow was limited to three categories with two subcategories each despite the full taxonomy already existing in `src/data.ts`.
 - Profile photo selection immediately stored the full image without giving the user a way to frame the face for the circular avatar.
+- The header notification bell always displayed an empty state and did not persist a message when a participant joined an event owned by the current user.
 - These are related mobile UI/data-exposure fixes and can remain in one draft PR without touching auth, RLS, Supabase schema, migrations, or secrets.
 
 ## Changes made
@@ -47,6 +49,11 @@ Collect the current related UI fixes in PR #73 before the final quality-gate run
 - Added zoom, horizontal focus, and vertical focus controls so the face can be positioned inside a circular preview.
 - Cropped output is exported as a square JPEG before the existing profile image handler saves it.
 - Added unit coverage for landscape, portrait, zoom, and focal-position crop calculations.
+- Added local persisted notifications for joined participants on organizer-owned events.
+- Added unread count badge to the header bell.
+- Added a notification list with participant name, event title, and timestamp.
+- Opening the bell marks stored notifications as read while keeping them in the list.
+- Added unit coverage for notification generation, duplicate prevention, organizer exclusion, and pending-member exclusion.
 
 ## Current PR scope
 
@@ -57,6 +64,7 @@ Included:
 - duplicate emoji cleanup in unified event cards;
 - full event category and subcategory list in create-event;
 - profile avatar crop/framing flow;
+- participant join messages in the notification bell;
 - related tests;
 - this agent report.
 
@@ -67,6 +75,7 @@ Excluded:
 - database schema;
 - migrations;
 - production avatar storage;
+- server-side push notifications;
 - secrets and `.env`;
 - unrelated feature work.
 
