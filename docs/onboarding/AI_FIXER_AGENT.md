@@ -3,8 +3,8 @@ title: AI Fixer Agent
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-09
-next_review: 2026-08-09
+last_review: 2026-07-12
+next_review: 2026-08-12
 ---
 
 # AI Fixer Agent
@@ -51,6 +51,7 @@ Read before changing files:
 - `docs/audit/KNOWLEDGE_DEBT.md`
 - `docs/MVP_STABILIZATION_PLAN.md`
 - `docs/bible/08-runtime-boundaries.md`
+- `docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md`
 
 ## Allowed work
 
@@ -92,10 +93,31 @@ Do not:
 4. If unsure, stop and write the question in the report.
 5. Prefer the smallest safe patch.
 6. Do not hide errors.
+7. Small logical commits may be created locally.
+8. Do not push after every micro-fix.
+9. Group related fixes into one validated push checkpoint.
+10. Use `[preview]` in the commit message only when a real Vercel Preview is intentionally required.
+
+## Vercel Preview quota rule
+
+Vercel Preview is a validation checkpoint, not a build for every local commit.
+
+Required behavior:
+
+- keep fixes small during implementation;
+- collect one coherent batch before pushing;
+- run all required checks before the push;
+- prefer one push for one validated batch;
+- request Preview only for visual, runtime, integration, Telegram, or stakeholder validation;
+- production deployment remains tied to `main`;
+- never force-push or rewrite history only to reduce Preview count;
+- old Preview deployments do not need manual deletion during normal work.
+
+Until repository-level `ignoreCommand` filtering is implemented, reduce Preview builds by batching pushes manually.
 
 ## Required verification
 
-After every patch run:
+After every completed patch batch run:
 
 ```bash
 pnpm run lint
@@ -103,7 +125,7 @@ pnpm run build
 pnpm run test
 ```
 
-If any command fails, do not commit.
+If any command fails, do not commit or push the batch.
 
 ## Reporting location
 
@@ -145,7 +167,7 @@ pnpm run test   PASS/FAIL
 ## Follow-up
 ```
 
-## Commit rule
+## Commit and push rule
 
 If checks pass:
 
@@ -156,12 +178,23 @@ git commit -m "fix: short description"
 git push
 ```
 
+The command block is illustrative. Several small local commits may be included in one push when they form one coherent verified batch.
+
+Use `[preview]` only on the intended Preview checkpoint commit, for example:
+
+```text
+fix: complete mobile UI batch [preview]
+```
+
 If checks fail:
 
-- do not commit;
+- do not commit the failing state as complete;
+- do not push merely to obtain another Vercel build;
 - add the red error block to the report;
 - propose the smallest next fix.
 
 ## Principle
 
 A small safe patch is better than a large clever refactor.
+
+A validated batch push is better than many quota-consuming micro-pushes.
