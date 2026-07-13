@@ -22,7 +22,7 @@ const card: TelegramEventCardInput = {
   level: "Любитель",
   format: "Любительский",
   environment: "На улице",
-  weather: { icon: "⛅", temperature: 23, rain: 12, wind: 19 },
+  isSport: true,
   language: "ru",
 };
 
@@ -33,7 +33,10 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain("Волейбол на ZŠ");
     expect(svg).toContain("&lt;вечером&gt;");
     expect(svg).toContain("ZŠ Demlova &amp; park");
-    expect(svg).toContain("23°C");
+    expect(svg).toContain("Нужен тренер");
+    expect(svg).toContain("Открыть");
+    expect(svg).not.toContain("23°C");
+    expect(svg).not.toContain("Прогноз");
     expect(svg).toContain("DejaVu Sans");
     expect(svg).not.toContain("Arial");
   });

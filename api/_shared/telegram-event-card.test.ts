@@ -45,4 +45,12 @@ describe("buildTelegramEventCard", () => {
     const result = buildTelegramEventCard({ ...input, title: "Волейбол" }, "https://example.com/card.jpg");
     expect(result.caption.match(/Волейбол/g)).toHaveLength(1);
   });
+
+  it("always provides a map action when an event has a place", () => {
+    const result = buildTelegramEventCard({ ...input, mapUrl: undefined }, "https://example.com/card.jpg");
+    expect(result.reply_markup.inline_keyboard[0][1]).toEqual({
+      text: "Карта",
+      url: "https://mapy.cz/zakladni?q=Z%C5%A0%20Demlova%20%26%20park%2C%20%D0%9E%D0%BB%D0%BE%D0%BC%D0%BE%D1%83%D1%86",
+    });
+  });
 });

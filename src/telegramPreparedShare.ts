@@ -3,7 +3,6 @@ import { getCity } from "./config/cities";
 import { buildEventLocationUrl } from "./eventLocations";
 import { formatEventTime } from "./eventTime";
 import { localeByLanguage } from "./i18n";
-import { getEventWeather, type WeatherResult } from "./services/weather";
 import { getTelegramInitData, getTelegramWebApp } from "./telegram";
 import type { Activity, Language } from "./types";
 import { stripLeadingEmoji } from "./cardText";
@@ -25,21 +24,6 @@ const compactDate = (value: string, language: Language) => {
     .replace(/\.$/, "");
 };
 
-const optionalWeather = async (activity: Activity, language: Language): Promise<WeatherResult | null> => {
-  if (activity.metadata?.sport?.environment !== "outdoor") return null;
-  const city = getCity(activity.cityId).name[language];
-  return Promise.race([
-    getEventWeather({
-      date: activity.date,
-      time: activity.time,
-      address: activity.address,
-      city,
-      durationMinutes: activity.metadata.sport.durationMinutes || 90,
-    }).catch(() => null),
-    new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 1_500)),
-  ]);
-};
-
 export const canSharePreparedTelegramMessage = () => {
   const webApp = getTelegramWebApp();
   return Boolean(webApp?.shareMessage && getTelegramInitData());
@@ -54,7 +38,6 @@ export async function sharePreparedTelegramEvent(activity: Activity, language: L
     const city = getCity(activity.cityId).name[language];
     const sport = activity.metadata?.sport;
     const fallback = genericLabels[language];
-    const weather = await optionalWeather(activity, language);
     const mapUrl = activity.locationUrl?.trim() || buildEventLocationUrl(activity.address, city);
     const response = await fetch("/api/telegram/prepared-event-share", {
       method: "POST",
@@ -77,12 +60,7 @@ export async function sharePreparedTelegramEvent(activity: Activity, language: L
           level: sport ? sportLevelLabel(sport.level, language) : fallback.level,
           format: sport ? sportFormatLabel(sport.format, language) : fallback.format,
           environment: sport ? sportEnvironmentLabel(sport.environment, language) : fallback.environment,
-          weather: weather ? {
-            icon: weather.text.trim().split(/\s+/)[0] || "🌤️",
-            temperature: weather.temperature,
-            rain: weather.rain,
-            wind: weather.wind,
-          } : undefined,
+          isSport: Boolean(sport || activity.type === "sport" || activity.categoryId === "sport"),
           date: compactDate(activity.date, language),
           time: formatEventTime(activity.time),
           language,
