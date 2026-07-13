@@ -1,4 +1,4 @@
-export type JoinProvider = "telegram" | "whatsapp";
+export type JoinProvider = "telegram" | "whatsapp" | "instagram" | "messenger";
 
 export type JoinIntent = {
   eventId: string;
