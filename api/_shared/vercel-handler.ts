@@ -40,8 +40,12 @@ async function toWebRequest(request: VercelRequest) {
 }
 
 export function createVercelWebhookHandler(provider: MessagingProvider) {
+  return createVercelHandler((request) => handleProviderWebhook(provider, request));
+}
+
+export function createVercelHandler(handler: (request: Request) => Promise<Response>) {
   return async (request: VercelRequest, response: VercelResponse) => {
-    const result = await handleProviderWebhook(provider, await toWebRequest(request));
+    const result = await handler(await toWebRequest(request));
     response.status(result.status);
     result.headers.forEach((value, name) => response.setHeader(name, value));
     response.end(await result.text());
