@@ -27,12 +27,17 @@ describe("Meta messaging payload builders", () => {
     });
   });
 
-  it("builds a Messenger response using the same event facts", () => {
+  it("builds a Russian Messenger invitation using the same event facts", () => {
     const payload = buildMessengerInvitationPayload("psid-1", event);
 
     expect(payload.messaging_type).toBe("RESPONSE");
     expect(payload.recipient.id).toBe("psid-1");
     expect(payload.message.text).toContain("Board games in Olomouc");
+    expect(payload.message.text).toContain("Осталось мест: 4");
+    expect(payload.message.quick_replies).toEqual([
+      { content_type: "text", title: "Присоединиться", payload: "join:event-meta-1" },
+      { content_type: "text", title: "Подробнее", payload: "details:event-meta-1" },
+    ]);
   });
 
   it("builds an Instagram confirmation with calendar and map actions", () => {
@@ -58,6 +63,23 @@ describe("Meta messaging payload builders", () => {
     });
 
     expect(payload.join_status).toBe("waitlisted");
-    expect(payload.message.text).toBe("The event is full. You are on the waitlist.");
+    expect(payload.message.text).toBe("Свободных мест нет. Вы добавлены в лист ожидания.");
+  });
+
+  it("builds a Russian duplicate-join response with localized actions", () => {
+    const payload = buildMetaJoinResultPayload("messenger", "psid-1", {
+      status: "already_joined",
+      eventId: event.eventId,
+      actions: [
+        { kind: "calendar", label: "Add to calendar", url: "https://calendar.example/meta-1" },
+        { kind: "map", label: "Open map", url: "https://maps.example/meta-1" },
+      ],
+    });
+
+    expect(payload.message.text).toBe([
+      "Вы уже участвуете в этом событии.",
+      "Добавить в календарь: https://calendar.example/meta-1",
+      "Открыть карту: https://maps.example/meta-1",
+    ].join("\n"));
   });
 });
