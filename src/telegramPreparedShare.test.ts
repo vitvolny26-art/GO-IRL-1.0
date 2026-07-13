@@ -59,7 +59,9 @@ describe("sharePreparedTelegramEvent", () => {
       city: "Оломоуц",
       mapUrl: "https://mapy.cz/zakladni?q=Z%C5%A0%20Demlova%2C%20%D0%9E%D0%BB%D0%BE%D0%BC%D0%BE%D1%83%D1%86",
       price: 0,
+      isSport: true,
     });
+    expect(body.card).not.toHaveProperty("weather");
     expect(shareMessage).toHaveBeenCalledWith("prepared-123", expect.any(Function));
   });
 });

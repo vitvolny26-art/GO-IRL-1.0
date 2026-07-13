@@ -16,6 +16,7 @@ export type TelegramEventCardInput = {
   level: string;
   format: string;
   environment: string;
+  isSport?: boolean;
   weather?: {
     icon: string;
     temperature: number;
@@ -55,8 +56,11 @@ export function buildTelegramEventCard(input: TelegramEventCardInput, imageUrl: 
     capacity ? `👥 <b>${labels.people}:</b> ${participants} / ${capacity}` : "",
   ].filter(Boolean);
 
+  const mapUrl = input.mapUrl || ([input.address, input.city].filter(Boolean).length
+    ? `https://mapy.cz/zakladni?q=${encodeURIComponent([input.address, input.city].filter(Boolean).join(", "))}`
+    : undefined);
   const buttons = [{ text: labels.open, url: input.inviteUrl }];
-  if (input.mapUrl) buttons.push({ text: labels.map, url: input.mapUrl });
+  if (mapUrl) buttons.push({ text: labels.map, url: mapUrl });
 
   return {
     type: "photo" as const,

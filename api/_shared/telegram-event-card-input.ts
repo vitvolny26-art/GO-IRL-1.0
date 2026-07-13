@@ -84,6 +84,7 @@ export function normalizeTelegramEventCardInput(value: unknown): TelegramEventCa
     level: stringValue(raw.level, 80),
     format: stringValue(raw.format, 80),
     environment: stringValue(raw.environment, 80),
+    isSport: raw.isSport === true,
     weather: weatherValue(raw.weather),
     language: language as TelegramEventCardInput["language"],
   };

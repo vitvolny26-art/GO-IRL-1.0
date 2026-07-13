@@ -1,10 +1,10 @@
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 
 const copy = {
-  ru: { free: "Бесплатно", forecast: "Прогноз появится ближе к событию", minutes: "мин" },
-  uk: { free: "Безкоштовно", forecast: "Прогноз з’явиться ближче до події", minutes: "хв" },
-  cs: { free: "Zdarma", forecast: "Předpověď se zobrazí blíže k události", minutes: "min" },
-  en: { free: "Free", forecast: "Forecast will appear closer to the event", minutes: "min" },
+  ru: { free: "Бесплатно", minutes: "мин", coach: "Нужен тренер", details: "Подробнее", open: "Открыть" },
+  uk: { free: "Безкоштовно", minutes: "хв", coach: "Потрібен тренер", details: "Докладніше", open: "Відкрити" },
+  cs: { free: "Zdarma", minutes: "min", coach: "Potřebujeme trenéra", details: "Podrobnosti", open: "Otevřít" },
+  en: { free: "Free", minutes: "min", coach: "Coach needed", details: "Details", open: "Open" },
 } as const;
 
 const xml = (value: string) => value
@@ -72,9 +72,6 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
   const status = [clean(input.level, 50), clean(input.format, 50)].filter(Boolean).join(" · ");
   const price = input.price > 0 ? `${Math.round(input.price)} Kč` : labels.free;
   const duration = `${Math.max(15, Math.round(input.durationMinutes || 90))} ${labels.minutes}`;
-  const weather = input.weather
-    ? `${clean(input.weather.icon, 8)}  ${Math.round(input.weather.temperature)}°C     ☔  ${Math.round(input.weather.rain)}%     💨  ${Math.round(input.weather.wind)} km/h`
-    : labels.forecast;
   const headlineLines = wrap(headline, 15, 2);
   const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 24, 2);
   const environment = clean(input.environment, 60);
@@ -84,7 +81,7 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
     <linearGradient id="page" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080b0d"/><stop offset="1" stop-color="#0f1511"/></linearGradient>
     <linearGradient id="avatar" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#314416"/><stop offset="1" stop-color="#132019"/></linearGradient>
     <radialGradient id="volleyball" cx="35%" cy="25%" r="75%"><stop stop-color="#f1eaff"/><stop offset=".55" stop-color="#cdbce9"/><stop offset="1" stop-color="#9e85ca"/></radialGradient>
-    <linearGradient id="weather" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#1a2415"/><stop offset="1" stop-color="#111916"/></linearGradient>
+    <linearGradient id="secondaryAction" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#263414"/><stop offset="1" stop-color="#172111"/></linearGradient>
   </defs>
   <rect width="1080" height="900" fill="url(#page)"/>
   <rect x="34" y="34" width="1012" height="832" rx="58" fill="#101314" stroke="#314514" stroke-width="3"/>
@@ -92,12 +89,16 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
   <rect x="76" y="76" width="230" height="230" rx="58" fill="url(#avatar)" stroke="#678d28" stroke-width="2"/>
   ${activityArtwork(input.icon)}
 
-  <text x="344" y="111" fill="#c9ff3d" font-size="26" font-weight="800" font-family="DejaVu Sans, sans-serif">${xml(environment.toLocaleUpperCase())}</text>
-  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 344, 174, 64)}</text>
-  <text fill="#969ca7" font-size="34" font-weight="500" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 344, 250, 42)}</text>
+  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 344, 142, 60)}</text>
+  <text fill="#969ca7" font-size="34" font-weight="500" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 344, 260, 42)}</text>
 
-  <g><rect x="810" y="89" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="136" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(duration)}</text></g>
-  <g><rect x="810" y="177" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="224" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">👥 ${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text></g>
+  <g>
+    <rect x="914" y="60" width="90" height="90" rx="28" fill="#171a1d" stroke="#343a3f" stroke-width="2"/>
+    <path d="M947 102l24-14M947 108l24 14" fill="none" stroke="#bdff32" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="941" cy="105" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="84" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="126" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/>
+  </g>
+  <g><rect x="810" y="166" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="213" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(duration)}</text></g>
+  <g><rect x="810" y="250" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="297" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">👥 ${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text></g>
 
   <line x1="76" y1="340" x2="1004" y2="340" stroke="#2b2e32" stroke-width="2"/>
   ${metric(76, 374, "📅", dateTime)}
@@ -105,8 +106,9 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
   ${metric(76, 510, "📍", place, 2)}
   ${metric(564, 510, "☆", status || environment, 2)}
 
-  <rect x="76" y="666" width="928" height="120" rx="42" fill="url(#weather)" stroke="#3d571a" stroke-width="2"/>
-  <text x="540" y="738" text-anchor="middle" fill="#d2d6dc" font-size="31" font-weight="800" font-family="DejaVu Sans, sans-serif">${xml(weather)}</text>
-  <text x="540" y="827" text-anchor="middle" fill="#c9ff3d" font-size="26" font-weight="900" letter-spacing="4" font-family="DejaVu Sans, sans-serif">GO IRL</text>
+  <rect x="76" y="682" width="440" height="120" rx="42" fill="url(#secondaryAction)" stroke="#54751d" stroke-width="2"/>
+  <text x="296" y="754" text-anchor="middle" fill="#c9ff3d" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(input.isSport ? labels.coach : labels.details)}</text>
+  <rect x="564" y="682" width="440" height="120" rx="42" fill="#bdff32"/>
+  <text x="784" y="754" text-anchor="middle" fill="#090b0d" font-size="36" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(labels.open)}</text>
   </svg>`;
 }
