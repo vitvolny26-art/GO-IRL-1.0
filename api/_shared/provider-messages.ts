@@ -9,15 +9,19 @@ import {
   buildWhatsAppInvitationPayload,
   buildWhatsAppJoinResultPayload,
 } from "../../src/whatsapp/payload-builders.js";
-import { requireEnv } from "./env.js";
+import { readEnv, requireEnv } from "./env.js";
 
 export type MessagingProvider = "whatsapp" | MetaMessagingProvider;
 
 const graphUrl = (path: string) =>
   `https://graph.facebook.com/${requireEnv("META_GRAPH_VERSION")}/${path}`;
 
-async function sendGraphPayload(path: string, token: string, payload: unknown) {
-  const response = await fetch(graphUrl(path), {
+const instagramMessagesUrl = () => readEnv("INSTAGRAM_API_MODE") === "instagram_login"
+  ? `https://graph.instagram.com/${requireEnv("META_GRAPH_VERSION")}/me/messages`
+  : graphUrl(`${requireEnv("INSTAGRAM_ACCOUNT_ID")}/messages`);
+
+async function sendGraphPayload(url: string, token: string, payload: unknown) {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
@@ -38,20 +42,20 @@ export async function sendProviderInvitation(
 ) {
   if (provider === "whatsapp") {
     return sendGraphPayload(
-      `${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`,
+      graphUrl(`${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`),
       requireEnv("WHATSAPP_ACCESS_TOKEN"),
       buildWhatsAppInvitationPayload(recipientId, event),
     );
   }
   if (provider === "instagram") {
     return sendGraphPayload(
-      `${requireEnv("INSTAGRAM_ACCOUNT_ID")}/messages`,
+      instagramMessagesUrl(),
       requireEnv("INSTAGRAM_ACCESS_TOKEN"),
       buildInstagramInvitationPayload(recipientId, event),
     );
   }
   return sendGraphPayload(
-    `${requireEnv("MESSENGER_PAGE_ID")}/messages`,
+    graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
     requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
     buildMessengerInvitationPayload(recipientId, event),
   );
@@ -67,7 +71,7 @@ export async function sendProviderJoinResult(
     const { join_status: _joinStatus, ...payload } = built;
     void _joinStatus;
     return sendGraphPayload(
-      `${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`,
+      graphUrl(`${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`),
       requireEnv("WHATSAPP_ACCESS_TOKEN"),
       payload,
     );
@@ -78,7 +82,7 @@ export async function sendProviderJoinResult(
     ? { messaging_type: "RESPONSE", recipient: built.recipient, message: built.message }
     : { recipient: built.recipient, message: built.message };
   return sendGraphPayload(
-    `${provider === "instagram" ? requireEnv("INSTAGRAM_ACCOUNT_ID") : requireEnv("MESSENGER_PAGE_ID")}/messages`,
+    provider === "instagram" ? instagramMessagesUrl() : graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
     provider === "instagram" ? requireEnv("INSTAGRAM_ACCESS_TOKEN") : requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
     payload,
   );

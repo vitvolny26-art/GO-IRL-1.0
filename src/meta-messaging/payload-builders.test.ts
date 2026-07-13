@@ -15,14 +15,14 @@ const event: MetaEventSummary = {
 };
 
 describe("Meta messaging payload builders", () => {
-  it("builds an Instagram invitation with Join and Details quick replies", () => {
+  it("builds a Russian Instagram invitation with join and details quick replies", () => {
     const payload = buildInstagramInvitationPayload("ig-user-1", event);
 
     expect(payload.recipient.id).toBe("ig-user-1");
-    expect(payload.message.text).toContain("Available spots: 4");
+    expect(payload.message.text).toContain("Осталось мест: 4");
     expect(payload.message.quick_replies?.[0]).toEqual({
       content_type: "text",
-      title: "Join",
+      title: "Присоединиться",
       payload: "join:event-meta-1",
     });
   });
@@ -50,8 +50,8 @@ describe("Meta messaging payload builders", () => {
       ],
     });
 
-    expect(payload.message.text).toContain("Add to calendar: https://calendar.example/meta-1");
-    expect(payload.message.text).toContain("Open map: https://maps.example/meta-1");
+    expect(payload.message.text).toContain("Добавить в календарь: https://calendar.example/meta-1");
+    expect(payload.message.text).toContain("Открыть карту: https://maps.example/meta-1");
   });
 
   it("builds a clear Messenger waitlist result for a full event", () => {
