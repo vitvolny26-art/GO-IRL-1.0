@@ -1,7 +1,7 @@
 import { parseMetaMessagingTestPayload } from "../../src/meta-messaging/mock-webhook.js";
 import type { MetaMessagingProvider } from "../../src/meta-messaging/types.js";
 import { parseWhatsAppTestPayload } from "../../src/whatsapp/mock-webhook.js";
-import { requireEnv } from "./env.js";
+import { readEnv, requireEnv } from "./env.js";
 import { verifyMetaSignature } from "./meta-signature.js";
 import { getProviderEventSummary, joinProviderEvent } from "./provider-join-service.js";
 import { sendProviderInvitation, sendProviderJoinResult, type MessagingProvider } from "./provider-messages.js";
@@ -56,6 +56,14 @@ const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringif
   headers: { "content-type": "application/json" },
 });
 
+const providerSecret = (
+  provider: MessagingProvider,
+  instagramName: string,
+  sharedName: string,
+) => provider === "instagram"
+  ? readEnv(instagramName) || requireEnv(sharedName)
+  : requireEnv(sharedName);
+
 async function processAction(provider: MessagingProvider, action: InboundAction) {
   if (!action.actionPayload) return;
   const separator = action.actionPayload.indexOf(":");
@@ -83,7 +91,11 @@ export async function handleProviderWebhook(provider: MessagingProvider, request
   if (request.method === "GET") {
     const query = new URL(request.url, "https://goirl.invalid").searchParams;
     const valid = query.get("hub.mode") === "subscribe"
-      && query.get("hub.verify_token") === requireEnv("META_VERIFY_TOKEN")
+      && query.get("hub.verify_token") === providerSecret(
+        provider,
+        "INSTAGRAM_VERIFY_TOKEN",
+        "META_VERIFY_TOKEN",
+      )
       && Boolean(query.get("hub.challenge"));
     return valid
       ? new Response(query.get("hub.challenge"), { status: 200 })
@@ -93,7 +105,11 @@ export async function handleProviderWebhook(provider: MessagingProvider, request
   if (request.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
   const rawBody = await request.text();
   const signature = request.headers.get("x-hub-signature-256") || "";
-  if (!await verifyMetaSignature(rawBody, signature, requireEnv("META_APP_SECRET"))) {
+  if (!await verifyMetaSignature(rawBody, signature, providerSecret(
+    provider,
+    "INSTAGRAM_APP_SECRET",
+    "META_APP_SECRET",
+  ))) {
     return jsonResponse({ error: "invalid_signature" }, 401);
   }
 
