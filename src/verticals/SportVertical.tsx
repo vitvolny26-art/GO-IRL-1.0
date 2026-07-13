@@ -15,6 +15,8 @@ import { getCity } from "../config/cities";
 import { buildGoogleCalendarUrl } from "../calendar/googleCalendar";
 import { getTelegramWebApp } from "../telegram";
 import { CardShareAction } from "../components/CardShareAction";
+import { stripLeadingEmoji } from "../cardText";
+import { activityIconFromText } from "../activityIcon";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -28,6 +30,10 @@ const activityInviteUrl = (activity: Activity) => {
 };
 
 const openActivityMap = (activity: Activity) => {
+  if (activity.locationUrl?.trim()) {
+    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
   const city = getCity(activity.cityId).name.en;
   const query = encodeURIComponent(activity.address.trim() || city);
   window.open(`https://mapy.cz/zakladni?q=${query}`, "_blank", "noopener,noreferrer");
@@ -55,7 +61,7 @@ const coachCardCopy: Record<Language, { needed: string; requested: string; confi
 
 const cleanSportLabel = (value: string | null | undefined) => {
   const raw = String(value || "").trim();
-  return raw.replace(/^[^A-Za-zА-Яа-яЁё0-9]+\s*/u, "").trim() || raw || "Спорт";
+  return stripLeadingEmoji(raw) || "Спорт";
 };
 
 const buildMapsQuery = (parts: Array<string | null | undefined>) =>
@@ -71,18 +77,7 @@ const weatherSummaryLines = (weather: WeatherResult) => [
 ];
 
 const sportAvatar = (value: string | null | undefined) => {
-  const text = String(value || "").toLowerCase();
-  if (/volley|волей|volej/.test(text)) return "🏐";
-  if (/football|футбол|fotbal/.test(text)) return "⚽";
-  if (/basket|баскет/.test(text)) return "🏀";
-  if (/tennis|теннис|tenis/.test(text)) return "🎾";
-  if (/running|run|бег|běh/.test(text)) return "🏃";
-  if (/bike|cycle|velo|велосипед|kolo/.test(text)) return "🚴";
-  if (/swim|плав|plav/.test(text)) return "🏊";
-  if (/badminton|бадминтон/.test(text)) return "🏸";
-  if (/gym|зал|posil/.test(text)) return "🏋️";
-  if (/yoga|йога|jóga/.test(text)) return "🧘";
-  return "🏆";
+  return activityIconFromText(String(value || ""), "🏆");
 };
 
 const sportAvatarForActivity = (activity: Activity, language: Language, meta: SportMetadata) =>
@@ -251,7 +246,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         <div>
           <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
           <h3>{shareTitle}</h3>
-          <p>{activity.title[language]}</p>
+          <p>{stripLeadingEmoji(activity.title[language])}</p>
         </div>
       </button>
       <div className="sport-chip-row">
@@ -299,37 +294,23 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           aria-label={t.addToGoogleCalendar}
           onClick={(event) => {
             event.stopPropagation();
             openActivityCalendar(activity, language);
           }}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-            event.preventDefault();
-            event.stopPropagation();
-            openActivityCalendar(activity, language);
-          }}
-        ><CalendarDays /><span>{shareDate}</span></div>
+        ><CalendarDays /><span>{shareDate}</span></button>
         <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           aria-label={`${t.address}: ${mapLabel}`}
           onClick={(event) => {
             event.stopPropagation();
             openActivityMap(activity);
           }}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-            event.preventDefault();
-            event.stopPropagation();
-            openActivityMap(activity);
-          }}
-        ><MapPin /><span>{mapLabel}</span></div>
+        ><MapPin /><span>{mapLabel}</span></button>
         <div className="unified-status-cell"><ShieldCheck /><Star /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
       </div>
       <div className="activity-card-footer compact-sport-actions">
@@ -433,8 +414,8 @@ export function SportActivitySheet({
           <div className="sport-card-symbol large"><span className="sport-avatar-glyph">{avatar}</span></div>
           <div>
             <div className="sport-eyebrow">{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</div>
-            <h2>{activity.title[language]}</h2>
-            <p>{activity.description[language]}</p>
+            <h2>{stripLeadingEmoji(activity.title[language])}</h2>
+            <p>{stripLeadingEmoji(activity.description[language])}</p>
           </div>
         </div>
         <div className="sport-chip-row sport-sheet-chips">

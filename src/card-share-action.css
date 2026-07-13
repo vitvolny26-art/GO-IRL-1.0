@@ -24,7 +24,10 @@
   place-items: center;
   border: 0;
   background: transparent;
+  transition: transform 120ms ease, opacity 120ms ease;
 }
+
+.card-share-channel-list > button:active { transform: scale(.9); opacity: .82; }
 
 .card-share-icon-circle {
   display: grid;
