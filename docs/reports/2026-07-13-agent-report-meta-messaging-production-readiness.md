@@ -68,7 +68,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 ### Webhook subscriptions
 
 - WhatsApp callback is configured at `/api/whatsapp/webhook`, and the app is subscribed to the `messages` field. A real inbound delivery smoke test is still required.
-- Messenger callback is configured at `/api/messenger/webhook`. App-level `messages` and `messaging_postbacks` subscriptions are enabled, and Page `GO IRL` is subscribed to both fields. A real inbound/outbound smoke test is still required.
+- Messenger callback is configured at `/api/messenger/webhook`. App-level `messages` and `messaging_postbacks` subscriptions are enabled, Page `GO IRL` is subscribed to both fields, and real inbound/outbound smoke tests passed.
 - Instagram callback is configured at `/api/instagram/webhook`. Subscribed fields are `comments`, `live_comments`, `message_edit`, `message_reactions`, `messages`, `messaging_postbacks`, `messaging_referral`, and `messaging_seen`.
 - The Meta app is not published. Meta explicitly warns that live webhook data is unavailable until publication/app review requirements are satisfied.
 
@@ -102,6 +102,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Redeployed commit `852c451` to Production with the latest project settings. Deployment `7Damm96R4DD7ozUX1FttFYetfV6s` completed with status Ready and retained the primary domain.
 - Redeployed current `main` commit `64c996e` after credential rotation. Deployment `E7movhNiWFnPetxZ2homDrzf9uGA` completed with status Ready in 23 seconds and retained `go-irl-1-0.vercel.app`.
 - Added `/api/messenger/test-invitation`, backed by the existing event-summary and Messenger payload/send modules.
+- Sent one authenticated Production invitation for an existing event through the dedicated Messenger test trigger. The trigger awaited the Graph API send and returned HTTP 202 with `{ accepted: true }`.
 - Added constant-time bearer-token comparison, strict request validation, disabled-by-default behavior, and generic upstream failure responses.
 - Generalized the existing Vercel request adapter so webhook and test-trigger handlers use the same request/response boundary.
 - Added six unit tests for disabled, unauthorized, invalid, missing-event, successful-send, and provider-failure paths.
@@ -134,6 +135,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Post-rotation Messenger wrong verify token — PASS (HTTP 403).
 - Post-rotation Messenger unsigned POST rejection — PASS (HTTP 401).
 - Live Messenger inbound delivery — PASS. A real `Привет` message reached `/api/messenger/webhook` at 19:23:22 and returned HTTP 200.
+- Live Messenger outbound invitation — PASS. The authenticated Production trigger loaded an existing event, awaited the Graph API send, and returned HTTP 202 with `{ accepted: true }`.
 - Plain-text response behavior — EXPECTED NO-OP. Runtime only processes signed `join:<eventId>` and `details:<eventId>` quick-reply/postback payloads; ordinary text has no action payload and produces no bot reply.
 - Messenger test-trigger focused tests — PASS (6 tests).
 - Secret boundary — PASS; no secret value is present in the report, repository, command output, or chat response.
@@ -142,7 +144,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 
 - The trigger must remain disabled unless its dedicated Production secret is intentionally configured.
 - It is an operator smoke-test surface, not a user-facing invitation API; no frontend must call it.
-- The Page-scoped recipient ID is available only in the operator session and was not persisted or printed. A real outbound test still requires selecting a real event UUID.
+- The Page-scoped recipient ID remained only in the operator session and was not persisted or printed. The event UUID used for the smoke test was read from the existing `activities` data without changing database state.
 
 ## Not touched
 
