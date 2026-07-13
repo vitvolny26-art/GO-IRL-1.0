@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableAvatarCropper } from "./avatarCropper";
 import { enableBottomNavSwipe } from "./bottom-nav-swipe";
 import { enableCardTextCleanup } from "./cardText";
+import { enableEventVisualPolish } from "./eventVisualPolish";
 import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import "./styles.css";
@@ -18,12 +19,14 @@ import "./unified-card-actions.css";
 import "./card-share-action.css";
 import "./avatar-cropper.css";
 import "./participant-notifications.css";
+import "./event-detail-visual-polish.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 
 enableBottomNavSwipe();
 enableCardTextCleanup();
+enableEventVisualPolish();
 enableFullCreateTaxonomy();
 enableAvatarCropper();
 enableParticipantJoinNotifications();
