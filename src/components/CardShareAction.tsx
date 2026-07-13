@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
 import { buildCardShareTarget, buildCardShareText, type CardShareChannel } from "../cardShare";
+import { openTelegramShareTarget } from "../cardShareNavigation";
 
 type CardShareActionProps = {
   title: string;
@@ -41,7 +42,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
 
   const share = async (channel: CardShareChannel) => {
     setOpen(false);
-    if (channel === "telegram" && onTelegramShare && await onTelegramShare()) return;
+    if (channel === "telegram") {
+      if (onTelegramShare && await onTelegramShare()) return;
+      openTelegramShareTarget(buildCardShareTarget(channel, content));
+      return;
+    }
     if (channel === "instagram") {
       const message = buildCardShareText(content);
       try {
