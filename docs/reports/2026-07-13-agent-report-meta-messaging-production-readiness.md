@@ -113,13 +113,15 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Production redeploy — PASS (Ready, 18 seconds).
 - Post-redeploy Messenger wrong verify token — PASS (HTTP 403).
 - Post-redeploy Messenger unsigned POST rejection — PASS (HTTP 401).
+- Live Messenger inbound delivery — PASS. A real `Привет` message reached `/api/messenger/webhook` at 19:23:22 and returned HTTP 200.
+- Plain-text response behavior — EXPECTED NO-OP. Runtime only processes signed `join:<eventId>` and `details:<eventId>` quick-reply/postback payloads; ordinary text has no action payload and produces no bot reply.
 - Secret boundary — PASS; no secret value is present in the report, repository, command output, or chat response.
 
 ## Next step
 
 Keep the release gate closed. The smallest remaining production sequence is:
 
-1. Complete one real Messenger inbound/outbound Join smoke test against the redeployed Production runtime.
+1. Add a narrowly authenticated way to initiate one test invitation, then complete the Messenger quick-reply/postback and outbound Join-result smoke test.
 2. Replace the WhatsApp test-number setup with a registered production number and verified permanent system-user credential.
 3. Create and approve a WhatsApp event-invitation template before adding any business-initiated send path, then complete one real Join smoke test.
 4. Resolve Instagram token generation and complete one real inbound/outbound Join smoke test.
