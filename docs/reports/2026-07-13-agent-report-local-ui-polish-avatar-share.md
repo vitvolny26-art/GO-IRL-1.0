@@ -47,6 +47,7 @@ Fix the accumulated local UI bug package without committing, pushing, or changin
 - Replaced the native avatar file control with a validated JPG/PNG upload/drop zone and a focused profile-edit layout.
 - Added one shared outdoor weather strip to Sport and generic event cards in the same position before card actions.
 - Moved the detail close control 24 px right and 12 px up while preventing horizontal sheet overflow.
+- Moved Gym to the fifth Sport option and replaced the after-work beer label with a direct localized invitation.
 
 ## Checks
 
@@ -55,7 +56,7 @@ Fix the accumulated local UI bug package without committing, pushing, or changin
 - Local in-app browser smoke check: PASS for share menu, create form, detail emoji cleanup, mobile profile upload zone, card weather alignment, and detail close-control position
 - `pnpm run lint`: PASS
 - `pnpm run build`: PASS
-- `pnpm run test`: PASS — 31 files, 165 tests
+- `pnpm run test`: PASS — 31 files, 167 tests
 - `pnpm run typecheck`: PASS
 
 ## Reconciliation branch
