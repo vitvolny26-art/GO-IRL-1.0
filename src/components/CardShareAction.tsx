@@ -8,6 +8,7 @@ type CardShareActionProps = {
   address: string;
   url: string;
   label: string;
+  onTelegramShare?: () => Promise<boolean>;
 };
 
 const channels = [
@@ -17,7 +18,7 @@ const channels = [
   { id: "instagram", label: "Instagram", icon: "/icons/instagram.svg" },
 ] as const;
 
-export function CardShareAction({ title, date, address, url, label }: CardShareActionProps) {
+export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const content = { title, date, address, url };
@@ -40,6 +41,7 @@ export function CardShareAction({ title, date, address, url, label }: CardShareA
 
   const share = async (channel: CardShareChannel) => {
     setOpen(false);
+    if (channel === "telegram" && onTelegramShare && await onTelegramShare()) return;
     if (channel === "instagram") {
       const message = buildCardShareText(content);
       try {

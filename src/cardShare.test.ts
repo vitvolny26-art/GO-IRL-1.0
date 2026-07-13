@@ -10,7 +10,7 @@ const content = {
 
 describe("card share", () => {
   it("keeps the exact event deep link in the share text", () => {
-    expect(buildCardShareText(content)).toContain("startapp=event-inline");
+    expect(buildCardShareText(content)).toBe(`${content.url}\n\nGO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc`);
   });
 
   it("builds direct Telegram and WhatsApp targets", () => {

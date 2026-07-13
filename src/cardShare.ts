@@ -8,7 +8,7 @@ export type CardShareContent = {
 };
 
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
-  [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n");
+  [url, [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n")].filter(Boolean).join("\n\n");
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
   const message = buildCardShareText(content);
