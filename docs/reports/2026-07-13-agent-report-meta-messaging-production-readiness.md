@@ -102,7 +102,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Redeployed commit `852c451` to Production with the latest project settings. Deployment `7Damm96R4DD7ozUX1FttFYetfV6s` completed with status Ready and retained the primary domain.
 - Redeployed current `main` commit `64c996e` after credential rotation. Deployment `E7movhNiWFnPetxZ2homDrzf9uGA` completed with status Ready in 23 seconds and retained `go-irl-1-0.vercel.app`.
 - Added `/api/messenger/test-invitation`, backed by the existing event-summary and Messenger payload/send modules.
-- Sent one authenticated Production invitation for an existing event through the dedicated Messenger test trigger. The trigger awaited the Graph API send and returned HTTP 202 with `{ accepted: true }`.
+- Sent one authenticated Production invitation for an existing event through the dedicated Messenger test trigger. The trigger awaited the Graph API send and returned HTTP 202 with `{ accepted: true }`; receipt in Messenger was confirmed on the test account.
 - Added constant-time bearer-token comparison, strict request validation, disabled-by-default behavior, and generic upstream failure responses.
 - Generalized the existing Vercel request adapter so webhook and test-trigger handlers use the same request/response boundary.
 - Added six unit tests for disabled, unauthorized, invalid, missing-event, successful-send, and provider-failure paths.
@@ -135,7 +135,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Post-rotation Messenger wrong verify token — PASS (HTTP 403).
 - Post-rotation Messenger unsigned POST rejection — PASS (HTTP 401).
 - Live Messenger inbound delivery — PASS. A real `Привет` message reached `/api/messenger/webhook` at 19:23:22 and returned HTTP 200.
-- Live Messenger outbound invitation — PASS. The authenticated Production trigger loaded an existing event, awaited the Graph API send, and returned HTTP 202 with `{ accepted: true }`.
+- Live Messenger outbound invitation and delivery — PASS. The authenticated Production trigger loaded an existing event, awaited the Graph API send, returned HTTP 202 with `{ accepted: true }`, and receipt was confirmed in Messenger.
 - Plain-text response behavior — EXPECTED NO-OP. Runtime only processes signed `join:<eventId>` and `details:<eventId>` quick-reply/postback payloads; ordinary text has no action payload and produces no bot reply.
 - Messenger test-trigger focused tests — PASS (6 tests).
 - Secret boundary — PASS; no secret value is present in the report, repository, command output, or chat response.
