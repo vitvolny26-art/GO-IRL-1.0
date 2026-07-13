@@ -55,16 +55,16 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 
 ### Credentials and connected assets
 
-- Shared Meta App Secret and webhook verify token are production server credentials. Historical deployment reports say they are configured in Vercel; values were not read or exposed during this audit.
-- WhatsApp currently has only the Meta test number. The Meta setup screen shows no newly generated dashboard token. The previously deployed WhatsApp token was documented as temporary and is not release-grade.
+- Shared Meta App Secret and webhook verify token are configured as sensitive Production variables in Vercel. Their values were not exposed or written to the repository.
+- WhatsApp Production variables `WHATSAPP_ACCESS_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID` are present in Vercel. The Meta account still uses the test-number setup, so the channel is not release-grade until a registered production number and permanent system-user credential are verified.
 - A registered production WhatsApp number, permanent system-user token, payment setup, and business verification are not complete.
-- Facebook Page `GO IRL` is connected to the Messenger use case. No Page access token has been generated in the current screen.
-- Instagram account `yuzhaniin` is connected to the Instagram API and its account-level webhook switch is enabled. No Instagram access token has been generated in the current screen.
+- Facebook Page `GO IRL` is connected to the Messenger use case. A Page access token was generated and stored in Vercel as the sensitive, Production-only variable `MESSENGER_PAGE_ACCESS_TOKEN`; the value was not printed or written to the repository.
+- Instagram account `yuzhaniin` is assigned as an Instagram Tester and the app is shown as authorized in Instagram Apps and Websites. The account-level webhook switch is enabled, but Meta still did not expose a usable Instagram access token.
 
 ### Webhook subscriptions
 
-- WhatsApp callback is configured at `/api/whatsapp/webhook`, but the `messages` field shows **No subscription**. Test `messages` events visible in the dashboard are panel-generated test events, not proof of live delivery.
-- Messenger callback is configured at `/api/messenger/webhook`. The connected `GO IRL` Page shows no subscribed fields, and the app-level `messages` field shows **No subscription**.
+- WhatsApp callback is configured at `/api/whatsapp/webhook`, and the app is subscribed to the `messages` field. A real inbound delivery smoke test is still required.
+- Messenger callback is configured at `/api/messenger/webhook`. App-level `messages` and `messaging_postbacks` subscriptions are enabled, and Page `GO IRL` is subscribed to both fields. A real inbound/outbound smoke test is still required.
 - Instagram callback is configured at `/api/instagram/webhook`. Subscribed fields are `comments`, `live_comments`, `message_edit`, `message_reactions`, `messages`, `messaging_postbacks`, `messaging_referral`, and `messaging_seen`.
 - The Meta app is not published. Meta explicitly warns that live webhook data is unavailable until publication/app review requirements are satisfied.
 
@@ -87,7 +87,11 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 ## Changes made
 
 - Added this evidence-based readiness report.
-- No runtime code, Meta settings, Vercel variables, secrets, Supabase configuration, auth, RLS, SQL, or migrations were changed.
+- Enabled the WhatsApp app-level `messages` subscription.
+- Enabled Messenger app-level and Page-level `messages` and `messaging_postbacks` subscriptions.
+- Confirmed Instagram Tester assignment and the account's authorization of the Meta app.
+- Generated the Messenger Page access token and stored it as the sensitive, Production-only Vercel variable `MESSENGER_PAGE_ACCESS_TOKEN`.
+- No runtime code, repository secrets, Supabase configuration, auth, RLS, SQL, or migrations were changed.
 
 ## Checks
 
@@ -103,16 +107,19 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Instagram unsigned POST rejection — PASS (HTTP 401).
 - Messenger wrong verify token — PASS (HTTP 403).
 - Messenger unsigned POST rejection — PASS (HTTP 401).
-- Meta configuration inspection — PASS, read-only; no secret values were opened.
+- Meta subscription configuration — PASS for WhatsApp, Instagram, and Messenger.
+- Messenger credential storage — PASS; variable is marked Sensitive and scoped only to Production.
+- Secret boundary — PASS; no secret value is present in the report, repository, command output, or chat response.
 
 ## Next step
 
-Keep the release gate closed. The smallest production sequence is:
+Keep the release gate closed. The smallest remaining production sequence is:
 
-1. Subscribe WhatsApp `messages` and replace the test credential with a permanent system-user token plus registered production number.
-2. Create and approve a WhatsApp event-invitation template before adding any business-initiated send path.
-3. Generate the Instagram token and complete one live inbound/outbound Join smoke test.
-4. Generate the Page token, subscribe Messenger Page `messages`/`messaging_postbacks`, and complete one live smoke test.
-5. Only then add a narrowly authenticated outbound invitation trigger, durable webhook-event deduplication, delivery logging, and opt-out handling.
+1. Redeploy Production so the new Messenger variable is available to runtime, then complete one real Messenger inbound/outbound Join smoke test.
+2. Replace the WhatsApp test-number setup with a registered production number and verified permanent system-user credential.
+3. Create and approve a WhatsApp event-invitation template before adding any business-initiated send path, then complete one real Join smoke test.
+4. Resolve Instagram token generation and complete one real inbound/outbound Join smoke test.
+5. Publish the Meta app only after permissions, privacy requirements, opt-out behavior, and channel smoke tests pass.
+6. Only then add a narrowly authenticated outbound invitation trigger, durable webhook-event deduplication, delivery logging, and opt-out handling.
 
-Changing subscriptions, generating tokens, connecting a production number, adding payment, and submitting App Review are external permission changes. They require owner confirmation at action time and must not be performed by writing secrets into the repository.
+Connecting a production number, adding payment, redeploying Production, and submitting App Review are external changes that require owner confirmation at action time. Secrets must remain in the deployment platform and must never be written into the repository.
