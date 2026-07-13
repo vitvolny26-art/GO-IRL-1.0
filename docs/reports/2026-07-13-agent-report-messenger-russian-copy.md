@@ -42,7 +42,14 @@ Messenger and Instagram shared payload builders, so localization had to branch o
 - `pnpm run test` — PASS (35 files, 181 tests).
 - `pnpm run typecheck` — PASS.
 - `git diff --check` — PASS.
+- GitHub CI for PR #88 — PASS.
+- Vercel Preview for PR #88 — PASS.
+- PR #88 squash-merged into `main` as `59f18e5`.
+- Production deployment for `59f18e5` — PASS.
+- Live Russian Messenger invitation and `Подробнее` action — PASS.
+- Live first Join — PASS; the participant was added and received localized calendar and map links.
+- Live duplicate Join — PASS; the existing participant was detected and no duplicate was created.
 
 ## Next step
 
-Deploy a preview and repeat the Messenger invitation, Details, Join, and duplicate-Join smoke test to confirm the Russian copy in the real conversation.
+Messenger Russian production rollout is complete. Keep the protected test trigger operator-only and handle Instagram localization as a separate provider-scoped patch.
