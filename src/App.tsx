@@ -34,7 +34,7 @@ import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
-import { initializeTrustedAuth } from "./authSession";
+import { getCurrentStartParam, initializeTrustedAuth } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
@@ -73,16 +73,24 @@ import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation }
 import { openAvatarCropper } from "./avatarCropper";
 import { readProfileAvatarAsDataUrl } from "./profileAvatar";
 import { activityIconFor } from "./activityIcon";
+import {
+  buildBrowserActivityInviteUrl,
+  buildSeparatedInvitationText,
+  buildTelegramActivityInviteUrl,
+  buildTelegramShareUrl,
+  parseInvitationStartParam,
+} from "./invitationLink";
 import { EventWeatherStrip } from "./components/EventWeatherStrip";
 import { isOutdoorGenericActivity } from "./eventWeather";
+import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
 const activityInviteUrl = (activity: Activity) => {
-  const path = telegramAppName ? `/${telegramAppName}` : "";
-  return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
+  return buildTelegramActivityInviteUrl(activity.id, telegramBotUsername, telegramAppName)
+    || buildBrowserActivityInviteUrl(activity.id, window.location.origin);
 };
 
 const openActivityMap = (activity: Activity) => {
@@ -268,8 +276,15 @@ function App() {
 
   useEffect(() => {
     if (invitationHandled.current) return;
-    const tg = getTelegramWebApp();
-    const invitedId = tg?.initDataUnsafe?.start_param || activityIdFromJoinPath();
+    const startParam = getCurrentStartParam();
+    const pathId = activityIdFromJoinPath();
+    const parsedStartParam = startParam ? parseInvitationStartParam(startParam) : null;
+    if (parsedStartParam && !parsedStartParam.valid) {
+      invitationHandled.current = true;
+      showNotice(t.invalidInvitationLink);
+      return;
+    }
+    const invitedId = parsedStartParam?.eventId || pathId;
     if (invitedId) {
       const invitedActivity = store.activities.find((item) => item.id === invitedId);
       if (invitedActivity) {
@@ -278,9 +293,12 @@ function App() {
         if (window.location.pathname.startsWith("/join/")) {
           window.history.replaceState({}, "", "/");
         }
+      } else if (!store.loading) {
+        invitationHandled.current = true;
+        showNotice(t.invitationEventNotFound);
       }
     }
-  }, [store.activities]);
+  }, [store.activities, store.loading, t.invalidInvitationLink, t.invitationEventNotFound]);
 
   const flash = (message: string) => {
     setNotice(message);
@@ -334,8 +352,10 @@ function App() {
 
   const shareActivity = async (activity: Activity) => {
     const url = activityInviteUrl(activity);
-    const text = ShareTemplateService.buildPlainText(activity, store.language, url);
-    const telegramShareUrl = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
+    if (await sharePreparedTelegramEvent(activity, store.language, url)) return;
+    const text = ShareTemplateService.build(activity, store.language);
+    const invitationText = buildSeparatedInvitationText(url, text);
+    const telegramShareUrl = buildTelegramShareUrl(url, text);
 
     const webApp = getTelegramWebApp();
     if (webApp?.openTelegramLink) {
@@ -344,9 +364,9 @@ function App() {
     }
 
     if (navigator.share) {
-      await navigator.share({ title: "GO IRL", text, url });
+      await navigator.share({ title: "GO IRL", text: invitationText });
     } else {
-      await navigator.clipboard?.writeText(text);
+      await navigator.clipboard?.writeText(invitationText);
       showNotice(t.copied);
     }
   };
@@ -1161,7 +1181,14 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   return (
     <article className="activity-card sport-card compact-sport-card unified-event-card">
       <div className="sport-card-top-actions">
-        <CardShareAction title={shareTitle} date={shareDate} address={activity.address} url={activityInviteUrl(activity)} label={t.share} />
+        <CardShareAction
+          title={shareTitle}
+          date={shareDate}
+          address={activity.address}
+          url={activityInviteUrl(activity)}
+          label={t.share}
+          onTelegramShare={() => sharePreparedTelegramEvent(activity, language, activityInviteUrl(activity))}
+        />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className={`sport-card-symbol category-${category.id}`}><span className="sport-avatar-glyph">{avatar}</span></div>

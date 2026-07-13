@@ -17,7 +17,9 @@ import { getTelegramWebApp } from "../telegram";
 import { CardShareAction } from "../components/CardShareAction";
 import { stripLeadingEmoji } from "../cardText";
 import { activityIconFromText } from "../activityIcon";
+import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
 import { EventWeatherStrip } from "../components/EventWeatherStrip";
+import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -26,8 +28,8 @@ const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
 const activityInviteUrl = (activity: Activity) => {
-  const path = telegramAppName ? `/${telegramAppName}` : "";
-  return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
+  return buildTelegramActivityInviteUrl(activity.id, telegramBotUsername, telegramAppName)
+    || buildBrowserActivityInviteUrl(activity.id, window.location.origin);
 };
 
 const openActivityMap = (activity: Activity) => {
@@ -240,7 +242,14 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   return (
     <article className="sport-card compact-sport-card unified-event-card">
       <div className="sport-card-top-actions">
-        <CardShareAction title={shareTitle} date={shareDate} address={activity.address} url={activityInviteUrl(activity)} label={t.share} />
+        <CardShareAction
+          title={shareTitle}
+          date={shareDate}
+          address={activity.address}
+          url={activityInviteUrl(activity)}
+          label={t.share}
+          onTelegramShare={() => sharePreparedTelegramEvent(activity, language, activityInviteUrl(activity))}
+        />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className="sport-card-symbol"><span className="sport-avatar-glyph">{avatar}</span></div>
