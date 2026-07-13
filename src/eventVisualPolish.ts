@@ -40,14 +40,25 @@ const polishDetailText = (element: Element) => {
   if (cleaned !== current) element.textContent = cleaned;
 };
 
+const polishSheet = (sheet: Element) => {
+  const label = sheet.querySelector(".sheet-label")?.textContent || "";
+  const title = sheet.querySelector("h2")?.textContent || "";
+  const icon = activityIconFromText(`${label} ${title}`);
+  const symbol = sheet.querySelector<HTMLElement>(".sheet-symbol");
+  if (icon && symbol && symbol.textContent !== icon) symbol.textContent = icon;
+
+  sheet.querySelectorAll(".sheet-label, h2").forEach(polishDetailText);
+};
+
 const polishRoot = (root: ParentNode) => {
   if (root instanceof Element) {
     if (root.matches(".unified-event-card .sport-card-main")) polishCard(root);
+    if (root.matches(".activity-sheet")) polishSheet(root);
     if (root.matches(".activity-sheet .sheet-label, .activity-sheet h2")) polishDetailText(root);
   }
 
   root.querySelectorAll(".unified-event-card .sport-card-main").forEach(polishCard);
-  root.querySelectorAll(".activity-sheet .sheet-label, .activity-sheet h2").forEach(polishDetailText);
+  root.querySelectorAll(".activity-sheet").forEach(polishSheet);
 };
 
 export const enableEventVisualPolish = () => {
