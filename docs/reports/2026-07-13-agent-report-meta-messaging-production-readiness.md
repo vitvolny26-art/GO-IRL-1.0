@@ -148,7 +148,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - The trigger must remain disabled unless its dedicated Production secret is intentionally configured.
 - It is an operator smoke-test surface, not a user-facing invitation API; no frontend must call it.
 - The Page-scoped recipient ID remained only in the operator session and was not persisted or printed. The event UUID used for the smoke test was read from the existing `activities` data without changing database state.
-- Messenger invitation, confirmation, calendar, and map copy is currently English-only and needs localization before a Russian-language launch.
+- Messenger invitation, confirmation, calendar, and map copy was localized and verified in Production by PR #88; see `2026-07-13-agent-report-messenger-russian-copy.md`.
 
 ## Not touched
 
