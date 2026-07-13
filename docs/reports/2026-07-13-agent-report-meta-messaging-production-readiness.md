@@ -91,6 +91,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Enabled Messenger app-level and Page-level `messages` and `messaging_postbacks` subscriptions.
 - Confirmed Instagram Tester assignment and the account's authorization of the Meta app.
 - Generated the Messenger Page access token and stored it as the sensitive, Production-only Vercel variable `MESSENGER_PAGE_ACCESS_TOKEN`.
+- Redeployed commit `852c451` to Production with the latest project settings. Deployment `7Damm96R4DD7ozUX1FttFYetfV6s` completed with status Ready and retained the primary domain.
 - No runtime code, repository secrets, Supabase configuration, auth, RLS, SQL, or migrations were changed.
 
 ## Checks
@@ -109,13 +110,16 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Messenger unsigned POST rejection — PASS (HTTP 401).
 - Meta subscription configuration — PASS for WhatsApp, Instagram, and Messenger.
 - Messenger credential storage — PASS; variable is marked Sensitive and scoped only to Production.
+- Production redeploy — PASS (Ready, 18 seconds).
+- Post-redeploy Messenger wrong verify token — PASS (HTTP 403).
+- Post-redeploy Messenger unsigned POST rejection — PASS (HTTP 401).
 - Secret boundary — PASS; no secret value is present in the report, repository, command output, or chat response.
 
 ## Next step
 
 Keep the release gate closed. The smallest remaining production sequence is:
 
-1. Redeploy Production so the new Messenger variable is available to runtime, then complete one real Messenger inbound/outbound Join smoke test.
+1. Complete one real Messenger inbound/outbound Join smoke test against the redeployed Production runtime.
 2. Replace the WhatsApp test-number setup with a registered production number and verified permanent system-user credential.
 3. Create and approve a WhatsApp event-invitation template before adding any business-initiated send path, then complete one real Join smoke test.
 4. Resolve Instagram token generation and complete one real inbound/outbound Join smoke test.
