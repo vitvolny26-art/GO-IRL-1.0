@@ -66,6 +66,11 @@ import {
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
 import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
+import { stripLeadingEmoji } from "./cardText";
+import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation } from "./eventLocations";
+import { openAvatarCropper } from "./avatarCropper";
+import { readProfileAvatarAsDataUrl } from "./profileAvatar";
+import { activityIconFor } from "./activityIcon";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -77,6 +82,10 @@ const activityInviteUrl = (activity: Activity) => {
 };
 
 const openActivityMap = (activity: Activity) => {
+  if (activity.locationUrl?.trim()) {
+    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
   const query = activity.address.trim() || getCity(activity.cityId).name.en;
   window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
 };
@@ -95,22 +104,7 @@ const openActivityCalendar = (activity: Activity, language: Language) => {
 };
 
 const genericActivityAvatar = (activity: Activity, language: Language, fallback: string) => {
-  const value = `${activity.activity[language]} ${activity.title[language]}`.toLowerCase();
-  if (/volley|волей|volej/.test(value)) return "🏐";
-  if (/football|футбол|fotbal/.test(value)) return "⚽";
-  if (/basket|баскет/.test(value)) return "🏀";
-  if (/tennis|теннис|tenis/.test(value)) return "🎾";
-  if (/run|running|бег|běh/.test(value)) return "🏃";
-  if (/bike|cycle|velo|велосипед|kolo/.test(value)) return "🚴";
-  if (/swim|плав|plav/.test(value)) return "🏊";
-  if (/badminton|бадминтон/.test(value)) return "🏸";
-  if (/yoga|йога|jóga/.test(value)) return "🧘";
-  if (/walk|walking|прогул|ходь|proch/.test(value)) return "🚶";
-  if (/board|game|игр|hra/.test(value)) return "🎲";
-  if (/coffee|кафе|кофе|káva/.test(value)) return "☕";
-  if (/language|язык|jazyk/.test(value)) return "💬";
-  if (/party|вечерин|párty/.test(value)) return "🎉";
-  return fallback || "✨";
+  return activityIconFor(activity, language, fallback || "✨");
 };
 
 const eventHelperCardCopy: Record<Language, { needed: string; requested: string; confirmed: string }> = {
@@ -672,6 +666,12 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
   const [priceError, setPriceError] = useState("");
   const t = getTranslation(language);
   const selectedCity = getCity(cityId);
+  const initialAddress = initialActivity?.address || getCity(initialActivity?.cityId || selectedCityId).name[language];
+  const [addressValue, setAddressValue] = useState(initialAddress);
+  const [locationUrlValue, setLocationUrlValue] = useState(
+    initialActivity?.locationUrl || buildEventLocationUrl(initialAddress, getCity(initialActivity?.cityId || selectedCityId).name[language]),
+  );
+  const [savedLocations] = useState(loadSavedEventLocations);
   const today = new Date().toISOString().slice(0, 10);
   const initialSport = initialActivity?.metadata?.sport || {};
   const createCategories = initialActivity ? categories : closedBetaCategories;
@@ -695,8 +695,8 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
     const option = options.find((item) => item.icon === template.activity) || options[0];
     setCategoryId(template.categoryId);
     window.requestAnimationFrame(() => {
-      setFieldValue("activityText", `${option.icon} ${option.name[language]}`);
-      setFieldValue("titleText", `${template.icon} ${template.title}`);
+      setFieldValue("activityText", option.name[language]);
+      setFieldValue("titleText", template.title);
       setFieldValue("descriptionText", template.description);
       setFieldValue("capacity", String(template.capacity));
     });
@@ -707,12 +707,12 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
     setSubmitting(true);
     setFormError("");
     const data = new FormData(event.currentTarget);
-    const activityText = String(data.get("activityText"));
-    const activityEmoji = activityText.split(" ")[0];
-    const rawTitle = String(data.get("titleText")).trim();
+    const activityText = stripLeadingEmoji(String(data.get("activityText")));
+    const rawTitle = stripLeadingEmoji(String(data.get("titleText")).trim());
     const rawDescription = String(data.get("descriptionText")).trim();
     const rawAddress = String(data.get("address")).trim();
-    const rawLocationUrl = String(data.get("locationUrl") || "").trim();
+    const rawLocationUrl = String(data.get("locationUrl") || "").trim()
+      || buildEventLocationUrl(rawAddress, selectedCity.name[language]);
     const rawParticipantNote = String(data.get("participantNote") || "").trim();
     const date = String(data.get("date"));
     const price = Number(data.get("price"));
@@ -745,7 +745,7 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
       type: categoryId === "sport" ? "sport" : "custom",
       categoryId,
       activityText,
-      titleText: rawTitle.startsWith(activityEmoji) ? rawTitle : `${activityEmoji} ${rawTitle}`,
+      titleText: rawTitle,
       descriptionText: rawDescription,
       date,
       time: String(data.get("time")),
@@ -762,6 +762,7 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
       const id = initialActivity
         ? await updateActivity(initialActivity.id, activity)
         : await createActivity(activity);
+      rememberEventLocation(rawAddress, rawLocationUrl);
       setSelectedCity(cityId);
       onCreated(id);
       if (!initialActivity) event.currentTarget.reset();
@@ -788,7 +789,7 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
           </div>
         </div>
         <label><span>{t.category}</span><select name="categoryId" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>{createCategories.map((category) => <option key={category.id} value={category.id}>{category.icon} {category.name[language]}</option>)}</select></label>
-        <label><span>{t.activity}</span><select key={`${categoryId}-${language}`} name="activityText" defaultValue={initialActivity?.categoryId === categoryId ? initialActivity.activity[language] : undefined} required>{(createActivityOptions[categoryId] || []).map((option) => <option key={`${option.icon}-${option.name[language]}`} value={`${option.icon} ${option.name[language]}`}>{option.icon} {option.name[language]}</option>)}</select></label>
+        <label><span>{t.activity}</span><select key={`${categoryId}-${language}`} name="activityText" defaultValue={initialActivity?.categoryId === categoryId ? stripLeadingEmoji(initialActivity.activity[language]) : undefined} required>{(createActivityOptions[categoryId] || []).map((option) => <option key={`${option.icon}-${option.name[language]}`} value={option.name[language]}>{option.icon} {option.name[language]}</option>)}</select></label>
         {categoryId === "sport" && (
           <Suspense fallback={<div className="sport-create-panel">{t.loadingEvents}</div>}>
             <LazySportCreateFields language={language} initialSport={initialSport} />
@@ -800,9 +801,23 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
           <label><span>{t.date}</span><input name="date" type="date" min={today} defaultValue={initialActivity?.date || today} required /></label>
           <label><span>{t.time}</span><input name="time" type="time" defaultValue={initialActivity?.time || "18:00"} required /></label>
         </div>
-        <label><span>{t.city}</span><select name="cityId" value={cityId} onChange={(event) => setCityId(event.target.value)} required>{cities.map((city) => <option key={city.id} value={city.id}>{city.name[language]}</option>)}</select></label>
-        <label><span>{t.address}</span><input name="address" defaultValue={initialActivity?.address || selectedCity.name[language]} maxLength={MAX_EVENT_ADDRESS_LENGTH} required /></label>
-        <label><span>{t.locationUrl}</span><input name="locationUrl" type="url" defaultValue={initialActivity?.locationUrl} placeholder={t.locationPlaceholder} /></label>
+        <label><span>{t.city}</span><select name="cityId" value={cityId} onChange={(event) => {
+          const nextCityId = event.target.value;
+          const oldAutoUrl = buildEventLocationUrl(addressValue, selectedCity.name[language]);
+          const nextCityName = getCity(nextCityId).name[language];
+          setCityId(nextCityId);
+          if (!locationUrlValue || locationUrlValue === oldAutoUrl) setLocationUrlValue(buildEventLocationUrl(addressValue, nextCityName));
+        }} required>{cities.map((city) => <option key={city.id} value={city.id}>{city.name[language]}</option>)}</select></label>
+        <label><span>{t.address}</span><input name="address" list="saved-event-locations" value={addressValue} onChange={(event) => {
+          const nextAddress = event.target.value;
+          const previousAutoUrl = buildEventLocationUrl(addressValue, selectedCity.name[language]);
+          const saved = savedLocations.find((item) => item.address.toLocaleLowerCase() === nextAddress.trim().toLocaleLowerCase());
+          setAddressValue(nextAddress);
+          if (saved?.locationUrl) setLocationUrlValue(saved.locationUrl);
+          else if (!locationUrlValue || locationUrlValue === previousAutoUrl) setLocationUrlValue(buildEventLocationUrl(nextAddress, selectedCity.name[language]));
+        }} maxLength={MAX_EVENT_ADDRESS_LENGTH} required /></label>
+        <datalist id="saved-event-locations">{savedLocations.map((item) => <option key={item.address} value={item.address} />)}</datalist>
+        <label><span>{t.locationUrl}</span><input name="locationUrl" type="url" value={locationUrlValue} onChange={(event) => setLocationUrlValue(event.target.value)} placeholder={t.locationPlaceholder} /></label>
         <label><span>{t.participantNote}</span><textarea name="participantNote" rows={3} defaultValue={initialActivity?.participantNote} maxLength={MAX_EVENT_NOTE_LENGTH} placeholder={t.participantNotePlaceholder} /></label>
         <div className="form-row">
           <label className="price-field"><span>{t.price}</span><input name="price" type="number" min="0" max={MAX_EVENT_PRICE} defaultValue={initialActivity?.price || 0} onInput={(event) => setPriceError(validateEventPrice(Number(event.currentTarget.value), t))} onChange={(event) => setPriceError(validateEventPrice(Number(event.currentTarget.value), t))} required /><small className="field-error">{priceError || t.priceTooHigh}</small></label>
@@ -863,6 +878,7 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const fallbackName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ") || t.guestName;
   const [profile, setProfile] = useState(() => loadProfile(fallbackName, selectedCityId));
   const [avatarDraft, setAvatarDraft] = useState(profile.avatar);
+  const [avatarBusy, setAvatarBusy] = useState(false);
   const userKey = getUserKey();
   const city = getCity(profile.cityId);
   const today = new Date().toISOString().slice(0, 10);
@@ -934,8 +950,21 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
               </label>
             ))}
           </div>
-          <label><span>{t.avatar}</span><input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => setAvatarDraft(String(reader.result || "")); reader.readAsDataURL(file); }} /></label>
-          <button className="publish-button" type="submit"><Pencil size={18} />{t.save}</button>
+          {avatarDraft.startsWith("data:image/") && <div className="profile-avatar avatar-draft-preview"><img src={avatarDraft} alt={t.avatar} /></div>}
+          <label><span>{t.avatar}</span><input type="file" accept="image/*" disabled={avatarBusy} onChange={async (event) => {
+            const input = event.currentTarget;
+            const file = input.files?.[0];
+            if (!file) return;
+            setAvatarBusy(true);
+            try {
+              const cropped = await openAvatarCropper(file);
+              if (cropped) setAvatarDraft(await readProfileAvatarAsDataUrl(cropped));
+            } finally {
+              input.value = "";
+              setAvatarBusy(false);
+            }
+          }} /></label>
+          <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
         </form>
       )}
 
@@ -1020,7 +1049,7 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [helperState, setHelperState] = useState<"none" | "requested" | "confirmed">("none");
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
-  const shareTitle = activity.activity[language];
+  const shareTitle = stripLeadingEmoji(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
   const avatar = genericActivityAvatar(activity, language, category.icon);
   const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
@@ -1095,7 +1124,7 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
         <div>
           <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /><span>{category.name[language]}</span></div>
           <h3>{shareTitle}</h3>
-          <p>{activity.title[language]}</p>
+          <p>{stripLeadingEmoji(activity.title[language])}</p>
         </div>
       </button>
       <div className="sport-chip-row">
@@ -1228,6 +1257,7 @@ function GenericActivitySheet({
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
   const waitingMembers = activity.members.filter((member) => member.status === "waiting");
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
+  const activityAvatar = genericActivityAvatar(activity, language, category.icon);
 
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
@@ -1240,10 +1270,10 @@ function GenericActivitySheet({
         <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
         {loading && <EventDetailsSkeleton />}
         {error && <div className="details-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-        <div className={`sheet-symbol category-${category.id}`}>{category.icon}</div>
-        <div className="sheet-label">{category.name[language]} · {activity.activity[language]}</div>
-        <h2>{activity.title[language]}</h2>
-        <p className="sheet-description">{activity.description[language]}</p>
+        <div className={`sheet-symbol category-${category.id}`}>{activityAvatar}</div>
+        <div className="sheet-label">{category.name[language]} · {stripLeadingEmoji(activity.activity[language])}</div>
+        <h2>{stripLeadingEmoji(activity.title[language])}</h2>
+        <p className="sheet-description">{stripLeadingEmoji(activity.description[language])}</p>
         <div className="details-status-row">
           <span className={isOrganizer ? "details-status organizer" : pending ? "details-status pending" : joined ? "details-status joined" : full ? "details-status full" : "details-status"}>{status}</span>
           <span className="details-access">{accessLabel}</span>

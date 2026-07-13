@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
+import { buildCardShareTarget, buildCardShareText, type CardShareChannel } from "../cardShare";
 
 type CardShareActionProps = {
   title: string;
@@ -13,32 +14,47 @@ const channels = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
   { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
-  { id: "viber", label: "Viber", icon: "/icons/viber.svg" },
+  { id: "instagram", label: "Instagram", icon: "/icons/instagram.svg" },
 ] as const;
 
 export function CardShareAction({ title, date, address, url, label }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
-  const message = [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n");
-  const messageWithUrl = `${message}\n${url}`;
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const content = { title, date, address, url };
 
-  const share = (channel: typeof channels[number]["id"]) => {
-    const encodedUrl = encodeURIComponent(url);
-    const encodedMessage = encodeURIComponent(message);
-    const encodedWithUrl = encodeURIComponent(messageWithUrl);
-    const target = channel === "telegram"
-      ? `https://t.me/share/url?url=${encodedUrl}&text=${encodedMessage}`
-      : channel === "whatsapp"
-        ? `https://wa.me/?text=${encodedWithUrl}`
-        : channel === "messenger"
-          ? `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
-          : `viber://forward?text=${encodedWithUrl}`;
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
 
+  const share = async (channel: CardShareChannel) => {
     setOpen(false);
-    window.open(target, "_blank", "noopener,noreferrer");
+    if (channel === "instagram") {
+      const message = buildCardShareText(content);
+      try {
+        await navigator.clipboard.writeText(message);
+      } catch {
+        // Instagram has no supported web URL for prefilled shares; opening Direct still gives a useful fallback.
+      }
+      window.open("https://www.instagram.com/direct/inbox/", "_blank", "noopener,noreferrer");
+      return;
+    }
+    window.open(buildCardShareTarget(channel, content), "_blank", "noopener,noreferrer");
   };
 
   return (
-    <span className="card-share-action">
+    <span className="card-share-action" ref={rootRef}>
       <button
         className="sport-card-icon-action"
         type="button"
@@ -63,7 +79,7 @@ export function CardShareAction({ title, date, address, url, label }: CardShareA
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                share(channel.id);
+                void share(channel.id);
               }}
             >
               <span className="card-share-icon-circle">
