@@ -10,6 +10,7 @@ import {
   Compass,
   Dices,
   Bug,
+  Camera,
   Home,
   MapPin,
   Ellipsis,
@@ -22,6 +23,7 @@ import {
   Star,
   Ticket,
   Trash2,
+  UploadCloud,
   UserRoundCheck,
   UsersRound,
   X,
@@ -71,6 +73,8 @@ import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation }
 import { openAvatarCropper } from "./avatarCropper";
 import { readProfileAvatarAsDataUrl } from "./profileAvatar";
 import { activityIconFor } from "./activityIcon";
+import { EventWeatherStrip } from "./components/EventWeatherStrip";
+import { isOutdoorGenericActivity } from "./eventWeather";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -848,6 +852,13 @@ type LocalProfile = {
 };
 
 const avatarOptions = ["GI", "GO", "IRL", "🏐", "🎉", "🌿"];
+const maxAvatarBytes = 5 * 1024 * 1024;
+const profilePolishCopy: Record<Language, { title: string; hint: string; upload: string; formats: string; invalid: string }> = {
+  ru: { title: "Профиль", hint: "Настройте профиль и интересы", upload: "Нажмите или перетащите фото", formats: "JPG или PNG до 5 МБ", invalid: "Выберите JPG или PNG размером до 5 МБ" },
+  uk: { title: "Профіль", hint: "Налаштуйте профіль та інтереси", upload: "Натисніть або перетягніть фото", formats: "JPG або PNG до 5 МБ", invalid: "Виберіть JPG або PNG розміром до 5 МБ" },
+  cs: { title: "Profil", hint: "Nastavte profil a zájmy", upload: "Klikněte nebo přetáhněte fotku", formats: "JPG nebo PNG do 5 MB", invalid: "Vyberte JPG nebo PNG do 5 MB" },
+  en: { title: "Profile", hint: "Set up your profile and interests", upload: "Click or drag a photo here", formats: "JPG or PNG up to 5 MB", invalid: "Choose a JPG or PNG up to 5 MB" },
+};
 
 const loadProfile = (fallbackName: string, fallbackCityId: string): LocalProfile => {
   const stored = localStorage.getItem("go-irl-profile");
@@ -879,6 +890,7 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const [profile, setProfile] = useState(() => loadProfile(fallbackName, selectedCityId));
   const [avatarDraft, setAvatarDraft] = useState(profile.avatar);
   const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
   const userKey = getUserKey();
   const city = getCity(profile.cityId);
   const today = new Date().toISOString().slice(0, 10);
@@ -890,6 +902,24 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const registeredLabel = new Intl.DateTimeFormat(localeByLanguage[language], { day: "numeric", month: "short", year: "numeric" }).format(safeDate(profile.registeredAt));
   const favoriteOptions = favoriteActivityOptions(language);
   const selectedFavorites = favoriteOptions.filter((option) => profile.favoriteActivities.includes(option.id));
+  const profileCopy = profilePolishCopy[language];
+
+  const processAvatarFile = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > maxAvatarBytes) {
+      setAvatarError(profileCopy.invalid);
+      return;
+    }
+
+    setAvatarError("");
+    setAvatarBusy(true);
+    try {
+      const cropped = await openAvatarCropper(file);
+      if (cropped) setAvatarDraft(await readProfileAvatarAsDataUrl(cropped));
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
 
   const saveProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -911,10 +941,10 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   };
 
   return (
-    <section className="page-section profile-page">
+    <section className={`page-section profile-page${editing ? " is-editing" : ""}`}>
       {loading && <ProfileSkeleton />}
       {syncError && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-      <div className="profile-hero">
+      {!editing && <div className="profile-hero">
         <div className="profile-avatar">{profile.avatar.startsWith("data:image/") ? <img src={profile.avatar} alt={t.avatar} /> : profile.avatar}</div>
         <div className="profile-main">
           <div className="profile-kicker"><MapPin />{city.name[language]}</div>
@@ -923,10 +953,18 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
           <small>{t.registeredAt}: {registeredLabel}</small>
         </div>
         <button className="profile-edit-button" onClick={() => setEditing(true)} type="button"><Pencil size={18} />{t.editProfile}</button>
-      </div>
+      </div>}
 
       {editing && (
         <form id="profile-edit-form" className="profile-edit-form" onSubmit={saveProfile}>
+          <div className="profile-edit-intro">
+            <h1>{profileCopy.title}</h1>
+            <p>{profileCopy.hint}</p>
+            <div className="profile-edit-avatar">
+              {avatarDraft.startsWith("data:image/") ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
+              <i aria-hidden="true"><Camera size={16} /></i>
+            </div>
+          </div>
           <label><span>{t.name}</span><input name="profileName" defaultValue={profile.name} required /></label>
           <label><span>{t.shortBio}</span><textarea name="profileBio" rows={3} defaultValue={profile.bio} placeholder={t.profileBioPlaceholder} /></label>
           <label><span>{t.city}</span><select name="profileCity" defaultValue={profile.cityId}>{cities.map((item) => <option key={item.id} value={item.id}>{item.name[language]}</option>)}</select></label>
@@ -942,6 +980,7 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
               ))}
             </div>
           </div>
+          <div className="profile-avatar-choice-label">{t.avatar}</div>
           <div className="avatar-picker" role="radiogroup" aria-label={t.avatar}>
             {avatarOptions.map((avatar) => (
               <label key={avatar}>
@@ -950,46 +989,51 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
               </label>
             ))}
           </div>
-          {avatarDraft.startsWith("data:image/") && <div className="profile-avatar avatar-draft-preview"><img src={avatarDraft} alt={t.avatar} /></div>}
-          <label><span>{t.avatar}</span><input type="file" accept="image/*" disabled={avatarBusy} onChange={async (event) => {
-            const input = event.currentTarget;
-            const file = input.files?.[0];
-            if (!file) return;
-            setAvatarBusy(true);
-            try {
-              const cropped = await openAvatarCropper(file);
-              if (cropped) setAvatarDraft(await readProfileAvatarAsDataUrl(cropped));
-            } finally {
-              input.value = "";
-              setAvatarBusy(false);
-            }
-          }} /></label>
+          <label
+            className={`profile-avatar-upload${avatarBusy ? " is-busy" : ""}`}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault();
+              void processAvatarFile(event.dataTransfer.files?.[0]);
+            }}
+          >
+            <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
+              const input = event.currentTarget;
+              void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
+            }} />
+            <UploadCloud aria-hidden="true" />
+            <strong>{avatarBusy ? "…" : profileCopy.upload}</strong>
+            <small>{profileCopy.formats}</small>
+          </label>
+          {avatarError && <div className="profile-avatar-error" role="alert">{avatarError}</div>}
           <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
         </form>
       )}
 
-      <SectionHeader title={t.favoriteActivities} />
-      {selectedFavorites.length ? (
-        <div className="profile-interest-list">
-          {selectedFavorites.map((option) => <span key={option.id}>{option.label}</span>)}
+      {!editing && <>
+        <SectionHeader title={t.favoriteActivities} />
+        {selectedFavorites.length ? (
+          <div className="profile-interest-list">
+            {selectedFavorites.map((option) => <span key={option.id}>{option.label}</span>)}
+          </div>
+        ) : (
+          <EmptyState text={t.noFavoriteActivities} />
+        )}
+
+        <SectionHeader title={t.profileStats} />
+        <div className="life-grid profile-stats-grid">
+          <Metric icon={<Star />} value={String(organized.length)} label={t.createdEvents} />
+          <Metric icon={<UserRoundCheck />} value={String(joinedCount)} label={t.visitedEvents} />
+          <Metric icon={<Zap />} value={String(activeEvents.length)} label={t.activeEvents} />
+          <Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />
         </div>
-      ) : (
-        <EmptyState text={t.noFavoriteActivities} />
-      )}
 
-      <SectionHeader title={t.profileStats} />
-      <div className="life-grid profile-stats-grid">
-        <Metric icon={<Star />} value={String(organized.length)} label={t.createdEvents} />
-        <Metric icon={<UserRoundCheck />} value={String(joinedCount)} label={t.visitedEvents} />
-        <Metric icon={<Zap />} value={String(activeEvents.length)} label={t.activeEvents} />
-        <Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />
-      </div>
-
-      <SectionHeader title={t.myEvents} />
-      <ProfileEventGroup title={t.organizing} activities={organized} language={language} emptyText={t.noOrganizedEvents} onOpen={onOpen} onJoin={onJoin} />
-      <ProfileEventGroup title={t.participating} activities={participating} language={language} emptyText={t.noJoinedEvents} onOpen={onOpen} onJoin={onJoin} />
-      <ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />
-      <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
+        <SectionHeader title={t.myEvents} />
+        <ProfileEventGroup title={t.organizing} activities={organized} language={language} emptyText={t.noOrganizedEvents} onOpen={onOpen} onJoin={onJoin} />
+        <ProfileEventGroup title={t.participating} activities={participating} language={language} emptyText={t.noJoinedEvents} onOpen={onOpen} onJoin={onJoin} />
+        <ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />
+        <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
+      </>}
     </section>
   );
 }
@@ -1160,6 +1204,7 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
         <button type="button" onClick={(event) => { event.stopPropagation(); openActivityMap(activity); }}><MapPin /><span>{mapLabel}</span></button>
         <div className="unified-status-cell"><ShieldCheck /><Star /><span>{status}</span></div>
       </div>
+      <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-footer compact-sport-actions">
         <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{helperAction}</button>
         <button className={hasCardState ? "card-join secondary" : "card-join"} onClick={() => hasCardState ? onOpen(activity) : onJoin(activity)} type="button" disabled={joinDisabled}>

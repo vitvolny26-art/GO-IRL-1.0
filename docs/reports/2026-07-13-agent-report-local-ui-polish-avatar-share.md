@@ -44,35 +44,36 @@ Fix the accumulated local UI bug package without committing, pushing, or changin
 - Kept Join types, WhatsApp/Meta payload builders, and disabled mock webhooks unchanged.
 - Reconciled PR #77: rejected its `MutationObserver`/DOM-postprocessing implementation and ported only the non-duplicated close-button and floating delete-button CSS into the existing stylesheet.
 - Removed the remaining global card-text `MutationObserver`; emoji cleanup now happens only through the shared helper at React render/input boundaries.
+- Replaced the native avatar file control with a validated JPG/PNG upload/drop zone and a focused profile-edit layout.
+- Added one shared outdoor weather strip to Sport and generic event cards in the same position before card actions.
+- Moved the detail close control 24 px right and 12 px up while preventing horizontal sheet overflow.
 
 ## Checks
 
 - Preliminary `pnpm run typecheck`: PASS before the final patch set
 - Preliminary `pnpm run lint`: PASS before the final patch set
-- Local in-app browser smoke check: PASS for share menu, create form, and detail emoji cleanup
+- Local in-app browser smoke check: PASS for share menu, create form, detail emoji cleanup, mobile profile upload zone, card weather alignment, and detail close-control position
 - `pnpm run lint`: PASS
 - `pnpm run build`: PASS
-- `pnpm run test`: PASS — 30 files, 163 tests
+- `pnpm run test`: PASS — 31 files, 165 tests
 - `pnpm run typecheck`: PASS
 
 ## Reconciliation branch
 
-- Local branch: `fix/reconciled-ui-polish`
-- Commit scope: one UI commit containing the React-level package plus only the non-duplicated detail-control CSS from PR #77
-- Push status: NOT PUSHED
+- Local branch: `fix/reconciled-ui-polish-clean`
+- Commit scope: one base UI commit plus the requested profile/weather/detail follow-up
+- Push status: replacement Draft PR #82
 - PR #77 status: Draft; do not merge as-is
 
 ## Deployment
 
-- Direct Vercel production deployment: READY
-- Production alias: `https://go-irl-1-0.vercel.app`
-- HTTP smoke check: `200 OK`
-- Deployment source: current local working tree; the UI patch is not committed or pushed to GitHub yet.
+- Vercel Preview for the base clean branch: PASS before the follow-up patch
+- Production deployment: NOT PERFORMED
 
 ## Risks
 
 - Instagram web sharing has no supported arbitrary prefilled compose URL; the implementation copies the full event share text and opens Instagram Direct.
-- Real multi-touch behavior and photo selection must still be confirmed on the user's physical phone after local desktop verification.
+- Physical-device avatar and sharing checklist was reported PASS by the user before this visual follow-up.
 - Production avatar Storage/RLS behavior remains outside this local-only UI patch.
 
 ## Not touched
@@ -83,4 +84,4 @@ Fix the accumulated local UI bug package without committing, pushing, or changin
 
 ## Next step
 
-Confirm avatar selection and multi-touch cropping on a physical phone. Then push the isolated reconciliation branch after explicit approval and verify that the Git-backed Vercel build matches the currently deployed local-source production version. PR #77 must remain Draft and must not be merged as-is.
+Push the focused visual follow-up to Draft PR #82, wait for GitHub CI and Vercel Preview, and recheck the updated upload zone and close-control position on a physical phone before merge. PR #77 must not be merged as-is.

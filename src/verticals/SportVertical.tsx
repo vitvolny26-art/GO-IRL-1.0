@@ -17,6 +17,7 @@ import { getTelegramWebApp } from "../telegram";
 import { CardShareAction } from "../components/CardShareAction";
 import { stripLeadingEmoji } from "../cardText";
 import { activityIconFromText } from "../activityIcon";
+import { EventWeatherStrip } from "../components/EventWeatherStrip";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -313,6 +314,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         ><MapPin /><span>{mapLabel}</span></button>
         <div className="unified-status-cell"><ShieldCheck /><Star /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
       </div>
+      <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-footer compact-sport-actions">
         <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} />{coachAction}</button>
         <button className={hasCardState ? "card-join secondary" : "card-join"} onClick={() => hasCardState ? onOpen(activity) : onJoin(activity)} type="button" disabled={joinDisabled}>{action}</button>

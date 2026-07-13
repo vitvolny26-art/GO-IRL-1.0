@@ -137,13 +137,15 @@
 .activity-sheet.sport-sheet {
   max-height: calc(100dvh - 76px) !important;
   padding-top: 44px !important;
+  overflow-x: hidden !important;
 }
 
 .activity-sheet .sheet-close {
   position: sticky !important;
   top: 0 !important;
   right: 0 !important;
-  margin: -24px -2px 10px auto !important;
+  margin: -34px -10px 8px auto !important;
+  transform: translate(24px, -12px) !important;
   z-index: 30 !important;
 }
 
