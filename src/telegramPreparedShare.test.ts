@@ -42,12 +42,24 @@ describe("sharePreparedTelegramEvent", () => {
       clearTimeout,
       Telegram: { WebApp: { ready: vi.fn(), expand: vi.fn(), initData: "signed-init-data", shareMessage } },
     });
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ preparedMessageId: "prepared-123" }),
-    }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     await expect(sharePreparedTelegramEvent(activity, "ru", "https://t.me/GOirl_bot?startapp=3b172dd9-d5e2-4328-86a4-d4107a6359fc")).resolves.toBe(true);
+    const request = fetchMock.mock.calls[0][1] as RequestInit;
+    const body = JSON.parse(String(request.body));
+    expect(body.card).toMatchObject({
+      activity: "Волейбол",
+      title: "Игра вечером",
+      date: "19 июл",
+      time: "16:30",
+      city: "Оломоуц",
+      mapUrl: "https://mapy.cz/zakladni?q=Z%C5%A0%20Demlova%2C%20%D0%9E%D0%BB%D0%BE%D0%BC%D0%BE%D1%83%D1%86",
+      price: 0,
+    });
     expect(shareMessage).toHaveBeenCalledWith("prepared-123", expect.any(Function));
   });
 });

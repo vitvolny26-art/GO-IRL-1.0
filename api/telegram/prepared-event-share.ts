@@ -1,5 +1,6 @@
 import { readEnv } from "../_shared/env.js";
 import { buildTelegramEventCard, type TelegramEventCardInput } from "../_shared/telegram-event-card.js";
+import { createTelegramShareCardToken } from "../_shared/telegram-share-card-token.js";
 import { validateTelegramInitData } from "../../supabase/functions/_shared/telegramInitData.js";
 
 type VercelRequest = {
@@ -26,6 +27,29 @@ const isSafeInviteUrl = (value: unknown, eventId: string) => {
   } catch {
     return false;
   }
+};
+
+const isSafeMapUrl = (value: unknown) => {
+  if (value === undefined || value === "") return true;
+  if (typeof value !== "string" || value.length > 500) return false;
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLocaleLowerCase();
+    return url.protocol === "https:" && (
+      hostname === "mapy.cz"
+      || hostname.endsWith(".mapy.cz")
+      || hostname === "maps.app.goo.gl"
+      || hostname === "google.com"
+      || hostname.endsWith(".google.com")
+    );
+  } catch {
+    return false;
+  }
+};
+
+const publicOrigin = () => {
+  const host = readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL");
+  return host ? `https://${host.replace(/^https?:\/\//, "")}` : "https://go-irl-1-0.vercel.app";
 };
 
 const json = (response: VercelResponse, status: number, payload: unknown) => {
@@ -59,6 +83,20 @@ const isSafeCard = (value: unknown): value is TelegramEventCardInput => {
     && typeof card.address === "string" && card.address.length <= 300
     && typeof card.icon === "string" && card.icon.length <= 24
     && isSafeInviteUrl(card.inviteUrl, card.eventId)
+    && isSafeMapUrl(card.mapUrl)
+    && typeof card.city === "string" && card.city.length <= 100
+    && (card.durationMinutes === undefined || (Number.isFinite(card.durationMinutes) && card.durationMinutes >= 15 && card.durationMinutes <= 480))
+    && Number.isFinite(card.price) && card.price >= 0 && card.price <= 100_000
+    && typeof card.level === "string" && card.level.length <= 80
+    && typeof card.format === "string" && card.format.length <= 80
+    && typeof card.environment === "string" && card.environment.length <= 80
+    && (card.weather === undefined || (
+      typeof card.weather === "object"
+      && typeof card.weather.icon === "string" && card.weather.icon.length <= 12
+      && Number.isFinite(card.weather.temperature) && card.weather.temperature >= -80 && card.weather.temperature <= 80
+      && Number.isFinite(card.weather.rain) && card.weather.rain >= 0 && card.weather.rain <= 100
+      && Number.isFinite(card.weather.wind) && card.weather.wind >= 0 && card.weather.wind <= 300
+    ))
     && Number.isFinite(card.participants)
     && Number.isFinite(card.capacity)
     && ["ru", "uk", "cs", "en"].includes(String(card.language)),
@@ -81,12 +119,14 @@ export default async function handler(request: VercelRequest, response: VercelRe
     }
 
     const verified = await validateTelegramInitData({ initData: body.initData, botToken });
+    const imageToken = createTelegramShareCardToken(body.card, botToken);
+    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}`;
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user_id: verified.user.id,
-        result: buildTelegramEventCard(body.card),
+        result: buildTelegramEventCard(body.card, imageUrl),
         allow_user_chats: true,
         allow_bot_chats: false,
         allow_group_chats: true,

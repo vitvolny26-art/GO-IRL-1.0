@@ -1,0 +1,112 @@
+import type { TelegramEventCardInput } from "./telegram-event-card.js";
+
+const copy = {
+  ru: { free: "Бесплатно", forecast: "Прогноз появится ближе к событию", minutes: "мин" },
+  uk: { free: "Безкоштовно", forecast: "Прогноз з’явиться ближче до події", minutes: "хв" },
+  cs: { free: "Zdarma", forecast: "Předpověď se zobrazí blíže k události", minutes: "min" },
+  en: { free: "Free", forecast: "Forecast will appear closer to the event", minutes: "min" },
+} as const;
+
+const xml = (value: string) => value
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;")
+  .replaceAll("'", "&apos;");
+
+const clean = (value: string, max = 160) => value.trim().replace(/\s+/g, " ").slice(0, max);
+
+const wrap = (value: string, maxChars: number, maxLines = 2) => {
+  const words = clean(value).split(" ").filter(Boolean);
+  const lines: string[] = [];
+  for (const word of words) {
+    const current = lines.at(-1) || "";
+    if (!current || `${current} ${word}`.length <= maxChars) {
+      if (current) lines[lines.length - 1] = `${current} ${word}`;
+      else lines.push(word);
+    } else if (lines.length < maxLines) {
+      lines.push(word);
+    } else {
+      lines[lines.length - 1] = `${lines.at(-1) || ""}…`.slice(0, maxChars);
+      break;
+    }
+  }
+  return lines.slice(0, maxLines);
+};
+
+const textLines = (lines: string[], x: number, y: number, lineHeight: number) =>
+  lines.map((line, index) => `<tspan x="${x}" y="${y + index * lineHeight}">${xml(line)}</tspan>`).join("");
+
+const activityArtwork = (icon: string) => {
+  if (icon.includes("🏐")) {
+    return `<g>
+      <circle cx="191" cy="191" r="73" fill="url(#volleyball)"/>
+      <path d="M142 137c30 6 55 22 73 48M184 120c11 34 8 65-10 94M236 132c-8 30-27 52-57 66M131 191c31-5 59 2 85 23M212 251c-1-27-12-51-34-72" fill="none" stroke="#ffffff" stroke-opacity=".9" stroke-width="7" stroke-linecap="round"/>
+    </g>`;
+  }
+  if (icon.includes("🛼")) {
+    return `<g>
+      <path d="M126 137h61c8 0 14 6 14 14v33c0 9 7 17 16 19l25 6c10 2 17 11 17 21v8H126z" fill="#bce9ff" stroke="#f4fbff" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M126 137v-31h57l4 31M127 218h130" fill="none" stroke="#ff7cab" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="151" cy="249" r="15" fill="#c9ff3d"/><circle cx="195" cy="249" r="15" fill="#c9ff3d"/><circle cx="238" cy="249" r="15" fill="#c9ff3d"/>
+    </g>`;
+  }
+  return `<text x="191" y="225" text-anchor="middle" fill="#dfff91" font-size="112" font-family="Segoe UI Emoji, Arial, sans-serif">${xml(clean(icon, 12))}</text>`;
+};
+
+const metric = (x: number, y: number, icon: string, value: string, lines = 1) => {
+  const wrapped = wrap(value, lines === 1 ? 24 : 20, lines);
+  return `<g>
+    <rect x="${x}" y="${y}" width="440" height="116" rx="30" fill="#171a1d" stroke="#303439" stroke-width="2"/>
+    <text x="${x + 38}" y="${y + 70}" fill="#c9ff3d" font-size="38" font-family="Segoe UI Emoji, Arial, sans-serif">${xml(icon)}</text>
+    <text x="${x + 98}" y="${y + 58}" fill="#aeb3bd" font-size="31" font-weight="800" font-family="Arial, sans-serif">${textLines(wrapped, x + 98, y + (wrapped.length > 1 ? 43 : 68), 38)}</text>
+  </g>`;
+};
+
+export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
+  const labels = copy[input.language] || copy.en;
+  const headline = clean(input.activity || input.title, 80) || "GO IRL";
+  const subtitle = clean(input.title, 120);
+  const dateTime = [clean(input.date, 40), clean(input.time, 20)].filter(Boolean).join(" · ");
+  const place = clean(input.address || input.city, 140);
+  const status = [clean(input.level, 50), clean(input.format, 50)].filter(Boolean).join(" · ");
+  const price = input.price > 0 ? `${Math.round(input.price)} Kč` : labels.free;
+  const duration = `${Math.max(15, Math.round(input.durationMinutes || 90))} ${labels.minutes}`;
+  const weather = input.weather
+    ? `${clean(input.weather.icon, 8)}  ${Math.round(input.weather.temperature)}°C     ☔  ${Math.round(input.weather.rain)}%     💨  ${Math.round(input.weather.wind)} km/h`
+    : labels.forecast;
+  const headlineLines = wrap(headline, 15, 2);
+  const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 24, 2);
+  const environment = clean(input.environment, 60);
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="900" viewBox="0 0 1080 900">
+  <defs>
+    <linearGradient id="page" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080b0d"/><stop offset="1" stop-color="#0f1511"/></linearGradient>
+    <linearGradient id="avatar" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#314416"/><stop offset="1" stop-color="#132019"/></linearGradient>
+    <radialGradient id="volleyball" cx="35%" cy="25%" r="75%"><stop stop-color="#f1eaff"/><stop offset=".55" stop-color="#cdbce9"/><stop offset="1" stop-color="#9e85ca"/></radialGradient>
+    <linearGradient id="weather" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#1a2415"/><stop offset="1" stop-color="#111916"/></linearGradient>
+  </defs>
+  <rect width="1080" height="900" fill="url(#page)"/>
+  <rect x="34" y="34" width="1012" height="832" rx="58" fill="#101314" stroke="#314514" stroke-width="3"/>
+
+  <rect x="76" y="76" width="230" height="230" rx="58" fill="url(#avatar)" stroke="#678d28" stroke-width="2"/>
+  ${activityArtwork(input.icon)}
+
+  <text x="344" y="111" fill="#c9ff3d" font-size="26" font-weight="800" font-family="Arial, sans-serif">${xml(environment.toLocaleUpperCase())}</text>
+  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="Arial, sans-serif">${textLines(headlineLines, 344, 174, 64)}</text>
+  <text fill="#969ca7" font-size="34" font-weight="500" font-family="Arial, sans-serif">${textLines(subtitleLines, 344, 250, 42)}</text>
+
+  <g><rect x="810" y="89" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="136" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="Arial, sans-serif">${xml(duration)}</text></g>
+  <g><rect x="810" y="177" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="224" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="Segoe UI Emoji, Arial, sans-serif">👥 ${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text></g>
+
+  <line x1="76" y1="340" x2="1004" y2="340" stroke="#2b2e32" stroke-width="2"/>
+  ${metric(76, 374, "📅", dateTime)}
+  ${metric(564, 374, "🎟", price)}
+  ${metric(76, 510, "📍", place, 2)}
+  ${metric(564, 510, "☆", status || environment, 2)}
+
+  <rect x="76" y="666" width="928" height="120" rx="42" fill="url(#weather)" stroke="#3d571a" stroke-width="2"/>
+  <text x="540" y="738" text-anchor="middle" fill="#d2d6dc" font-size="31" font-weight="800" font-family="Segoe UI Emoji, Arial, sans-serif">${xml(weather)}</text>
+  <text x="540" y="827" text-anchor="middle" fill="#c9ff3d" font-size="26" font-weight="900" letter-spacing="4" font-family="Arial, sans-serif">GO IRL</text>
+  </svg>`;
+}

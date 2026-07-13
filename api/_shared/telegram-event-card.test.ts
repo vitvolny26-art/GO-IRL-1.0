@@ -12,27 +12,37 @@ const input = {
   capacity: 8,
   icon: "🏐",
   inviteUrl: "https://t.me/GOirl_bot?startapp=3b172dd9-d5e2-4328-86a4-d4107a6359fc",
+  mapUrl: "https://mapy.cz/zakladni?q=Z%C5%A0%20Demlova",
+  city: "Оломоуц",
+  durationMinutes: 90,
+  price: 0,
+  level: "Любитель",
+  format: "Любительский",
+  environment: "На улице",
   language: "ru" as const,
 };
 
 describe("buildTelegramEventCard", () => {
-  it("builds a native Telegram article with a separate event button", () => {
-    const result = buildTelegramEventCard(input);
+  it("builds a native Telegram photo with event and map buttons", () => {
+    const imageUrl = "https://go-irl-1-0.vercel.app/api/telegram/event-share-card?token=signed";
+    const result = buildTelegramEventCard(input, imageUrl);
 
-    expect(result.type).toBe("article");
+    expect(result.type).toBe("photo");
     expect(result.id).toBe(input.eventId);
-    expect(result.input_message_content.message_text).toContain("Волейбол &lt;вечером&gt;");
-    expect(result.input_message_content.message_text).toContain("ZŠ Demlova &amp; park");
-    expect(result.input_message_content.message_text).toContain("3 / 8");
-    expect(result.input_message_content.message_text).not.toContain(input.inviteUrl);
+    expect(result.photo_url).toBe(imageUrl);
+    expect(result.caption).toContain("Волейбол &lt;вечером&gt;");
+    expect(result.caption).toContain("ZŠ Demlova &amp; park");
+    expect(result.caption).toContain("3 / 8");
+    expect(result.caption).not.toContain(input.inviteUrl);
     expect(result.reply_markup.inline_keyboard[0][0]).toEqual({
       text: "Открыть событие",
       url: input.inviteUrl,
     });
+    expect(result.reply_markup.inline_keyboard[0][1]).toEqual({ text: "Карта", url: input.mapUrl });
   });
 
   it("does not repeat the activity when it matches the title", () => {
-    const result = buildTelegramEventCard({ ...input, title: "Волейбол" });
-    expect(result.input_message_content.message_text.match(/Волейбол/g)).toHaveLength(1);
+    const result = buildTelegramEventCard({ ...input, title: "Волейбол" }, "https://example.com/card.jpg");
+    expect(result.caption.match(/Волейбол/g)).toHaveLength(1);
   });
 });
