@@ -10,6 +10,7 @@ import { getCity } from "../config/cities";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import { useAppStore } from "../store";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
+import { isOutdoorGenericActivity } from "../eventWeather";
 import { CoachRequestPanel } from "./CoachRequestPanel";
 
 type ActivityChatPanelProps = {
@@ -24,28 +25,6 @@ const formatCloseTime = (value?: string | null) => {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
-};
-
-const normalizedActivityText = (activity: Activity) =>
-  [
-    activity.categoryId,
-    activity.type,
-    activity.activity.ru,
-    activity.activity.uk,
-    activity.activity.cs,
-    activity.activity.en,
-    activity.title.ru,
-    activity.title.uk,
-    activity.title.cs,
-    activity.title.en,
-  ].join(" ").toLocaleLowerCase();
-
-const isOutdoorGenericActivity = (activity: Activity) => {
-  if (activity.type === "sport" || activity.categoryId === "sport") return false;
-  if (activity.categoryId === "nature") return true;
-
-  const text = normalizedActivityText(activity);
-  return ["прогул", "proch", "walk", "walking", "похід", "поход", "hike", "park"].some((term) => text.includes(term));
 };
 
 const weatherSummaryLines = (weather: WeatherResult) => [

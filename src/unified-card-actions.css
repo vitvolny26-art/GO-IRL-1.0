@@ -10,6 +10,27 @@
   color: var(--muted) !important;
   font: inherit !important;
   text-align: left !important;
+  transition: transform 100ms ease, background-color 100ms ease, border-color 100ms ease !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > button:active {
+  transform: scale(.965) !important;
+  border-color: rgba(201, 255, 61, .38) !important;
+  background: rgba(201, 255, 61, .12) !important;
+}
+
+.unified-event-card h3 {
+  font-size: clamp(24px, 6.6vw, 30px) !important;
+  line-height: 1.04 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+}
+
+.avatar-draft-preview {
+  margin: 4px auto 2px;
 }
 
 .unified-event-card .activity-card-details.sport-details-grid > button svg {

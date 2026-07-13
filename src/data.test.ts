@@ -26,6 +26,19 @@ describe("activity taxonomy", () => {
     ]));
   });
 
+  it("keeps Gym fifth in the Sport activity order", () => {
+    expect(activityOptions.sport[4]?.name.en).toBe("Gym");
+  });
+
+  it("uses the direct beer invitation copy", () => {
+    expect(activityOptions.party[0]?.name).toEqual({
+      ru: "Идём на пиво",
+      uk: "Йдемо на пиво",
+      cs: "Jdeme na pivo",
+      en: "Let's get a beer",
+    });
+  });
+
   it("limits closed beta create taxonomy to canonical beta options", () => {
     expect(closedBetaCategories.map((category) => category.id)).toEqual(["sport", "activities", "social"]);
     expect(closedBetaActivityOptions.sport.map((option) => option.name.en)).toEqual(["Volleyball", "Running"]);

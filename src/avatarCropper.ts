@@ -1,6 +1,6 @@
 import type { Language } from "./types";
 
-type AvatarCropState = {
+export type AvatarCropState = {
   zoom: number;
   x: number;
   y: number;
@@ -126,7 +126,7 @@ const canvasToFile = (canvas: HTMLCanvasElement) => new Promise<File>((resolve, 
   }, "image/jpeg", 0.9);
 });
 
-const openAvatarCropper = async (file: File): Promise<File | null> => {
+export const openAvatarCropper = async (file: File): Promise<File | null> => {
   const image = await loadImage(file);
   const labels = copy[getLanguage()];
   const state: AvatarCropState = { zoom: 1, x: 0.5, y: 0.35 };
@@ -154,9 +154,79 @@ const openAvatarCropper = async (file: File): Promise<File | null> => {
     const cancelButton = backdrop.querySelector<HTMLButtonElement>("[data-action='cancel']")!;
     const applyButton = backdrop.querySelector<HTMLButtonElement>("[data-action='apply']")!;
     const previousOverflow = document.body.style.overflow;
+    const pointers = new Map<number, { x: number; y: number }>();
+    let lastPanPoint: { x: number; y: number } | null = null;
+    let pinchStart: { distance: number; zoom: number } | null = null;
+
+    const syncInputs = () => {
+      inputs.forEach((input) => {
+        const key = input.dataset.crop as keyof AvatarCropState;
+        input.value = String(state[key]);
+      });
+    };
+
+    const redraw = () => {
+      syncInputs();
+      drawCrop(canvas, image, state);
+    };
+
+    const displayedPoint = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    };
+
+    const panBy = (dx: number, dy: number) => {
+      const canvasRect = canvas.getBoundingClientRect();
+      const crop = calculateAvatarCrop(image.naturalWidth, image.naturalHeight, canvas.width, state);
+      const scaleX = canvas.width / Math.max(1, canvasRect.width);
+      const scaleY = canvas.height / Math.max(1, canvasRect.height);
+      const overflowX = crop.drawWidth - canvas.width;
+      const overflowY = crop.drawHeight - canvas.height;
+      if (overflowX > 0) state.x = clamp(state.x - dx * scaleX / overflowX, 0, 1);
+      if (overflowY > 0) state.y = clamp(state.y - dy * scaleY / overflowY, 0, 1);
+    };
+
+    const pointerDistance = () => {
+      const [first, second] = [...pointers.values()];
+      return first && second ? Math.hypot(second.x - first.x, second.y - first.y) : 0;
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      canvas.setPointerCapture(event.pointerId);
+      const point = displayedPoint(event);
+      pointers.set(event.pointerId, point);
+      if (pointers.size === 1) lastPanPoint = point;
+      if (pointers.size === 2) pinchStart = { distance: pointerDistance(), zoom: state.zoom };
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (!pointers.has(event.pointerId)) return;
+      event.preventDefault();
+      const point = displayedPoint(event);
+      pointers.set(event.pointerId, point);
+      if (pointers.size >= 2 && pinchStart) {
+        const distance = pointerDistance();
+        if (pinchStart.distance > 0) state.zoom = clamp(pinchStart.zoom * distance / pinchStart.distance, 1, 3);
+        lastPanPoint = null;
+      } else if (lastPanPoint) {
+        panBy(point.x - lastPanPoint.x, point.y - lastPanPoint.y);
+        lastPanPoint = point;
+      }
+      redraw();
+    };
+
+    const onPointerUp = (event: PointerEvent) => {
+      pointers.delete(event.pointerId);
+      pinchStart = null;
+      lastPanPoint = pointers.size === 1 ? [...pointers.values()][0] : null;
+    };
 
     const cleanup = () => {
       document.removeEventListener("keydown", onKeyDown);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerUp);
       document.body.style.overflow = previousOverflow;
       backdrop.remove();
     };
@@ -177,6 +247,11 @@ const openAvatarCropper = async (file: File): Promise<File | null> => {
         drawCrop(canvas, image, state);
       });
     });
+
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerUp);
 
     cancelButton.addEventListener("click", () => finish(null));
     applyButton.addEventListener("click", () => {
