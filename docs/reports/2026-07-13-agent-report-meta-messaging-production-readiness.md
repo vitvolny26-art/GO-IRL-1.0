@@ -20,9 +20,13 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - `api/_shared/provider-messages.ts`
 - `api/_shared/provider-webhook.ts`
 - `api/_shared/provider-webhook.test.ts`
+- `api/_shared/messenger-test-invitation.ts`
+- `api/_shared/messenger-test-invitation.test.ts`
+- `api/_shared/vercel-handler.ts`
 - `api/whatsapp/webhook.ts`
 - `api/instagram/webhook.ts`
 - `api/messenger/webhook.ts`
+- `api/messenger/test-invitation.ts`
 - `src/whatsapp/`
 - `src/meta-messaging/`
 - `src/join/types.ts`
@@ -73,6 +77,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - The product share UI opens Telegram, WhatsApp, Instagram, or Facebook share destinations. It does not call the server-side Meta send adapters.
 - There is no authenticated admin endpoint or product action that initiates `sendProviderInvitation`.
 - The only runtime reference to `sendProviderInvitation` is an internal response to a `details:<eventId>` inbound action. Therefore a first outbound invitation is not reachable from the product.
+- A dedicated Messenger-only test trigger now provides the narrow release-validation path. It is disabled unless `MESSENGER_TEST_TRIGGER_TOKEN` exists, accepts only authenticated POST requests, validates the PSID and event UUID, and returns generic failures without provider details.
 - WhatsApp invitation payloads are interactive session messages, not approved business-initiated templates. They cannot be treated as a production invitation path outside the customer-service window.
 - WhatsApp Flow has a payload builder only. No deployed Flow ID, Flow token lifecycle, or live Flow endpoint was verified.
 
@@ -92,13 +97,17 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Confirmed Instagram Tester assignment and the account's authorization of the Meta app.
 - Generated the Messenger Page access token and stored it as the sensitive, Production-only Vercel variable `MESSENGER_PAGE_ACCESS_TOKEN`.
 - Redeployed commit `852c451` to Production with the latest project settings. Deployment `7Damm96R4DD7ozUX1FttFYetfV6s` completed with status Ready and retained the primary domain.
-- No runtime code, repository secrets, Supabase configuration, auth, RLS, SQL, or migrations were changed.
+- Added `/api/messenger/test-invitation`, backed by the existing event-summary and Messenger payload/send modules.
+- Added constant-time bearer-token comparison, strict request validation, disabled-by-default behavior, and generic upstream failure responses.
+- Generalized the existing Vercel request adapter so webhook and test-trigger handlers use the same request/response boundary.
+- Added six unit tests for disabled, unauthorized, invalid, missing-event, successful-send, and provider-failure paths.
+- No repository secrets, Supabase configuration, auth, RLS, SQL, or migrations were changed.
 
 ## Checks
 
 - `pnpm run lint` — PASS.
 - `pnpm run build` — PASS.
-- `pnpm run test` — PASS (31 files, 167 tests).
+- `pnpm run test` — PASS (32 files, 173 tests).
 - `pnpm run typecheck` — PASS.
 - `git diff --check` — PASS.
 - Current `main` GitHub CI — PASS (`852c451`, run `29266656611`).
@@ -115,13 +124,27 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Post-redeploy Messenger unsigned POST rejection — PASS (HTTP 401).
 - Live Messenger inbound delivery — PASS. A real `Привет` message reached `/api/messenger/webhook` at 19:23:22 and returned HTTP 200.
 - Plain-text response behavior — EXPECTED NO-OP. Runtime only processes signed `join:<eventId>` and `details:<eventId>` quick-reply/postback payloads; ordinary text has no action payload and produces no bot reply.
+- Messenger test-trigger focused tests — PASS (6 tests).
 - Secret boundary — PASS; no secret value is present in the report, repository, command output, or chat response.
+
+## Risks
+
+- The trigger must remain disabled unless its dedicated Production secret is intentionally configured.
+- It is an operator smoke-test surface, not a user-facing invitation API; no frontend must call it.
+- A real outbound test still requires the Page-scoped recipient ID from the live Messenger conversation and a real event UUID.
+
+## Not touched
+
+- `.env` files and repository secrets.
+- Supabase auth, RLS, SQL, schema, and migrations.
+- Product UI and public sharing behavior.
+- Instagram and WhatsApp outbound credentials or send paths.
 
 ## Next step
 
 Keep the release gate closed. The smallest remaining production sequence is:
 
-1. Add a narrowly authenticated way to initiate one test invitation, then complete the Messenger quick-reply/postback and outbound Join-result smoke test.
+1. Configure the dedicated Production trigger token and Page ID, deploy the patch, resolve the test conversation PSID, and send one invitation.
 2. Replace the WhatsApp test-number setup with a registered production number and verified permanent system-user credential.
 3. Create and approve a WhatsApp event-invitation template before adding any business-initiated send path, then complete one real Join smoke test.
 4. Resolve Instagram token generation and complete one real inbound/outbound Join smoke test.
