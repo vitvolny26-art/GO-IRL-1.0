@@ -42,6 +42,8 @@ Implement the production backend path for WhatsApp, Instagram Direct, and Facebo
 - Normalized relative Vercel request URLs and rotated the webhook verify token before Meta registration after runtime diagnostics.
 - Added a Vercel Node request/response adapter so serverless functions close requests correctly instead of returning an unsupported Web `Response`.
 - Disabled Vercel Authentication for this production project so Meta can reach the public webhook endpoints; application-level signature verification remains mandatory for POST requests.
+- Registered and verified the WhatsApp, Messenger, and Instagram callback URLs in the Meta app.
+- Added the Messenger and Instagram messaging use cases and the required Instagram messaging permissions to the Meta app.
 
 ## Checks
 
@@ -55,10 +57,13 @@ Implement the production backend path for WhatsApp, Instagram Direct, and Facebo
 - Service-role RPC smoke test — PASS (`event_not_found` for an unused UUID)
 - Anonymous RPC denial — PASS (HTTP 401)
 - Production Vercel deployment — PASS (all three webhook functions built)
+- Production GET verification — PASS for WhatsApp, Instagram, and Messenger (HTTP 200 and exact challenge echo)
+- Unsigned production POST rejection — PASS for all three providers (HTTP 401)
+- Meta callback verification — PASS for all three providers
 
 ## Risks
 
-- Live outbound delivery remains unavailable for a provider until its permanent access token and account/phone ID are configured.
+- Live outbound delivery remains unavailable for a provider until its permanent access token and account/phone ID are configured. Meta currently has no connected Facebook Page, Instagram professional account, or registered WhatsApp production number for this app.
 - Meta app publication, business verification, message-window rules, and channel permissions are external release gates.
 - Full live join testing requires a real inbound message from each configured test account.
 
