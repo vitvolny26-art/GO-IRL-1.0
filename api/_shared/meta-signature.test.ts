@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { verifyMetaSignature } from "./meta-signature";
+import { verifyMetaSignature } from "./meta-signature.js";
 
 describe("Meta webhook signature verification", () => {
   it("accepts a valid sha256 signature", async () => {

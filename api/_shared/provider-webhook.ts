@@ -1,10 +1,10 @@
-import { parseMetaMessagingTestPayload } from "../../src/meta-messaging/mock-webhook";
-import type { MetaMessagingProvider } from "../../src/meta-messaging/types";
-import { parseWhatsAppTestPayload } from "../../src/whatsapp/mock-webhook";
-import { requireEnv } from "./env";
-import { verifyMetaSignature } from "./meta-signature";
-import { getProviderEventSummary, joinProviderEvent } from "./provider-join-service";
-import { sendProviderInvitation, sendProviderJoinResult, type MessagingProvider } from "./provider-messages";
+import { parseMetaMessagingTestPayload } from "../../src/meta-messaging/mock-webhook.js";
+import type { MetaMessagingProvider } from "../../src/meta-messaging/types.js";
+import { parseWhatsAppTestPayload } from "../../src/whatsapp/mock-webhook.js";
+import { requireEnv } from "./env.js";
+import { verifyMetaSignature } from "./meta-signature.js";
+import { getProviderEventSummary, joinProviderEvent } from "./provider-join-service.js";
+import { sendProviderInvitation, sendProviderJoinResult, type MessagingProvider } from "./provider-messages.js";
 
 type UnknownRecord = Record<string, unknown>;
 

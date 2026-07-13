@@ -1,15 +1,15 @@
-import type { JoinResult } from "../../src/join/types";
+import type { JoinResult } from "../../src/join/types.js";
 import {
   buildInstagramInvitationPayload,
   buildMessengerInvitationPayload,
   buildMetaJoinResultPayload,
-} from "../../src/meta-messaging/payload-builders";
-import type { MetaEventSummary, MetaMessagingProvider } from "../../src/meta-messaging/types";
+} from "../../src/meta-messaging/payload-builders.js";
+import type { MetaEventSummary, MetaMessagingProvider } from "../../src/meta-messaging/types.js";
 import {
   buildWhatsAppInvitationPayload,
   buildWhatsAppJoinResultPayload,
-} from "../../src/whatsapp/payload-builders";
-import { requireEnv } from "./env";
+} from "../../src/whatsapp/payload-builders.js";
+import { requireEnv } from "./env.js";
 
 export type MessagingProvider = "whatsapp" | MetaMessagingProvider;
 

@@ -1,10 +1,10 @@
-import type { JoinResult } from "../join/types";
+import type { JoinResult } from "../join/types.js";
 import type {
   WhatsAppButtonPayload,
   WhatsAppEventSummary,
   WhatsAppFlowPayload,
   WhatsAppJoinResultPayload,
-} from "./types";
+} from "./types.js";
 
 const eventSummaryText = (event: WhatsAppEventSummary) => [
   event.title,

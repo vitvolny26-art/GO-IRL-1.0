@@ -1,4 +1,4 @@
-import type { JoinResult } from "../join/types";
+import type { JoinResult } from "../join/types.js";
 import type {
   InstagramMessagePayload,
   MessengerMessagePayload,
@@ -6,7 +6,7 @@ import type {
   MetaJoinResultPayload,
   MetaMessagingProvider,
   MetaQuickReply,
-} from "./types";
+} from "./types.js";
 
 const eventSummaryText = (event: MetaEventSummary) => [
   event.title,

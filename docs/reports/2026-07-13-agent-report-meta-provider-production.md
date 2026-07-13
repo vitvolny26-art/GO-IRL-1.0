@@ -38,6 +38,7 @@ Implement the production backend path for WhatsApp, Instagram Direct, and Facebo
 - Documented server-only Vercel environment variables and production boundaries.
 - Applied migration `20260713000000_meta_provider_join.sql` to the linked production Supabase project.
 - Configured production Vercel variables for Supabase access, Meta App Secret, Graph version, and webhook verify token.
+- Corrected server-function imports to explicit `.js` ESM specifiers after the first Vercel runtime smoke test exposed Node resolution failure.
 
 ## Checks
 

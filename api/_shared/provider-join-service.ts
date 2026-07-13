@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import type { JoinProvider, JoinResult, JoinResultAction } from "../../src/join/types";
-import type { MetaEventSummary } from "../../src/meta-messaging/types";
-import { requireEnv } from "./env";
+import type { JoinProvider, JoinResult, JoinResultAction } from "../../src/join/types.js";
+import type { MetaEventSummary } from "../../src/meta-messaging/types.js";
+import { requireEnv } from "./env.js";
 
 type ActivityRow = {
   id: string;

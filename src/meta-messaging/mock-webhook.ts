@@ -1,4 +1,4 @@
-import type { MetaMessagingProvider } from "./types";
+import type { MetaMessagingProvider } from "./types.js";
 
 export type MetaMockWebhookRequest = {
   method: string;

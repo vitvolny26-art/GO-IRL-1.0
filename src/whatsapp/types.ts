@@ -1,4 +1,4 @@
-import type { JoinResult } from "../join/types";
+import type { JoinResult } from "../join/types.js";
 
 export type WhatsAppEventSummary = {
   eventId: string;

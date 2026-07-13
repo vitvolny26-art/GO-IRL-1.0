@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { handleProviderWebhook } from "./provider-webhook";
+import { handleProviderWebhook } from "./provider-webhook.js";
 
 const runtimeEnv = (globalThis as typeof globalThis & {
   process: { env: Record<string, string | undefined> };
