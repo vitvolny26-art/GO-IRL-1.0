@@ -51,15 +51,15 @@ const activityArtwork = (icon: string) => {
       <circle cx="151" cy="249" r="15" fill="#c9ff3d"/><circle cx="195" cy="249" r="15" fill="#c9ff3d"/><circle cx="238" cy="249" r="15" fill="#c9ff3d"/>
     </g>`;
   }
-  return `<text x="191" y="225" text-anchor="middle" fill="#dfff91" font-size="112" font-family="Segoe UI Emoji, Arial, sans-serif">${xml(clean(icon, 12))}</text>`;
+  return `<text x="191" y="225" text-anchor="middle" fill="#dfff91" font-size="112" font-family="DejaVu Sans, sans-serif">${xml(clean(icon, 12))}</text>`;
 };
 
 const metric = (x: number, y: number, icon: string, value: string, lines = 1) => {
   const wrapped = wrap(value, lines === 1 ? 24 : 20, lines);
   return `<g>
     <rect x="${x}" y="${y}" width="440" height="116" rx="30" fill="#171a1d" stroke="#303439" stroke-width="2"/>
-    <text x="${x + 38}" y="${y + 70}" fill="#c9ff3d" font-size="38" font-family="Segoe UI Emoji, Arial, sans-serif">${xml(icon)}</text>
-    <text x="${x + 98}" y="${y + 58}" fill="#aeb3bd" font-size="31" font-weight="800" font-family="Arial, sans-serif">${textLines(wrapped, x + 98, y + (wrapped.length > 1 ? 43 : 68), 38)}</text>
+    <text x="${x + 38}" y="${y + 70}" fill="#c9ff3d" font-size="38" font-family="DejaVu Sans, sans-serif">${xml(icon)}</text>
+    <text x="${x + 98}" y="${y + 58}" fill="#aeb3bd" font-size="31" font-weight="800" font-family="DejaVu Sans, sans-serif">${textLines(wrapped, x + 98, y + (wrapped.length > 1 ? 43 : 68), 38)}</text>
   </g>`;
 };
 
@@ -92,12 +92,12 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
   <rect x="76" y="76" width="230" height="230" rx="58" fill="url(#avatar)" stroke="#678d28" stroke-width="2"/>
   ${activityArtwork(input.icon)}
 
-  <text x="344" y="111" fill="#c9ff3d" font-size="26" font-weight="800" font-family="Arial, sans-serif">${xml(environment.toLocaleUpperCase())}</text>
-  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="Arial, sans-serif">${textLines(headlineLines, 344, 174, 64)}</text>
-  <text fill="#969ca7" font-size="34" font-weight="500" font-family="Arial, sans-serif">${textLines(subtitleLines, 344, 250, 42)}</text>
+  <text x="344" y="111" fill="#c9ff3d" font-size="26" font-weight="800" font-family="DejaVu Sans, sans-serif">${xml(environment.toLocaleUpperCase())}</text>
+  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 344, 174, 64)}</text>
+  <text fill="#969ca7" font-size="34" font-weight="500" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 344, 250, 42)}</text>
 
-  <g><rect x="810" y="89" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="136" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="Arial, sans-serif">${xml(duration)}</text></g>
-  <g><rect x="810" y="177" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="224" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="Segoe UI Emoji, Arial, sans-serif">👥 ${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text></g>
+  <g><rect x="810" y="89" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="136" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(duration)}</text></g>
+  <g><rect x="810" y="177" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="224" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">👥 ${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text></g>
 
   <line x1="76" y1="340" x2="1004" y2="340" stroke="#2b2e32" stroke-width="2"/>
   ${metric(76, 374, "📅", dateTime)}
@@ -106,7 +106,7 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
   ${metric(564, 510, "☆", status || environment, 2)}
 
   <rect x="76" y="666" width="928" height="120" rx="42" fill="url(#weather)" stroke="#3d571a" stroke-width="2"/>
-  <text x="540" y="738" text-anchor="middle" fill="#d2d6dc" font-size="31" font-weight="800" font-family="Segoe UI Emoji, Arial, sans-serif">${xml(weather)}</text>
-  <text x="540" y="827" text-anchor="middle" fill="#c9ff3d" font-size="26" font-weight="900" letter-spacing="4" font-family="Arial, sans-serif">GO IRL</text>
+  <text x="540" y="738" text-anchor="middle" fill="#d2d6dc" font-size="31" font-weight="800" font-family="DejaVu Sans, sans-serif">${xml(weather)}</text>
+  <text x="540" y="827" text-anchor="middle" fill="#c9ff3d" font-size="26" font-weight="900" letter-spacing="4" font-family="DejaVu Sans, sans-serif">GO IRL</text>
   </svg>`;
 }
