@@ -44,6 +44,7 @@ Implement the production backend path for WhatsApp, Instagram Direct, and Facebo
 - Disabled Vercel Authentication for this production project so Meta can reach the public webhook endpoints; application-level signature verification remains mandatory for POST requests.
 - Registered and verified the WhatsApp, Messenger, and Instagram callback URLs in the Meta app.
 - Added the Messenger and Instagram messaging use cases and the required Instagram messaging permissions to the Meta app.
+- Generated and validated a Meta test access token for the WhatsApp test number, stored it only as a protected Vercel production variable, configured the test Phone Number ID, and redeployed production.
 
 ## Checks
 
@@ -60,10 +61,12 @@ Implement the production backend path for WhatsApp, Instagram Direct, and Facebo
 - Production GET verification — PASS for WhatsApp, Instagram, and Messenger (HTTP 200 and exact challenge echo)
 - Unsigned production POST rejection — PASS for all three providers (HTTP 401)
 - Meta callback verification — PASS for all three providers
+- WhatsApp Graph API credential smoke test — PASS (HTTP 200 for the configured Meta test number)
 
 ## Risks
 
-- Live outbound delivery remains unavailable for a provider until its permanent access token and account/phone ID are configured. Meta currently has no connected Facebook Page, Instagram professional account, or registered WhatsApp production number for this app.
+- WhatsApp currently uses Meta's temporary test token and test number; the token expires and must be replaced by a permanent system-user token before release.
+- Meta currently has no connected Facebook Page, Instagram professional account, or registered WhatsApp production number for this app. Connecting the discovered Instagram account would convert `@yuzhaniin` to a professional account, and Messenger requests broad access to current and future Facebook Pages; both require an explicit owner decision.
 - Meta app publication, business verification, message-window rules, and channel permissions are external release gates.
 - Full live join testing requires a real inbound message from each configured test account.
 
