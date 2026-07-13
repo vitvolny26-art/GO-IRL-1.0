@@ -1,7 +1,7 @@
 ---
 title: Agent Report — Meta Messaging Production Readiness
 owner: GO IRL Technical Archivist
-status: Draft
+status: Complete
 source_of_truth: false
 last_review: 2026-07-13
 next_review: 2026-07-20
@@ -96,7 +96,11 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Enabled Messenger app-level and Page-level `messages` and `messaging_postbacks` subscriptions.
 - Confirmed Instagram Tester assignment and the account's authorization of the Meta app.
 - Generated the Messenger Page access token and stored it as the sensitive, Production-only Vercel variable `MESSENGER_PAGE_ACCESS_TOKEN`.
+- Rotated the Messenger Page access token after the previous credential appeared in an operator browser view. The Page was disconnected and reconnected, the previous credential was confirmed revoked, and the replacement credential was validated through the Messenger conversations boundary without printing its value.
+- Replaced `MESSENGER_PAGE_ACCESS_TOKEN` in Vercel while preserving its Sensitive and Production-only scope.
+- Confirmed Page `GO IRL` remains subscribed to `messages` and `messaging_postbacks` after reconnection.
 - Redeployed commit `852c451` to Production with the latest project settings. Deployment `7Damm96R4DD7ozUX1FttFYetfV6s` completed with status Ready and retained the primary domain.
+- Redeployed current `main` commit `64c996e` after credential rotation. Deployment `E7movhNiWFnPetxZ2homDrzf9uGA` completed with status Ready in 23 seconds and retained `go-irl-1-0.vercel.app`.
 - Added `/api/messenger/test-invitation`, backed by the existing event-summary and Messenger payload/send modules.
 - Added constant-time bearer-token comparison, strict request validation, disabled-by-default behavior, and generic upstream failure responses.
 - Generalized the existing Vercel request adapter so webhook and test-trigger handlers use the same request/response boundary.
@@ -122,6 +126,13 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Production redeploy — PASS (Ready, 18 seconds).
 - Post-redeploy Messenger wrong verify token — PASS (HTTP 403).
 - Post-redeploy Messenger unsigned POST rejection — PASS (HTTP 401).
+- Previous Messenger Page token revocation — PASS; the old credential is rejected by Graph API.
+- Replacement Messenger Page token validation — PASS; the Page-scoped conversations request returned HTTP 200 and identified the existing test conversation without exposing its PSID.
+- Post-rotation Production redeploy — PASS (`E7movhNiWFnPetxZ2homDrzf9uGA`, Ready, 23 seconds, primary domain retained).
+- Post-rotation trigger method boundary — PASS (unauthenticated GET HTTP 405).
+- Post-rotation trigger authorization boundary — PASS (unauthenticated POST HTTP 401).
+- Post-rotation Messenger wrong verify token — PASS (HTTP 403).
+- Post-rotation Messenger unsigned POST rejection — PASS (HTTP 401).
 - Live Messenger inbound delivery — PASS. A real `Привет` message reached `/api/messenger/webhook` at 19:23:22 and returned HTTP 200.
 - Plain-text response behavior — EXPECTED NO-OP. Runtime only processes signed `join:<eventId>` and `details:<eventId>` quick-reply/postback payloads; ordinary text has no action payload and produces no bot reply.
 - Messenger test-trigger focused tests — PASS (6 tests).
@@ -131,7 +142,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 
 - The trigger must remain disabled unless its dedicated Production secret is intentionally configured.
 - It is an operator smoke-test surface, not a user-facing invitation API; no frontend must call it.
-- A real outbound test still requires the Page-scoped recipient ID from the live Messenger conversation and a real event UUID.
+- The Page-scoped recipient ID is available only in the operator session and was not persisted or printed. A real outbound test still requires selecting a real event UUID.
 
 ## Not touched
 
