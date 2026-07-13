@@ -1,7 +1,7 @@
 ---
 title: Agent Report
 owner: AI Fixer / QA + UX Polish Agent
-status: Draft
+status: Completed
 source_of_truth: false
 last_review: 2026-07-12
 next_review: 2026-07-19
@@ -11,7 +11,7 @@ next_review: 2026-07-19
 
 ## Task
 
-Collect the current related UI fixes in PR #73 before the final quality-gate run.
+Collect the current related UI fixes in PR #73 and pass the final quality gate.
 
 ## Files inspected
 
@@ -32,62 +32,33 @@ Collect the current related UI fixes in PR #73 before the final quality-gate run
 
 ## Findings
 
-- Event card text can contain a leading emoji while the card already renders a dedicated large event icon.
+- Event card text could contain a leading emoji while the card already rendered a dedicated large event icon.
 - The create-event flow was limited to three categories with two subcategories each despite the full taxonomy already existing in `src/data.ts`.
-- Profile photo selection immediately stored the full image without giving the user a way to frame the face for the circular avatar.
-- The header notification bell always displayed an empty state and did not persist a message when a participant joined an event owned by the current user.
-- These are related mobile UI/data-exposure fixes and can remain in one draft PR without touching auth, RLS, Supabase schema, migrations, or secrets.
+- Profile photo selection stored the full image without a face-framing step.
+- The header notification bell always displayed an empty state and did not persist participant-join messages.
 
 ## Changes made
 
-- Added `stripLeadingEmoji()` cleanup for event card title and subtitle text.
-- Kept the large event avatar/icon unchanged.
-- Added coverage for coffee, volleyball, language exchange, plain text, and empty text.
-- Exposed all existing event categories and all existing subcategories in the create-event flow.
-- Added coverage that verifies the full taxonomy is available.
-- Added a mobile avatar cropper after image selection.
-- Added zoom, horizontal focus, and vertical focus controls so the face can be positioned inside a circular preview.
-- Cropped output is exported as a square JPEG before the existing profile image handler saves it.
-- Added unit coverage for landscape, portrait, zoom, and focal-position crop calculations.
-- Added local persisted notifications for joined participants on organizer-owned events.
-- Added unread count badge to the header bell.
-- Added a notification list with participant name, event title, and timestamp.
-- Opening the bell marks stored notifications as read while keeping them in the list.
-- Added unit coverage for notification generation, duplicate prevention, organizer exclusion, and pending-member exclusion.
-
-## Current PR scope
-
-Draft PR: `#73`
-
-Included:
-
-- duplicate emoji cleanup in unified event cards;
-- full event category and subcategory list in create-event;
-- profile avatar crop/framing flow;
-- participant join messages in the notification bell;
-- related tests;
-- this agent report.
-
-Excluded:
-
-- auth;
-- Supabase RLS;
-- database schema;
-- migrations;
-- production avatar storage;
-- server-side push notifications;
-- secrets and `.env`;
-- unrelated feature work.
+- Removed duplicate leading emoji from unified event-card text while keeping the large event icon.
+- Exposed all existing event categories and subcategories in create-event.
+- Added mobile avatar cropping with zoom and focal-position controls.
+- Added persistent local participant-join notifications with unread count, participant name, event title, and timestamp.
+- Isolated notification derivation into a pure module to keep unit tests independent from browser runtime and Supabase.
+- Added unit coverage for card text cleanup, taxonomy exposure, avatar crop calculations, and participant notifications.
 
 ## Checks
 
+GitHub Actions CI run `#449` completed successfully.
+
 ```text
-pnpm run lint       PENDING
-pnpm run typecheck  PENDING
-pnpm run build      PENDING
-pnpm run test       PENDING
+pnpm run test       PASS
+pnpm run typecheck  PASS
+pnpm run lint       PASS
+pnpm run build      PASS
 ```
+
+Vercel preview status remained blocked by account build-rate limit, not by a repository build error.
 
 ## Next step
 
-Run all quality gates. Update this report with PASS/FAIL results before marking the PR ready or merging it.
+Squash-merge PR #73 into `main`.
