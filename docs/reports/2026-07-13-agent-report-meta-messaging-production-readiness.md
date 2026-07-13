@@ -136,6 +136,9 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - Post-rotation Messenger unsigned POST rejection — PASS (HTTP 401).
 - Live Messenger inbound delivery — PASS. A real `Привет` message reached `/api/messenger/webhook` at 19:23:22 and returned HTTP 200.
 - Live Messenger outbound invitation and delivery — PASS. The authenticated Production trigger loaded an existing event, awaited the Graph API send, returned HTTP 202 with `{ accepted: true }`, and receipt was confirmed in Messenger.
+- Live Messenger `Details` action — PASS. The signed postback returned the current event summary and remaining capacity.
+- Live Messenger `Join` action — PASS. The first signed postback created the participant and returned calendar and map links.
+- Live Messenger duplicate Join — PASS. A repeated signed postback returned the already-joined result, preserved the remaining-capacity count, and did not create a duplicate participant.
 - Plain-text response behavior — EXPECTED NO-OP. Runtime only processes signed `join:<eventId>` and `details:<eventId>` quick-reply/postback payloads; ordinary text has no action payload and produces no bot reply.
 - Messenger test-trigger focused tests — PASS (6 tests).
 - Secret boundary — PASS; no secret value is present in the report, repository, command output, or chat response.
@@ -145,6 +148,7 @@ Audit Issue #83 and the Issue #75 follow-up against the current remote `main`, t
 - The trigger must remain disabled unless its dedicated Production secret is intentionally configured.
 - It is an operator smoke-test surface, not a user-facing invitation API; no frontend must call it.
 - The Page-scoped recipient ID remained only in the operator session and was not persisted or printed. The event UUID used for the smoke test was read from the existing `activities` data without changing database state.
+- Messenger invitation, confirmation, calendar, and map copy is currently English-only and needs localization before a Russian-language launch.
 
 ## Not touched
 
