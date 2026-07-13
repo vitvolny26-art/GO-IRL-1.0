@@ -81,7 +81,7 @@ async function processAction(provider: MessagingProvider, action: InboundAction)
 
 export async function handleProviderWebhook(provider: MessagingProvider, request: Request) {
   if (request.method === "GET") {
-    const query = new URL(request.url).searchParams;
+    const query = new URL(request.url, "https://goirl.invalid").searchParams;
     const valid = query.get("hub.mode") === "subscribe"
       && query.get("hub.verify_token") === requireEnv("META_VERIFY_TOKEN")
       && Boolean(query.get("hub.challenge"));
