@@ -1,3 +1,3 @@
-import { handleProviderWebhook } from "../_shared/provider-webhook.js";
+import { createVercelWebhookHandler } from "../_shared/vercel-handler.js";
 
-export default (request: Request) => handleProviderWebhook("whatsapp", request);
+export default createVercelWebhookHandler("whatsapp");

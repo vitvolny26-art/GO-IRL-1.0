@@ -40,6 +40,8 @@ Implement the production backend path for WhatsApp, Instagram Direct, and Facebo
 - Configured production Vercel variables for Supabase access, Meta App Secret, Graph version, and webhook verify token.
 - Corrected server-function imports to explicit `.js` ESM specifiers after the first Vercel runtime smoke test exposed Node resolution failure.
 - Normalized relative Vercel request URLs and rotated the webhook verify token before Meta registration after runtime diagnostics.
+- Added a Vercel Node request/response adapter so serverless functions close requests correctly instead of returning an unsupported Web `Response`.
+- Disabled Vercel Authentication for this production project so Meta can reach the public webhook endpoints; application-level signature verification remains mandatory for POST requests.
 
 ## Checks
 
@@ -52,6 +54,7 @@ Implement the production backend path for WhatsApp, Instagram Direct, and Facebo
 - Remote migration history — PASS (`20260713000000` present locally and remotely)
 - Service-role RPC smoke test — PASS (`event_not_found` for an unused UUID)
 - Anonymous RPC denial — PASS (HTTP 401)
+- Production Vercel deployment — PASS (all three webhook functions built)
 
 ## Risks
 
