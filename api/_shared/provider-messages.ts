@@ -1,0 +1,85 @@
+import type { JoinResult } from "../../src/join/types";
+import {
+  buildInstagramInvitationPayload,
+  buildMessengerInvitationPayload,
+  buildMetaJoinResultPayload,
+} from "../../src/meta-messaging/payload-builders";
+import type { MetaEventSummary, MetaMessagingProvider } from "../../src/meta-messaging/types";
+import {
+  buildWhatsAppInvitationPayload,
+  buildWhatsAppJoinResultPayload,
+} from "../../src/whatsapp/payload-builders";
+import { requireEnv } from "./env";
+
+export type MessagingProvider = "whatsapp" | MetaMessagingProvider;
+
+const graphUrl = (path: string) =>
+  `https://graph.facebook.com/${requireEnv("META_GRAPH_VERSION")}/${path}`;
+
+async function sendGraphPayload(path: string, token: string, payload: unknown) {
+  const response = await fetch(graphUrl(path), {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`meta_send_failed:${response.status}:${errorText.slice(0, 300)}`);
+  }
+}
+
+export async function sendProviderInvitation(
+  provider: MessagingProvider,
+  recipientId: string,
+  event: MetaEventSummary,
+) {
+  if (provider === "whatsapp") {
+    return sendGraphPayload(
+      `${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`,
+      requireEnv("WHATSAPP_ACCESS_TOKEN"),
+      buildWhatsAppInvitationPayload(recipientId, event),
+    );
+  }
+  if (provider === "instagram") {
+    return sendGraphPayload(
+      `${requireEnv("INSTAGRAM_ACCOUNT_ID")}/messages`,
+      requireEnv("INSTAGRAM_ACCESS_TOKEN"),
+      buildInstagramInvitationPayload(recipientId, event),
+    );
+  }
+  return sendGraphPayload(
+    `${requireEnv("MESSENGER_PAGE_ID")}/messages`,
+    requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
+    buildMessengerInvitationPayload(recipientId, event),
+  );
+}
+
+export async function sendProviderJoinResult(
+  provider: MessagingProvider,
+  recipientId: string,
+  result: JoinResult,
+) {
+  if (provider === "whatsapp") {
+    const built = buildWhatsAppJoinResultPayload(recipientId, result);
+    const { join_status: _joinStatus, ...payload } = built;
+    void _joinStatus;
+    return sendGraphPayload(
+      `${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`,
+      requireEnv("WHATSAPP_ACCESS_TOKEN"),
+      payload,
+    );
+  }
+
+  const built = buildMetaJoinResultPayload(provider, recipientId, result);
+  const payload = provider === "messenger"
+    ? { messaging_type: "RESPONSE", recipient: built.recipient, message: built.message }
+    : { recipient: built.recipient, message: built.message };
+  return sendGraphPayload(
+    `${provider === "instagram" ? requireEnv("INSTAGRAM_ACCOUNT_ID") : requireEnv("MESSENGER_PAGE_ID")}/messages`,
+    provider === "instagram" ? requireEnv("INSTAGRAM_ACCESS_TOKEN") : requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
+    payload,
+  );
+}

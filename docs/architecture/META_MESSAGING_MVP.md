@@ -19,24 +19,27 @@ invitation -> Join quick reply -> shared JoinIntent -> confirmation -> calendar/
 
 Telegram remains the primary application. WhatsApp, Instagram, and Messenger are provider identities and interaction channels over shared events, capacity rules, moderation, and future persistence.
 
-## Phase 1 scaffold
+## Implemented production boundary
 
 - `JoinProvider` supports `instagram` and `messenger`.
 - Invitation builders create event summaries and stable `join:<eventId>` / `details:<eventId>` quick-reply payloads.
 - Confirmation builders render joined, duplicate, waitlist, and rejection results with calendar/map links.
 - Mock webhook parsing recognizes text, quick replies, and postbacks.
-- `api/instagram/webhook.ts` and `api/messenger/webhook.ts` are disabled and return `503`.
-- No live Meta calls, access tokens, account IDs, permissions, persistence, or webhook configuration are included.
+- `api/instagram/webhook.ts` and `api/messenger/webhook.ts` support GET verification and signature-checked POST delivery.
+- Provider identities use generic `app_users` records with opaque participant keys.
+- The server-only join RPC provides atomic join, duplicate, pending, and waitlist outcomes.
+- Confirmation messages include calendar/map actions and use provider-specific Graph API envelopes.
+- Access tokens and account IDs remain server-only Vercel variables.
 
-## Production approval gate
+## Production configuration gate
 
-Before enabling either channel, validate current Meta payload requirements in a test app and explicitly approve:
+Before live delivery, validate and configure:
 
 - Instagram professional account and Facebook Page connection;
 - Messenger Page permissions and Instagram messaging permissions;
 - production webhook verification and request authenticity checks;
 - replay/idempotency storage and provider identity mapping;
-- shared join-service persistence plus any required auth/RLS/schema work;
+- the already-deployed shared join-service migration and Vercel server variables;
 - live Send API calls, message-window rules, app review, and business verification.
 
 ## Out of scope

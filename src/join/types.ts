@@ -26,6 +26,11 @@ export type JoinResult =
       actions: JoinResultAction[];
     }
   | {
+      status: "pending";
+      eventId: string;
+      actions: JoinResultAction[];
+    }
+  | {
       status: "waitlisted";
       eventId: string;
       reason: "event_full";

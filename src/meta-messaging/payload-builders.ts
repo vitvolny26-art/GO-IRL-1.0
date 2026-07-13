@@ -46,6 +46,7 @@ export function buildMessengerInvitationPayload(
 const resultHeading = (result: JoinResult) => {
   if (result.status === "joined") return "You joined the event.";
   if (result.status === "already_joined") return "You are already joining this event.";
+  if (result.status === "pending") return "Your join request was sent to the organizer.";
   if (result.status === "waitlisted") return "The event is full. You are on the waitlist.";
   if (result.reason === "event_full") return "The event is full.";
   if (result.reason === "event_closed") return "Joining is closed.";

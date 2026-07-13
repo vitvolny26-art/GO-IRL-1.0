@@ -1,0 +1,113 @@
+import { parseMetaMessagingTestPayload } from "../../src/meta-messaging/mock-webhook";
+import type { MetaMessagingProvider } from "../../src/meta-messaging/types";
+import { parseWhatsAppTestPayload } from "../../src/whatsapp/mock-webhook";
+import { requireEnv } from "./env";
+import { verifyMetaSignature } from "./meta-signature";
+import { getProviderEventSummary, joinProviderEvent } from "./provider-join-service";
+import { sendProviderInvitation, sendProviderJoinResult, type MessagingProvider } from "./provider-messages";
+
+type UnknownRecord = Record<string, unknown>;
+
+type InboundAction = {
+  id: string;
+  providerUserId: string;
+  displayName: string;
+  actionPayload?: string;
+};
+
+const asRecord = (value: unknown): UnknownRecord | null =>
+  typeof value === "object" && value !== null ? value as UnknownRecord : null;
+
+const asRecords = (value: unknown) => Array.isArray(value) ? value.map(asRecord).filter(Boolean) as UnknownRecord[] : [];
+
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function parseWhatsAppActions(payload: unknown): InboundAction[] {
+  const root = asRecord(payload);
+  const names = new Map<string, string>();
+  for (const entry of asRecords(root?.entry)) {
+    for (const change of asRecords(entry.changes)) {
+      const value = asRecord(change.value);
+      for (const contact of asRecords(value?.contacts)) {
+        const profile = asRecord(contact.profile);
+        if (typeof contact.wa_id === "string" && typeof profile?.name === "string") names.set(contact.wa_id, profile.name);
+      }
+    }
+  }
+  return parseWhatsAppTestPayload(payload).map((message) => ({
+    id: message.id,
+    providerUserId: message.from,
+    displayName: names.get(message.from) || "WhatsApp User",
+    actionPayload: message.replyId,
+  }));
+}
+
+function parseMetaActions(provider: MetaMessagingProvider, payload: unknown): InboundAction[] {
+  return parseMetaMessagingTestPayload(provider, payload).map((message) => ({
+    id: message.id,
+    providerUserId: message.senderId,
+    displayName: provider === "instagram" ? "Instagram User" : "Messenger User",
+    actionPayload: message.actionPayload,
+  }));
+}
+
+const jsonResponse = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { "content-type": "application/json" },
+});
+
+async function processAction(provider: MessagingProvider, action: InboundAction) {
+  if (!action.actionPayload) return;
+  const separator = action.actionPayload.indexOf(":");
+  if (separator < 1) return;
+  const command = action.actionPayload.slice(0, separator);
+  const eventId = action.actionPayload.slice(separator + 1);
+  if (!uuidPattern.test(eventId)) return;
+
+  if (command === "details") {
+    const event = await getProviderEventSummary(eventId);
+    if (event) await sendProviderInvitation(provider, action.providerUserId, event);
+    return;
+  }
+  if (command !== "join") return;
+  const result = await joinProviderEvent({
+    provider,
+    providerUserId: action.providerUserId,
+    displayName: action.displayName,
+    eventId,
+  });
+  await sendProviderJoinResult(provider, action.providerUserId, result);
+}
+
+export async function handleProviderWebhook(provider: MessagingProvider, request: Request) {
+  if (request.method === "GET") {
+    const query = new URL(request.url).searchParams;
+    const valid = query.get("hub.mode") === "subscribe"
+      && query.get("hub.verify_token") === requireEnv("META_VERIFY_TOKEN")
+      && Boolean(query.get("hub.challenge"));
+    return valid
+      ? new Response(query.get("hub.challenge"), { status: 200 })
+      : jsonResponse({ error: "verification_failed" }, 403);
+  }
+
+  if (request.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
+  const rawBody = await request.text();
+  const signature = request.headers.get("x-hub-signature-256") || "";
+  if (!await verifyMetaSignature(rawBody, signature, requireEnv("META_APP_SECRET"))) {
+    return jsonResponse({ error: "invalid_signature" }, 401);
+  }
+
+  let payload: unknown;
+  try {
+    payload = JSON.parse(rawBody);
+  } catch {
+    return jsonResponse({ error: "invalid_json" }, 400);
+  }
+  const actions = provider === "whatsapp"
+    ? parseWhatsAppActions(payload)
+    : parseMetaActions(provider, payload);
+  const results = await Promise.allSettled(actions.map((action) => processAction(provider, action)));
+  const failures = results.filter((result) => result.status === "rejected");
+  if (failures.length) return jsonResponse({ error: "processing_failed", failed: failures.length }, 500);
+  return jsonResponse({ received: actions.length });
+}
