@@ -1,7 +1,8 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { buildTelegramShareCardSvg } from "./telegram-share-card-svg";
-import { renderTelegramShareCardJpeg } from "./telegram-share-card-image";
+import { configureTelegramShareCardFonts, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
 import type { TelegramEventCardInput } from "./telegram-event-card";
 
 const card: TelegramEventCardInput = {
@@ -33,6 +34,17 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain("&lt;вечером&gt;");
     expect(svg).toContain("ZŠ Demlova &amp; park");
     expect(svg).toContain("23°C");
+    expect(svg).toContain("DejaVu Sans");
+    expect(svg).not.toContain("Arial");
+  });
+
+  it("bundles regular and bold Cyrillic fonts for serverless rendering", () => {
+    const fonts = configureTelegramShareCardFonts();
+    expect(fonts.regularFont).toMatch(/DejaVuSans\.ttf$/);
+    expect(fonts.boldFont).toMatch(/DejaVuSans-Bold\.ttf$/);
+    expect(existsSync(fonts.regularFont)).toBe(true);
+    expect(existsSync(fonts.boldFont)).toBe(true);
+    expect(existsSync(fonts.configFile)).toBe(true);
   });
 
   it("produces a Telegram-compatible JPEG", async () => {
