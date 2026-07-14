@@ -29,6 +29,7 @@ import {
   runEventPrimaryAction,
 } from "../eventInteractionState";
 import { eventDurationLabel, sportLevelFormatLabel } from "../eventCardPresentation";
+import { buildDurationOptions, formatDurationOption } from "../durationOptions";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -122,6 +123,8 @@ type SportSheetProps = {
 
 export function SportCreateFields({ language, initialSport }: { language: Language; initialSport: SportMetadata }) {
   const t = getTranslation(language);
+  const initialDuration = initialSport.durationMinutes || 90;
+  const durationOptions = buildDurationOptions(initialDuration);
   return (
     <div className="sport-create-panel">
       <div className="sport-panel-title"> {t.sportVertical}</div>
@@ -131,7 +134,7 @@ export function SportCreateFields({ language, initialSport }: { language: Langua
       </div>
       <div className="form-row">
         <label><span>{t.sportEnvironment}</span><select name="sportEnvironment" defaultValue={initialSport.environment || "outdoor"}>{sportEnvironments.map((environment) => <option key={environment.id} value={environment.id}>{environment.label[language]}</option>)}</select></label>
-        <label><span>{t.sportDuration}</span><input name="sportDuration" type="number" min="15" max="480" step="15" defaultValue={initialSport.durationMinutes || 90} /></label>
+        <label><span>{t.sportDuration}</span><select name="sportDuration" defaultValue={String(initialDuration)}>{durationOptions.map((minutes) => <option key={minutes} value={minutes}>{formatDurationOption(minutes, language)}</option>)}</select></label>
       </div>
       <label className="sport-check"><input name="sportEquipmentNeeded" type="checkbox" defaultChecked={Boolean(initialSport.equipmentNeeded)} /><span>{t.sportEquipmentNeeded}</span></label>
       <label><span>{t.sportEquipment}</span><input name="sportEquipment" defaultValue={initialSport.equipment} placeholder={t.sportEquipmentPlaceholder} /></label>
