@@ -51,14 +51,50 @@ const activityArtwork = (icon: string) => {
       <circle cx="151" cy="249" r="15" fill="#c9ff3d"/><circle cx="195" cy="249" r="15" fill="#c9ff3d"/><circle cx="238" cy="249" r="15" fill="#c9ff3d"/>
     </g>`;
   }
-  return `<text x="191" y="225" text-anchor="middle" fill="#dfff91" font-size="112" font-family="DejaVu Sans, sans-serif">${xml(clean(icon, 12))}</text>`;
+  return `<g fill="none" stroke="#c9ff3d" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="191" cy="191" r="60"/>
+      <path d="M191 151v80M151 191h80"/>
+    </g>`;
 };
 
-const metric = (x: number, y: number, icon: string, value: string, lines = 1) => {
+type MetricIcon = "calendar" | "ticket" | "pin" | "status";
+
+const metricIcon = (kind: MetricIcon, x: number, y: number) => {
+  const left = x + 38;
+  const top = y + 34;
+
+  if (kind === "calendar") {
+    return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="${left}" y="${top}" width="42" height="40" rx="7"/>
+      <path d="M${left} ${top + 13}h42M${left + 11} ${top - 5}v12M${left + 31} ${top - 5}v12"/>
+    </g>`;
+  }
+
+  if (kind === "ticket") {
+    return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M${left} ${top + 5}h43v11a10 10 0 0 0 0 20v11h-43v-11a10 10 0 0 0 0-20z"/>
+      <path d="M${left + 22} ${top + 7}v38" stroke-dasharray="4 8"/>
+    </g>`;
+  }
+
+  if (kind === "pin") {
+    return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M${left + 21} ${top + 47}s19-19 19-31a19 19 0 1 0-38 0c0 12 19 31 19 31z"/>
+      <circle cx="${left + 21}" cy="${top + 16}" r="6"/>
+    </g>`;
+  }
+
+  return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="${left + 21}" cy="${top + 20}" r="18"/>
+    <path d="M${left + 21} ${top + 8}v13l9 7"/>
+  </g>`;
+};
+
+const metric = (x: number, y: number, icon: MetricIcon, value: string, lines = 1) => {
   const wrapped = wrap(value, lines === 1 ? 24 : 20, lines);
   return `<g>
     <rect x="${x}" y="${y}" width="440" height="116" rx="30" fill="#171a1d" stroke="#303439" stroke-width="2"/>
-    <text x="${x + 38}" y="${y + 70}" fill="#c9ff3d" font-size="38" font-family="DejaVu Sans, sans-serif">${xml(icon)}</text>
+    ${metricIcon(icon, x, y)}
     <text x="${x + 98}" y="${y + 58}" fill="#aeb3bd" font-size="31" font-weight="800" font-family="DejaVu Sans, sans-serif">${textLines(wrapped, x + 98, y + (wrapped.length > 1 ? 43 : 68), 38)}</text>
   </g>`;
 };
@@ -98,13 +134,19 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
     <circle cx="941" cy="105" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="84" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="126" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/>
   </g>
   <g><rect x="810" y="166" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="213" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(duration)}</text></g>
-  <g><rect x="810" y="250" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="297" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">👥 ${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text></g>
+  <g>
+    <rect x="810" y="250" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/>
+    <g fill="none" stroke="#e5ffa7" stroke-width="4" stroke-linecap="round">
+      <circle cx="848" cy="278" r="9"/><path d="M832 303c2-12 9-18 16-18s14 6 16 18"/>
+    </g>
+    <text x="922" y="297" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text>
+  </g>
 
   <line x1="76" y1="340" x2="1004" y2="340" stroke="#2b2e32" stroke-width="2"/>
-  ${metric(76, 374, "📅", dateTime)}
-  ${metric(564, 374, "🎟", price)}
-  ${metric(76, 510, "📍", place, 2)}
-  ${metric(564, 510, "☆", status || environment, 2)}
+  ${metric(76, 374, "calendar", dateTime)}
+  ${metric(564, 374, "ticket", price)}
+  ${metric(76, 510, "pin", place, 2)}
+  ${metric(564, 510, "status", status || environment, 2)}
 
   <rect x="76" y="682" width="440" height="120" rx="42" fill="url(#secondaryAction)" stroke="#54751d" stroke-width="2"/>
   <text x="296" y="754" text-anchor="middle" fill="#c9ff3d" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(input.isSport ? labels.coach : labels.details)}</text>

@@ -77,6 +77,55 @@ const sportMetadata = (metadata: Record<string, unknown> | null) => {
 const text = (value: unknown, fallback: string) => typeof value === "string" && value.trim() ? value.trim() : fallback;
 const number = (value: unknown, fallback: number) => Number.isFinite(value) ? Number(value) : fallback;
 
+const sportValueCopy = {
+  ru: {
+    beginner: "Начальный",
+    intermediate: "Любитель",
+    advanced: "Продвинутый",
+    casual: "Любительский",
+    competitive: "Соревновательный",
+    indoor: "В помещении",
+    outdoor: "На улице",
+  },
+  uk: {
+    beginner: "Початковий",
+    intermediate: "Аматор",
+    advanced: "Просунутий",
+    casual: "Аматорський",
+    competitive: "Змагальний",
+    indoor: "У приміщенні",
+    outdoor: "Надворі",
+  },
+  cs: {
+    beginner: "Začátečník",
+    intermediate: "Pokročilý",
+    advanced: "Expert",
+    casual: "Rekreační",
+    competitive: "Soutěžní",
+    indoor: "Uvnitř",
+    outdoor: "Venku",
+  },
+  en: {
+    beginner: "Beginner",
+    intermediate: "Intermediate",
+    advanced: "Advanced",
+    casual: "Casual",
+    competitive: "Competitive",
+    indoor: "Indoor",
+    outdoor: "Outdoor",
+  },
+} as const;
+
+const localizedSportValue = (
+  value: unknown,
+  language: ShareLanguage,
+  fallback: string,
+) => {
+  const raw = text(value, fallback);
+  const key = raw.toLocaleLowerCase() as keyof typeof sportValueCopy.en;
+  return sportValueCopy[language][key] || raw;
+};
+
 export async function loadTrustedTelegramEventCard(eventId: string, language: ShareLanguage): Promise<TelegramEventCardInput | null> {
   const db = client();
   const { data, error } = await db
@@ -118,9 +167,9 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     city: cityName(row.city_id, language),
     durationMinutes: number(sport?.durationMinutes, 90),
     price: row.price,
-    level: text(sport?.level, generic.level),
-    format: text(sport?.format, generic.format),
-    environment: text(sport?.environment, generic.environment),
+    level: localizedSportValue(sport?.level, language, generic.level),
+    format: localizedSportValue(sport?.format, language, generic.format),
+    environment: localizedSportValue(sport?.environment, language, generic.environment),
     isSport: row.activity_type === "sport" || Boolean(sport),
     language,
   };
