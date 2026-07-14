@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type TouchEvent as ReactTouchEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -93,6 +93,7 @@ import {
   runEventPrimaryAction,
 } from "./eventInteractionState";
 import { isTabSwipeBlockedTarget, resolveAdjacentTab, resolveSwipeDirection } from "./bottom-nav-swipe";
+import { isTemplateCarouselDrag } from "./templateCarousel";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -740,6 +741,7 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
   const selectedCityId = useAppStore((state) => state.selectedCityId);
   const setSelectedCity = useAppStore((state) => state.setSelectedCity);
   const formRef = useRef<HTMLFormElement>(null);
+  const templateGesture = useRef<{ x: number; y: number; dragged: boolean } | null>(null);
   const [categoryId, setCategoryId] = useState(initialActivity?.categoryId || "sport");
   const [cityId, setCityId] = useState(initialActivity?.cityId || selectedCityId);
   const [submitting, setSubmitting] = useState(false);
@@ -781,6 +783,28 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
       setFieldValue("descriptionText", template.description);
       setFieldValue("capacity", String(template.capacity));
     });
+  };
+
+  const handleTemplatePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    templateGesture.current = { x: event.clientX, y: event.clientY, dragged: false };
+  };
+
+  const handleTemplatePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const gesture = templateGesture.current;
+    if (!gesture || gesture.dragged) return;
+    if (isTemplateCarouselDrag(gesture, { x: event.clientX, y: event.clientY })) gesture.dragged = true;
+  };
+
+  const finishTemplateGesture = () => {
+    window.setTimeout(() => { templateGesture.current = null; }, 0);
+  };
+
+  const handleTemplateClick = (template: (typeof quickTemplates)[number]) => {
+    if (templateGesture.current?.dragged) {
+      templateGesture.current = null;
+      return;
+    }
+    applyTemplate(template);
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -861,9 +885,15 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
       <form className="create-form" ref={formRef} onSubmit={submit}>
         <div className="template-row" aria-label={t.quickTemplates}>
           <span>{t.quickTemplates}</span>
-          <div>
+          <div
+            data-no-tab-swipe
+            onPointerDown={handleTemplatePointerDown}
+            onPointerMove={handleTemplatePointerMove}
+            onPointerUp={finishTemplateGesture}
+            onPointerCancel={finishTemplateGesture}
+          >
             {quickTemplates.map((template) => (
-              <button key={template.id} onClick={() => applyTemplate(template)} type="button">
+              <button key={template.id} onClick={() => handleTemplateClick(template)} type="button">
                 {template.icon} {template.label}
               </button>
             ))}
