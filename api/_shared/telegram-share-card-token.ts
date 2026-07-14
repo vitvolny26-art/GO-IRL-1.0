@@ -9,14 +9,23 @@ type ShareCardTokenPayload = {
 const signatureFor = (payload: string, secret: string) =>
   createHmac("sha256", secret).update(payload).digest("base64url");
 
-export function createTelegramShareCardToken(
+const createShareCardToken = (
   card: TelegramEventCardInput,
   secret: string,
-  now = Date.now(),
-) {
-  const payload = Buffer.from(JSON.stringify({ card, expiresAt: now + 60 * 60 * 1000 } satisfies ShareCardTokenPayload))
+  now: number,
+  ttlMs: number,
+) => {
+  const payload = Buffer.from(JSON.stringify({ card, expiresAt: now + ttlMs } satisfies ShareCardTokenPayload))
     .toString("base64url");
   return `${payload}.${signatureFor(payload, secret)}`;
+};
+
+export function createTelegramShareCardToken(card: TelegramEventCardInput, secret: string, now = Date.now()) {
+  return createShareCardToken(card, secret, now, 60 * 60 * 1000);
+}
+
+export function createMetaInvitationCardToken(card: TelegramEventCardInput, secret: string, now = Date.now()) {
+  return createShareCardToken(card, secret, now, 24 * 60 * 60 * 1000);
 }
 
 export function readTelegramShareCardToken(token: string, secret: string, now = Date.now()) {
@@ -36,3 +45,5 @@ export function readTelegramShareCardToken(token: string, secret: string, now = 
     return null;
   }
 }
+
+export const readMetaInvitationCardToken = readTelegramShareCardToken;

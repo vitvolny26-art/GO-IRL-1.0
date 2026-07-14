@@ -3,8 +3,8 @@ title: Instagram and Messenger Event Join MVP
 owner: GO IRL Technical Archivist
 status: Draft
 source_of_truth: false
-last_review: 2026-07-13
-next_review: 2026-07-20
+last_review: 2026-07-15
+next_review: 2026-07-22
 ---
 
 # Instagram and Messenger Event Join MVP
@@ -23,6 +23,10 @@ Telegram remains the primary application. WhatsApp, Instagram, and Messenger are
 
 - `JoinProvider` supports `instagram` and `messenger`.
 - Invitation builders create event summaries and stable `join:<eventId>` / `details:<eventId>` quick-reply payloads.
+- Rich invitations use one 1080x1080 GO IRL JPEG standard with activity artwork, date, price, location, level, capacity, optional weather, and visual calls to action.
+- The image is served by `api/meta/event-invitation-card.ts` only when a time-limited HMAC token is valid. Tokens contain public event-card data and expire after 24 hours.
+- Instagram Direct and Messenger use a native Generic Template around the image. Join remains a postback; Open is a native web action when a Telegram invite URL is available.
+- Missing deployment origin or signing secret degrades to the existing text plus quick-reply invitation instead of blocking delivery.
 - Confirmation builders render joined, duplicate, waitlist, and rejection results with calendar/map links.
 - Mock webhook parsing recognizes text, quick replies, and postbacks.
 - `api/instagram/webhook.ts` and `api/messenger/webhook.ts` support GET verification and signature-checked POST delivery.
@@ -30,6 +34,10 @@ Telegram remains the primary application. WhatsApp, Instagram, and Messenger are
 - The server-only join RPC provides atomic join, duplicate, pending, and waitlist outcomes.
 - Confirmation messages include calendar/map actions and use provider-specific Graph API envelopes.
 - Access tokens and account IDs remain server-only Vercel variables.
+
+## Invitation visual boundary
+
+The rendered image is a snapshot created when the message is sent. Meta controls the final button chrome and message spacing. Buttons painted inside the JPEG are visual continuity only; the provider-native Join/Open actions are the interactive controls. Weather is included only when Open-Meteo has a forecast for the event window, otherwise the card shows a neutral forecast placeholder.
 
 ## Production configuration gate
 

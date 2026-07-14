@@ -1,12 +1,7 @@
 import type { JoinResult } from "../join/types.js";
+import type { EventInvitationSummary } from "../invitations/types.js";
 
-export type WhatsAppEventSummary = {
-  eventId: string;
-  title: string;
-  dateTime: string;
-  location: string;
-  availableSpots: number;
-};
+export type WhatsAppEventSummary = EventInvitationSummary;
 
 export type WhatsAppTextPayload = {
   messaging_product: "whatsapp";
@@ -21,6 +16,10 @@ export type WhatsAppButtonPayload = {
   type: "interactive";
   interactive: {
     type: "button";
+    header?: {
+      type: "image";
+      image: { link: string };
+    };
     body: { text: string };
     action: {
       buttons: Array<{

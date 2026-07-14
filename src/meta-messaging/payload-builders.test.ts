@@ -40,6 +40,21 @@ describe("Meta messaging payload builders", () => {
     ]);
   });
 
+  it("builds a branded generic card with native Join and Open actions", () => {
+    const payload = buildInstagramInvitationPayload("ig-user-1", {
+      ...event,
+      imageUrl: "https://goirl.example/api/meta/event-invitation-card?token=signed",
+      inviteUrl: "https://t.me/GOirl_bot?startapp=event-meta-1",
+    });
+    const element = payload.message.attachment?.payload.elements[0];
+    expect(element?.image_url).toContain("event-invitation-card");
+    expect(element?.default_action?.url).toContain("t.me/GOirl_bot");
+    expect(element?.buttons).toEqual([
+      { type: "postback", title: "Присоединиться", payload: "join:event-meta-1" },
+      { type: "web_url", title: "Открыть", url: "https://t.me/GOirl_bot?startapp=event-meta-1" },
+    ]);
+  });
+
   it("builds an Instagram confirmation with calendar and map actions", () => {
     const payload = buildMetaJoinResultPayload("instagram", "ig-user-1", {
       status: "joined",

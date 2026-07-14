@@ -20,6 +20,41 @@ const eventQuickReplies = (eventId: string): MetaQuickReply[] => [
   { content_type: "text", title: "Подробнее", payload: `details:${eventId}` },
 ];
 
+const invitationMessage = (event: MetaEventSummary) => {
+  if (!event.imageUrl) {
+    return {
+      text: eventSummaryText(event),
+      quick_replies: eventQuickReplies(event.eventId),
+    };
+  }
+
+  const buttons = event.inviteUrl
+    ? [
+        { type: "postback" as const, title: "Присоединиться", payload: `join:${event.eventId}` },
+        { type: "web_url" as const, title: "Открыть", url: event.inviteUrl },
+      ]
+    : [
+        { type: "postback" as const, title: "Присоединиться", payload: `join:${event.eventId}` },
+        { type: "postback" as const, title: "Подробнее", payload: `details:${event.eventId}` },
+      ];
+
+  return {
+    attachment: {
+      type: "template" as const,
+      payload: {
+        template_type: "generic" as const,
+        elements: [{
+          title: event.title.slice(0, 80),
+          subtitle: [event.dateTime, event.location].filter(Boolean).join(" · ").slice(0, 80),
+          image_url: event.imageUrl,
+          ...(event.inviteUrl ? { default_action: { type: "web_url" as const, url: event.inviteUrl } } : {}),
+          buttons,
+        }],
+      },
+    },
+  };
+};
+
 const messengerEventSummaryText = (event: MetaEventSummary) => [
   event.title,
   event.dateTime,
@@ -38,10 +73,7 @@ export function buildInstagramInvitationPayload(
 ): InstagramMessagePayload {
   return {
     recipient: { id: recipientId },
-    message: {
-      text: eventSummaryText(event),
-      quick_replies: eventQuickReplies(event.eventId),
-    },
+    message: invitationMessage(event),
   };
 }
 
@@ -52,10 +84,12 @@ export function buildMessengerInvitationPayload(
   return {
     messaging_type: "RESPONSE",
     recipient: { id: recipientId },
-    message: {
-      text: messengerEventSummaryText(event),
-      quick_replies: messengerEventQuickReplies(event.eventId),
-    },
+    message: event.imageUrl
+      ? invitationMessage(event)
+      : {
+          text: messengerEventSummaryText(event),
+          quick_replies: messengerEventQuickReplies(event.eventId),
+        },
   };
 }
 

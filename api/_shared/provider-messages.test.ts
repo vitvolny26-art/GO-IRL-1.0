@@ -19,7 +19,30 @@ describe("provider message endpoints", () => {
     delete runtimeEnv.INSTAGRAM_ACCOUNT_ID;
     delete runtimeEnv.INSTAGRAM_ACCESS_TOKEN;
     delete runtimeEnv.META_GRAPH_VERSION;
+    delete runtimeEnv.META_APP_SECRET;
+    delete runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL;
     vi.unstubAllGlobals();
+  });
+
+  it("attaches a signed public GO IRL card when the deployment origin is available", async () => {
+    runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
+    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
+    runtimeEnv.META_APP_SECRET = "meta-app-secret";
+    runtimeEnv.META_GRAPH_VERSION = "v23.0";
+    runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL = "go-irl-1-0.vercel.app";
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendProviderInvitation("instagram", "1234567890123456", {
+      ...event,
+      inviteUrl: `https://t.me/GOirl_bot?startapp=${event.eventId}`,
+    });
+
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      message?: { attachment?: { payload?: { elements?: Array<{ image_url?: string }> } } };
+    };
+    expect(request.message?.attachment?.payload?.elements?.[0]?.image_url)
+      .toMatch(/^https:\/\/go-irl-1-0\.vercel\.app\/api\/meta\/event-invitation-card\?token=/);
   });
 
   it("uses the current Instagram Login Send API endpoint", async () => {

@@ -23,6 +23,22 @@ describe("WhatsApp payload builders", () => {
     expect(payload.interactive.action.buttons[0].reply).toEqual({ id: "join:event-75", title: "Join" });
   });
 
+  it("adds the branded card as an image header without replacing native actions", () => {
+    const payload = buildWhatsAppInvitationPayload("420700000000", {
+      ...event,
+      language: "ru",
+      imageUrl: "https://goirl.example/api/meta/event-invitation-card?token=signed",
+    });
+    expect(payload.interactive.header).toEqual({
+      type: "image",
+      image: { link: "https://goirl.example/api/meta/event-invitation-card?token=signed" },
+    });
+    expect(payload.interactive.action.buttons.map((button) => button.reply.title)).toEqual([
+      "Присоединиться",
+      "Подробнее",
+    ]);
+  });
+
   it("builds a Flow navigation payload without embedded credentials", () => {
     const payload = buildWhatsAppJoinFlowPayload("420700000000", event, {
       id: "caller-supplied-flow-id",

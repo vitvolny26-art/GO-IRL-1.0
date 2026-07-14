@@ -13,18 +13,27 @@ const eventSummaryText = (event: WhatsAppEventSummary) => [
   event.availableSpots > 0 ? `Available spots: ${event.availableSpots}` : "Event is full",
 ].join("\n");
 
+const buttonCopy = {
+  ru: { join: "Присоединиться", details: "Подробнее" },
+  uk: { join: "Приєднатися", details: "Докладніше" },
+  cs: { join: "Připojit se", details: "Podrobnosti" },
+  en: { join: "Join", details: "Details" },
+} as const;
+
 export function buildWhatsAppInvitationPayload(to: string, event: WhatsAppEventSummary): WhatsAppButtonPayload {
+  const labels = buttonCopy[event.language || "en"];
   return {
     messaging_product: "whatsapp",
     to,
     type: "interactive",
     interactive: {
       type: "button",
+      ...(event.imageUrl ? { header: { type: "image" as const, image: { link: event.imageUrl } } } : {}),
       body: { text: eventSummaryText(event) },
       action: {
         buttons: [
-          { type: "reply", reply: { id: `join:${event.eventId}`, title: "Join" } },
-          { type: "reply", reply: { id: `details:${event.eventId}`, title: "Details" } },
+          { type: "reply", reply: { id: `join:${event.eventId}`, title: labels.join } },
+          { type: "reply", reply: { id: `details:${event.eventId}`, title: labels.details } },
         ],
       },
     },
