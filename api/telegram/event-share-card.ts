@@ -31,7 +31,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const jpeg = await renderTelegramShareCardJpeg(card);
     response.setHeader("Content-Type", "image/jpeg");
     response.setHeader("Content-Length", String(jpeg.length));
-    response.setHeader("Cache-Control", "public, max-age=3600, immutable");
+    response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    response.setHeader("Pragma", "no-cache");
+    response.setHeader("Expires", "0");
     return response.status(200).end(jpeg);
   } catch {
     return response.status(500).end("render_failed");
