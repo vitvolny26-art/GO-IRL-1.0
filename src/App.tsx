@@ -40,6 +40,7 @@ import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
 import {
   applyDiscoverFilters,
+  actionableSurpriseActivities,
   matchesActivityInterest,
   searchActivities,
   simpleRecommendationEngine,
@@ -354,8 +355,16 @@ function App() {
   };
 
   const openRandom = () => {
-    const random = store.activities[Math.floor(Math.random() * store.activities.length)];
+    const eligible = actionableSurpriseActivities(store.activities, {
+      userKey: getUserKey(),
+      joinedIds: store.joinedIds,
+      waitingIds: store.waitingIds,
+      pendingIds: store.pendingIds,
+      now: new Date(),
+    });
+    const random = eligible[Math.floor(Math.random() * eligible.length)];
     if (random) openActivity(random);
+    else flash(t.noEvents);
     impactTelegram("medium");
   };
 
