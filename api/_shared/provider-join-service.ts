@@ -1,7 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { JoinProvider, JoinResult, JoinResultAction } from "../../src/join/types.js";
 import type { MetaEventSummary } from "../../src/meta-messaging/types.js";
-import { getEventWeather } from "../../src/services/weather.js";
 import { requireEnv } from "./env.js";
 import { loadTrustedTelegramEventCard } from "./telegram-share-event.js";
 
@@ -59,33 +58,13 @@ export async function getProviderEvent(eventId: string) {
 }
 
 export async function getProviderEventSummary(eventId: string): Promise<MetaEventSummary | null> {
-  const [activity, card] = await Promise.all([
-    getProviderEvent(eventId),
-    loadTrustedTelegramEventCard(eventId, "ru"),
-  ]);
-  if (!activity || !card) return null;
-  const weather = card.isSport
-    ? await getEventWeather({
-        date: activity.event_date,
-        time: activity.event_time,
-        address: activity.address,
-        city: card.city,
-        durationMinutes: card.durationMinutes,
-      }).catch(() => null)
-    : null;
+  const card = await loadTrustedTelegramEventCard(eventId, "ru");
+  if (!card) return null;
   return {
     ...card,
     dateTime: [card.date, card.time].filter(Boolean).join(" · "),
     location: card.address,
     availableSpots: Math.max(card.capacity - card.participants, 0),
-    ...(weather ? {
-      weather: {
-        icon: weather.text.split(" ")[0] || "🌤️",
-        temperature: weather.temperature,
-        rain: weather.rain,
-        wind: weather.wind,
-      },
-    } : {}),
   };
 }
 
