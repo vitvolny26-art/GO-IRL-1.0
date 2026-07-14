@@ -352,7 +352,8 @@ function App() {
 
   const shareActivity = async (activity: Activity) => {
     const url = activityInviteUrl(activity);
-    if (await sharePreparedTelegramEvent(activity, store.language, url)) return;
+    const preparedResult = await sharePreparedTelegramEvent(activity, store.language);
+    if (preparedResult === "shared" || preparedResult === "cancelled") return;
     const text = ShareTemplateService.build(activity, store.language);
     const invitationText = buildSeparatedInvitationText(url, text);
     const telegramShareUrl = buildTelegramShareUrl(url, text);
@@ -1187,7 +1188,7 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
           address={activity.address}
           url={activityInviteUrl(activity)}
           label={t.share}
-          onTelegramShare={() => sharePreparedTelegramEvent(activity, language, activityInviteUrl(activity))}
+          onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
         />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">

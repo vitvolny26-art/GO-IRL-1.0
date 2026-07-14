@@ -31,7 +31,7 @@ describe("sharePreparedTelegramEvent", () => {
     vi.stubGlobal("window", { setTimeout, clearTimeout });
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    await expect(sharePreparedTelegramEvent(activity, "ru", "https://t.me/GOirl_bot?startapp=3b172dd9-d5e2-4328-86a4-d4107a6359fc")).resolves.toBe(false);
+    await expect(sharePreparedTelegramEvent(activity, "ru")).resolves.toBe("unavailable");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -48,20 +48,15 @@ describe("sharePreparedTelegramEvent", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(sharePreparedTelegramEvent(activity, "ru", "https://t.me/GOirl_bot?startapp=3b172dd9-d5e2-4328-86a4-d4107a6359fc")).resolves.toBe(true);
+    await expect(sharePreparedTelegramEvent(activity, "ru")).resolves.toBe("shared");
     const request = fetchMock.mock.calls[0][1] as RequestInit;
     const body = JSON.parse(String(request.body));
-    expect(body.card).toMatchObject({
-      activity: "Волейбол",
-      title: "Игра вечером",
-      date: "19 июл",
-      time: "16:30",
-      city: "Оломоуц",
-      mapUrl: "https://mapy.cz/zakladni?q=Z%C5%A0%20Demlova%2C%20%D0%9E%D0%BB%D0%BE%D0%BC%D0%BE%D1%83%D1%86",
-      price: 0,
-      isSport: true,
+    expect(body).toEqual({
+      initData: "signed-init-data",
+      eventId: activity.id,
+      language: "ru",
     });
-    expect(body.card).not.toHaveProperty("weather");
+    expect(body).not.toHaveProperty("card");
     expect(shareMessage).toHaveBeenCalledWith("prepared-123", expect.any(Function));
   });
 });

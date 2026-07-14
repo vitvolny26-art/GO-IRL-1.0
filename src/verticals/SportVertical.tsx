@@ -248,7 +248,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           address={activity.address}
           url={activityInviteUrl(activity)}
           label={t.share}
-          onTelegramShare={() => sharePreparedTelegramEvent(activity, language, activityInviteUrl(activity))}
+          onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
         />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">

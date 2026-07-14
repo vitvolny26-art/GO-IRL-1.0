@@ -1,12 +1,17 @@
 import { readEnv } from "../_shared/env.js";
 import { buildTelegramEventCard } from "../_shared/telegram-event-card.js";
-import { normalizeTelegramEventCardInput } from "../_shared/telegram-event-card-input.js";
+import {
+  isShareEventId,
+  isShareLanguage,
+  loadTrustedTelegramEventCard,
+} from "../_shared/telegram-share-event.js";
 import { createTelegramShareCardToken } from "../_shared/telegram-share-card-token.js";
 import { TelegramInitDataValidationError, validateTelegramInitData } from "../../supabase/functions/_shared/telegramInitData.js";
 
 type VercelRequest = {
   method?: string;
   body?: unknown;
+  headers?: Record<string, string | string[] | undefined>;
   [Symbol.asyncIterator]?(): AsyncIterator<Uint8Array | string>;
 };
 
@@ -15,6 +20,10 @@ type VercelResponse = {
   setHeader(name: string, value: string): void;
   status(code: number): VercelResponse;
 };
+
+const MAX_BODY_BYTES = 16 * 1024;
+
+class RequestBodyTooLargeError extends Error {}
 
 const publicOrigin = () => {
   const host = readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL");
@@ -27,16 +36,35 @@ const json = (response: VercelResponse, status: number, payload: unknown) => {
   response.status(status).end(JSON.stringify(payload));
 };
 
+const bodySize = (value: string) => new TextEncoder().encode(value).length;
+
 async function readBody(request: VercelRequest) {
-  if (request.body && typeof request.body === "object") return request.body;
-  if (typeof request.body === "string") return JSON.parse(request.body) as unknown;
+  const rawLength = request.headers?.["content-length"];
+  const contentLength = Number(Array.isArray(rawLength) ? rawLength[0] : rawLength);
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) throw new RequestBodyTooLargeError();
+
+  if (request.body && typeof request.body === "object") {
+    const serialized = JSON.stringify(request.body);
+    if (bodySize(serialized) > MAX_BODY_BYTES) throw new RequestBodyTooLargeError();
+    return request.body;
+  }
+  if (typeof request.body === "string") {
+    if (bodySize(request.body) > MAX_BODY_BYTES) throw new RequestBodyTooLargeError();
+    return JSON.parse(request.body) as unknown;
+  }
   if (!request[Symbol.asyncIterator]) return null;
+
   const decoder = new TextDecoder();
   let raw = "";
+  let bytes = 0;
   for await (const chunk of request as Required<Pick<VercelRequest, typeof Symbol.asyncIterator>>) {
-    raw += typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true });
+    const text = typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true });
+    bytes += bodySize(text);
+    if (bytes > MAX_BODY_BYTES) throw new RequestBodyTooLargeError();
+    raw += text;
   }
   raw += decoder.decode();
+  if (bodySize(raw) > MAX_BODY_BYTES) throw new RequestBodyTooLargeError();
   return raw ? JSON.parse(raw) as unknown : null;
 }
 
@@ -49,17 +77,25 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const botToken = readEnv("TELEGRAM_BOT_TOKEN");
   if (!botToken) return json(response, 503, { error: "telegram_share_unavailable" });
 
-  let body: { initData?: unknown; card?: unknown } | null;
+  let body: { initData?: unknown; eventId?: unknown; language?: unknown } | null;
   try {
     body = await readBody(request) as typeof body;
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      console.warn("telegram_share_payload_too_large");
+      return json(response, 413, { error: "payload_too_large" });
+    }
     console.warn("telegram_share_invalid_json");
     return json(response, 400, { error: "invalid_share_request" });
   }
 
-  const card = normalizeTelegramEventCardInput(body?.card);
-  if (!body || typeof body.initData !== "string" || !card) {
-    console.warn("telegram_share_invalid_request", { hasInitData: typeof body?.initData === "string", hasCard: Boolean(card) });
+  if (!body
+    || typeof body.initData !== "string"
+    || body.initData.length < 1
+    || body.initData.length > 8_192
+    || !isShareEventId(body.eventId)
+    || !isShareLanguage(body.language)) {
+    console.warn("telegram_share_invalid_request");
     return json(response, 400, { error: "invalid_share_request" });
   }
 
@@ -69,10 +105,13 @@ export default async function handler(request: VercelRequest, response: VercelRe
   } catch (error) {
     const reason = error instanceof TelegramInitDataValidationError ? error.code : "unknown";
     console.warn("telegram_share_invalid_session", { reason });
-    return json(response, 400, { error: "invalid_telegram_session" });
+    return json(response, 401, { error: "invalid_telegram_session" });
   }
 
   try {
+    const card = await loadTrustedTelegramEventCard(body.eventId, body.language);
+    if (!card) return json(response, 404, { error: "event_not_found" });
+
     const imageToken = createTelegramShareCardToken(card, botToken);
     const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}`;
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
@@ -100,8 +139,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
       preparedMessageId: payload.result.id,
       expiresAt: payload.result.expiration_date,
     });
-  } catch {
-    console.error("telegram_prepare_exception");
-    return json(response, 502, { error: "telegram_prepare_failed" });
+  } catch (error) {
+    console.error("telegram_prepare_exception", error instanceof Error ? error.message : "unknown");
+    return json(response, 503, { error: "telegram_share_unavailable" });
   }
 }
