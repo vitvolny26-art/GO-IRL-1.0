@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
 import { buildCardShareTarget, buildCardShareText, type CardShareChannel } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
+import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
   title: string;
@@ -9,7 +10,7 @@ type CardShareActionProps = {
   address: string;
   url: string;
   label: string;
-  onTelegramShare?: () => Promise<boolean>;
+  onTelegramShare?: () => Promise<PreparedTelegramShareResult>;
 };
 
 const channels = [
@@ -43,7 +44,10 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   const share = async (channel: CardShareChannel) => {
     setOpen(false);
     if (channel === "telegram") {
-      if (onTelegramShare && await onTelegramShare()) return;
+      if (onTelegramShare) {
+        const result = await onTelegramShare();
+        if (result === "shared" || result === "cancelled") return;
+      }
       openTelegramShareTarget(buildCardShareTarget(channel, content));
       return;
     }
