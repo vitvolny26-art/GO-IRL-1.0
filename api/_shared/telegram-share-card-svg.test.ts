@@ -75,8 +75,9 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("23°C");
     expect(svg).not.toContain("12%");
     expect(svg).not.toContain("19 km/h");
-    expect(svg).toContain('clipPath id="volleyballClip"');
-    expect(svg).toContain('fill="#f4f1eb"');
+    expect(svg).toContain('transform="translate(118 118) scale(4.0555556)"');
+    expect(svg).toContain('fill="#E6E7E8"');
+    expect(svg).toContain('fill="#99AAB5"');
 
     const jpeg = await renderMetaInvitationCardJpeg(metaCard);
     const metadata = await sharp(jpeg).metadata();
