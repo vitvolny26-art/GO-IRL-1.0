@@ -45,15 +45,14 @@ export function buildTelegramEventCard(input: TelegramEventCardInput, imageUrl: 
   const subtitle = activity && activity.toLocaleLowerCase() !== title.toLocaleLowerCase() ? `\n${escapeHtml(title)}` : "";
   const dateTime = [clean(input.date, 40), clean(input.time, 12)].filter(Boolean).join(" · ");
   const address = clean(input.address, 180);
-  const icon = clean(input.icon, 12);
   const participants = Math.max(0, Math.trunc(input.participants));
   const capacity = Math.max(participants, Math.trunc(input.capacity));
 
   const lines = [
-    `<b>${escapeHtml([icon, activity || title].filter(Boolean).join(" "))}</b>${subtitle}`,
-    dateTime ? `📅 <b>${labels.date}:</b> ${escapeHtml(dateTime)}` : "",
-    address ? `📍 <b>${labels.place}:</b> ${escapeHtml(address)}` : "",
-    capacity ? `👥 <b>${labels.people}:</b> ${participants} / ${capacity}` : "",
+    `<b>${escapeHtml(activity || title)}</b>${subtitle}`,
+    dateTime ? `<b>${labels.date}:</b> ${escapeHtml(dateTime)}` : "",
+    address ? `<b>${labels.place}:</b> ${escapeHtml(address)}` : "",
+    capacity ? `<b>${labels.people}:</b> ${participants} / ${capacity}` : "",
   ].filter(Boolean);
 
   const mapUrl = input.mapUrl || ([input.address, input.city].filter(Boolean).length
@@ -69,7 +68,7 @@ export function buildTelegramEventCard(input: TelegramEventCardInput, imageUrl: 
     thumbnail_url: imageUrl,
     photo_width: 1080,
     photo_height: 900,
-    title: [icon, activity || title].filter(Boolean).join(" ").slice(0, 256),
+    title: (activity || title).slice(0, 256),
     description: [dateTime, address].filter(Boolean).join(" · ").slice(0, 512),
     caption: lines.join("\n\n"),
     parse_mode: "HTML" as const,
