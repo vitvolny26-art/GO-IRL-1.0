@@ -1,10 +1,10 @@
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 
 const copy = {
-  ru: { free: "Бесплатно", minutes: "мин", coach: "Нужен тренер", details: "Подробнее", open: "Открыть" },
-  uk: { free: "Безкоштовно", minutes: "хв", coach: "Потрібен тренер", details: "Докладніше", open: "Відкрити" },
-  cs: { free: "Zdarma", minutes: "min", coach: "Potřebujeme trenéra", details: "Podrobnosti", open: "Otevřít" },
-  en: { free: "Free", minutes: "min", coach: "Coach needed", details: "Details", open: "Open" },
+  ru: { free: "Бесплатно", minutes: "мин", coach: "Нужен тренер", details: "Подробнее", open: "Открыть", forecast: "Погода появится ближе к событию" },
+  uk: { free: "Безкоштовно", minutes: "хв", coach: "Потрібен тренер", details: "Докладніше", open: "Відкрити", forecast: "Погода з'явиться ближче до події" },
+  cs: { free: "Zdarma", minutes: "min", coach: "Potřebujeme trenéra", details: "Podrobnosti", open: "Otevřít", forecast: "Počasí se zobrazí blíže k události" },
+  en: { free: "Free", minutes: "min", coach: "Coach needed", details: "Details", open: "Open", forecast: "Weather appears closer to the event" },
 } as const;
 
 const xml = (value: string) => value
@@ -99,8 +99,38 @@ const metric = (x: number, y: number, icon: MetricIcon, value: string, lines = 1
   </g>`;
 };
 
-export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
+const weatherStrip = (input: TelegramEventCardInput, forecast: string) => {
+  const weather = input.weather;
+  if (!weather) {
+    return `<g>
+      <rect x="76" y="666" width="928" height="116" rx="42" fill="#151d17" stroke="#3d571a" stroke-width="2"/>
+      <circle cx="136" cy="724" r="19" fill="none" stroke="#c9ff3d" stroke-width="5"/>
+      <path d="M136 689v13M136 746v13M101 724h13M158 724h13M111 699l9 9M152 740l9 9M111 749l9-9M152 708l9-9" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round"/>
+      <text x="188" y="736" fill="#aeb3bd" font-size="29" font-weight="700" font-family="DejaVu Sans, sans-serif">${xml(forecast)}</text>
+    </g>`;
+  }
+
+  return `<g>
+    <rect x="76" y="666" width="928" height="116" rx="42" fill="#151d17" stroke="#3d571a" stroke-width="2"/>
+    <g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round">
+      <circle cx="136" cy="724" r="19"/><path d="M136 689v13M136 746v13M101 724h13M158 724h13"/>
+    </g>
+    <text x="178" y="736" fill="#e7ebef" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${Math.round(weather.temperature)}°C</text>
+    <line x1="374" y1="692" x2="374" y2="756" stroke="#343a3f" stroke-width="2"/>
+    <path d="M438 704c20 0 36 14 38 34h-76c2-20 18-34 38-34zM438 738v18" fill="none" stroke="#8ad6ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="494" y="736" fill="#e7ebef" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${Math.round(weather.rain)}%</text>
+    <line x1="680" y1="692" x2="680" y2="756" stroke="#343a3f" stroke-width="2"/>
+    <path d="M740 707h46c13 0 13-18 0-18M740 725h65c13 0 13 18 0 18M740 743h34" fill="none" stroke="#bce9ff" stroke-width="6" stroke-linecap="round"/>
+    <text x="828" y="736" fill="#e7ebef" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${Math.round(weather.wind)} km/h</text>
+  </g>`;
+};
+
+const buildShareCardSvg = (input: TelegramEventCardInput, variant: "telegram" | "meta") => {
   const labels = copy[input.language] || copy.en;
+  const isMeta = variant === "meta";
+  const canvasHeight = isMeta ? 1080 : 900;
+  const cardHeight = isMeta ? 1012 : 832;
+  const actionsY = isMeta ? 824 : 682;
   const headline = clean(input.activity || input.title, 80) || "GO IRL";
   const subtitle = clean(input.title, 120);
   const dateTime = [clean(input.date, 40), clean(input.time, 20)].filter(Boolean).join(" · ");
@@ -112,15 +142,15 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
   const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 24, 2);
   const environment = clean(input.environment, 60);
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="900" viewBox="0 0 1080 900">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${canvasHeight}" viewBox="0 0 1080 ${canvasHeight}">
   <defs>
     <linearGradient id="page" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080b0d"/><stop offset="1" stop-color="#0f1511"/></linearGradient>
     <linearGradient id="avatar" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#314416"/><stop offset="1" stop-color="#132019"/></linearGradient>
     <radialGradient id="volleyball" cx="35%" cy="25%" r="75%"><stop stop-color="#f1eaff"/><stop offset=".55" stop-color="#cdbce9"/><stop offset="1" stop-color="#9e85ca"/></radialGradient>
     <linearGradient id="secondaryAction" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#263414"/><stop offset="1" stop-color="#172111"/></linearGradient>
   </defs>
-  <rect width="1080" height="900" fill="url(#page)"/>
-  <rect x="34" y="34" width="1012" height="832" rx="58" fill="#101314" stroke="#314514" stroke-width="3"/>
+  <rect width="1080" height="${canvasHeight}" fill="url(#page)"/>
+  <rect x="34" y="34" width="1012" height="${cardHeight}" rx="58" fill="#101314" stroke="#314514" stroke-width="3"/>
 
   <rect x="76" y="76" width="230" height="230" rx="58" fill="url(#avatar)" stroke="#678d28" stroke-width="2"/>
   ${activityArtwork(input.icon)}
@@ -148,9 +178,14 @@ export function buildTelegramShareCardSvg(input: TelegramEventCardInput) {
   ${metric(76, 510, "pin", place, 2)}
   ${metric(564, 510, "status", status || environment, 2)}
 
-  <rect x="76" y="682" width="440" height="120" rx="42" fill="url(#secondaryAction)" stroke="#54751d" stroke-width="2"/>
-  <text x="296" y="754" text-anchor="middle" fill="#c9ff3d" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(input.isSport ? labels.coach : labels.details)}</text>
-  <rect x="564" y="682" width="440" height="120" rx="42" fill="#bdff32"/>
-  <text x="784" y="754" text-anchor="middle" fill="#090b0d" font-size="36" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(labels.open)}</text>
+  ${isMeta ? weatherStrip(input, labels.forecast) : ""}
+  <rect x="76" y="${actionsY}" width="440" height="120" rx="42" fill="url(#secondaryAction)" stroke="#54751d" stroke-width="2"/>
+  <text x="296" y="${actionsY + 72}" text-anchor="middle" fill="#c9ff3d" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(input.isSport ? labels.coach : labels.details)}</text>
+  <rect x="564" y="${actionsY}" width="440" height="120" rx="42" fill="#bdff32"/>
+  <text x="784" y="${actionsY + 72}" text-anchor="middle" fill="#090b0d" font-size="36" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(labels.open)}</text>
   </svg>`;
-}
+};
+
+export const buildTelegramShareCardSvg = (input: TelegramEventCardInput) => buildShareCardSvg(input, "telegram");
+
+export const buildMetaInvitationCardSvg = (input: TelegramEventCardInput) => buildShareCardSvg(input, "meta");

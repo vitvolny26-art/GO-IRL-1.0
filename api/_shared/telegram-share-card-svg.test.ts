@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
-import { buildTelegramShareCardSvg } from "./telegram-share-card-svg";
-import { configureTelegramShareCardFonts, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
+import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg";
+import { configureTelegramShareCardFonts, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
 import type { TelegramEventCardInput } from "./telegram-event-card";
 
 const card: TelegramEventCardInput = {
@@ -63,5 +63,23 @@ describe("Telegram event share-card image", () => {
     const svg = buildTelegramShareCardSvg({ ...card, icon: "🛼", activity: "Ролики" });
     expect(svg).toContain('fill="#bce9ff"');
     expect(svg).toContain('stroke="#ff7cab"');
+  });
+
+  it("renders the Meta invitation standard with weather and a square canvas", async () => {
+    const metaCard = {
+      ...card,
+      weather: { icon: "🌤️", temperature: 23, rain: 12, wind: 19 },
+    };
+    const svg = buildMetaInvitationCardSvg(metaCard);
+    expect(svg).toContain('width="1080" height="1080"');
+    expect(svg).toContain("23°C");
+    expect(svg).toContain("12%");
+    expect(svg).toContain("19 km/h");
+
+    const jpeg = await renderMetaInvitationCardJpeg(metaCard);
+    const metadata = await sharp(jpeg).metadata();
+    expect(metadata.width).toBe(1080);
+    expect(metadata.height).toBe(1080);
+    expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
   });
 });

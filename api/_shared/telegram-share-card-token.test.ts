@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createTelegramShareCardToken, readTelegramShareCardToken } from "./telegram-share-card-token";
+import {
+  createMetaInvitationCardToken,
+  createTelegramShareCardToken,
+  readMetaInvitationCardToken,
+  readTelegramShareCardToken,
+} from "./telegram-share-card-token";
 import type { TelegramEventCardInput } from "./telegram-event-card";
 
 const card: TelegramEventCardInput = {
@@ -33,5 +38,11 @@ describe("Telegram share-card token", () => {
     expect(readTelegramShareCardToken(`${token}x`, "secret", 2_000)).toBeNull();
     expect(readTelegramShareCardToken(token, "wrong", 2_000)).toBeNull();
     expect(readTelegramShareCardToken(token, "secret", 3_602_000)).toBeNull();
+  });
+
+  it("keeps Meta media URLs valid for one day", () => {
+    const token = createMetaInvitationCardToken(card, "meta-secret", 1_000);
+    expect(readMetaInvitationCardToken(token, "meta-secret", 23 * 60 * 60 * 1000)).toEqual(card);
+    expect(readMetaInvitationCardToken(token, "meta-secret", 25 * 60 * 60 * 1000)).toBeNull();
   });
 });

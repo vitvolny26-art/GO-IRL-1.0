@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
+import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
 
 const require = createRequire(import.meta.url);
 let sharpPromise: Promise<typeof import("sharp").default> | null = null;
@@ -43,9 +43,15 @@ const loadSharp = () => {
   return sharpPromise;
 };
 
-export const renderTelegramShareCardJpeg = async (input: TelegramEventCardInput) => {
+const renderShareCardJpeg = async (svg: string) => {
   const sharp = await loadSharp();
-  return sharp(Buffer.from(buildTelegramShareCardSvg(input)))
+  return sharp(Buffer.from(svg))
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };
+
+export const renderTelegramShareCardJpeg = (input: TelegramEventCardInput) =>
+  renderShareCardJpeg(buildTelegramShareCardSvg(input));
+
+export const renderMetaInvitationCardJpeg = (input: TelegramEventCardInput) =>
+  renderShareCardJpeg(buildMetaInvitationCardSvg(input));

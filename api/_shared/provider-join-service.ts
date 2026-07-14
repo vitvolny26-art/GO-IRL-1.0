@@ -1,7 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import type { JoinProvider, JoinResult, JoinResultAction } from "../../src/join/types.js";
 import type { MetaEventSummary } from "../../src/meta-messaging/types.js";
+import { getEventWeather } from "../../src/services/weather.js";
 import { requireEnv } from "./env.js";
+import { loadTrustedTelegramEventCard } from "./telegram-share-event.js";
 
 type ActivityRow = {
   id: string;
@@ -57,21 +59,33 @@ export async function getProviderEvent(eventId: string) {
 }
 
 export async function getProviderEventSummary(eventId: string): Promise<MetaEventSummary | null> {
-  const activity = await getProviderEvent(eventId);
-  if (!activity) return null;
-  const client = getAdminClient();
-  const { count, error } = await client
-    .from("activity_members")
-    .select("activity_id", { count: "exact", head: true })
-    .eq("activity_id", eventId)
-    .eq("status", "joined");
-  if (error) throw error;
+  const [activity, card] = await Promise.all([
+    getProviderEvent(eventId),
+    loadTrustedTelegramEventCard(eventId, "ru"),
+  ]);
+  if (!activity || !card) return null;
+  const weather = card.isSport
+    ? await getEventWeather({
+        date: activity.event_date,
+        time: activity.event_time,
+        address: activity.address,
+        city: card.city,
+        durationMinutes: card.durationMinutes,
+      }).catch(() => null)
+    : null;
   return {
-    eventId: activity.id,
-    title: activity.title_ru,
-    dateTime: `${activity.event_date} ${activity.event_time.slice(0, 5)}`,
-    location: activity.address,
-    availableSpots: Math.max(activity.capacity - (count || 0), 0),
+    ...card,
+    dateTime: [card.date, card.time].filter(Boolean).join(" · "),
+    location: card.address,
+    availableSpots: Math.max(card.capacity - card.participants, 0),
+    ...(weather ? {
+      weather: {
+        icon: weather.text.split(" ")[0] || "🌤️",
+        temperature: weather.temperature,
+        rain: weather.rain,
+        wind: weather.wind,
+      },
+    } : {}),
   };
 }
 
