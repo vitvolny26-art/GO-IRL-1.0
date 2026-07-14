@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyDiscoverFilters, genericRecommendationEngine, plannedRecommendationEngines, searchActivities, simpleRecommendationEngine } from "./recommendations";
+import { actionableSurpriseActivities, applyDiscoverFilters, genericRecommendationEngine, plannedRecommendationEngines, searchActivities, simpleRecommendationEngine } from "./recommendations";
 import type { Activity } from "./types";
 
 const makeActivity = (overrides: Partial<Activity>): Activity => ({
@@ -41,6 +41,44 @@ describe("SimpleRecommendationEngine", () => {
     });
 
     expect(result.map((activity) => activity.id)).toEqual(["match", "full", "other-city"]);
+  });
+});
+
+describe("actionableSurpriseActivities", () => {
+  const now = new Date("2026-07-04T10:00:00");
+  const filter = (activities: Activity[], overrides: Partial<Parameters<typeof actionableSurpriseActivities>[1]> = {}) =>
+    actionableSurpriseActivities(activities, {
+      userKey: "current-user",
+      joinedIds: [],
+      waitingIds: [],
+      pendingIds: [],
+      now,
+      ...overrides,
+    }).map((activity) => activity.id);
+
+  it("excludes own, joined, pending, waiting, finished, cancelled, private, and unsupported full events", () => {
+    const available = makeActivity({ id: "available", organizerKey: "other", date: "2026-07-05" });
+    const own = makeActivity({ id: "own", organizerKey: "current-user", date: "2026-07-05" });
+    const joined = makeActivity({ id: "joined", organizerKey: "other", date: "2026-07-05" });
+    const pending = makeActivity({ id: "pending", organizerKey: "other", date: "2026-07-05", visibility: "invite" });
+    const waiting = makeActivity({ id: "waiting", organizerKey: "other", date: "2026-07-05" });
+    const finished = makeActivity({ id: "finished", organizerKey: "other", date: "2026-07-03" });
+    const cancelled = makeActivity({ id: "cancelled", organizerKey: "other", date: "2026-07-05" });
+    const privateEvent = makeActivity({ id: "private", organizerKey: "other", date: "2026-07-05", visibility: "private" });
+    const full = makeActivity({ id: "full", organizerKey: "other", date: "2026-07-05", participants: 6, capacity: 6 });
+
+    expect(filter(
+      [own, joined, pending, waiting, finished, cancelled, privateEvent, full, available],
+      { joinedIds: ["joined"], pendingIds: ["pending"], waitingIds: ["waiting"], cancelledIds: ["cancelled"] },
+    )).toEqual(["available"]);
+  });
+
+  it("includes a public event with space and a full event only when its waiting-list path is supported", () => {
+    const available = makeActivity({ id: "available", organizerKey: "other", date: "2026-07-05" });
+    const full = makeActivity({ id: "full", organizerKey: "other", date: "2026-07-05", participants: 6, capacity: 6 });
+
+    expect(filter([available, full])).toEqual(["available"]);
+    expect(filter([available, full], { waitingListEnabledIds: ["full"] })).toEqual(["available", "full"]);
   });
 });
 
