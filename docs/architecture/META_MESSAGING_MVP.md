@@ -23,7 +23,7 @@ Telegram remains the primary application. WhatsApp, Instagram, and Messenger are
 
 - `JoinProvider` supports `instagram` and `messenger`.
 - Invitation builders create event summaries and stable `join:<eventId>` / `details:<eventId>` quick-reply payloads.
-- Rich invitations use one 1080x1080 GO IRL JPEG standard with activity artwork, date, price, location, level, capacity, optional weather, and visual calls to action.
+- Rich invitations use one compact 1080x900 GO IRL JPEG standard with clean activity artwork, date, price, location, level, capacity, and visual calls to action. Weather is intentionally omitted.
 - The image is served by `api/meta/event-invitation-card.ts` only when a time-limited HMAC token is valid. Tokens contain public event-card data and expire after 24 hours.
 - Instagram Direct and Messenger use a native Generic Template around the image. Join remains a postback; Open is a native web action when a Telegram invite URL is available.
 - Missing deployment origin or signing secret degrades to the existing text plus quick-reply invitation instead of blocking delivery.
@@ -37,7 +37,7 @@ Telegram remains the primary application. WhatsApp, Instagram, and Messenger are
 
 ## Invitation visual boundary
 
-The rendered image is a snapshot created when the message is sent. Meta controls the final button chrome and message spacing. Buttons painted inside the JPEG are visual continuity only; the provider-native Join/Open actions are the interactive controls. Weather is included only when Open-Meteo has a forecast for the event window, otherwise the card shows a neutral forecast placeholder.
+The rendered image is a snapshot created when the message is sent. Meta controls the final button chrome and message spacing. Buttons painted inside the JPEG are visual continuity only; the provider-native Join/Open actions are the interactive controls.
 
 ## Production configuration gate
 

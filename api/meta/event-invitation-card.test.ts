@@ -53,6 +53,6 @@ describe("Meta invitation card endpoint", () => {
     expect(headers.get("Content-Type")).toBe("image/jpeg");
     const metadata = await sharp(body as Uint8Array).metadata();
     expect(metadata.width).toBe(1080);
-    expect(metadata.height).toBe(1080);
+    expect(metadata.height).toBe(900);
   });
 });
