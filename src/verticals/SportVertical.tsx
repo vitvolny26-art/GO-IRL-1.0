@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Dumbbell, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Star, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Dumbbell, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
@@ -9,6 +9,7 @@ import { getUserKey } from "../supabase";
 import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
+import { EventDetailsAction, EventMetaChip, EventStatusBadge } from "../components/EventCardPrimitives";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
 import { getOrganizerRoleRequestState } from "../coachFeature";
 import { getCity } from "../config/cities";
@@ -22,10 +23,12 @@ import { EventWeatherStrip } from "../components/EventWeatherStrip";
 import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
 import {
   eventActionTranslationKey,
+  eventStatusTranslationKey,
   isActivityFinished,
   resolveEventInteractionState,
   runEventPrimaryAction,
 } from "../eventInteractionState";
+import { eventDurationLabel, sportLevelFormatLabel } from "../eventCardPresentation";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -193,6 +196,8 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     hasWaitingList: false,
   });
   const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
+  const status = t[eventStatusTranslationKey(interaction)];
+  const durationLabel = eventDurationLabel(meta.durationMinutes, t.minutesShort);
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [coachState, setCoachState] = useState<"none" | "requested" | "confirmed">("none");
   const avatar = sportAvatarForActivity(activity, language, meta);
@@ -261,7 +266,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className="sport-card-symbol"><span className="sport-avatar-glyph">{avatar}</span></div>
         <div>
-          <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
+          <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelFormatLabel(meta.level, meta.format, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
           <h3>{shareTitle}</h3>
           <p>{stripLeadingEmoji(activity.title[language])}</p>
         </div>
@@ -282,13 +287,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           <UsersRound size={16} aria-hidden="true" />
           <span>{activity.participants} / {activity.capacity}</span>
         </button>
-        <span
-          className="sport-card-chip sport-duration-chip"
-          aria-label={`${t.sportDuration}: ${meta.durationMinutes || 90} ${t.minutesShort}`}
-        >
-          <CalendarPlus size={16} aria-hidden="true" />
-          <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
-        </span>
+        {durationLabel ? <span className="sport-card-chip sport-duration-chip" aria-label={`${t.sportDuration}: ${durationLabel}`}><CalendarPlus size={16} aria-hidden="true" /><span>{durationLabel}</span></span> : null}
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -311,28 +310,16 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <button
-          type="button"
-          aria-label={t.addToGoogleCalendar}
-          onClick={(event) => {
-            event.stopPropagation();
-            openActivityCalendar(activity, language);
-          }}
-        ><CalendarDays /><span>{shareDate}</span></button>
-        <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <button
-          type="button"
-          aria-label={`${t.address}: ${mapLabel}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            openActivityMap(activity);
-          }}
-        ><MapPin /><span>{mapLabel}</span></button>
-        <div className="unified-status-cell"><ShieldCheck /><Star /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
+        <EventMetaChip icon={<CalendarDays />} label={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
+        <EventMetaChip icon={<Ticket />} label={activity.price ? `${activity.price} Kč` : t.free} />
+        <EventMetaChip icon={<MapPin />} label={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
+        <EventStatusBadge state={interaction} label={status} />
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-footer compact-sport-actions">
-        {showCoachAction ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} />{coachAction}</button> : null}
+        {showCoachAction
+          ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} /><span>{coachAction}</span></button>
+          : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
         <button className={interaction.canJoin ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{action}</button>
       </div>
     </article>

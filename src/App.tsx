@@ -67,6 +67,7 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
+import { EventDetailsAction, EventMetaChip, EventStatusBadge } from "./components/EventCardPrimitives";
 import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
 import { stripLeadingEmoji } from "./cardText";
@@ -1252,10 +1253,6 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
             setMembersPreviewOpen((open) => !open);
           }}
         ><UsersRound size={16} aria-hidden="true" /><span>{activity.participants} / {activity.capacity}</span></button>
-        <span
-          className="sport-card-chip sport-duration-chip"
-          aria-label={`${t.time}: ${formatEventTime(activity.time) || compactDateLabel(activity.date, language)}`}
-        ><CalendarPlus size={16} aria-hidden="true" /><span>{formatEventTime(activity.time) || compactDateLabel(activity.date, language)}</span></span>
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -1268,14 +1265,16 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <button type="button" onClick={(event) => { event.stopPropagation(); openActivityCalendar(activity, language); }}><CalendarDays /><span>{shareDate}</span></button>
-        <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <button type="button" onClick={(event) => { event.stopPropagation(); openActivityMap(activity); }}><MapPin /><span>{mapLabel}</span></button>
-        <div className="unified-status-cell"><ShieldCheck /><Star /><span>{status}</span></div>
+        <EventMetaChip icon={<CalendarDays />} label={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
+        <EventMetaChip icon={<Ticket />} label={activity.price ? `${activity.price} Kč` : t.free} />
+        <EventMetaChip icon={<MapPin />} label={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
+        <EventStatusBadge state={interaction} label={status} />
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-footer compact-sport-actions">
-        {showHelperAction ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{helperAction}</button> : null}
+        {showHelperAction
+          ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} /><span>{helperAction}</span></button>
+          : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
         <button className={interaction.canJoin ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>
           {action}
         </button>

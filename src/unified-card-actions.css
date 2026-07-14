@@ -76,3 +76,49 @@
   opacity: .72 !important;
   box-shadow: none !important;
 }
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge {
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  grid-template-rows: 1fr !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge svg,
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge svg:first-child {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge span,
+.unified-event-card .activity-card-details.sport-details-grid > div.event-status-badge span {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge.tone-warning {
+  color: #ffd98a !important;
+  background: rgba(255, 183, 77, .09) !important;
+  border-color: rgba(255, 183, 77, .24) !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge.tone-warning svg {
+  color: #ffd98a !important;
+}
+
+.compact-sport-card .compact-sport-actions .sport-coach-action,
+.compact-sport-card .compact-sport-actions .card-join {
+  min-width: 0 !important;
+}
+
+.compact-sport-card .compact-sport-actions .sport-coach-action span,
+.compact-sport-card .compact-sport-actions .card-join {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.compact-sport-card .compact-sport-actions .card-join:disabled:active {
+  transform: none !important;
+}
