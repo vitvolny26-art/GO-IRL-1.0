@@ -63,3 +63,16 @@
   white-space: normal !important;
   line-height: 1.15 !important;
 }
+
+.compact-sport-card .compact-sport-actions > .card-join:only-child {
+  grid-column: 1 / -1 !important;
+}
+
+.compact-sport-card .compact-sport-actions .card-join:disabled {
+  cursor: not-allowed !important;
+  color: var(--muted) !important;
+  background: rgba(255, 255, 255, .06) !important;
+  border-color: rgba(255, 255, 255, .08) !important;
+  opacity: .72 !important;
+  box-shadow: none !important;
+}

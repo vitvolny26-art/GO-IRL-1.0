@@ -20,6 +20,12 @@ import { activityIconFromText } from "../activityIcon";
 import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
 import { EventWeatherStrip } from "../components/EventWeatherStrip";
 import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
+import {
+  eventActionTranslationKey,
+  isActivityFinished,
+  resolveEventInteractionState,
+  runEventPrimaryAction,
+} from "../eventInteractionState";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -89,7 +95,7 @@ const sportAvatarForActivity = (activity: Activity, language: Language, meta: Sp
 type SportCardProps = {
   activity: Activity;
   language: Language;
-  onOpen: (activity: Activity) => void;
+  onOpen: (activity: Activity, options?: { focusChat?: boolean }) => void;
   onJoin: (activity: Activity) => void;
   onOpenMembers?: (activity: Activity) => void;
 };
@@ -108,6 +114,7 @@ type SportSheetProps = {
   onDelete: (activity: Activity) => void;
   onCloseMiniApp: () => void;
   initialMembersOpen?: boolean;
+  initialChatRequest?: number;
 };
 
 export function SportCreateFields({ language, initialSport }: { language: Language; initialSport: SportMetadata }) {
@@ -175,27 +182,21 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   const pending = pendingIds.includes(activity.id);
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
-  const action = isOrganizer
-    ? t.open
-    : pending
-      ? t.cardRequestSent
-      : joined
-        ? t.cardOpenChat
-        : waiting
-          ? t.cardWaitlist
-          : activity.visibility === "private"
-            ? t.cardInviteOnly
-            : full
-              ? t.cardNoSpots
-              : activity.visibility === "invite"
-                ? t.cardJoinRequest
-                : t.cardJoin;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [coachState, setCoachState] = useState<"none" | "requested" | "confirmed">("none");
   const avatar = sportAvatarForActivity(activity, language, meta);
   const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
-  const hasCardState = isOrganizer || joined || waiting || pending;
-  const joinDisabled = !hasCardState && (full || activity.visibility === "private");
   const coachAction = isOrganizer
     ? coachState === "confirmed"
       ? coachCardCopy[language].confirmed
@@ -205,6 +206,12 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     : coachState === "confirmed"
       ? coachCardCopy[language].confirmed
       : t.details;
+  const showCoachAction = interaction.showHelperAction && (isOrganizer || coachState === "confirmed");
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onOpen(activity),
+    openChat: () => onOpen(activity, { focusChat: true }),
+    join: () => onJoin(activity),
+  });
 
   const joinedMembers = activity.members.filter(m => m.status === "joined");
   const shareTitle = cleanSportLabel(activity.activity[language]);
@@ -325,8 +332,8 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-footer compact-sport-actions">
-        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} />{coachAction}</button>
-        <button className={hasCardState ? "card-join secondary" : "card-join"} onClick={() => hasCardState ? onOpen(activity) : onJoin(activity)} type="button" disabled={joinDisabled}>{action}</button>
+        {showCoachAction ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} />{coachAction}</button> : null}
+        <button className={interaction.canJoin ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{action}</button>
       </div>
     </article>
   );
@@ -346,9 +353,11 @@ export function SportActivitySheet({
   onDelete,
   onCloseMiniApp,
   initialMembersOpen = false,
+  initialChatRequest = 0,
 }: SportSheetProps) {
-  const { joinedIds, pendingIds, userRole, reviewRequest } = useAppStore();
+  const { joinedIds, waitingIds, pendingIds, userRole, reviewRequest } = useAppStore();
   const [membersOpen, setMembersOpen] = useState(initialMembersOpen);
+  const [chatOpenRequest, setChatOpenRequest] = useState(initialChatRequest);
   const t = getTranslation(language);
   const [weatherText, setWeatherText] = useState(t.weatherPlaceholder);
   const [weather, setWeather] = useState<WeatherResult | null>(null);
@@ -360,9 +369,20 @@ export function SportActivitySheet({
   const canDelete = isOrganizer || userRole === "admin";
   const canManageActivity = isOrganizer || userRole === "admin" || userRole === "moderator";
   const joined = joinedIds.includes(activity.id);
+  const waiting = waitingIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const full = activity.participants >= activity.capacity;
-  const action = isOrganizer ? t.edit : pending ? t.cancelRequest : joined ? t.leave : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "sheet")];
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
   const waitingMembers = activity.members.filter((member) => member.status === "waiting");
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
@@ -373,6 +393,10 @@ export function SportActivitySheet({
   useEffect(() => {
     setMembersOpen(initialMembersOpen);
   }, [activity.id, initialMembersOpen]);
+
+  useEffect(() => {
+    setChatOpenRequest(initialChatRequest);
+  }, [activity.id, initialChatRequest]);
 
   useEffect(() => {
     let active = true;
@@ -413,6 +437,12 @@ export function SportActivitySheet({
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
   };
+
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onEdit(activity),
+    openChat: () => setChatOpenRequest((request) => request + 1),
+    join: () => onJoin(activity),
+  });
 
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
@@ -486,9 +516,9 @@ export function SportActivitySheet({
           </section>
         )}
 
-        <CoachRequestPanel activity={activity} userRole={userRole} />
+        {interaction.showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
 
-        <ActivityChatPanel activity={activity} />
+        <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={false} />
 
         <button className="detail-members-toggle" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
           <UsersRound />
@@ -531,7 +561,7 @@ export function SportActivitySheet({
         )}
 
         <div className="sheet-actions compact-sheet-actions">
-          <button className="main-action" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>
+          <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>
           <details className="event-more-actions">
             <summary className="square-action" aria-label="Еще" title="Еще"><Ellipsis aria-hidden="true" /></summary>
             <div className="event-more-menu">

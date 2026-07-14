@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type TouchEvent as ReactTouchEvent } from "react";
 import {
   ArrowLeft,
   CalendarDays,
@@ -83,10 +83,21 @@ import {
 import { EventWeatherStrip } from "./components/EventWeatherStrip";
 import { isOutdoorGenericActivity } from "./eventWeather";
 import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
+import {
+  eventActionTranslationKey,
+  eventStatusTranslationKey,
+  isActivityFinished,
+  resolveEventInteractionState,
+  runEventPrimaryAction,
+} from "./eventInteractionState";
+import { isTabSwipeBlockedTarget, resolveAdjacentTab, resolveSwipeDirection } from "./bottom-nav-swipe";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
+
+type ActivityOpenOptions = { focusChat?: boolean };
+type OpenActivity = (activity: Activity, options?: ActivityOpenOptions) => void;
 
 const activityInviteUrl = (activity: Activity) => {
   return buildTelegramActivityInviteUrl(activity.id, telegramBotUsername, telegramAppName)
@@ -218,6 +229,7 @@ function App() {
   const store = useAppStore();
   const [selected, setSelected] = useState<Activity | null>(null);
   const [selectedMembersOpen, setSelectedMembersOpen] = useState(false);
+  const [selectedChatRequest, setSelectedChatRequest] = useState(0);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [completion, setCompletion] = useState("");
   const [completionActivityId, setCompletionActivityId] = useState<string | null>(null);
@@ -229,7 +241,12 @@ function App() {
     toastTimer.current = window.setTimeout(() => setNotice(""), 2200);
   };
   const invitationHandled = useRef(false);
+  const tabSwipeStart = useRef<{ x: number; y: number } | null>(null);
   const t = getTranslation(store.language);
+  const openActivity: OpenActivity = (activity, options) => {
+    setSelected(activity);
+    setSelectedChatRequest(options?.focusChat ? (request) => request + 1 : 0);
+  };
 
   useEffect(() => {
   readyMiniApp();
@@ -267,7 +284,10 @@ function App() {
   useEffect(() => {
     if (selected || store.view !== "home") {
       return showBackButton(() => {
-        if (selected) setSelected(null);
+        if (selected) {
+          setSelected(null);
+          setSelectedChatRequest(0);
+        }
         else store.setView("home");
       });
     }
@@ -289,7 +309,7 @@ function App() {
       const invitedActivity = store.activities.find((item) => item.id === invitedId);
       if (invitedActivity) {
         invitationHandled.current = true;
-        setSelected(invitedActivity);
+        openActivity(invitedActivity);
         if (window.location.pathname.startsWith("/join/")) {
           window.history.replaceState({}, "", "/");
         }
@@ -310,9 +330,32 @@ function App() {
     if (!closeMiniApp()) flash(t.telegramCloseFallback);
   };
 
+  const handleTabTouchStart = (event: ReactTouchEvent<HTMLElement>) => {
+    if (isTabSwipeBlockedTarget(event.target)) {
+      tabSwipeStart.current = null;
+      return;
+    }
+    const touch = event.touches[0];
+    tabSwipeStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+  };
+
+  const handleTabTouchEnd = (event: ReactTouchEvent<HTMLElement>) => {
+    const start = tabSwipeStart.current;
+    tabSwipeStart.current = null;
+    const touch = event.changedTouches[0];
+    if (!start || !touch) return;
+    const direction = resolveSwipeDirection(touch.clientX - start.x, touch.clientY - start.y);
+    if (!direction) return;
+    const nextView = resolveAdjacentTab(store.view, direction);
+    if (nextView !== store.view) {
+      store.setView(nextView);
+      impactTelegram("light");
+    }
+  };
+
   const openRandom = () => {
     const random = store.activities[Math.floor(Math.random() * store.activities.length)];
-    if (random) setSelected(random);
+    if (random) openActivity(random);
     impactTelegram("medium");
   };
 
@@ -342,6 +385,7 @@ function App() {
     try {
       await store.deleteActivity(activity.id);
       setSelected(null);
+      setSelectedChatRequest(0);
       flash(t.eventDeleted);
       notifyTelegram("success");
     } catch {
@@ -397,20 +441,20 @@ function App() {
         onLanguageChange={store.setLanguage}
       />
 
-      <main>
+      <main onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd}>
         {store.syncError && <div className="sync-banner">{store.syncError === "database_unavailable" ? t.databaseError : store.syncError}</div>}
         {store.loading && <div className="sync-loading">{t.loadingEvents}</div>}
         {store.view === "home" && (
           <HomeView
             language={store.language}
-            onOpen={setSelected}
+            onOpen={openActivity}
             onJoin={handleJoin}
             onRandom={openRandom}
             onCreate={() => store.setView("create")}
           />
         )}
-        {store.view === "discover" && <DiscoverView language={store.language} onOpen={setSelected} onJoin={handleJoin} />}
-        {store.view === "explore" && <ExploreView language={store.language} onOpen={setSelected} onJoin={handleJoin} />}
+        {store.view === "discover" && <DiscoverView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
+        {store.view === "explore" && <ExploreView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
         {store.view === "create" && <CreateView key={editingActivity?.id || "new-event"} language={store.language} initialActivity={editingActivity} onCancel={() => {
           setEditingActivity(null);
           store.setView("home");
@@ -420,7 +464,7 @@ function App() {
           setCompletionActivityId(id);
           setCompletion(editingActivity ? t.updatedSuccess : t.createdSuccess);
         }} />}
-        {store.view === "profile" && <ProfileView language={store.language} onOpen={setSelected} onJoin={handleJoin} onCloseMiniApp={requestCloseMiniApp} />}
+        {store.view === "profile" && <ProfileView language={store.language} onOpen={openActivity} onJoin={handleJoin} onCloseMiniApp={requestCloseMiniApp} />}
       </main>
 
       <BottomNav view={store.view} setView={store.setView} language={store.language} />
@@ -435,6 +479,7 @@ function App() {
           onClose={() => {
             setSelected(null);
             setSelectedMembersOpen(false);
+            setSelectedChatRequest(0);
           }}
           onJoin={handleJoin}
           onShare={shareActivity}
@@ -449,6 +494,7 @@ function App() {
           onCloseMiniApp={requestCloseMiniApp}
           onNotice={showNotice}
           initialMembersOpen={selectedMembersOpen}
+          initialChatRequest={selectedChatRequest}
         />
       )}
       {completion && (
@@ -461,7 +507,7 @@ function App() {
           }}
           onOpen={() => {
             const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
-            if (activity) setSelected(activity);
+            if (activity) openActivity(activity);
           }}
           onShare={() => {
             const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
@@ -479,7 +525,7 @@ function App() {
   );
 }
 
-function HomeView({ language, onOpen, onJoin, onRandom, onCreate }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; onRandom: () => void; onCreate: () => void }) {
+function HomeView({ language, onOpen, onJoin, onRandom, onCreate }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onRandom: () => void; onCreate: () => void }) {
   const { activities, loading, selectedCityId, setCategory } = useAppStore();
   const t = getTranslation(language);
   const city = getCity(selectedCityId);
@@ -529,7 +575,7 @@ function HomeView({ language, onOpen, onJoin, onRandom, onCreate }: { language: 
   );
 }
 
-function DiscoverView({ language, onOpen, onJoin }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function DiscoverView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   const { activities, loading, selectedCityId } = useAppStore();
   const t = getTranslation(language);
   const [query, setQuery] = useState("");
@@ -638,7 +684,7 @@ function DiscoverView({ language, onOpen, onJoin }: { language: Language; onOpen
   );
 }
 
-function DiscoverSection({ title, activities, language, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function DiscoverSection({ title, activities, language, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   if (!activities.length) return null;
   return (
     <section className="discover-section">
@@ -650,11 +696,11 @@ function DiscoverSection({ title, activities, language, onOpen, onJoin }: { titl
   );
 }
 
-function DiscoverActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function DiscoverActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   return <ActivityCard activity={activity} language={language} onOpen={onOpen} onJoin={onJoin} />;
 }
 
-function ExploreView({ language, onOpen, onJoin }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function ExploreView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   const { activities, loading, selectedCategory, selectedCityId, setCategory } = useAppStore();
   const t = getTranslation(language);
   const city = getCity(selectedCityId);
@@ -902,7 +948,7 @@ const loadProfile = (fallbackName: string, fallbackCityId: string): LocalProfile
   }
 };
 
-function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; onCloseMiniApp: () => void }) {
+function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onCloseMiniApp: () => void }) {
   const { activities, joinedIds, pendingIds, loading, syncError, selectedCityId, setSelectedCity } = useAppStore();
   const [editing, setEditing] = useState(false);
   const t = getTranslation(language);
@@ -1059,7 +1105,7 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   );
 }
 
-function ProfileEventGroup({ title, activities, language, emptyText, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; emptyText: string; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function ProfileEventGroup({ title, activities, language, emptyText, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; emptyText: string; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   return (
     <section className="profile-event-group">
       <h3>{title}</h3>
@@ -1083,7 +1129,7 @@ function ProfileSkeleton() {
   );
 }
 
-function ActivitySection({ title, activities, language, onOpen, onJoin, icon, urgent = false }: { title: string; activities: Activity[]; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; icon?: React.ReactNode; urgent?: boolean }) {
+function ActivitySection({ title, activities, language, onOpen, onJoin, icon, urgent = false }: { title: string; activities: Activity[]; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; icon?: React.ReactNode; urgent?: boolean }) {
   if (!activities.length) return null;
   return (
     <section className={urgent ? "activity-section urgent-section" : "activity-section"}>
@@ -1093,7 +1139,7 @@ function ActivitySection({ title, activities, language, onOpen, onJoin, icon, ur
   );
 }
 
-function ActivityCard(props: { activity: Activity; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; onOpenMembers?: (activity: Activity) => void }) {
+function ActivityCard(props: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onOpenMembers?: (activity: Activity) => void }) {
   if (!isSportExperience(props.activity)) return <GenericActivityCard {...props} />;
   return (
     <Suspense fallback={<GenericActivityCard {...props} />}>
@@ -1102,7 +1148,7 @@ function ActivityCard(props: { activity: Activity; language: Language; onOpen: (
   );
 }
 
-function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   const { joinedIds, waitingIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const category = getActivityCategory(activity);
@@ -1111,6 +1157,16 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const pending = pendingIds.includes(activity.id);
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [helperState, setHelperState] = useState<"none" | "requested" | "confirmed">("none");
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
@@ -1118,21 +1174,7 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
   const avatar = genericActivityAvatar(activity, language, category.icon);
   const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
-  const action = isOrganizer
-    ? t.open
-    : pending
-      ? t.cardRequestSent
-      : joined
-        ? t.cardOpenChat
-        : waiting
-          ? t.cardWaitlist
-          : activity.visibility === "private"
-            ? t.cardInviteOnly
-            : full
-              ? t.cardNoSpots
-              : activity.visibility === "invite"
-                ? t.cardJoinRequest
-                : t.cardJoin;
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
   const helperAction = isOrganizer
     ? helperState === "confirmed"
       ? eventHelperCardCopy[language].confirmed
@@ -1142,8 +1184,7 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
     : helperState === "confirmed"
       ? eventHelperCardCopy[language].confirmed
       : t.details;
-  const hasCardState = isOrganizer || joined || waiting || pending;
-  const joinDisabled = !hasCardState && (full || activity.visibility === "private");
+  const showHelperAction = interaction.showHelperAction && (isOrganizer || helperState === "confirmed");
 
   useEffect(() => {
     let active = true;
@@ -1163,21 +1204,12 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
       window.removeEventListener("go-irl-coach-requests-changed", onChanged);
     };
   }, [activity.id]);
-  const status = isOrganizer
-    ? t.organizerStatus
-    : pending
-      ? t.requested
-      : joined
-        ? t.joined
-        : waiting
-          ? t.waiting
-          : full
-            ? t.eventFull
-            : activity.visibility === "private"
-              ? t.privateAccess
-              : activity.visibility === "invite"
-                ? t.inviteStatus
-                : t.publicStatus;
+  const status = t[eventStatusTranslationKey(interaction)];
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onOpen(activity),
+    openChat: () => onOpen(activity, { focusChat: true }),
+    join: () => onJoin(activity),
+  });
 
   return (
     <article className="activity-card sport-card compact-sport-card unified-event-card">
@@ -1234,8 +1266,8 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-footer compact-sport-actions">
-        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{helperAction}</button>
-        <button className={hasCardState ? "card-join secondary" : "card-join"} onClick={() => hasCardState ? onOpen(activity) : onJoin(activity)} type="button" disabled={joinDisabled}>
+        {showHelperAction ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{helperAction}</button> : null}
+        <button className={interaction.canJoin ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>
           {action}
         </button>
       </div>
@@ -1258,6 +1290,7 @@ type ActivitySheetProps = {
   onCloseMiniApp: () => void;
   onNotice: (msg: string) => void;
   initialMembersOpen?: boolean;
+  initialChatRequest?: number;
 };
 
 function ActivitySheet(props: ActivitySheetProps) {
@@ -1283,13 +1316,19 @@ function GenericActivitySheet({
   onDelete,
   onCloseMiniApp,
   initialMembersOpen = false,
+  initialChatRequest = 0,
 }: ActivitySheetProps) {
   const { joinedIds, waitingIds, pendingIds, reviewRequest, userRole } = useAppStore();
   const [membersOpen, setMembersOpen] = useState(initialMembersOpen);
+  const [chatOpenRequest, setChatOpenRequest] = useState(initialChatRequest);
 
   useEffect(() => {
     setMembersOpen(initialMembersOpen);
   }, [activity.id, initialMembersOpen]);
+
+  useEffect(() => {
+    setChatOpenRequest(initialChatRequest);
+  }, [activity.id, initialChatRequest]);
   const t = getTranslation(language);
   const category = getActivityCategory(activity);
   const isOrganizer = activity.organizerKey === getUserKey();
@@ -1298,34 +1337,18 @@ function GenericActivitySheet({
   const waiting = waitingIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const full = activity.participants >= activity.capacity;
-  const action = isOrganizer
-    ? t.edit
-    : pending
-      ? t.cancelRequest
-      : joined || waiting
-        ? t.leave
-        : activity.visibility === "private"
-          ? t.privateAccess
-          : full
-            ? t.eventFull
-            : activity.visibility === "invite"
-              ? t.request
-              : t.join;
-  const status = isOrganizer
-    ? t.organizerStatus
-    : pending
-      ? t.requested
-      : joined
-        ? t.joined
-        : waiting
-          ? t.waiting
-          : full
-            ? t.eventFull
-            : activity.visibility === "private"
-              ? t.privateJoinInfo
-              : activity.visibility === "invite"
-                ? t.inviteStatus
-                : t.publicStatus;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "sheet")];
+  const status = t[eventStatusTranslationKey(interaction)];
   const accessLabel = activity.visibility === "public" ? t.publicAccess : activity.visibility === "private" ? t.privateAccess : t.inviteAccess;
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
   const waitingMembers = activity.members.filter((member) => member.status === "waiting");
@@ -1335,6 +1358,12 @@ function GenericActivitySheet({
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
   };
+
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onEdit(activity),
+    openChat: () => setChatOpenRequest((request) => request + 1),
+    join: () => onJoin(activity),
+  });
 
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
@@ -1403,10 +1432,10 @@ function GenericActivitySheet({
         {!isOrganizer && (joined || waiting || pending) && <div className="status-banner">{joined ? <UserRoundCheck /> : <Clock3 />}<span>{joined ? t.joined : waiting ? t.waiting : t.requested}</span></div>}
         {!isOrganizer && activity.visibility === "private" && !joined && !waiting && !pending && <div className="status-banner neutral"><ShieldCheck /><span>{t.privateJoinInfo}</span></div>}
         {full && !joined && !waiting && !pending && !isOrganizer && <div className="status-banner danger"><UsersRound /><span>{t.eventFull}</span></div>}
-              <ActivityChatPanel activity={activity} />
+              <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={interaction.showHelperAction} />
 
       <div className="sheet-actions compact-sheet-actions">
-          <button className="main-action" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>
+          <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>
           <details className="event-more-actions">
             <summary className="square-action" aria-label="Еще" title="Еще"><Ellipsis aria-hidden="true" /></summary>
             <div className="event-more-menu">

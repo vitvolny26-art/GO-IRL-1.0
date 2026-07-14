@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import {
   ensureActivityChat,
@@ -15,6 +15,8 @@ import { CoachRequestPanel } from "./CoachRequestPanel";
 
 type ActivityChatPanelProps = {
   activity: Activity;
+  openRequest?: number;
+  showHelperAction?: boolean;
 };
 
 const formatCloseTime = (value?: string | null) => {
@@ -97,7 +99,7 @@ function OutdoorWeatherPanel({ activity }: { activity: Activity }) {
   );
 }
 
-export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
+export function ActivityChatPanel({ activity, openRequest = 0, showHelperAction = true }: ActivityChatPanelProps) {
   const userRole = useAppStore((state) => state.userRole);
   const [open, setOpen] = useState(false);
   const [chat, setChat] = useState<ActivityChat | null>(null);
@@ -106,6 +108,8 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const showEventHelperPanel = activity.type !== "sport" && activity.categoryId !== "sport";
   const showOutdoorWeather = isOutdoorGenericActivity(activity);
 
@@ -139,6 +143,15 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
     void reload();
   }, [activity.id, open]);
 
+  useEffect(() => {
+    if (!openRequest) return;
+    setOpen(true);
+    window.requestAnimationFrame(() => {
+      panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      inputRef.current?.focus({ preventScroll: true });
+    });
+  }, [activity.id, openRequest]);
+
   const handleSend = async () => {
     if (!body.trim()) return;
 
@@ -160,9 +173,9 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
     <>
       {showOutdoorWeather ? <OutdoorWeatherPanel activity={activity} /> : null}
 
-      {showEventHelperPanel ? <CoachRequestPanel activity={activity} userRole={userRole} variant="event_helper" /> : null}
+      {showEventHelperPanel && showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} variant="event_helper" /> : null}
 
-      <section className="activity-chat-panel">
+      <section className="activity-chat-panel" ref={panelRef}>
         <button
           type="button"
           className="activity-chat-toggle"
@@ -215,6 +228,7 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
             {!expired && !error ? (
               <div className="activity-chat-form">
                 <input
+                  ref={inputRef}
                   value={body}
                   onChange={(event) => setBody(event.target.value)}
                   placeholder="Сообщение…"

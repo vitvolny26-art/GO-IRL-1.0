@@ -27,6 +27,7 @@ export const activityOptions: Record<string, Array<{ icon: string; name: Categor
     { icon: "🎬", name: { ru: "Кино", uk: "Кіно", cs: "Kino", en: "Cinema" } },
     { icon: "🎳", name: { ru: "Боулинг", uk: "Боулінг", cs: "Bowling", en: "Bowling" } },
     { icon: "🎲", name: { ru: "Настольные игры", uk: "Настільні ігри", cs: "Deskové hry", en: "Board games" } },
+    { icon: "♟️", name: { ru: "Шахматы", uk: "Шахи", cs: "Šachy", en: "Chess" } },
     { icon: "🎤", name: { ru: "Караоке", uk: "Караоке", cs: "Karaoke", en: "Karaoke" } },
     { icon: "🛼", name: { ru: "Ролики", uk: "Ролики", cs: "Inline bruslení", en: "Inline skating" } },
   ],
@@ -73,7 +74,7 @@ export const closedBetaCategories = categories.filter((category) =>
 
 export const closedBetaActivityOptions = {
   sport: activityOptions.sport.filter(hasEnglishName(["Volleyball", "Running"])),
-  activities: activityOptions.activities.filter(hasEnglishName(["Coffee", "Board games"])),
+  activities: activityOptions.activities.filter(hasEnglishName(["Coffee", "Board games", "Chess"])),
   social: activityOptions.social.filter(hasEnglishName(["Walk", "Language exchange"])),
 } satisfies Record<ClosedBetaCategoryId, Array<{ icon: string; name: Category["name"] }>>;
 
