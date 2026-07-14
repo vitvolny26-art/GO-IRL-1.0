@@ -20,10 +20,3 @@ export type TelegramEventCardInput = {
   weather?: {
     icon: string;
     temperature: number;
-    rain: number;
-    wind: number;
-  };
-  language: "ru" | "uk" | "cs" | "en";
-};
-
-const copy = {
