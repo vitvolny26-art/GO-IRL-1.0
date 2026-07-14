@@ -46,3 +46,54 @@
 .generic-weather-details {
   margin-top: 10px !important;
 }
+
+.event-card-weather {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(201,255,61,.16);
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(201,255,61,.07), rgba(87,217,232,.045));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.event-card-weather > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #c6ccd5;
+  font-size: 14px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.event-card-weather > span + span {
+  border-left: 1px solid rgba(255,255,255,.07);
+}
+
+.event-card-weather b {
+  color: var(--lime);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.event-card-weather.is-pending {
+  grid-template-columns: 1fr;
+}
+
+.event-card-weather .event-card-weather-status {
+  min-height: 24px;
+  border-left: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 390px) {
+  .event-card-weather { padding-inline: 8px; }
+  .event-card-weather > span { gap: 4px; font-size: 12px; }
+  .event-card-weather b { font-size: 15px; }
+}

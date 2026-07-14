@@ -165,6 +165,23 @@ Apply it only after the `verifyTelegramInitData` Edge Function is deployed and i
 
 Do not apply v4 to production until the Edge Function is deployed. Once v4 is applied, production must not rely on `x-go-irl-user-key`.
 
+## Apply Meta Provider Join Migration v9
+
+`supabase/migrations/20260713000000_meta_provider_join.sql` adds the server-only atomic join path used by WhatsApp, Instagram, and Messenger.
+
+It:
+
+- allows the three Meta providers in generic `app_users`;
+- keeps external provider IDs out of `activity_members.user_key`;
+- serializes capacity checks by locking the target activity;
+- returns idempotent `joined`, `already_joined`, `pending`, or `waitlisted` outcomes;
+- revokes RPC execution from `public`, `anon`, and `authenticated`;
+- grants execution only to `service_role`.
+
+Apply with `supabase db push --linked`, then run `supabase db lint --linked --level warning` and `supabase/verify_meta_provider_join.sql`.
+
+Do not place the service-role key in frontend or `VITE_*` variables.
+
 ## 4. RLS
 
 RLS is enabled by the SQL files:

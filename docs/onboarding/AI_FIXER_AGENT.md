@@ -3,8 +3,8 @@ title: AI Fixer Agent
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-09
-next_review: 2026-08-09
+last_review: 2026-07-12
+next_review: 2026-08-12
 ---
 
 # AI Fixer Agent
@@ -51,6 +51,7 @@ Read before changing files:
 - `docs/audit/KNOWLEDGE_DEBT.md`
 - `docs/MVP_STABILIZATION_PLAN.md`
 - `docs/bible/08-runtime-boundaries.md`
+- `docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md`
 
 ## Allowed work
 
@@ -92,10 +93,33 @@ Do not:
 4. If unsure, stop and write the question in the report.
 5. Prefer the smallest safe patch.
 6. Do not hide errors.
+7. Small logical commits may be created locally.
+8. Do not push after every micro-fix.
+9. Group related code fixes into one validated push checkpoint.
+10. Do not use `[skip ci]` as routine workflow control.
+
+## CI and Vercel quota rule
+
+Repository configuration handles documentation-only automation filtering.
+
+For changes limited to `docs/**` and `**/*.md`:
+
+- GitHub Actions CI is expected to skip;
+- Vercel is expected to skip the build;
+- do not add `[skip ci]` merely to suppress automation;
+- application checks are not required unless executable configuration or runtime files also changed.
+
+For code or configuration changes:
+
+- run required checks locally;
+- prefer one push for one coherent validated batch;
+- allow GitHub Actions and Vercel to run normally;
+- never classify `.github/workflows/**`, `vercel.json`, package files, scripts, Supabase files, or runtime configuration as docs-only;
+- never force-push or rewrite history only to reduce build count.
 
 ## Required verification
 
-After every patch run:
+After every completed code or configuration patch batch run:
 
 ```bash
 pnpm run lint
@@ -103,7 +127,9 @@ pnpm run build
 pnpm run test
 ```
 
-If any command fails, do not commit.
+If any command fails, do not commit or push the batch as complete.
+
+Pure documentation-only updates do not require application checks. State that explicitly in the report.
 
 ## Reporting location
 
@@ -133,9 +159,9 @@ Use `docs/audit/KNOWLEDGE_DEBT.md` only if a new unresolved documentation or kno
 ## Verification
 
 ```text
-pnpm run lint   PASS/FAIL
-pnpm run build  PASS/FAIL
-pnpm run test   PASS/FAIL
+pnpm run lint   PASS/FAIL/NOT REQUIRED
+pnpm run build  PASS/FAIL/NOT REQUIRED
+pnpm run test   PASS/FAIL/NOT REQUIRED
 ```
 
 ## Risks
@@ -145,9 +171,9 @@ pnpm run test   PASS/FAIL
 ## Follow-up
 ```
 
-## Commit rule
+## Commit and push rule
 
-If checks pass:
+If code/configuration checks pass:
 
 ```bash
 git status
@@ -156,12 +182,19 @@ git commit -m "fix: short description"
 git push
 ```
 
+Several small local commits may be included in one push when they form one coherent verified batch.
+
 If checks fail:
 
-- do not commit;
+- do not mark the failing state complete;
+- do not push merely to obtain another Vercel build;
 - add the red error block to the report;
 - propose the smallest next fix.
 
 ## Principle
 
 A small safe patch is better than a large clever refactor.
+
+Configured docs-only filtering is better than routinely using `[skip ci]`.
+
+A validated batch push is better than many quota-consuming micro-pushes.

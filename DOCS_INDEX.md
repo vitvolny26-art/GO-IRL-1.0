@@ -33,6 +33,7 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/onboarding/AI_FIXER_AGENT.md` is the source of truth for the AI Fixer / QA + UX Polish Agent.
 - `docs/governance/AI_ORGANIZATION.md` is the working source for AI councils, escalation, and role interaction.
 - `docs/reports/README.md` defines AI/task report naming and required report sections.
+- `docs/THIRD_PARTY_NOTICES.md` records attribution and license notices for third-party visual assets used in generated product media.
 - Historical snapshot files must not be used for code generation.
 - Bible files are preserved product sources. New Bible boundary chapters can describe MVP scope, but Bible files must not override current code, Supabase schema, auth, or RLS.
 - Do not change `.env`, secrets, Supabase RLS, auth, or destructive SQL without explicit approval.

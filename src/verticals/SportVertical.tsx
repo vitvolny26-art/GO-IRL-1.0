@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Bell, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Star, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Dumbbell, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
-import { openCardReminderSheet, openCardShareSheet } from "../card-action-sheets";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import { formatEventTime } from "../eventTime";
 import { useAppStore } from "../store";
@@ -10,8 +9,26 @@ import { getUserKey } from "../supabase";
 import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
+import { EventDetailsAction, EventMetaChip, EventStatusBadge } from "../components/EventCardPrimitives";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
-import { hasConfirmedCoachForActivity } from "../coachFeature";
+import { getOrganizerRoleRequestState } from "../coachFeature";
+import { getCity } from "../config/cities";
+import { buildGoogleCalendarUrl } from "../calendar/googleCalendar";
+import { getTelegramWebApp } from "../telegram";
+import { CardShareAction } from "../components/CardShareAction";
+import { stripLeadingEmoji } from "../cardText";
+import { activityIconFromText } from "../activityIcon";
+import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
+import { EventWeatherStrip } from "../components/EventWeatherStrip";
+import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
+import {
+  eventActionTranslationKey,
+  eventStatusTranslationKey,
+  isActivityFinished,
+  resolveEventInteractionState,
+  runEventPrimaryAction,
+} from "../eventInteractionState";
+import { eventDurationLabel, sportLevelFormatLabel } from "../eventCardPresentation";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -20,18 +37,43 @@ const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
 const activityInviteUrl = (activity: Activity) => {
-  const path = telegramAppName ? `/${telegramAppName}` : "";
-  return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
+  return buildTelegramActivityInviteUrl(activity.id, telegramBotUsername, telegramAppName)
+    || buildBrowserActivityInviteUrl(activity.id, window.location.origin);
 };
 
 const openActivityMap = (activity: Activity) => {
-  const query = encodeURIComponent(activity.address || "Olomouc");
+  if (activity.locationUrl?.trim()) {
+    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
+  const city = getCity(activity.cityId).name.en;
+  const query = encodeURIComponent(activity.address.trim() || city);
   window.open(`https://mapy.cz/zakladni?q=${query}`, "_blank", "noopener,noreferrer");
+};
+
+const openActivityCalendar = (activity: Activity, language: Language) => {
+  const url = buildGoogleCalendarUrl(activity, {
+    language,
+    eventUrl: activityInviteUrl(activity),
+  });
+  const webApp = getTelegramWebApp();
+  if (webApp?.openLink) {
+    webApp.openLink(url, { try_instant_view: false });
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
+const coachCardCopy: Record<Language, { needed: string; requested: string; confirmed: string }> = {
+  ru: { needed: "Нужен тренер", requested: "Тренер запрошен", confirmed: "Есть тренер" },
+  uk: { needed: "Потрібен тренер", requested: "Тренера запитано", confirmed: "Є тренер" },
+  cs: { needed: "Potřebujeme trenéra", requested: "Trenér vyžádán", confirmed: "Trenér potvrzen" },
+  en: { needed: "Coach needed", requested: "Coach requested", confirmed: "Coach confirmed" },
 };
 
 const cleanSportLabel = (value: string | null | undefined) => {
   const raw = String(value || "").trim();
-  return raw.replace(/^[^A-Za-zА-Яа-яЁё0-9]+\s*/u, "").trim() || raw || "Спорт";
+  return stripLeadingEmoji(raw) || "Спорт";
 };
 
 const buildMapsQuery = (parts: Array<string | null | undefined>) =>
@@ -47,18 +89,7 @@ const weatherSummaryLines = (weather: WeatherResult) => [
 ];
 
 const sportAvatar = (value: string | null | undefined) => {
-  const text = String(value || "").toLowerCase();
-  if (/volley|волей|volej/.test(text)) return "🏐";
-  if (/football|футбол|fotbal/.test(text)) return "⚽";
-  if (/basket|баскет/.test(text)) return "🏀";
-  if (/tennis|теннис|tenis/.test(text)) return "🎾";
-  if (/running|run|бег|běh/.test(text)) return "🏃";
-  if (/bike|cycle|velo|велосипед|kolo/.test(text)) return "🚴";
-  if (/swim|плав|plav/.test(text)) return "🏊";
-  if (/badminton|бадминтон/.test(text)) return "🏸";
-  if (/gym|зал|posil/.test(text)) return "🏋️";
-  if (/yoga|йога|jóga/.test(text)) return "🧘";
-  return "🏆";
+  return activityIconFromText(String(value || ""), "🏆");
 };
 
 const sportAvatarForActivity = (activity: Activity, language: Language, meta: SportMetadata) =>
@@ -67,7 +98,7 @@ const sportAvatarForActivity = (activity: Activity, language: Language, meta: Sp
 type SportCardProps = {
   activity: Activity;
   language: Language;
-  onOpen: (activity: Activity) => void;
+  onOpen: (activity: Activity, options?: { focusChat?: boolean }) => void;
   onJoin: (activity: Activity) => void;
   onOpenMembers?: (activity: Activity) => void;
 };
@@ -86,6 +117,7 @@ type SportSheetProps = {
   onDelete: (activity: Activity) => void;
   onCloseMiniApp: () => void;
   initialMembersOpen?: boolean;
+  initialChatRequest?: number;
 };
 
 export function SportCreateFields({ language, initialSport }: { language: Language; initialSport: SportMetadata }) {
@@ -145,17 +177,46 @@ function SportDetailsSkeleton() {
 }
 
 export function SportActivityCard({ activity, language, onOpen, onJoin }: SportCardProps) {
-  const { joinedIds, pendingIds } = useAppStore();
+  const { joinedIds, waitingIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const meta = getSportMetadata(activity);
   const joined = joinedIds.includes(activity.id);
+  const waiting = waitingIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
-  const action = pending ? t.requested : joined ? t.joined : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
+  const status = t[eventStatusTranslationKey(interaction)];
+  const durationLabel = eventDurationLabel(meta.durationMinutes, t.minutesShort);
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
-  const [hasConfirmedCoach, setHasConfirmedCoach] = useState(false);
+  const [coachState, setCoachState] = useState<"none" | "requested" | "confirmed">("none");
   const avatar = sportAvatarForActivity(activity, language, meta);
+  const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
+  const coachAction = isOrganizer
+    ? coachState === "confirmed"
+      ? coachCardCopy[language].confirmed
+      : coachState === "requested"
+        ? coachCardCopy[language].requested
+        : coachCardCopy[language].needed
+    : coachState === "confirmed"
+      ? coachCardCopy[language].confirmed
+      : t.details;
+  const showCoachAction = interaction.showHelperAction && (isOrganizer || coachState === "confirmed");
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onOpen(activity),
+    openChat: () => onOpen(activity, { focusChat: true }),
+    join: () => onJoin(activity),
+  });
 
   const joinedMembers = activity.members.filter(m => m.status === "joined");
   const shareTitle = cleanSportLabel(activity.activity[language]);
@@ -165,13 +226,12 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     let active = true;
 
     const refreshConfirmedCoach = () => {
-      setHasConfirmedCoach(false);
-      void hasConfirmedCoachForActivity(activity.id)
-        .then((confirmed) => {
-          if (active) setHasConfirmedCoach(confirmed);
+      void getOrganizerRoleRequestState(activity.id)
+        .then((state) => {
+          if (active) setCoachState(state);
         })
         .catch(() => {
-          if (active) setHasConfirmedCoach(false);
+          if (active) setCoachState("none");
         });
     };
 
@@ -192,21 +252,27 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   }, [activity.id]);
 
   return (
-    <article className="sport-card compact-sport-card">
+    <article className="sport-card compact-sport-card unified-event-card">
       <div className="sport-card-top-actions">
-        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><Bell size={20} /></button>
-        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); openCardShareSheet(shareTitle, shareDate, activity.address, event.currentTarget, activityInviteUrl(activity)); }}><Share2 size={20} /></button>
+        <CardShareAction
+          title={shareTitle}
+          date={shareDate}
+          address={activity.address}
+          url={activityInviteUrl(activity)}
+          label={t.share}
+          onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
+        />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className="sport-card-symbol"><span className="sport-avatar-glyph">{avatar}</span></div>
         <div>
-          <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
+          <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelFormatLabel(meta.level, meta.format, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
           <h3>{shareTitle}</h3>
-          <p>{activity.title[language]}</p>
+          <p>{stripLeadingEmoji(activity.title[language])}</p>
         </div>
       </button>
       <div className="sport-chip-row">
-        {hasConfirmedCoach ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>Есть тренер</span></span> : null}
+        {coachState === "confirmed" ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>{coachCardCopy[language].confirmed}</span></span> : null}
         <button
           className="sport-card-participants-chip"
           type="button"
@@ -221,19 +287,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           <UsersRound size={16} aria-hidden="true" />
           <span>{activity.participants} / {activity.capacity}</span>
         </button>
-        <button
-          className="sport-card-chip sport-duration-chip"
-          type="button"
-          aria-label={`${t.sportDuration}: ${meta.durationMinutes || 90} ${t.minutesShort}`}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
-          }}
-        >
-          <CalendarPlus size={16} aria-hidden="true" />
-          <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
-        </button>
+        {durationLabel ? <span className="sport-card-chip sport-duration-chip" aria-label={`${t.sportDuration}: ${durationLabel}`}><CalendarPlus size={16} aria-hidden="true" /><span>{durationLabel}</span></span> : null}
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -256,42 +310,17 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label={`${t.address}: ${activity.address}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            openActivityMap(activity);
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-            event.preventDefault();
-            event.stopPropagation();
-            openActivityMap(activity);
-          }}
-        ><MapPin /><span>{activity.address}</span></div>
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label={`Напоминание: ${shareDate}`}
-          onClick={(event) => {
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-            event.preventDefault();
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
-          }}
-        ><CalendarDays /><span>{shareDate}</span></div>
-        <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <div className="unified-status-cell"><ShieldCheck /><Star /><span>{sportLevelLabel(meta.level, language)} · {sportFormatLabel(meta.format, language)}</span></div>
+        <EventMetaChip icon={<CalendarDays />} label={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
+        <EventMetaChip icon={<Ticket />} label={activity.price ? `${activity.price} Kč` : t.free} />
+        <EventMetaChip icon={<MapPin />} label={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
+        <EventStatusBadge state={interaction} label={status} />
       </div>
+      <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-footer compact-sport-actions">
-        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />Тренер</button>
-        <button className={joined || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{action}</button>
+        {showCoachAction
+          ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} /><span>{coachAction}</span></button>
+          : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
+        <button className={interaction.canJoin ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{action}</button>
       </div>
     </article>
   );
@@ -311,9 +340,11 @@ export function SportActivitySheet({
   onDelete,
   onCloseMiniApp,
   initialMembersOpen = false,
+  initialChatRequest = 0,
 }: SportSheetProps) {
-  const { joinedIds, pendingIds, userRole, reviewRequest } = useAppStore();
+  const { joinedIds, waitingIds, pendingIds, userRole, reviewRequest } = useAppStore();
   const [membersOpen, setMembersOpen] = useState(initialMembersOpen);
+  const [chatOpenRequest, setChatOpenRequest] = useState(initialChatRequest);
   const t = getTranslation(language);
   const [weatherText, setWeatherText] = useState(t.weatherPlaceholder);
   const [weather, setWeather] = useState<WeatherResult | null>(null);
@@ -325,9 +356,20 @@ export function SportActivitySheet({
   const canDelete = isOrganizer || userRole === "admin";
   const canManageActivity = isOrganizer || userRole === "admin" || userRole === "moderator";
   const joined = joinedIds.includes(activity.id);
+  const waiting = waitingIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const full = activity.participants >= activity.capacity;
-  const action = isOrganizer ? t.edit : pending ? t.cancelRequest : joined ? t.leave : full ? t.eventFull : activity.visibility === "invite" ? t.request : t.join;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "sheet")];
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
   const waitingMembers = activity.members.filter((member) => member.status === "waiting");
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
@@ -338,6 +380,10 @@ export function SportActivitySheet({
   useEffect(() => {
     setMembersOpen(initialMembersOpen);
   }, [activity.id, initialMembersOpen]);
+
+  useEffect(() => {
+    setChatOpenRequest(initialChatRequest);
+  }, [activity.id, initialChatRequest]);
 
   useEffect(() => {
     let active = true;
@@ -379,6 +425,12 @@ export function SportActivitySheet({
     await reviewRequest(activity.id, memberKey, approved);
   };
 
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onEdit(activity),
+    openChat: () => setChatOpenRequest((request) => request + 1),
+    join: () => onJoin(activity),
+  });
+
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
       <article className="activity-sheet sport-sheet" onMouseDown={(event) => event.stopPropagation()}>
@@ -390,8 +442,8 @@ export function SportActivitySheet({
           <div className="sport-card-symbol large"><span className="sport-avatar-glyph">{avatar}</span></div>
           <div>
             <div className="sport-eyebrow">{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</div>
-            <h2>{activity.title[language]}</h2>
-            <p>{activity.description[language]}</p>
+            <h2>{stripLeadingEmoji(activity.title[language])}</h2>
+            <p>{stripLeadingEmoji(activity.description[language])}</p>
           </div>
         </div>
         <div className="sport-chip-row sport-sheet-chips">
@@ -451,9 +503,9 @@ export function SportActivitySheet({
           </section>
         )}
 
-        <CoachRequestPanel activity={activity} userRole={userRole} />
+        {interaction.showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
 
-        <ActivityChatPanel activity={activity} />
+        <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={false} />
 
         <button className="detail-members-toggle" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
           <UsersRound />
@@ -496,7 +548,7 @@ export function SportActivitySheet({
         )}
 
         <div className="sheet-actions compact-sheet-actions">
-          <button className="main-action" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>
+          <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>
           <details className="event-more-actions">
             <summary className="square-action" aria-label="Еще" title="Еще"><Ellipsis aria-hidden="true" /></summary>
             <div className="event-more-menu">

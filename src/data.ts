@@ -15,11 +15,11 @@ export const activityOptions: Record<string, Array<{ icon: string; name: Categor
     { icon: "⚽", name: { ru: "Футбол", uk: "Футбол", cs: "Fotbal", en: "Football" } },
     { icon: "🏀", name: { ru: "Баскетбол", uk: "Баскетбол", cs: "Basketbal", en: "Basketball" } },
     { icon: "🎾", name: { ru: "Теннис", uk: "Теніс", cs: "Tenis", en: "Tennis" } },
+    { icon: "🏋️", name: { ru: "Тренажёрный зал", uk: "Тренажерний зал", cs: "Posilovna", en: "Gym" } },
     { icon: "🏃", name: { ru: "Бег", uk: "Біг", cs: "Běh", en: "Running" } },
     { icon: "🚴", name: { ru: "Велосипед", uk: "Велосипед", cs: "Kolo", en: "Cycling" } },
     { icon: "🏸", name: { ru: "Бадминтон", uk: "Бадмінтон", cs: "Badminton", en: "Badminton" } },
     { icon: "🏓", name: { ru: "Настольный теннис", uk: "Настільний теніс", cs: "Stolní tenis", en: "Table tennis" } },
-    { icon: "🏋️", name: { ru: "Тренажёрный зал", uk: "Тренажерний зал", cs: "Posilovna", en: "Gym" } },
     { icon: "🧘", name: { ru: "Йога", uk: "Йога", cs: "Jóga", en: "Yoga" } },
   ],
   activities: [
@@ -27,11 +27,12 @@ export const activityOptions: Record<string, Array<{ icon: string; name: Categor
     { icon: "🎬", name: { ru: "Кино", uk: "Кіно", cs: "Kino", en: "Cinema" } },
     { icon: "🎳", name: { ru: "Боулинг", uk: "Боулінг", cs: "Bowling", en: "Bowling" } },
     { icon: "🎲", name: { ru: "Настольные игры", uk: "Настільні ігри", cs: "Deskové hry", en: "Board games" } },
+    { icon: "♟️", name: { ru: "Шахматы", uk: "Шахи", cs: "Šachy", en: "Chess" } },
     { icon: "🎤", name: { ru: "Караоке", uk: "Караоке", cs: "Karaoke", en: "Karaoke" } },
     { icon: "🛼", name: { ru: "Ролики", uk: "Ролики", cs: "Inline bruslení", en: "Inline skating" } },
   ],
   party: [
-    { icon: "🍺", name: { ru: "Пиво после работы", uk: "Пиво після роботи", cs: "Pivo po práci", en: "After-work beer" } },
+    { icon: "🍺", name: { ru: "Идём на пиво", uk: "Йдемо на пиво", cs: "Jdeme na pivo", en: "Let's get a beer" } },
     { icon: "🧠", name: { ru: "Паб-квиз", uk: "Паб-квіз", cs: "Pub kvíz", en: "Pub quiz" } },
     { icon: "🍷", name: { ru: "Винный вечер", uk: "Винний вечір", cs: "Večer s vínem", en: "Wine evening" } },
     { icon: "🎵", name: { ru: "Концерт", uk: "Концерт", cs: "Koncert", en: "Concert" } },
@@ -73,7 +74,7 @@ export const closedBetaCategories = categories.filter((category) =>
 
 export const closedBetaActivityOptions = {
   sport: activityOptions.sport.filter(hasEnglishName(["Volleyball", "Running"])),
-  activities: activityOptions.activities.filter(hasEnglishName(["Coffee", "Board games"])),
+  activities: activityOptions.activities.filter(hasEnglishName(["Coffee", "Board games", "Chess"])),
   social: activityOptions.social.filter(hasEnglishName(["Walk", "Language exchange"])),
 } satisfies Record<ClosedBetaCategoryId, Array<{ icon: string; name: Category["name"] }>>;
 

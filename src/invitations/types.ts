@@ -1,0 +1,30 @@
+export type EventInvitationSummary = {
+  eventId: string;
+  title: string;
+  dateTime: string;
+  location: string;
+  availableSpots: number;
+  activity?: string;
+  date?: string;
+  time?: string;
+  participants?: number;
+  capacity?: number;
+  icon?: string;
+  inviteUrl?: string;
+  mapUrl?: string;
+  city?: string;
+  durationMinutes?: number;
+  price?: number;
+  level?: string;
+  format?: string;
+  environment?: string;
+  isSport?: boolean;
+  weather?: {
+    icon: string;
+    temperature: number;
+    rain: number;
+    wind: number;
+  };
+  language?: "ru" | "uk" | "cs" | "en";
+  imageUrl?: string;
+};

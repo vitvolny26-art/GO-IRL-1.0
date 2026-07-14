@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: Project Archivist
-Last updated: 2026-07-11
+Last updated: 2026-07-12
 
 ## Purpose
 
@@ -42,6 +42,11 @@ Every GO IRL AI role must follow these rules:
 - Future vision does not override current MVP.
 - Competitor ideas require analysis, not blind copying.
 - Documentation changes must update `DOCS_INDEX.md` when they change document status or structure.
+- Read `docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md` before preparing commits, pushes, CI changes, or releases.
+- Do not use `[skip ci]` as routine workflow control.
+- Let repository configuration skip docs-only CI and Vercel builds.
+- Group related code fixes into one validated push batch instead of pushing every micro-fix.
+- Never classify `.github`, Vercel, package, Supabase, script, or runtime configuration changes as docs-only.
 
 ## Role map
 
@@ -56,9 +61,9 @@ Every GO IRL AI role must follow these rules:
 | UX Lead | Telegram Mini App UX, event flow, cards, empty/error states | `docs/bible/06-ux-interaction-guidelines.md`, `BETA_TESTING.md` |
 | Security Lead | Auth, RLS, secrets, abuse boundaries | `docs/Security.md`, `docs/RLS.md`, `supabase/README.md` |
 | Supabase Steward | Schema/migrations/data boundary | `supabase/schema.sql`, `supabase/migration_v*.sql`, `docs/DATABASE_SCHEMA_AUDIT.md` |
-| Release Manager | Vercel, CI, release notes, deployment checklist | `DEPLOYMENT.md`, `RELEASE_NOTES.md`, `BETA_CHECKLIST.md` |
+| Release Manager | Vercel, CI, release notes, deployment checklist | `DEPLOYMENT.md`, `RELEASE_NOTES.md`, `BETA_CHECKLIST.md`, `AI_DELIVERY_AND_PREVIEW_POLICY.md` |
 | Replit Operator | Replit Agent coordination and app checks | Replit app context, `README.md`, `DOCS_INDEX.md` |
-| GitHub Operator | commits, PRs, CI status, repo hygiene | GitHub repo state, `DOCS_INDEX.md`, CI workflow |
+| GitHub Operator | commits, PRs, CI status, repo hygiene | GitHub repo state, `DOCS_INDEX.md`, CI workflow, `AI_DELIVERY_AND_PREVIEW_POLICY.md` |
 | Sprint Planner | Sprint structure and roadmap history | `SPRINTS.md`, `ROADMAP.md`, `BACKLOG.md`, planned `docs/roadmap/*` |
 
 ## Project Coordinator
@@ -81,6 +86,7 @@ ROADMAP.md
 BACKLOG.md
 docs/audit/KNOWLEDGE_DEBT.md
 docs/onboarding/AI_ROLES.md
+docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md
 docs/governance/AI_ORGANIZATION.md
 ```
 
@@ -92,7 +98,9 @@ Common tasks:
 - allocate budgets and stop optional work when limits are reached;
 - require structured evidence-backed outputs;
 - surface conflicts and request at most one critic pass;
-- produce one final synthesis and one next task.
+- produce one final synthesis and one next task;
+- classify each change as docs-only or code/configuration before selecting checks;
+- include a push budget in coding missions and avoid multiple agents pushing separate micro-fixes into one PR.
 
 Authority limits:
 
@@ -128,7 +136,8 @@ Common tasks:
 - mark deprecated docs;
 - move important decisions into ADR;
 - create market/watchlist docs;
-- prepare onboarding for new agents.
+- prepare onboarding for new agents;
+- keep delivery and CI policy documents discoverable from role instructions.
 
 ## Tech Lead
 
@@ -145,6 +154,7 @@ README.md
 docs/DEVELOPMENT_PROTOCOL.md
 docs/DATABASE_SCHEMA_AUDIT.md
 supabase/README.md
+docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md
 ```
 
 Common tasks:
@@ -152,7 +162,8 @@ Common tasks:
 - inspect where a file is used before changing it;
 - propose minimal patches;
 - keep current React/Supabase/Telegram/Vercel stack;
-- reject future-vision rewrites during MVP stabilization.
+- reject future-vision rewrites during MVP stabilization;
+- keep code/configuration checks active while allowing docs-only automation filtering.
 
 ## QA Lead
 
@@ -168,6 +179,7 @@ BETA_CHECKLIST.md
 BETA_TESTING.md
 docs/MVP_STABILIZATION_PLAN.md
 RELEASE_NOTES.md
+docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md
 ```
 
 Common tasks:
@@ -177,7 +189,9 @@ Common tasks:
 - validate event card time consistency;
 - verify profile save;
 - check weather/share/join behavior;
-- run or request `pnpm run lint`, `pnpm run build`, `pnpm run test`.
+- run or request `pnpm run lint`, `pnpm run build`, `pnpm run test`;
+- require local gates for code/configuration changes but not for pure docs-only edits;
+- record the commit SHA used for Preview, Telegram, integration, or production smoke testing.
 
 ## Product Lead
 
@@ -306,6 +320,8 @@ DEPLOYMENT.md
 RELEASE_NOTES.md
 BETA_CHECKLIST.md
 .github/workflows/ci.yml
+vercel.json
+docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md
 ```
 
 Common tasks:
@@ -313,7 +329,10 @@ Common tasks:
 - check GitHub Actions / Vercel status;
 - separate quota/deploy errors from app regressions;
 - update release notes;
-- verify release gate checklist.
+- verify release gate checklist;
+- confirm docs-only changes skip heavy automation while code/configuration changes still run it;
+- check that required branch-protection checks do not remain permanently pending on docs-only PRs;
+- do not use `[skip ci]` as routine workflow control.
 
 ## Replit Operator
 
@@ -334,12 +353,24 @@ Mission:
 
 - maintain repository hygiene.
 
+Must read:
+
+```text
+DOCS_INDEX.md
+.github/workflows/ci.yml
+vercel.json
+docs/onboarding/AI_DELIVERY_AND_PREVIEW_POLICY.md
+```
+
 Common tasks:
 
 - fetch/update files;
 - check commit status;
-- keep commits small;
+- keep commits small and understandable;
+- group related code commits into one validated push batch;
 - avoid force push;
+- avoid routine `[skip ci]` use;
+- verify docs-only filters remain narrow and do not hide executable changes;
 - sync documentation between repos when requested.
 
 ## Sprint Planner
