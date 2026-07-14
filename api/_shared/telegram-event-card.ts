@@ -18,5 +18,3 @@ export type TelegramEventCardInput = {
   environment: string;
   isSport?: boolean;
   weather?: {
-    icon: string;
-    temperature: number;
