@@ -80,7 +80,7 @@ const withInvitationImage = (provider: MessagingProvider, event: MetaEventSummar
     : readEnv("META_APP_SECRET");
   if (!origin || !secret) return event;
   const token = createMetaInvitationCardToken(invitationCardInput(event), secret);
-  return { ...event, imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}` };
+  return { ...event, imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=2` };
 };
 
 export async function sendProviderInvitation(

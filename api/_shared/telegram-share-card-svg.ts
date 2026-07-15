@@ -16,6 +16,10 @@ const xml = (value: string) => value
   .replaceAll("'", "&apos;");
 
 const clean = (value: string, max = 160) => value.trim().replace(/\s+/g, " ").slice(0, max);
+const cleanEventText = (value: string, max = 160) => clean(
+  value.replace(/^(?:\s|\u200d|\ufe0f|\p{Extended_Pictographic})+/u, ""),
+  max,
+);
 
 const wrap = (value: string, maxChars: number, maxLines = 2) => {
   const words = clean(value).split(" ").filter(Boolean);
@@ -85,8 +89,8 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   const canvasHeight = 900;
   const cardHeight = 832;
   const actionsY = 682;
-  const headline = clean(input.activity || input.title, 80) || "GO IRL";
-  const subtitle = clean(input.title, 120);
+  const headline = cleanEventText(input.activity || input.title, 80) || "GO IRL";
+  const subtitle = cleanEventText(input.title, 120);
   const dateTime = [clean(input.date, 40), clean(input.time, 20)].filter(Boolean).join(" · ");
   const place = clean(input.address || input.city, 140);
   const status = [clean(input.level, 50), clean(input.format, 50)].filter(Boolean).join(" · ");

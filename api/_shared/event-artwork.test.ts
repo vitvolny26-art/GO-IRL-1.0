@@ -18,6 +18,8 @@ describe("event artwork registry", () => {
 
       const svg = buildEventArtworkSvg({ icon: option.icon, activity: option.name.en });
       expect(svg).toContain(`data-event-artwork="${expectedCode}"`);
+      expect(svg).not.toContain("<text");
+      expect(svg).not.toContain("undefined");
       expect(svg).not.toMatch(/\p{Extended_Pictographic}/u);
     }
   });
