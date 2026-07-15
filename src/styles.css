@@ -195,11 +195,11 @@ button, input, textarea, select { letter-spacing: 0; }
 
 .back-button { display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--text); }
 .create-form { display: grid; gap: 12px; width: 100%; }
-.template-row { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.template-row { display: grid; min-width: 0; gap: 8px; padding: 12px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .template-row > span { color: var(--muted); font-size: 12px; font-weight: 850; text-transform: uppercase; }
-.template-row > div { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.template-row > div { display: flex; max-width: 100%; min-width: 0; gap: 7px; overflow-x: auto; overscroll-behavior-inline: contain; padding-bottom: 2px; scroll-snap-type: x proximity; scrollbar-width: none; touch-action: pan-x; }
 .template-row > div::-webkit-scrollbar { display: none; }
-.template-row button { flex: 0 0 auto; min-height: 42px; padding: 0 12px; border: 1px solid #343943; border-radius: 7px; background: var(--surface-2); color: var(--text); font-size: 13px; font-weight: 850; }
+.template-row button { flex: 0 0 auto; min-height: 42px; padding: 0 12px; border: 1px solid #343943; border-radius: 7px; background: var(--surface-2); color: var(--text); font-size: 13px; font-weight: 850; scroll-snap-align: start; }
 .create-form > label, .form-row label { display: grid; gap: 7px; min-width: 0; color: var(--muted); font-size: 13px; font-weight: 650; }
 .create-form input, .create-form textarea, .create-form select { display: block; width: 100%; min-width: 0; min-height: 50px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: var(--surface); color: var(--text); appearance: none; }
 .create-form textarea { resize: vertical; }
@@ -208,7 +208,30 @@ button, input, textarea, select { letter-spacing: 0; }
 .sport-create-panel { display: grid; gap: 12px; padding: 13px; border: 1px solid rgba(201,255,61,.24); border-radius: 8px; background: linear-gradient(180deg, rgba(201,255,61,.09), rgba(87,217,232,.045)); }
 .sport-panel-title { color: var(--lime); font-size: 12px; font-weight: 950; text-transform: uppercase; }
 .sport-check { display: flex !important; grid-template-columns: none !important; align-items: center; gap: 9px !important; min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0,0,0,.12); color: var(--text) !important; }
-.sport-check input { width: 18px; min-height: 18px; accent-color: var(--lime); }
+.sport-check input {
+  appearance: none;
+  display: grid;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  padding: 0;
+  place-content: center;
+  border: 1px solid #515865;
+  border-radius: 5px;
+  background: var(--surface);
+}
+.sport-check input::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-bottom: 2px solid var(--lime);
+  border-left: 2px solid var(--lime);
+  opacity: 0;
+  transform: translateY(-1px) rotate(-45deg);
+}
+.sport-check input:checked::before { opacity: 1; }
+.sport-check input:focus-visible { outline: 2px solid rgba(201,255,61,.35); outline-offset: 2px; }
 .create-form fieldset { margin: 0; padding: 0; border: 0; }
 .create-form legend { margin-bottom: 8px; color: var(--muted); font-size: 13px; font-weight: 650; }
 .segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
@@ -284,6 +307,25 @@ button, input, textarea, select { letter-spacing: 0; }
 .profile-skeleton span:nth-child(3) { width: 100%; height: 42px; }
 .profile-skeleton span:nth-child(4) { width: 100%; height: 82px; }
 .profile-error { margin: 0; }
+.profile-page.is-editing { width: min(100%, 560px); margin: 0 auto; }
+.profile-page.is-editing .profile-edit-form { gap: 16px; padding: 18px; border-color: rgba(255,255,255,.1); border-radius: 20px; background: radial-gradient(circle at 50% -10%, rgba(87,217,232,.09), transparent 38%), linear-gradient(180deg, #171a20 0%, #101218 100%); box-shadow: 0 22px 60px rgba(0,0,0,.34); }
+.profile-edit-intro { display: grid; justify-items: center; gap: 7px; padding: 2px 0 6px; text-align: center; }
+.profile-edit-intro h1 { margin: 0; font-size: 30px; line-height: 1.05; }
+.profile-edit-intro p { margin: 0 0 8px; color: var(--muted); font-size: 14px; }
+.profile-edit-avatar { position: relative; display: grid; place-items: center; width: 96px; height: 96px; margin-top: 4px; overflow: visible; border: 1px solid rgba(201,255,61,.3); border-radius: 24px; background: linear-gradient(135deg, rgba(201,255,61,.26), rgba(87,217,232,.12)); color: var(--text); font-size: 24px; font-weight: 950; box-shadow: 0 14px 34px rgba(0,0,0,.3); }
+.profile-edit-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.profile-edit-avatar i { position: absolute; right: -7px; bottom: -7px; display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid #12151a; border-radius: 12px; background: var(--lime); color: var(--lime-text); box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+.profile-avatar-choice-label { color: var(--muted); font-size: 13px; font-weight: 650; }
+.profile-avatar-upload { position: relative; display: grid !important; justify-items: center; gap: 6px !important; min-height: 126px; padding: 20px 14px !important; border: 1px dashed rgba(142,154,173,.52); border-radius: 16px; background: rgba(255,255,255,.025); color: var(--text) !important; text-align: center; cursor: pointer; transition: border-color 140ms ease, background-color 140ms ease, transform 100ms ease; }
+.profile-avatar-upload:hover { border-color: rgba(201,255,61,.68); background: rgba(201,255,61,.055); }
+.profile-avatar-upload:active { transform: scale(.985); }
+.profile-avatar-upload.is-busy { pointer-events: none; opacity: .7; }
+.profile-edit-form .profile-avatar-upload input { position: absolute; width: 1px; height: 1px; min-height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); border: 0; white-space: nowrap; }
+.profile-avatar-upload > svg { width: 30px; height: 30px; color: #92add2; }
+.profile-avatar-upload strong { font-size: 14px; }
+.profile-avatar-upload small { color: #747d89; font-size: 11px; font-weight: 700; }
+.profile-avatar-error { margin-top: -8px; color: var(--coral); font-size: 12px; font-weight: 800; text-align: center; }
+.profile-page.is-editing .publish-button { min-height: 52px; border-radius: 14px; box-shadow: 0 10px 26px rgba(201,255,61,.13); }
 .avatar { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 8px; background: var(--violet); color: #130b24; font-weight: 900; }
 .rli-panel { padding: 18px; border: 1px solid #3a421f; border-radius: 8px; background: #15190d; }
 .rli-top { display: flex; justify-content: space-between; color: var(--lime); font-size: 13px; font-weight: 800; text-transform: uppercase; }
@@ -311,7 +353,6 @@ button, input, textarea, select { letter-spacing: 0; }
 .bottom-nav button svg { width: 21px; height: 21px; }
 .bottom-nav button span { font-size: 10px; }
 .bottom-nav button.active { color: var(--lime); }
-.bottom-nav button:nth-child(4) svg { width: 29px; height: 29px; padding: 5px; border-radius: 6px; background: var(--lime); color: var(--lime-text); }
 
 .sheet-backdrop { position: fixed; z-index: 60; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-top: 40px; background: rgba(0,0,0,.72); animation: fade-in 150ms ease-out; }
 .activity-sheet { position: relative; width: min(100%, 560px); max-height: calc(100vh - 34px); overflow-y: auto; padding: 28px 18px calc(20px + env(safe-area-inset-bottom)); border: 1px solid var(--line); border-bottom: 0; border-radius: 8px 8px 0 0; background: #111319; box-shadow: 0 -20px 60px rgba(0,0,0,.45); animation: sheet-up 210ms cubic-bezier(.2,.8,.2,1); }

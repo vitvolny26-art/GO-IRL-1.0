@@ -1,7 +1,6 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
 import {
   ArrowLeft,
-  Bell,
   CalendarDays,
   CalendarPlus,
   Check,
@@ -11,6 +10,7 @@ import {
   Compass,
   Dices,
   Bug,
+  Camera,
   Home,
   MapPin,
   Ellipsis,
@@ -23,6 +23,7 @@ import {
   Star,
   Ticket,
   Trash2,
+  UploadCloud,
   UserRoundCheck,
   UsersRound,
   X,
@@ -33,13 +34,13 @@ import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
-import { openCardReminderSheet, openCardShareSheet } from "./card-action-sheets";
-import { initializeTrustedAuth } from "./authSession";
+import { getCurrentStartParam, initializeTrustedAuth } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
 import {
   applyDiscoverFilters,
+  actionableSurpriseActivities,
   matchesActivityInterest,
   searchActivities,
   simpleRecommendationEngine,
@@ -66,38 +67,77 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
+import { EventDetailsAction, EventMetaChip, EventStatusBadge } from "./components/EventCardPrimitives";
+import { getOrganizerRoleRequestState } from "./coachFeature";
+import { CardShareAction } from "./components/CardShareAction";
+import { stripLeadingEmoji } from "./cardText";
+import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation } from "./eventLocations";
+import { openAvatarCropper } from "./avatarCropper";
+import { readProfileAvatarAsDataUrl } from "./profileAvatar";
+import { activityIconFor } from "./activityIcon";
+import {
+  buildBrowserActivityInviteUrl,
+  buildSeparatedInvitationText,
+  buildTelegramActivityInviteUrl,
+  buildTelegramShareUrl,
+  parseInvitationStartParam,
+} from "./invitationLink";
+import { EventWeatherStrip } from "./components/EventWeatherStrip";
+import { isOutdoorGenericActivity } from "./eventWeather";
+import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
+import {
+  eventActionTranslationKey,
+  eventStatusTranslationKey,
+  isActivityFinished,
+  resolveEventInteractionState,
+  runEventPrimaryAction,
+} from "./eventInteractionState";
+import { isTabSwipeBlockedTarget, resolveAdjacentTab, resolveSwipeDirection } from "./bottom-nav-swipe";
+import { isTemplateCarouselDrag } from "./templateCarousel";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
+type ActivityOpenOptions = { focusChat?: boolean };
+type OpenActivity = (activity: Activity, options?: ActivityOpenOptions) => void;
+
 const activityInviteUrl = (activity: Activity) => {
-  const path = telegramAppName ? `/${telegramAppName}` : "";
-  return `https://t.me/${telegramBotUsername}${path}?startapp=${encodeURIComponent(activity.id)}`;
+  return buildTelegramActivityInviteUrl(activity.id, telegramBotUsername, telegramAppName)
+    || buildBrowserActivityInviteUrl(activity.id, window.location.origin);
 };
 
 const openActivityMap = (activity: Activity) => {
-  const query = [activity.address, getCity(activity.cityId).name.en].filter(Boolean).join(", ");
+  if (activity.locationUrl?.trim()) {
+    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
+  const query = activity.address.trim() || getCity(activity.cityId).name.en;
   window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
 };
 
+const openActivityCalendar = (activity: Activity, language: Language) => {
+  const url = buildGoogleCalendarUrl(activity, {
+    language,
+    eventUrl: activityInviteUrl(activity),
+  });
+  const webApp = getTelegramWebApp();
+  if (webApp?.openLink) {
+    webApp.openLink(url, { try_instant_view: false });
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+};
+
 const genericActivityAvatar = (activity: Activity, language: Language, fallback: string) => {
-  const value = `${activity.activity[language]} ${activity.title[language]}`.toLowerCase();
-  if (/volley|волей|volej/.test(value)) return "🏐";
-  if (/football|футбол|fotbal/.test(value)) return "⚽";
-  if (/basket|баскет/.test(value)) return "🏀";
-  if (/tennis|теннис|tenis/.test(value)) return "🎾";
-  if (/run|running|бег|běh/.test(value)) return "🏃";
-  if (/bike|cycle|velo|велосипед|kolo/.test(value)) return "🚴";
-  if (/swim|плав|plav/.test(value)) return "🏊";
-  if (/badminton|бадминтон/.test(value)) return "🏸";
-  if (/yoga|йога|jóga/.test(value)) return "🧘";
-  if (/walk|walking|прогул|ходь|proch/.test(value)) return "🚶";
-  if (/board|game|игр|hra/.test(value)) return "🎲";
-  if (/coffee|кафе|кофе|káva/.test(value)) return "☕";
-  if (/language|язык|jazyk/.test(value)) return "💬";
-  if (/party|вечерин|párty/.test(value)) return "🎉";
-  return fallback || "✨";
+  return activityIconFor(activity, language, fallback || "✨");
+};
+
+const eventHelperCardCopy: Record<Language, { needed: string; requested: string; confirmed: string }> = {
+  ru: { needed: "Нужен помощник", requested: "Помощник запрошен", confirmed: "Есть помощник" },
+  uk: { needed: "Потрібен помічник", requested: "Помічника запитано", confirmed: "Є помічник" },
+  cs: { needed: "Potřebujeme pomocníka", requested: "Pomocník vyžádán", confirmed: "Pomocník potvrzen" },
+  en: { needed: "Helper needed", requested: "Helper requested", confirmed: "Helper confirmed" },
 };
 
 const activityIdFromJoinPath = () => {
@@ -192,6 +232,7 @@ function App() {
   const store = useAppStore();
   const [selected, setSelected] = useState<Activity | null>(null);
   const [selectedMembersOpen, setSelectedMembersOpen] = useState(false);
+  const [selectedChatRequest, setSelectedChatRequest] = useState(0);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [completion, setCompletion] = useState("");
   const [completionActivityId, setCompletionActivityId] = useState<string | null>(null);
@@ -203,7 +244,12 @@ function App() {
     toastTimer.current = window.setTimeout(() => setNotice(""), 2200);
   };
   const invitationHandled = useRef(false);
+  const tabSwipeStart = useRef<{ x: number; y: number } | null>(null);
   const t = getTranslation(store.language);
+  const openActivity: OpenActivity = (activity, options) => {
+    setSelected(activity);
+    setSelectedChatRequest(options?.focusChat ? (request) => request + 1 : 0);
+  };
 
   useEffect(() => {
   readyMiniApp();
@@ -241,7 +287,10 @@ function App() {
   useEffect(() => {
     if (selected || store.view !== "home") {
       return showBackButton(() => {
-        if (selected) setSelected(null);
+        if (selected) {
+          setSelected(null);
+          setSelectedChatRequest(0);
+        }
         else store.setView("home");
       });
     }
@@ -250,19 +299,29 @@ function App() {
 
   useEffect(() => {
     if (invitationHandled.current) return;
-    const tg = getTelegramWebApp();
-    const invitedId = tg?.initDataUnsafe?.start_param || activityIdFromJoinPath();
+    const startParam = getCurrentStartParam();
+    const pathId = activityIdFromJoinPath();
+    const parsedStartParam = startParam ? parseInvitationStartParam(startParam) : null;
+    if (parsedStartParam && !parsedStartParam.valid) {
+      invitationHandled.current = true;
+      showNotice(t.invalidInvitationLink);
+      return;
+    }
+    const invitedId = parsedStartParam?.eventId || pathId;
     if (invitedId) {
       const invitedActivity = store.activities.find((item) => item.id === invitedId);
       if (invitedActivity) {
         invitationHandled.current = true;
-        setSelected(invitedActivity);
+        openActivity(invitedActivity);
         if (window.location.pathname.startsWith("/join/")) {
           window.history.replaceState({}, "", "/");
         }
+      } else if (!store.loading) {
+        invitationHandled.current = true;
+        showNotice(t.invitationEventNotFound);
       }
     }
-  }, [store.activities]);
+  }, [store.activities, store.loading, t.invalidInvitationLink, t.invitationEventNotFound]);
 
   const flash = (message: string) => {
     setNotice(message);
@@ -274,9 +333,40 @@ function App() {
     if (!closeMiniApp()) flash(t.telegramCloseFallback);
   };
 
+  const handleTabTouchStart = (event: ReactTouchEvent<HTMLElement>) => {
+    if (isTabSwipeBlockedTarget(event.target)) {
+      tabSwipeStart.current = null;
+      return;
+    }
+    const touch = event.touches[0];
+    tabSwipeStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+  };
+
+  const handleTabTouchEnd = (event: ReactTouchEvent<HTMLElement>) => {
+    const start = tabSwipeStart.current;
+    tabSwipeStart.current = null;
+    const touch = event.changedTouches[0];
+    if (!start || !touch) return;
+    const direction = resolveSwipeDirection(touch.clientX - start.x, touch.clientY - start.y);
+    if (!direction) return;
+    const nextView = resolveAdjacentTab(store.view, direction);
+    if (nextView !== store.view) {
+      store.setView(nextView);
+      impactTelegram("light");
+    }
+  };
+
   const openRandom = () => {
-    const random = store.activities[Math.floor(Math.random() * store.activities.length)];
-    if (random) setSelected(random);
+    const eligible = actionableSurpriseActivities(store.activities, {
+      userKey: getUserKey(),
+      joinedIds: store.joinedIds,
+      waitingIds: store.waitingIds,
+      pendingIds: store.pendingIds,
+      now: new Date(),
+    });
+    const random = eligible[Math.floor(Math.random() * eligible.length)];
+    if (random) openActivity(random);
+    else flash(t.noEvents);
     impactTelegram("medium");
   };
 
@@ -306,6 +396,7 @@ function App() {
     try {
       await store.deleteActivity(activity.id);
       setSelected(null);
+      setSelectedChatRequest(0);
       flash(t.eventDeleted);
       notifyTelegram("success");
     } catch {
@@ -316,8 +407,11 @@ function App() {
 
   const shareActivity = async (activity: Activity) => {
     const url = activityInviteUrl(activity);
-    const text = ShareTemplateService.buildPlainText(activity, store.language, url);
-    const telegramShareUrl = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
+    const preparedResult = await sharePreparedTelegramEvent(activity, store.language);
+    if (preparedResult === "shared" || preparedResult === "cancelled") return;
+    const text = ShareTemplateService.build(activity, store.language);
+    const invitationText = buildSeparatedInvitationText(url, text);
+    const telegramShareUrl = buildTelegramShareUrl(url, text);
 
     const webApp = getTelegramWebApp();
     if (webApp?.openTelegramLink) {
@@ -326,9 +420,9 @@ function App() {
     }
 
     if (navigator.share) {
-      await navigator.share({ title: "GO IRL", text, url });
+      await navigator.share({ title: "GO IRL", text: invitationText });
     } else {
-      await navigator.clipboard?.writeText(text);
+      await navigator.clipboard?.writeText(invitationText);
       showNotice(t.copied);
     }
   };
@@ -358,20 +452,20 @@ function App() {
         onLanguageChange={store.setLanguage}
       />
 
-      <main>
+      <main onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd}>
         {store.syncError && <div className="sync-banner">{store.syncError === "database_unavailable" ? t.databaseError : store.syncError}</div>}
         {store.loading && <div className="sync-loading">{t.loadingEvents}</div>}
         {store.view === "home" && (
           <HomeView
             language={store.language}
-            onOpen={setSelected}
+            onOpen={openActivity}
             onJoin={handleJoin}
             onRandom={openRandom}
             onCreate={() => store.setView("create")}
           />
         )}
-        {store.view === "discover" && <DiscoverView language={store.language} onOpen={setSelected} onJoin={handleJoin} />}
-        {store.view === "explore" && <ExploreView language={store.language} onOpen={setSelected} onJoin={handleJoin} />}
+        {store.view === "discover" && <DiscoverView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
+        {store.view === "explore" && <ExploreView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
         {store.view === "create" && <CreateView key={editingActivity?.id || "new-event"} language={store.language} initialActivity={editingActivity} onCancel={() => {
           setEditingActivity(null);
           store.setView("home");
@@ -381,7 +475,7 @@ function App() {
           setCompletionActivityId(id);
           setCompletion(editingActivity ? t.updatedSuccess : t.createdSuccess);
         }} />}
-        {store.view === "profile" && <ProfileView language={store.language} onOpen={setSelected} onJoin={handleJoin} onCloseMiniApp={requestCloseMiniApp} />}
+        {store.view === "profile" && <ProfileView language={store.language} onOpen={openActivity} onJoin={handleJoin} onCloseMiniApp={requestCloseMiniApp} />}
       </main>
 
       <BottomNav view={store.view} setView={store.setView} language={store.language} />
@@ -396,6 +490,7 @@ function App() {
           onClose={() => {
             setSelected(null);
             setSelectedMembersOpen(false);
+            setSelectedChatRequest(0);
           }}
           onJoin={handleJoin}
           onShare={shareActivity}
@@ -410,6 +505,7 @@ function App() {
           onCloseMiniApp={requestCloseMiniApp}
           onNotice={showNotice}
           initialMembersOpen={selectedMembersOpen}
+          initialChatRequest={selectedChatRequest}
         />
       )}
       {completion && (
@@ -422,7 +518,7 @@ function App() {
           }}
           onOpen={() => {
             const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
-            if (activity) setSelected(activity);
+            if (activity) openActivity(activity);
           }}
           onShare={() => {
             const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
@@ -440,7 +536,7 @@ function App() {
   );
 }
 
-function HomeView({ language, onOpen, onJoin, onRandom, onCreate }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; onRandom: () => void; onCreate: () => void }) {
+function HomeView({ language, onOpen, onJoin, onRandom, onCreate }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onRandom: () => void; onCreate: () => void }) {
   const { activities, loading, selectedCityId, setCategory } = useAppStore();
   const t = getTranslation(language);
   const city = getCity(selectedCityId);
@@ -490,7 +586,7 @@ function HomeView({ language, onOpen, onJoin, onRandom, onCreate }: { language: 
   );
 }
 
-function DiscoverView({ language, onOpen, onJoin }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function DiscoverView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   const { activities, loading, selectedCityId } = useAppStore();
   const t = getTranslation(language);
   const [query, setQuery] = useState("");
@@ -599,7 +695,7 @@ function DiscoverView({ language, onOpen, onJoin }: { language: Language; onOpen
   );
 }
 
-function DiscoverSection({ title, activities, language, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function DiscoverSection({ title, activities, language, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   if (!activities.length) return null;
   return (
     <section className="discover-section">
@@ -611,11 +707,11 @@ function DiscoverSection({ title, activities, language, onOpen, onJoin }: { titl
   );
 }
 
-function DiscoverActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function DiscoverActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   return <ActivityCard activity={activity} language={language} onOpen={onOpen} onJoin={onJoin} />;
 }
 
-function ExploreView({ language, onOpen, onJoin }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function ExploreView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   const { activities, loading, selectedCategory, selectedCityId, setCategory } = useAppStore();
   const t = getTranslation(language);
   const city = getCity(selectedCityId);
@@ -645,6 +741,7 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
   const selectedCityId = useAppStore((state) => state.selectedCityId);
   const setSelectedCity = useAppStore((state) => state.setSelectedCity);
   const formRef = useRef<HTMLFormElement>(null);
+  const templateGesture = useRef<{ x: number; y: number; dragged: boolean } | null>(null);
   const [categoryId, setCategoryId] = useState(initialActivity?.categoryId || "sport");
   const [cityId, setCityId] = useState(initialActivity?.cityId || selectedCityId);
   const [submitting, setSubmitting] = useState(false);
@@ -652,6 +749,12 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
   const [priceError, setPriceError] = useState("");
   const t = getTranslation(language);
   const selectedCity = getCity(cityId);
+  const initialAddress = initialActivity?.address || getCity(initialActivity?.cityId || selectedCityId).name[language];
+  const [addressValue, setAddressValue] = useState(initialAddress);
+  const [locationUrlValue, setLocationUrlValue] = useState(
+    initialActivity?.locationUrl || buildEventLocationUrl(initialAddress, getCity(initialActivity?.cityId || selectedCityId).name[language]),
+  );
+  const [savedLocations] = useState(loadSavedEventLocations);
   const today = new Date().toISOString().slice(0, 10);
   const initialSport = initialActivity?.metadata?.sport || {};
   const createCategories = initialActivity ? categories : closedBetaCategories;
@@ -675,11 +778,33 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
     const option = options.find((item) => item.icon === template.activity) || options[0];
     setCategoryId(template.categoryId);
     window.requestAnimationFrame(() => {
-      setFieldValue("activityText", `${option.icon} ${option.name[language]}`);
-      setFieldValue("titleText", `${template.icon} ${template.title}`);
+      setFieldValue("activityText", option.name[language]);
+      setFieldValue("titleText", template.title);
       setFieldValue("descriptionText", template.description);
       setFieldValue("capacity", String(template.capacity));
     });
+  };
+
+  const handleTemplatePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    templateGesture.current = { x: event.clientX, y: event.clientY, dragged: false };
+  };
+
+  const handleTemplatePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const gesture = templateGesture.current;
+    if (!gesture || gesture.dragged) return;
+    if (isTemplateCarouselDrag(gesture, { x: event.clientX, y: event.clientY })) gesture.dragged = true;
+  };
+
+  const finishTemplateGesture = () => {
+    window.setTimeout(() => { templateGesture.current = null; }, 0);
+  };
+
+  const handleTemplateClick = (template: (typeof quickTemplates)[number]) => {
+    if (templateGesture.current?.dragged) {
+      templateGesture.current = null;
+      return;
+    }
+    applyTemplate(template);
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -687,12 +812,12 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
     setSubmitting(true);
     setFormError("");
     const data = new FormData(event.currentTarget);
-    const activityText = String(data.get("activityText"));
-    const activityEmoji = activityText.split(" ")[0];
-    const rawTitle = String(data.get("titleText")).trim();
+    const activityText = stripLeadingEmoji(String(data.get("activityText")));
+    const rawTitle = stripLeadingEmoji(String(data.get("titleText")).trim());
     const rawDescription = String(data.get("descriptionText")).trim();
     const rawAddress = String(data.get("address")).trim();
-    const rawLocationUrl = String(data.get("locationUrl") || "").trim();
+    const rawLocationUrl = String(data.get("locationUrl") || "").trim()
+      || buildEventLocationUrl(rawAddress, selectedCity.name[language]);
     const rawParticipantNote = String(data.get("participantNote") || "").trim();
     const date = String(data.get("date"));
     const price = Number(data.get("price"));
@@ -725,7 +850,7 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
       type: categoryId === "sport" ? "sport" : "custom",
       categoryId,
       activityText,
-      titleText: rawTitle.startsWith(activityEmoji) ? rawTitle : `${activityEmoji} ${rawTitle}`,
+      titleText: rawTitle,
       descriptionText: rawDescription,
       date,
       time: String(data.get("time")),
@@ -742,6 +867,7 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
       const id = initialActivity
         ? await updateActivity(initialActivity.id, activity)
         : await createActivity(activity);
+      rememberEventLocation(rawAddress, rawLocationUrl);
       setSelectedCity(cityId);
       onCreated(id);
       if (!initialActivity) event.currentTarget.reset();
@@ -759,16 +885,22 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
       <form className="create-form" ref={formRef} onSubmit={submit}>
         <div className="template-row" aria-label={t.quickTemplates}>
           <span>{t.quickTemplates}</span>
-          <div>
+          <div
+            data-no-tab-swipe
+            onPointerDown={handleTemplatePointerDown}
+            onPointerMove={handleTemplatePointerMove}
+            onPointerUp={finishTemplateGesture}
+            onPointerCancel={finishTemplateGesture}
+          >
             {quickTemplates.map((template) => (
-              <button key={template.id} onClick={() => applyTemplate(template)} type="button">
+              <button key={template.id} onClick={() => handleTemplateClick(template)} type="button">
                 {template.icon} {template.label}
               </button>
             ))}
           </div>
         </div>
         <label><span>{t.category}</span><select name="categoryId" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>{createCategories.map((category) => <option key={category.id} value={category.id}>{category.icon} {category.name[language]}</option>)}</select></label>
-        <label><span>{t.activity}</span><select key={`${categoryId}-${language}`} name="activityText" defaultValue={initialActivity?.categoryId === categoryId ? initialActivity.activity[language] : undefined} required>{(createActivityOptions[categoryId] || []).map((option) => <option key={`${option.icon}-${option.name[language]}`} value={`${option.icon} ${option.name[language]}`}>{option.icon} {option.name[language]}</option>)}</select></label>
+        <label><span>{t.activity}</span><select key={`${categoryId}-${language}`} name="activityText" defaultValue={initialActivity?.categoryId === categoryId ? stripLeadingEmoji(initialActivity.activity[language]) : undefined} required>{(createActivityOptions[categoryId] || []).map((option) => <option key={`${option.icon}-${option.name[language]}`} value={option.name[language]}>{option.icon} {option.name[language]}</option>)}</select></label>
         {categoryId === "sport" && (
           <Suspense fallback={<div className="sport-create-panel">{t.loadingEvents}</div>}>
             <LazySportCreateFields language={language} initialSport={initialSport} />
@@ -780,9 +912,23 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
           <label><span>{t.date}</span><input name="date" type="date" min={today} defaultValue={initialActivity?.date || today} required /></label>
           <label><span>{t.time}</span><input name="time" type="time" defaultValue={initialActivity?.time || "18:00"} required /></label>
         </div>
-        <label><span>{t.city}</span><select name="cityId" value={cityId} onChange={(event) => setCityId(event.target.value)} required>{cities.map((city) => <option key={city.id} value={city.id}>{city.name[language]}</option>)}</select></label>
-        <label><span>{t.address}</span><input name="address" defaultValue={initialActivity?.address || selectedCity.name[language]} maxLength={MAX_EVENT_ADDRESS_LENGTH} required /></label>
-        <label><span>{t.locationUrl}</span><input name="locationUrl" type="url" defaultValue={initialActivity?.locationUrl} placeholder={t.locationPlaceholder} /></label>
+        <label><span>{t.city}</span><select name="cityId" value={cityId} onChange={(event) => {
+          const nextCityId = event.target.value;
+          const oldAutoUrl = buildEventLocationUrl(addressValue, selectedCity.name[language]);
+          const nextCityName = getCity(nextCityId).name[language];
+          setCityId(nextCityId);
+          if (!locationUrlValue || locationUrlValue === oldAutoUrl) setLocationUrlValue(buildEventLocationUrl(addressValue, nextCityName));
+        }} required>{cities.map((city) => <option key={city.id} value={city.id}>{city.name[language]}</option>)}</select></label>
+        <label><span>{t.address}</span><input name="address" list="saved-event-locations" value={addressValue} onChange={(event) => {
+          const nextAddress = event.target.value;
+          const previousAutoUrl = buildEventLocationUrl(addressValue, selectedCity.name[language]);
+          const saved = savedLocations.find((item) => item.address.toLocaleLowerCase() === nextAddress.trim().toLocaleLowerCase());
+          setAddressValue(nextAddress);
+          if (saved?.locationUrl) setLocationUrlValue(saved.locationUrl);
+          else if (!locationUrlValue || locationUrlValue === previousAutoUrl) setLocationUrlValue(buildEventLocationUrl(nextAddress, selectedCity.name[language]));
+        }} maxLength={MAX_EVENT_ADDRESS_LENGTH} required /></label>
+        <datalist id="saved-event-locations">{savedLocations.map((item) => <option key={item.address} value={item.address} />)}</datalist>
+        <label><span>{t.locationUrl}</span><input name="locationUrl" type="url" value={locationUrlValue} onChange={(event) => setLocationUrlValue(event.target.value)} placeholder={t.locationPlaceholder} /></label>
         <label><span>{t.participantNote}</span><textarea name="participantNote" rows={3} defaultValue={initialActivity?.participantNote} maxLength={MAX_EVENT_NOTE_LENGTH} placeholder={t.participantNotePlaceholder} /></label>
         <div className="form-row">
           <label className="price-field"><span>{t.price}</span><input name="price" type="number" min="0" max={MAX_EVENT_PRICE} defaultValue={initialActivity?.price || 0} onInput={(event) => setPriceError(validateEventPrice(Number(event.currentTarget.value), t))} onChange={(event) => setPriceError(validateEventPrice(Number(event.currentTarget.value), t))} required /><small className="field-error">{priceError || t.priceTooHigh}</small></label>
@@ -813,6 +959,13 @@ type LocalProfile = {
 };
 
 const avatarOptions = ["GI", "GO", "IRL", "🏐", "🎉", "🌿"];
+const maxAvatarBytes = 5 * 1024 * 1024;
+const profilePolishCopy: Record<Language, { title: string; hint: string; upload: string; formats: string; invalid: string }> = {
+  ru: { title: "Профиль", hint: "Настройте профиль и интересы", upload: "Нажмите или перетащите фото", formats: "JPG или PNG до 5 МБ", invalid: "Выберите JPG или PNG размером до 5 МБ" },
+  uk: { title: "Профіль", hint: "Налаштуйте профіль та інтереси", upload: "Натисніть або перетягніть фото", formats: "JPG або PNG до 5 МБ", invalid: "Виберіть JPG або PNG розміром до 5 МБ" },
+  cs: { title: "Profil", hint: "Nastavte profil a zájmy", upload: "Klikněte nebo přetáhněte fotku", formats: "JPG nebo PNG do 5 MB", invalid: "Vyberte JPG nebo PNG do 5 MB" },
+  en: { title: "Profile", hint: "Set up your profile and interests", upload: "Click or drag a photo here", formats: "JPG or PNG up to 5 MB", invalid: "Choose a JPG or PNG up to 5 MB" },
+};
 
 const loadProfile = (fallbackName: string, fallbackCityId: string): LocalProfile => {
   const stored = localStorage.getItem("go-irl-profile");
@@ -835,7 +988,7 @@ const loadProfile = (fallbackName: string, fallbackCityId: string): LocalProfile
   }
 };
 
-function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; onCloseMiniApp: () => void }) {
+function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onCloseMiniApp: () => void }) {
   const { activities, joinedIds, pendingIds, loading, syncError, selectedCityId, setSelectedCity } = useAppStore();
   const [editing, setEditing] = useState(false);
   const t = getTranslation(language);
@@ -843,6 +996,8 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const fallbackName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ") || t.guestName;
   const [profile, setProfile] = useState(() => loadProfile(fallbackName, selectedCityId));
   const [avatarDraft, setAvatarDraft] = useState(profile.avatar);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
   const userKey = getUserKey();
   const city = getCity(profile.cityId);
   const today = new Date().toISOString().slice(0, 10);
@@ -854,6 +1009,24 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const registeredLabel = new Intl.DateTimeFormat(localeByLanguage[language], { day: "numeric", month: "short", year: "numeric" }).format(safeDate(profile.registeredAt));
   const favoriteOptions = favoriteActivityOptions(language);
   const selectedFavorites = favoriteOptions.filter((option) => profile.favoriteActivities.includes(option.id));
+  const profileCopy = profilePolishCopy[language];
+
+  const processAvatarFile = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > maxAvatarBytes) {
+      setAvatarError(profileCopy.invalid);
+      return;
+    }
+
+    setAvatarError("");
+    setAvatarBusy(true);
+    try {
+      const cropped = await openAvatarCropper(file);
+      if (cropped) setAvatarDraft(await readProfileAvatarAsDataUrl(cropped));
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
 
   const saveProfile = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -875,10 +1048,10 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   };
 
   return (
-    <section className="page-section profile-page">
+    <section className={`page-section profile-page${editing ? " is-editing" : ""}`}>
       {loading && <ProfileSkeleton />}
       {syncError && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-      <div className="profile-hero">
+      {!editing && <div className="profile-hero">
         <div className="profile-avatar">{profile.avatar.startsWith("data:image/") ? <img src={profile.avatar} alt={t.avatar} /> : profile.avatar}</div>
         <div className="profile-main">
           <div className="profile-kicker"><MapPin />{city.name[language]}</div>
@@ -887,10 +1060,18 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
           <small>{t.registeredAt}: {registeredLabel}</small>
         </div>
         <button className="profile-edit-button" onClick={() => setEditing(true)} type="button"><Pencil size={18} />{t.editProfile}</button>
-      </div>
+      </div>}
 
       {editing && (
         <form id="profile-edit-form" className="profile-edit-form" onSubmit={saveProfile}>
+          <div className="profile-edit-intro">
+            <h1>{profileCopy.title}</h1>
+            <p>{profileCopy.hint}</p>
+            <div className="profile-edit-avatar">
+              {avatarDraft.startsWith("data:image/") ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
+              <i aria-hidden="true"><Camera size={16} /></i>
+            </div>
+          </div>
           <label><span>{t.name}</span><input name="profileName" defaultValue={profile.name} required /></label>
           <label><span>{t.shortBio}</span><textarea name="profileBio" rows={3} defaultValue={profile.bio} placeholder={t.profileBioPlaceholder} /></label>
           <label><span>{t.city}</span><select name="profileCity" defaultValue={profile.cityId}>{cities.map((item) => <option key={item.id} value={item.id}>{item.name[language]}</option>)}</select></label>
@@ -906,6 +1087,7 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
               ))}
             </div>
           </div>
+          <div className="profile-avatar-choice-label">{t.avatar}</div>
           <div className="avatar-picker" role="radiogroup" aria-label={t.avatar}>
             {avatarOptions.map((avatar) => (
               <label key={avatar}>
@@ -914,38 +1096,56 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
               </label>
             ))}
           </div>
-          <label><span>{t.avatar}</span><input type="file" accept="image/*" onChange={(event) => { const file = event.currentTarget.files?.[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => setAvatarDraft(String(reader.result || "")); reader.readAsDataURL(file); }} /></label>
-          <button className="publish-button" type="submit"><Pencil size={18} />{t.save}</button>
+          <label
+            className={`profile-avatar-upload${avatarBusy ? " is-busy" : ""}`}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault();
+              void processAvatarFile(event.dataTransfer.files?.[0]);
+            }}
+          >
+            <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
+              const input = event.currentTarget;
+              void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
+            }} />
+            <UploadCloud aria-hidden="true" />
+            <strong>{avatarBusy ? "…" : profileCopy.upload}</strong>
+            <small>{profileCopy.formats}</small>
+          </label>
+          {avatarError && <div className="profile-avatar-error" role="alert">{avatarError}</div>}
+          <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
         </form>
       )}
 
-      <SectionHeader title={t.favoriteActivities} />
-      {selectedFavorites.length ? (
-        <div className="profile-interest-list">
-          {selectedFavorites.map((option) => <span key={option.id}>{option.label}</span>)}
+      {!editing && <>
+        <SectionHeader title={t.favoriteActivities} />
+        {selectedFavorites.length ? (
+          <div className="profile-interest-list">
+            {selectedFavorites.map((option) => <span key={option.id}>{option.label}</span>)}
+          </div>
+        ) : (
+          <EmptyState text={t.noFavoriteActivities} />
+        )}
+
+        <SectionHeader title={t.profileStats} />
+        <div className="life-grid profile-stats-grid">
+          <Metric icon={<Star />} value={String(organized.length)} label={t.createdEvents} />
+          <Metric icon={<UserRoundCheck />} value={String(joinedCount)} label={t.visitedEvents} />
+          <Metric icon={<Zap />} value={String(activeEvents.length)} label={t.activeEvents} />
+          <Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />
         </div>
-      ) : (
-        <EmptyState text={t.noFavoriteActivities} />
-      )}
 
-      <SectionHeader title={t.profileStats} />
-      <div className="life-grid profile-stats-grid">
-        <Metric icon={<Star />} value={String(organized.length)} label={t.createdEvents} />
-        <Metric icon={<UserRoundCheck />} value={String(joinedCount)} label={t.visitedEvents} />
-        <Metric icon={<Zap />} value={String(activeEvents.length)} label={t.activeEvents} />
-        <Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />
-      </div>
-
-      <SectionHeader title={t.myEvents} />
-      <ProfileEventGroup title={t.organizing} activities={organized} language={language} emptyText={t.noOrganizedEvents} onOpen={onOpen} onJoin={onJoin} />
-      <ProfileEventGroup title={t.participating} activities={participating} language={language} emptyText={t.noJoinedEvents} onOpen={onOpen} onJoin={onJoin} />
-      <ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />
-      <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
+        <SectionHeader title={t.myEvents} />
+        <ProfileEventGroup title={t.organizing} activities={organized} language={language} emptyText={t.noOrganizedEvents} onOpen={onOpen} onJoin={onJoin} />
+        <ProfileEventGroup title={t.participating} activities={participating} language={language} emptyText={t.noJoinedEvents} onOpen={onOpen} onJoin={onJoin} />
+        <ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />
+        <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
+      </>}
     </section>
   );
 }
 
-function ProfileEventGroup({ title, activities, language, emptyText, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; emptyText: string; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function ProfileEventGroup({ title, activities, language, emptyText, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; emptyText: string; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   return (
     <section className="profile-event-group">
       <h3>{title}</h3>
@@ -969,7 +1169,7 @@ function ProfileSkeleton() {
   );
 }
 
-function ActivitySection({ title, activities, language, onOpen, onJoin, icon, urgent = false }: { title: string; activities: Activity[]; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; icon?: React.ReactNode; urgent?: boolean }) {
+function ActivitySection({ title, activities, language, onOpen, onJoin, icon, urgent = false }: { title: string; activities: Activity[]; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; icon?: React.ReactNode; urgent?: boolean }) {
   if (!activities.length) return null;
   return (
     <section className={urgent ? "activity-section urgent-section" : "activity-section"}>
@@ -979,7 +1179,7 @@ function ActivitySection({ title, activities, language, onOpen, onJoin, icon, ur
   );
 }
 
-function ActivityCard(props: { activity: Activity; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void; onOpenMembers?: (activity: Activity) => void }) {
+function ActivityCard(props: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onOpenMembers?: (activity: Activity) => void }) {
   if (!isSportExperience(props.activity)) return <GenericActivityCard {...props} />;
   return (
     <Suspense fallback={<GenericActivityCard {...props} />}>
@@ -988,7 +1188,7 @@ function ActivityCard(props: { activity: Activity; language: Language; onOpen: (
   );
 }
 
-function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: (activity: Activity) => void; onJoin: (activity: Activity) => void }) {
+function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
   const { joinedIds, waitingIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const category = getActivityCategory(activity);
@@ -997,54 +1197,78 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const pending = pendingIds.includes(activity.id);
   const isOrganizer = activity.organizerKey === getUserKey();
   const full = activity.participants >= activity.capacity;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
+  const [helperState, setHelperState] = useState<"none" | "requested" | "confirmed">("none");
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
-  const shareTitle = activity.activity[language];
+  const shareTitle = stripLeadingEmoji(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
   const avatar = genericActivityAvatar(activity, language, category.icon);
-  const action = isOrganizer
-    ? t.open
-    : pending
-      ? t.requested
-      : joined
-        ? t.joined
-        : waiting
-          ? t.waiting
-          : activity.visibility === "private"
-            ? t.privateAccess
-            : full
-              ? t.eventFull
-              : activity.visibility === "invite"
-                ? t.request
-                : t.join;
-  const status = isOrganizer
-    ? t.organizerStatus
-    : pending
-      ? t.requested
-      : joined
-        ? t.joined
-        : waiting
-          ? t.waiting
-          : full
-            ? t.eventFull
-            : activity.visibility === "private"
-              ? t.privateAccess
-              : activity.visibility === "invite"
-                ? t.inviteStatus
-                : t.publicStatus;
+  const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
+  const helperAction = isOrganizer
+    ? helperState === "confirmed"
+      ? eventHelperCardCopy[language].confirmed
+      : helperState === "requested"
+        ? eventHelperCardCopy[language].requested
+        : eventHelperCardCopy[language].needed
+    : helperState === "confirmed"
+      ? eventHelperCardCopy[language].confirmed
+      : t.details;
+  const showHelperAction = interaction.showHelperAction && (isOrganizer || helperState === "confirmed");
+
+  useEffect(() => {
+    let active = true;
+    const refresh = () => {
+      void getOrganizerRoleRequestState(activity.id)
+        .then((state) => { if (active) setHelperState(state); })
+        .catch(() => { if (active) setHelperState("none"); });
+    };
+    const onChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ activityId?: string }>).detail;
+      if (!detail?.activityId || detail.activityId === activity.id) refresh();
+    };
+    refresh();
+    window.addEventListener("go-irl-coach-requests-changed", onChanged);
+    return () => {
+      active = false;
+      window.removeEventListener("go-irl-coach-requests-changed", onChanged);
+    };
+  }, [activity.id]);
+  const status = t[eventStatusTranslationKey(interaction)];
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onOpen(activity),
+    openChat: () => onOpen(activity, { focusChat: true }),
+    join: () => onJoin(activity),
+  });
 
   return (
     <article className="activity-card sport-card compact-sport-card unified-event-card">
       <div className="sport-card-top-actions">
-        <button className="sport-card-icon-action" type="button" aria-label="Напоминание" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><Bell size={20} /></button>
-        <button className="sport-card-icon-action" type="button" aria-label={t.share} onClick={(event) => { event.stopPropagation(); openCardShareSheet(shareTitle, shareDate, activity.address, event.currentTarget, activityInviteUrl(activity)); }}><Share2 size={20} /></button>
+        <CardShareAction
+          title={shareTitle}
+          date={shareDate}
+          address={activity.address}
+          url={activityInviteUrl(activity)}
+          label={t.share}
+          onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
+        />
       </div>
       <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
         <div className={`sport-card-symbol category-${category.id}`}><span className="sport-avatar-glyph">{avatar}</span></div>
         <div>
           <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /><span>{category.name[language]}</span></div>
           <h3>{shareTitle}</h3>
-          <p>{activity.title[language]}</p>
+          <p>{stripLeadingEmoji(activity.title[language])}</p>
         </div>
       </button>
       <div className="sport-chip-row">
@@ -1059,16 +1283,6 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
             setMembersPreviewOpen((open) => !open);
           }}
         ><UsersRound size={16} aria-hidden="true" /><span>{activity.participants} / {activity.capacity}</span></button>
-        <button
-          className="sport-card-chip sport-duration-chip"
-          type="button"
-          aria-label={`Напоминание: ${shareDate}`}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            openCardReminderSheet(event.currentTarget);
-          }}
-        ><CalendarPlus size={16} aria-hidden="true" /><span>{formatEventTime(activity.time) || compactDateLabel(activity.date, language)}</span></button>
       </div>
       {membersPreviewOpen && (
         <div className="sport-card-members-preview">
@@ -1081,14 +1295,17 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <button type="button" onClick={(event) => { event.stopPropagation(); openCardReminderSheet(event.currentTarget); }}><CalendarDays /><span>{shareDate}</span></button>
-        <div><Ticket /><span>{activity.price ? `${activity.price} Kč` : t.free}</span></div>
-        <button type="button" onClick={(event) => { event.stopPropagation(); openActivityMap(activity); }}><MapPin /><span>{activity.address}</span></button>
-        <div className="unified-status-cell"><ShieldCheck /><Star /><span>{status}</span></div>
+        <EventMetaChip icon={<CalendarDays />} label={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
+        <EventMetaChip icon={<Ticket />} label={activity.price ? `${activity.price} Kč` : t.free} />
+        <EventMetaChip icon={<MapPin />} label={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
+        <EventStatusBadge state={interaction} label={status} />
       </div>
+      <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-footer compact-sport-actions">
-        <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} />{t.open}</button>
-        <button className={joined || waiting || pending ? "card-join secondary" : "card-join"} onClick={() => isOrganizer ? onOpen(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !waiting && !pending}>
+        {showHelperAction
+          ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} /><span>{helperAction}</span></button>
+          : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
+        <button className={interaction.canJoin ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>
           {action}
         </button>
       </div>
@@ -1111,6 +1328,7 @@ type ActivitySheetProps = {
   onCloseMiniApp: () => void;
   onNotice: (msg: string) => void;
   initialMembersOpen?: boolean;
+  initialChatRequest?: number;
 };
 
 function ActivitySheet(props: ActivitySheetProps) {
@@ -1136,13 +1354,19 @@ function GenericActivitySheet({
   onDelete,
   onCloseMiniApp,
   initialMembersOpen = false,
+  initialChatRequest = 0,
 }: ActivitySheetProps) {
   const { joinedIds, waitingIds, pendingIds, reviewRequest, userRole } = useAppStore();
   const [membersOpen, setMembersOpen] = useState(initialMembersOpen);
+  const [chatOpenRequest, setChatOpenRequest] = useState(initialChatRequest);
 
   useEffect(() => {
     setMembersOpen(initialMembersOpen);
   }, [activity.id, initialMembersOpen]);
+
+  useEffect(() => {
+    setChatOpenRequest(initialChatRequest);
+  }, [activity.id, initialChatRequest]);
   const t = getTranslation(language);
   const category = getActivityCategory(activity);
   const isOrganizer = activity.organizerKey === getUserKey();
@@ -1151,42 +1375,33 @@ function GenericActivitySheet({
   const waiting = waitingIds.includes(activity.id);
   const pending = pendingIds.includes(activity.id);
   const full = activity.participants >= activity.capacity;
-  const action = isOrganizer
-    ? t.edit
-    : pending
-      ? t.cancelRequest
-      : joined || waiting
-        ? t.leave
-        : activity.visibility === "private"
-          ? t.privateAccess
-          : full
-            ? t.eventFull
-            : activity.visibility === "invite"
-              ? t.request
-              : t.join;
-  const status = isOrganizer
-    ? t.organizerStatus
-    : pending
-      ? t.requested
-      : joined
-        ? t.joined
-        : waiting
-          ? t.waiting
-          : full
-            ? t.eventFull
-            : activity.visibility === "private"
-              ? t.privateJoinInfo
-              : activity.visibility === "invite"
-                ? t.inviteStatus
-                : t.publicStatus;
+  const interaction = resolveEventInteractionState({
+    isOrganizer,
+    isJoined: joined,
+    isWaiting: waiting,
+    isPending: pending,
+    isFull: full,
+    visibility: activity.visibility,
+    isFinished: isActivityFinished(activity),
+    hasWaitingList: false,
+  });
+  const action = t[eventActionTranslationKey(interaction.primaryAction, "sheet")];
+  const status = t[eventStatusTranslationKey(interaction)];
   const accessLabel = activity.visibility === "public" ? t.publicAccess : activity.visibility === "private" ? t.privateAccess : t.inviteAccess;
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
   const waitingMembers = activity.members.filter((member) => member.status === "waiting");
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
+  const activityAvatar = genericActivityAvatar(activity, language, category.icon);
 
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
   };
+
+  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
+    open: () => onEdit(activity),
+    openChat: () => setChatOpenRequest((request) => request + 1),
+    join: () => onJoin(activity),
+  });
 
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
@@ -1195,10 +1410,10 @@ function GenericActivitySheet({
         <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
         {loading && <EventDetailsSkeleton />}
         {error && <div className="details-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-        <div className={`sheet-symbol category-${category.id}`}>{category.icon}</div>
-        <div className="sheet-label">{category.name[language]} · {activity.activity[language]}</div>
-        <h2>{activity.title[language]}</h2>
-        <p className="sheet-description">{activity.description[language]}</p>
+        <div className={`sheet-symbol category-${category.id}`}>{activityAvatar}</div>
+        <div className="sheet-label">{category.name[language]} · {stripLeadingEmoji(activity.activity[language])}</div>
+        <h2>{stripLeadingEmoji(activity.title[language])}</h2>
+        <p className="sheet-description">{stripLeadingEmoji(activity.description[language])}</p>
         <div className="details-status-row">
           <span className={isOrganizer ? "details-status organizer" : pending ? "details-status pending" : joined ? "details-status joined" : full ? "details-status full" : "details-status"}>{status}</span>
           <span className="details-access">{accessLabel}</span>
@@ -1255,10 +1470,10 @@ function GenericActivitySheet({
         {!isOrganizer && (joined || waiting || pending) && <div className="status-banner">{joined ? <UserRoundCheck /> : <Clock3 />}<span>{joined ? t.joined : waiting ? t.waiting : t.requested}</span></div>}
         {!isOrganizer && activity.visibility === "private" && !joined && !waiting && !pending && <div className="status-banner neutral"><ShieldCheck /><span>{t.privateJoinInfo}</span></div>}
         {full && !joined && !waiting && !pending && !isOrganizer && <div className="status-banner danger"><UsersRound /><span>{t.eventFull}</span></div>}
-              <ActivityChatPanel activity={activity} />
+              <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={interaction.showHelperAction} />
 
       <div className="sheet-actions compact-sheet-actions">
-          <button className="main-action" onClick={() => isOrganizer ? onEdit(activity) : onJoin(activity)} type="button" disabled={!isOrganizer && full && !joined && !pending}>{isOrganizer && <Pencil size={18} />}{action}</button>
+          <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>
           <details className="event-more-actions">
             <summary className="square-action" aria-label="Еще" title="Еще"><Ellipsis aria-hidden="true" /></summary>
             <div className="event-more-menu">

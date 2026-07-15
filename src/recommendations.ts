@@ -1,5 +1,6 @@
 import { categories } from "./data";
 import { getCity } from "./config/cities";
+import { isActivityFinished, resolveEventInteractionState } from "./eventInteractionState";
 import type { Activity, Language } from "./types";
 
 export type DiscoverFilter =
@@ -29,6 +30,44 @@ export interface RecommendationEngine {
   readonly id: RecommendationEngineId;
   recommend(activities: Activity[], context: RecommendationContext): Activity[];
 }
+
+export type SurpriseRecommendationContext = {
+  userKey: string;
+  joinedIds: string[];
+  waitingIds: string[];
+  pendingIds: string[];
+  cancelledIds?: string[];
+  waitingListEnabledIds?: string[];
+  now?: Date;
+};
+
+export const actionableSurpriseActivities = (
+  activities: Activity[],
+  context: SurpriseRecommendationContext,
+) => {
+  const joinedIds = new Set(context.joinedIds);
+  const waitingIds = new Set(context.waitingIds);
+  const pendingIds = new Set(context.pendingIds);
+  const cancelledIds = new Set(context.cancelledIds || []);
+  const waitingListEnabledIds = new Set(context.waitingListEnabledIds || []);
+
+  return activities.filter((activity) => {
+    if (cancelledIds.has(activity.id)) return false;
+
+    const interaction = resolveEventInteractionState({
+      isOrganizer: activity.organizerKey === context.userKey,
+      isJoined: joinedIds.has(activity.id),
+      isWaiting: waitingIds.has(activity.id),
+      isPending: pendingIds.has(activity.id),
+      isFull: activity.participants >= activity.capacity,
+      visibility: activity.visibility,
+      isFinished: isActivityFinished(activity, context.now),
+      hasWaitingList: waitingListEnabledIds.has(activity.id),
+    });
+
+    return interaction.canJoin && !interaction.disabled;
+  });
+};
 
 const dateKey = (date: Date) => date.toISOString().slice(0, 10);
 

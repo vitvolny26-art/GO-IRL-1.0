@@ -6,15 +6,10 @@
   white-space: nowrap !important;
 }
 
+.sport-card-symbol::before,
 .sport-card-symbol::after {
-  content: "🏆";
-  display: block;
-  font-size: 25px;
-  line-height: 1;
-}
-
-.sport-card-symbol.large::after {
-  font-size: 34px;
+  content: none !important;
+  display: none !important;
 }
 
 .sport-card-main > div:nth-child(2),

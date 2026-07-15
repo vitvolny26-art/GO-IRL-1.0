@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import {
   ensureActivityChat,
@@ -10,10 +10,13 @@ import { getCity } from "../config/cities";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import { useAppStore } from "../store";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
+import { isOutdoorGenericActivity } from "../eventWeather";
 import { CoachRequestPanel } from "./CoachRequestPanel";
 
 type ActivityChatPanelProps = {
   activity: Activity;
+  openRequest?: number;
+  showHelperAction?: boolean;
 };
 
 const formatCloseTime = (value?: string | null) => {
@@ -24,28 +27,6 @@ const formatCloseTime = (value?: string | null) => {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
-};
-
-const normalizedActivityText = (activity: Activity) =>
-  [
-    activity.categoryId,
-    activity.type,
-    activity.activity.ru,
-    activity.activity.uk,
-    activity.activity.cs,
-    activity.activity.en,
-    activity.title.ru,
-    activity.title.uk,
-    activity.title.cs,
-    activity.title.en,
-  ].join(" ").toLocaleLowerCase();
-
-const isOutdoorGenericActivity = (activity: Activity) => {
-  if (activity.type === "sport" || activity.categoryId === "sport") return false;
-  if (activity.categoryId === "nature") return true;
-
-  const text = normalizedActivityText(activity);
-  return ["прогул", "proch", "walk", "walking", "похід", "поход", "hike", "park"].some((term) => text.includes(term));
 };
 
 const weatherSummaryLines = (weather: WeatherResult) => [
@@ -118,7 +99,7 @@ function OutdoorWeatherPanel({ activity }: { activity: Activity }) {
   );
 }
 
-export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
+export function ActivityChatPanel({ activity, openRequest = 0, showHelperAction = true }: ActivityChatPanelProps) {
   const userRole = useAppStore((state) => state.userRole);
   const [open, setOpen] = useState(false);
   const [chat, setChat] = useState<ActivityChat | null>(null);
@@ -127,6 +108,8 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const showEventHelperPanel = activity.type !== "sport" && activity.categoryId !== "sport";
   const showOutdoorWeather = isOutdoorGenericActivity(activity);
 
@@ -160,6 +143,15 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
     void reload();
   }, [activity.id, open]);
 
+  useEffect(() => {
+    if (!openRequest) return;
+    setOpen(true);
+    window.requestAnimationFrame(() => {
+      panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      inputRef.current?.focus({ preventScroll: true });
+    });
+  }, [activity.id, openRequest]);
+
   const handleSend = async () => {
     if (!body.trim()) return;
 
@@ -181,9 +173,9 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
     <>
       {showOutdoorWeather ? <OutdoorWeatherPanel activity={activity} /> : null}
 
-      {showEventHelperPanel ? <CoachRequestPanel activity={activity} userRole={userRole} variant="event_helper" /> : null}
+      {showEventHelperPanel && showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} variant="event_helper" /> : null}
 
-      <section className="activity-chat-panel">
+      <section className="activity-chat-panel" ref={panelRef}>
         <button
           type="button"
           className="activity-chat-toggle"
@@ -236,6 +228,7 @@ export function ActivityChatPanel({ activity }: ActivityChatPanelProps) {
             {!expired && !error ? (
               <div className="activity-chat-form">
                 <input
+                  ref={inputRef}
                   value={body}
                   onChange={(event) => setBody(event.target.value)}
                   placeholder="Сообщение…"

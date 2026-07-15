@@ -10,6 +10,27 @@
   color: var(--muted) !important;
   font: inherit !important;
   text-align: left !important;
+  transition: transform 100ms ease, background-color 100ms ease, border-color 100ms ease !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > button:active {
+  transform: scale(.965) !important;
+  border-color: rgba(201, 255, 61, .38) !important;
+  background: rgba(201, 255, 61, .12) !important;
+}
+
+.unified-event-card h3 {
+  font-size: clamp(24px, 6.6vw, 30px) !important;
+  line-height: 1.04 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+}
+
+.avatar-draft-preview {
+  margin: 4px auto 2px;
 }
 
 .unified-event-card .activity-card-details.sport-details-grid > button svg {
@@ -41,4 +62,63 @@
   max-width: 100px !important;
   white-space: normal !important;
   line-height: 1.15 !important;
+}
+
+.compact-sport-card .compact-sport-actions > .card-join:only-child {
+  grid-column: 1 / -1 !important;
+}
+
+.compact-sport-card .compact-sport-actions .card-join:disabled {
+  cursor: not-allowed !important;
+  color: var(--muted) !important;
+  background: rgba(255, 255, 255, .06) !important;
+  border-color: rgba(255, 255, 255, .08) !important;
+  opacity: .72 !important;
+  box-shadow: none !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge {
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  grid-template-rows: 1fr !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge svg,
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge svg:first-child {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge span,
+.unified-event-card .activity-card-details.sport-details-grid > div.event-status-badge span {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge.tone-warning {
+  color: #ffd98a !important;
+  background: rgba(255, 183, 77, .09) !important;
+  border-color: rgba(255, 183, 77, .24) !important;
+}
+
+.unified-event-card .activity-card-details.sport-details-grid > .event-status-badge.tone-warning svg {
+  color: #ffd98a !important;
+}
+
+.compact-sport-card .compact-sport-actions .sport-coach-action,
+.compact-sport-card .compact-sport-actions .card-join {
+  min-width: 0 !important;
+}
+
+.compact-sport-card .compact-sport-actions .sport-coach-action span,
+.compact-sport-card .compact-sport-actions .card-join {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.compact-sport-card .compact-sport-actions .card-join:disabled:active {
+  transform: none !important;
 }
