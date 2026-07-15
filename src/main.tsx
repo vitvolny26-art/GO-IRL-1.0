@@ -22,6 +22,12 @@ const queryClient = new QueryClient();
 enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();
 
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/service-worker.js").catch(() => undefined);
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
