@@ -43,7 +43,7 @@ describe("provider message endpoints", () => {
     };
     expect(request.message?.attachment?.payload?.elements?.[0]?.image_url)
       .toMatch(/^https:\/\/go-irl-1-0\.vercel\.app\/api\/meta\/event-invitation-card\?token=/);
-    expect(request.message?.attachment?.payload?.elements?.[0]?.image_url).toContain("&v=2");
+    expect(request.message?.attachment?.payload?.elements?.[0]?.image_url).toContain("&v=3");
   });
 
   it("uses the current Instagram Login Send API endpoint", async () => {

@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { activityOptions } from "../../src/data";
 import { buildEventArtworkSvg, resolveEventArtworkCode } from "./event-artwork";
+import { materialEventArtworkPaths } from "./material-event-artwork";
 
 const knownOptions = Object.values(activityOptions).flat();
 
 describe("event artwork registry", () => {
   it("covers all 40 known options by emoji and ru/cs/en names", () => {
     expect(knownOptions).toHaveLength(40);
+    expect(Object.keys(materialEventArtworkPaths)).toHaveLength(39);
 
     for (const option of knownOptions) {
       const expectedCode = resolveEventArtworkCode({ icon: option.icon });
@@ -18,6 +20,8 @@ describe("event artwork registry", () => {
 
       const svg = buildEventArtworkSvg({ icon: option.icon, activity: option.name.en });
       expect(svg).toContain(`data-event-artwork="${expectedCode}"`);
+      expect(svg).toContain(materialEventArtworkPaths[expectedCode]);
+      expect(svg).toContain('transform="translate(143 143) scale(4)"');
       expect(svg).not.toContain("<text");
       expect(svg).not.toContain("undefined");
       expect(svg).not.toMatch(/\p{Extended_Pictographic}/u);
