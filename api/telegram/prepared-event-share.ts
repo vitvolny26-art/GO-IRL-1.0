@@ -113,7 +113,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     if (!card) return json(response, 404, { error: "event_not_found" });
 
     const imageToken = createTelegramShareCardToken(card, botToken);
-    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}&v=5`;
+    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}&v=6`;
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

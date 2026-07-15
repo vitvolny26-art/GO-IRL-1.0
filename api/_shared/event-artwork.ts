@@ -1,3 +1,5 @@
+import { materialEventArtworkPaths } from "./material-event-artwork";
+
 export type EventArtworkInput = {
   icon?: string;
   activity?: string;
@@ -122,6 +124,13 @@ export const buildEventArtworkSvg = (input: EventArtworkInput) => {
     return `<g data-event-artwork="EV" fill="none" stroke="#aeb3bd" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
       <rect x="137" y="132" width="108" height="112" rx="22"/>
       <path d="M137 166h108M164 119v27M218 119v27M162 191h12M185 191h12M208 191h12M162 216h12M185 216h12"/>
+    </g>`;
+  }
+
+  const materialPath = materialEventArtworkPaths[code];
+  if (materialPath) {
+    return `<g data-event-artwork="${code}" transform="translate(143 143) scale(4)" fill="#c9ff3d">
+      <path d="${materialPath}"/>
     </g>`;
   }
 
