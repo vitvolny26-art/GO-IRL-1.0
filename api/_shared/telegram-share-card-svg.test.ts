@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg";
-import { configureTelegramShareCardFonts, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
+import { configureTelegramShareCardFonts, hasBetaEventIllustration, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
 import type { TelegramEventCardInput } from "./telegram-event-card";
 
 const card: TelegramEventCardInput = {
@@ -42,16 +42,13 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("Arial");
   });
 
-  it("uses reliable vector artwork on a simple dark tile", () => {
+  it("keeps the SVG renderer self-contained and overlays beta illustrations only in JPEG rendering", () => {
     const svg = buildTelegramShareCardSvg(card);
     expect(svg).toContain('data-event-artwork="VB"');
-    expect(svg).toContain('transform="translate(143 143) scale(4)"');
-    expect(svg).toContain('stroke="#37422f" stroke-width="2"');
     expect(svg).not.toContain("<image");
     expect(svg).not.toContain("data:image/png;base64,");
-    expect(svg).not.toContain('id="badgeShadow"');
-    expect(svg).not.toContain('id="eventIconHighlightColor"');
-    expect(svg).not.toContain("scale(1.16)");
+    expect(hasBetaEventIllustration(card)).toBe(true);
+    expect(hasBetaEventIllustration({ ...card, icon: "🛼", activity: "Ролики", title: "Ролики" })).toBe(false);
   });
 
   it("bundles regular and bold Cyrillic fonts for serverless rendering", () => {
@@ -63,13 +60,16 @@ describe("Telegram event share-card image", () => {
     expect(existsSync(fonts.configFile)).toBe(true);
   });
 
-  it("produces a Telegram-compatible JPEG", async () => {
+  it("produces a Telegram-compatible JPEG with the illustration composite", async () => {
     const jpeg = await renderTelegramShareCardJpeg(card);
     const metadata = await sharp(jpeg).metadata();
+    const tileStats = await sharp(jpeg).extract({ left: 76, top: 76, width: 230, height: 230 }).stats();
     expect(metadata.format).toBe("jpeg");
     expect(metadata.width).toBe(1080);
     expect(metadata.height).toBe(900);
     expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
+    expect(tileStats.isOpaque).toBe(true);
+    expect(tileStats.channels.some((channel) => channel.stdev > 25)).toBe(true);
   });
 
   it.each([
