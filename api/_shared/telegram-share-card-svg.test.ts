@@ -42,6 +42,17 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("Arial");
   });
 
+  it("renders the category artwork as a raised app badge", () => {
+    const svg = buildTelegramShareCardSvg(card);
+    expect(svg).toContain('id="avatarEdge"');
+    expect(svg).toContain('id="badgeShadow"');
+    expect(svg).toContain('id="eventIconShadow"');
+    expect(svg).toContain('id="eventIconHighlightColor"');
+    expect(svg).toContain('clip-path="url(#eventIconHighlight)"');
+    expect(svg).toContain('stroke="url(#avatarEdge)" stroke-width="5"');
+    expect(svg).toContain('scale(1.16)');
+  });
+
   it("bundles regular and bold Cyrillic fonts for serverless rendering", () => {
     const fonts = configureTelegramShareCardFonts();
     expect(fonts.regularFont).toMatch(/DejaVuSans\.ttf$/);
