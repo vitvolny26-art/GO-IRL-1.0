@@ -83,7 +83,8 @@ function nextActionForRecord(record) {
 }
 
 function publicArtifacts(record, extra = []) {
-  const names = [...Object.keys(record?.artifacts || {}), ...extra];
+  const preview = record?.publish_preview ? ['publish_preview'] : [];
+  const names = [...Object.keys(record?.artifacts || {}), ...preview, ...extra];
   return [...new Set(names)].sort();
 }
 

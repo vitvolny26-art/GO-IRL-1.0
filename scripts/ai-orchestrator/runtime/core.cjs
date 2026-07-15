@@ -26,7 +26,7 @@ const TRANSITIONS = {
   correction_requested: ['implementing', 'blocked', 'expired', 'cancelled'],
   checking: ['awaiting_change_approval', 'checks_failed', 'expired', 'cancelled'],
   awaiting_change_approval: ['report_ready', 'cancelled'],
-  report_ready: ['committed', 'checks_failed', 'cancelled'],
+  report_ready: ['committed', 'checks_failed', 'archived', 'cancelled'],
   checks_failed: ['checking', 'report_ready', 'cancelled'],
   committed: ['pushed', 'blocked'],
   pushed: ['draft_pr', 'blocked'],
@@ -313,6 +313,12 @@ function closeMission({ missionId, actor, stateDir, action = 'cancel', now = new
   if (!actor || actor.trim() === '') throw new OrchestratorError('HUMAN_ACTOR_REQUIRED', 'Closing a Mission requires a human actor.');
   const state = loadState(stateDir);
   const record = requireMission(state, missionId);
+  if (action === 'archive' && record.state === 'report_ready' && !record.publish_preview) {
+    throw new OrchestratorError(
+      'PUBLISH_PREVIEW_REQUIRED',
+      'A report-ready Mission requires a recorded publication preview before archive.',
+    );
+  }
   const nextState = action === 'archive' ? 'archived' : 'cancelled';
   transition(record, nextState, now);
   record.closed_by = { actor: actor.trim(), action, at: now.toISOString() };

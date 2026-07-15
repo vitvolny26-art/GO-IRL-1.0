@@ -152,7 +152,43 @@ describe('Orchestrator bridge v0.1', () => {
     });
     expectEnvelope(preview, 'report_ready', 'publish preview');
     expect(preview.artifacts).toContain('publish_preview');
-    expect(core.loadState(sandbox.stateDir).missions['MISSION-BRIDGE-E2E'].state).toBe('report_ready');
+    const previewedRecord = core.loadState(sandbox.stateDir).missions['MISSION-BRIDGE-E2E'];
+    expect(previewedRecord.state).toBe('report_ready');
+    expect(previewedRecord.publish_preview).toMatchObject({
+      branch: 'agent/bridge-e2e',
+      selected_files: selected.sort(),
+      draft: true,
+      merge: false,
+      deploy: false,
+    });
+
+    const archived = run(sandbox, 'archive', {
+      mission_id: 'MISSION-BRIDGE-E2E', actor: 'human-owner',
+    });
+    expectEnvelope(archived, 'archived', 'none');
+    expect(archived.artifacts).toContain('publish_preview');
+    expect(core.loadState(sandbox.stateDir).active_mission_id).toBeNull();
+  });
+
+  it('refuses to archive a report-ready Mission before publication preview', () => {
+    const sandbox = createSandbox();
+    run(sandbox, 'mission create', { mission: mission() });
+    const state = core.loadState(sandbox.stateDir);
+    const record = state.missions['MISSION-BRIDGE-E2E'];
+    core.transition(record, 'approved');
+    core.transition(record, 'context_ready');
+    core.transition(record, 'planned');
+    core.transition(record, 'implementing');
+    core.transition(record, 'reviewing');
+    core.transition(record, 'checking');
+    core.transition(record, 'awaiting_change_approval');
+    core.transition(record, 'report_ready');
+    core.saveState(sandbox.stateDir, state);
+
+    expect(() => run(sandbox, 'archive', {
+      mission_id: 'MISSION-BRIDGE-E2E', actor: 'human-owner',
+    })).toThrowError(expect.objectContaining({ code: 'PUBLISH_PREVIEW_REQUIRED' }));
+    expect(core.loadState(sandbox.stateDir).active_mission_id).toBe('MISSION-BRIDGE-E2E');
   });
 
   it('refuses to plan from a modified internal Context Pack', () => {
