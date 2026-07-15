@@ -5,10 +5,12 @@ import { buildEventArtworkSvg, resolveEventArtworkCode } from "./event-artwork";
 import { materialEventArtworkPaths } from "./material-event-artwork";
 
 const knownOptions = Object.values(activityOptions).flat();
+const appSpriteCodes = new Set(["VB", "RN", "CF", "BG", "CH", "WK", "LX", "BR"]);
 
 describe("event artwork registry", () => {
-  it("uses a Node ESM-compatible serverless import", () => {
+  it("uses Node ESM-compatible serverless imports", () => {
     const source = readFileSync(new URL("./event-artwork.ts", import.meta.url), "utf8");
+    expect(source).toContain('from "./app-event-emoji-sprite.js"');
     expect(source).toContain('from "./material-event-artwork.js"');
   });
 
@@ -26,9 +28,13 @@ describe("event artwork registry", () => {
 
       const svg = buildEventArtworkSvg({ icon: option.icon, activity: option.name.en });
       expect(svg).toContain(`data-event-artwork="${expectedCode}"`);
-      expect(svg).toContain(materialEventArtworkPaths[expectedCode]);
-      expect(svg).toContain('transform="translate(143 143) scale(4)"');
-      expect(svg).not.toContain("<text");
+      if (appSpriteCodes.has(expectedCode)) {
+        expect(svg).toContain("data:image/png;base64,");
+        expect(svg).toContain("<image");
+      } else {
+        expect(svg).toContain(materialEventArtworkPaths[expectedCode]);
+        expect(svg).toContain('transform="translate(143 143) scale(4)"');
+      }
       expect(svg).not.toContain("undefined");
       expect(svg).not.toMatch(/\p{Extended_Pictographic}/u);
     }
@@ -39,7 +45,7 @@ describe("event artwork registry", () => {
     const svg = buildEventArtworkSvg({ activity: "My unique custom event" });
     expect(svg).toContain('data-event-artwork="EV"');
     expect(svg).toContain('stroke="#aeb3bd"');
-    expect(svg).not.toContain("M191 151v80M151 191h80");
+    expect(svg).not.toContain("data:image/png;base64,");
     expect(svg).not.toMatch(/\p{Extended_Pictographic}/u);
   });
 });
