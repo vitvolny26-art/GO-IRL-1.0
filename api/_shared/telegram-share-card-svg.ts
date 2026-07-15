@@ -99,18 +99,45 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   const headlineLines = wrap(headline, 15, 2);
   const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 24, 2);
   const environment = clean(input.environment, 60);
+  const eventArtwork = buildEventArtworkSvg(input);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${canvasHeight}" viewBox="0 0 1080 ${canvasHeight}">
   <defs>
     <linearGradient id="page" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080b0d"/><stop offset="1" stop-color="#0f1511"/></linearGradient>
-    <linearGradient id="avatar" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#314416"/><stop offset="1" stop-color="#132019"/></linearGradient>
+    <linearGradient id="avatar" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#26351c"/><stop offset="0.48" stop-color="#111817"/><stop offset="1" stop-color="#070a0c"/></linearGradient>
+    <linearGradient id="avatarEdge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d9ff70"/><stop offset="0.45" stop-color="#7ea62b"/><stop offset="1" stop-color="#324016"/></linearGradient>
+    <radialGradient id="avatarHalo" cx="0.34" cy="0.22" r="0.9"><stop stop-color="#dfff8c" stop-opacity="0.22"/><stop offset="0.42" stop-color="#8fcf29" stop-opacity="0.08"/><stop offset="1" stop-color="#0a0d0e" stop-opacity="0"/></radialGradient>
     <linearGradient id="secondaryAction" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#263414"/><stop offset="1" stop-color="#172111"/></linearGradient>
+    <clipPath id="eventIconHighlight"><rect x="105" y="103" width="172" height="88" rx="40"/></clipPath>
+    <filter id="badgeShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10" result="blur"/>
+      <feOffset dy="9" result="offset"/>
+      <feFlood flood-color="#000000" flood-opacity="0.72" result="shadowColor"/>
+      <feComposite in="shadowColor" in2="offset" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="eventIconShadow" x="-50%" y="-50%" width="200%" height="220%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+      <feOffset dy="6" result="offset"/>
+      <feFlood flood-color="#000000" flood-opacity="0.8" result="shadowColor"/>
+      <feComposite in="shadowColor" in2="offset" operator="in" result="shadow"/>
+      <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="eventIconHighlightColor" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+    </filter>
   </defs>
   <rect width="1080" height="${canvasHeight}" fill="url(#page)"/>
   <rect x="34" y="34" width="1012" height="${cardHeight}" rx="58" fill="#101314" stroke="#314514" stroke-width="3"/>
 
-  <rect x="76" y="76" width="230" height="230" rx="58" fill="url(#avatar)" stroke="#678d28" stroke-width="2"/>
-  ${buildEventArtworkSvg(input)}
+  <g filter="url(#badgeShadow)">
+    <rect x="76" y="76" width="230" height="230" rx="58" fill="#070a0c" stroke="url(#avatarEdge)" stroke-width="5"/>
+    <rect x="84" y="84" width="214" height="214" rx="50" fill="url(#avatar)" stroke="#23301a" stroke-width="2"/>
+    <rect x="90" y="90" width="202" height="202" rx="45" fill="url(#avatarHalo)"/>
+    <path d="M104 105c34-20 86-24 132-7" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.12"/>
+  </g>
+  <g transform="translate(191 191) scale(1.16) translate(-191 -191)" filter="url(#eventIconShadow)">${eventArtwork}</g>
+  <g transform="translate(191 191) scale(1.16) translate(-191 -191)" clip-path="url(#eventIconHighlight)" filter="url(#eventIconHighlightColor)" opacity="0.72">${eventArtwork}</g>
 
   <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 344, 142, 60)}</text>
   <text fill="#969ca7" font-size="34" font-weight="500" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 344, 260, 42)}</text>
