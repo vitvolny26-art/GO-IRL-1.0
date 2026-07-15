@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { activityOptions } from "../../src/data";
 import { buildEventArtworkSvg, resolveEventArtworkCode } from "./event-artwork";
@@ -6,6 +7,11 @@ import { materialEventArtworkPaths } from "./material-event-artwork";
 const knownOptions = Object.values(activityOptions).flat();
 
 describe("event artwork registry", () => {
+  it("uses a Node ESM-compatible serverless import", () => {
+    const source = readFileSync(new URL("./event-artwork.ts", import.meta.url), "utf8");
+    expect(source).toContain('from "./material-event-artwork.js"');
+  });
+
   it("covers all 40 known options by emoji and ru/cs/en names", () => {
     expect(knownOptions).toHaveLength(40);
     expect(Object.keys(materialEventArtworkPaths)).toHaveLength(39);

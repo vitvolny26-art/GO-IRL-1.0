@@ -1,4 +1,4 @@
-import { materialEventArtworkPaths } from "./material-event-artwork";
+import { materialEventArtworkPaths } from "./material-event-artwork.js";
 
 export type EventArtworkInput = {
   icon?: string;
