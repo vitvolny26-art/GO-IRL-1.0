@@ -3,7 +3,7 @@ export type TelegramEventCardInput = {
   title: string;
   activity: string;
   date: string;
-  eventDate?: string;
+  eventDate: string;
   time: string;
   address: string;
   participants: number;
@@ -38,7 +38,7 @@ const clean = (value: string, maxLength: number) => value.trim().slice(0, maxLen
 const pad = (value: number) => String(value).padStart(2, "0");
 
 const compactGoogleDateTime = (date: Date) =>
-  `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}00`;
+  `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}00`;
 
 const buildCalendarUrl = (input: TelegramEventCardInput) => {
   if (!input.eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(input.eventDate) || !/^\d{2}:\d{2}$/.test(input.time)) {
@@ -47,10 +47,15 @@ const buildCalendarUrl = (input: TelegramEventCardInput) => {
 
   const [year, month, day] = input.eventDate.split("-").map(Number);
   const [hour, minute] = input.time.split(":").map(Number);
-  const start = new Date(year, month - 1, day, hour, minute, 0);
-  if (Number.isNaN(start.getTime())) return undefined;
+  const start = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+  if (Number.isNaN(start.getTime())
+    || start.getUTCFullYear() !== year
+    || start.getUTCMonth() !== month - 1
+    || start.getUTCDate() !== day
+    || start.getUTCHours() !== hour
+    || start.getUTCMinutes() !== minute) return undefined;
 
-  const durationMinutes = Math.max(15, Math.round(input.durationMinutes || 90));
+  const durationMinutes = Math.min(480, Math.max(15, Math.round(input.durationMinutes || 90)));
   const end = new Date(start.getTime() + durationMinutes * 60_000);
   const location = [clean(input.address, 180), clean(input.city, 80)].filter(Boolean).join(", ");
   const details = [input.activity, input.inviteUrl].filter(Boolean).join("\n\n");

@@ -53,6 +53,7 @@ const invitationCardInput = (event: MetaEventSummary): TelegramEventCardInput =>
   title: event.title,
   activity: event.activity || event.title,
   date: event.date || event.dateTime,
+  eventDate: event.date || "",
   time: event.time || "",
   address: event.location,
   participants: event.participants ?? Math.max((event.capacity || 0) - event.availableSpots, 0),

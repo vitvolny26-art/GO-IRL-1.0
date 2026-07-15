@@ -4,50 +4,84 @@ export type EventArtworkInput = {
   title?: string;
 };
 
+type EventArtworkEntry = {
+  code: string;
+  emoji: string;
+  aliases: readonly string[];
+};
+
 const normalize = (value: string) => value
   .toLocaleLowerCase()
   .normalize("NFKD")
-  .replace(/[\u0300-\u036f]/g, "");
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[’']/g, "")
+  .replace(/[^\p{L}\p{N}]+/gu, " ")
+  .trim();
 
-const entries = [
-  ["🏐", "VB"], ["⚽", "FB"], ["🏀", "BB"], ["🎾", "TN"], ["🏋️", "GY"],
-  ["🏃", "RN"], ["🚴", "CY"], ["🏸", "BD"], ["🏓", "TT"], ["🧘", "YG"],
-  ["☕", "CF"], ["🎬", "MV"], ["🎳", "BW"], ["🎲", "BG"], ["♟️", "CH"],
-  ["🎤", "KR"], ["🛼", "SK"], ["🍺", "BR"], ["🧠", "QZ"], ["🍷", "WN"],
-  ["🎵", "CN"], ["🎪", "FS"], ["💃", "DN"], ["🥾", "HK"], ["🚶", "WK"],
-  ["🏊", "SW"], ["🧺", "PC"], ["⛺", "CP"], ["🎣", "FI"], ["🛶", "KY"],
-  ["🍽️", "DR"], ["🗣️", "LX"], ["💻", "CW"], ["🤝", "MT"], ["🎨", "AR"],
-  ["📸", "PH"], ["🏺", "CR"], ["🎸", "JM"], ["🧶", "WS"],
+export const eventArtworkRegistry: readonly EventArtworkEntry[] = [
+  { code: "VB", emoji: "🏐", aliases: ["volleyball", "волейбол", "volejbal"] },
+  { code: "FB", emoji: "⚽", aliases: ["football", "футбол", "fotbal"] },
+  { code: "BB", emoji: "🏀", aliases: ["basketball", "баскетбол", "basketbal"] },
+  { code: "TN", emoji: "🎾", aliases: ["tennis", "теннис", "tenis"] },
+  { code: "GY", emoji: "🏋️", aliases: ["gym", "тренажерный зал", "posilovna"] },
+  { code: "RN", emoji: "🏃", aliases: ["running", "бег", "beh"] },
+  { code: "CY", emoji: "🚴", aliases: ["cycling", "велосипед", "kolo"] },
+  { code: "BD", emoji: "🏸", aliases: ["badminton", "бадминтон"] },
+  { code: "TT", emoji: "🏓", aliases: ["table tennis", "настольный теннис", "stolni tenis"] },
+  { code: "YG", emoji: "🧘", aliases: ["yoga", "йога", "joga"] },
+  { code: "CF", emoji: "☕", aliases: ["coffee", "кофе", "kava"] },
+  { code: "MV", emoji: "🎬", aliases: ["cinema", "кино", "kino"] },
+  { code: "BW", emoji: "🎳", aliases: ["bowling", "боулинг"] },
+  { code: "BG", emoji: "🎲", aliases: ["board games", "настольные игры", "deskove hry"] },
+  { code: "CH", emoji: "♟️", aliases: ["chess", "шахматы", "sachy"] },
+  { code: "KR", emoji: "🎤", aliases: ["karaoke", "караоке"] },
+  { code: "SK", emoji: "🛼", aliases: ["inline skating", "ролики", "inline brusleni"] },
+  { code: "BR", emoji: "🍺", aliases: ["lets get a beer", "идем на пиво", "jdeme na pivo"] },
+  { code: "QZ", emoji: "🧠", aliases: ["pub quiz", "паб квиз", "pub kviz"] },
+  { code: "WN", emoji: "🍷", aliases: ["wine evening", "винный вечер", "vecer s vinem"] },
+  { code: "CN", emoji: "🎵", aliases: ["concert", "концерт", "koncert"] },
+  { code: "FS", emoji: "🎪", aliases: ["festival", "фестиваль"] },
+  { code: "DN", emoji: "💃", aliases: ["dancing", "танцы", "tanec"] },
+  { code: "HK", emoji: "🥾", aliases: ["hike", "поход", "vylet"] },
+  { code: "WK", emoji: "🚶", aliases: ["park walk", "walk", "прогулка в парке", "прогулка", "prochazka v parku", "prochazka"] },
+  { code: "SW", emoji: "🏊", aliases: ["swimming", "плавание", "plavani"] },
+  { code: "PC", emoji: "🧺", aliases: ["picnic", "пикник", "piknik"] },
+  { code: "CP", emoji: "⛺", aliases: ["camping", "кемпинг", "kempovani"] },
+  { code: "FI", emoji: "🎣", aliases: ["fishing", "рыбалка", "rybareni"] },
+  { code: "KY", emoji: "🛶", aliases: ["kayaking", "каяки", "kajaky"] },
+  { code: "DR", emoji: "🍽️", aliases: ["dinner", "ужин", "vecere"] },
+  { code: "LX", emoji: "🗣️", aliases: ["language exchange", "языковой обмен", "jazykova vymena"] },
+  { code: "CW", emoji: "💻", aliases: ["coworking", "коворкинг"] },
+  { code: "MT", emoji: "🤝", aliases: ["meet new people", "новые знакомства", "nova seznameni"] },
+  { code: "AR", emoji: "🎨", aliases: ["drawing", "рисование", "malovani"] },
+  { code: "PH", emoji: "📸", aliases: ["photo walk", "фотопрогулка", "fotoprochazka"] },
+  { code: "CR", emoji: "🏺", aliases: ["ceramics", "керамика", "keramika"] },
+  { code: "JM", emoji: "🎸", aliases: ["music jam", "музыкальный джем", "hudebni jam"] },
+  { code: "WS", emoji: "🧶", aliases: ["workshop", "мастерская", "dilna"] },
 ] as const;
 
-const aliases = [
-  ["volleyball волейбол volejbal", "VB"], ["football футбол fotbal", "FB"], ["basketball баскетбол basketbal", "BB"],
-  ["tennis теннис tenis", "TN"], ["gym тренажерный зал posilovna", "GY"], ["running бег beh", "RN"],
-  ["cycling велосипед kolo", "CY"], ["badminton бадминтон", "BD"], ["table tennis настольный теннис stolni tenis", "TT"],
-  ["yoga йога joga", "YG"], ["coffee кофе kava", "CF"], ["cinema кино kino", "MV"], ["bowling боулинг", "BW"],
-  ["board games настольные игры deskove hry", "BG"], ["chess шахматы шахи sachy", "CH"], ["karaoke караоке", "KR"],
-  ["inline skating ролики inline brusleni", "SK"], ["beer пиво jdeme na pivo", "BR"], ["pub quiz паб-квиз pub kviz", "QZ"],
-  ["wine винный вечер vecer s vinem", "WN"], ["concert концерт koncert", "CN"], ["festival фестиваль", "FS"],
-  ["dance танцы танец tanec", "DN"], ["hike поход vylet", "HK"], ["walk прогулка prochazka park walk", "WK"],
-  ["swimming плавание plavani", "SW"], ["picnic пикник piknik", "PC"], ["camping кемпинг kempovani", "CP"],
-  ["fishing рыбалка rybareni", "FI"], ["kayak каяки kajaky", "KY"], ["dinner ужин vecere", "DR"],
-  ["language exchange языковой обмен jazykova vymena", "LX"], ["coworking коворкинг", "CW"],
-  ["meet new people новые знакомства nova seznameni", "MT"], ["drawing рисование malovani", "AR"],
-  ["photo walk фотопрогулка fotoprochazka", "PH"], ["ceramics керамика keramika", "CR"],
-  ["music jam музыкальный джем hudebni jam", "JM"], ["workshop мастерская dilna", "WS"],
-] as const;
+const aliasIndex = eventArtworkRegistry
+  .flatMap((entry) => entry.aliases.map((value) => ({ code: entry.code, value: normalize(value) })))
+  .sort((left, right) => right.value.length - left.value.length);
 
 export const resolveEventArtworkCode = ({ icon = "", activity = "", title = "" }: EventArtworkInput) => {
-  const exact = entries.find(([emoji]) => icon.includes(emoji));
-  if (exact) return exact[1];
+  const exact = eventArtworkRegistry.find((entry) => icon.includes(entry.emoji));
+  if (exact) return exact.code;
 
-  const haystack = normalize(`${activity} ${title}`);
-  const alias = aliases.find(([keywords]) => keywords.split(" ").some((keyword) => haystack.includes(normalize(keyword))));
-  return alias?.[1] || "EV";
+  const haystack = ` ${normalize(`${activity} ${title}`)} `;
+  const alias = aliasIndex.find(({ value }) => haystack.includes(` ${value} `));
+  return alias?.code || "EV";
 };
 
 export const buildEventArtworkSvg = (input: EventArtworkInput) => {
   const code = resolveEventArtworkCode(input);
+
+  if (code === "EV") {
+    return `<g data-event-artwork="EV" fill="none" stroke="#aeb3bd" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="137" y="132" width="108" height="112" rx="22"/>
+      <path d="M137 166h108M164 119v27M218 119v27M162 191h12M185 191h12M208 191h12M162 216h12M185 216h12"/>
+    </g>`;
+  }
 
   if (code === "CH") {
     return `<g data-event-artwork="CH" fill="none" stroke="#c9ff3d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">

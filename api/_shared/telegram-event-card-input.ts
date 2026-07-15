@@ -71,6 +71,7 @@ export function normalizeTelegramEventCardInput(value: unknown): TelegramEventCa
     title: stringValue(raw.title, 240),
     activity: stringValue(raw.activity, 240),
     date: stringValue(raw.date, 40),
+    eventDate: stringValue(raw.eventDate, 10),
     time: stringValue(raw.time, 20),
     address: stringValue(raw.address, 300),
     participants: Math.trunc(clamp(numberValue(raw.participants), 0, 100_000)),

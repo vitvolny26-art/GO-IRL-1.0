@@ -157,6 +157,7 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     title: localized(row, language, "title"),
     activity,
     date: compactDate(row.event_date, language),
+    eventDate: row.event_date,
     time: row.event_time.slice(0, 5),
     address: row.address,
     participants: count || 0,
