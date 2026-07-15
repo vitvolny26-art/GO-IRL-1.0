@@ -68,6 +68,24 @@ describe("Telegram event share-card image", () => {
   ])("uses artwork code %s/%s -> %s", (icon, activity, code) => {
     const svg = buildTelegramShareCardSvg({ ...card, icon, activity, title: activity });
     expect(svg).toContain(`data-event-artwork="${code}"`);
+    if (code !== "EV") expect(svg).not.toContain(`<text x="191"`);
+  });
+
+  it("uses leading emoji for artwork detection but removes it from visible text", () => {
+    const languageCard = {
+      ...card,
+      icon: "",
+      activity: "🗣️ Языковой обмен",
+      title: "🗣️ Английский",
+    };
+    const telegramSvg = buildTelegramShareCardSvg(languageCard);
+    const metaSvg = buildMetaInvitationCardSvg(languageCard);
+
+    expect(telegramSvg).toContain('data-event-artwork="LX"');
+    expect(telegramSvg).toContain("Языковой обмен");
+    expect(telegramSvg).toContain("Английский");
+    expect(telegramSvg).not.toContain("🗣️");
+    expect(metaSvg).toBe(telegramSvg);
   });
 
   it("renders the compact Meta invitation without weather", async () => {
