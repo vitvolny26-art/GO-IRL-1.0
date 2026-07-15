@@ -3,6 +3,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
+import { resolveEventArtworkCode } from "./event-artwork.js";
+import { betaEventIllustrationSpriteBase64, betaEventIllustrationTiles } from "./event-illustration-sprite.js";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
 
 const require = createRequire(import.meta.url);
@@ -43,15 +45,40 @@ const loadSharp = () => {
   return sharpPromise;
 };
 
-const renderShareCardJpeg = async (svg: string) => {
+const spriteBuffer = Buffer.from(betaEventIllustrationSpriteBase64, "base64");
+const illustrationMask = Buffer.from(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="230" height="230"><rect width="230" height="230" rx="58" fill="white"/></svg>',
+);
+
+export const hasBetaEventIllustration = (input: TelegramEventCardInput) => {
+  const code = resolveEventArtworkCode(input);
+  return code in betaEventIllustrationTiles;
+};
+
+const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) => {
   const sharp = await loadSharp();
-  return sharp(Buffer.from(svg))
+  const code = resolveEventArtworkCode(input) as keyof typeof betaEventIllustrationTiles;
+  const tile = betaEventIllustrationTiles[code];
+  const image = sharp(Buffer.from(svg));
+
+  if (tile) {
+    const illustration = await sharp(spriteBuffer)
+      .extract({ left: tile.left, top: tile.top, width: 96, height: 96 })
+      .resize(230, 230, { fit: "cover" })
+      .composite([{ input: illustrationMask, blend: "dest-in" }])
+      .png()
+      .toBuffer();
+
+    image.composite([{ input: illustration, left: 76, top: 76 }]);
+  }
+
+  return image
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };
 
 export const renderTelegramShareCardJpeg = (input: TelegramEventCardInput) =>
-  renderShareCardJpeg(buildTelegramShareCardSvg(input));
+  renderShareCardJpeg(buildTelegramShareCardSvg(input), input);
 
 export const renderMetaInvitationCardJpeg = (input: TelegramEventCardInput) =>
-  renderShareCardJpeg(buildMetaInvitationCardSvg(input));
+  renderShareCardJpeg(buildMetaInvitationCardSvg(input), input);
