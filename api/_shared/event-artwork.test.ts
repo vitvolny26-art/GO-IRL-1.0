@@ -5,6 +5,7 @@ import { buildEventArtworkSvg, resolveEventArtworkCode } from "./event-artwork";
 import { materialEventArtworkPaths } from "./material-event-artwork";
 
 const knownOptions = Object.values(activityOptions).flat();
+const brandedCodes = new Set(["VB", "RN", "WK", "CF", "BG", "LX", "BR"]);
 
 describe("event artwork registry", () => {
   it("uses a Node ESM-compatible serverless import", () => {
@@ -27,8 +28,13 @@ describe("event artwork registry", () => {
 
       const svg = buildEventArtworkSvg({ icon: option.icon, activity: option.name.en });
       expect(svg).toContain(`data-event-artwork="${expectedCode}"`);
-      expect(svg).toContain(materialEventArtworkPaths[expectedCode]);
-      expect(svg).toContain('transform="translate(143 143) scale(4)"');
+      if (brandedCodes.has(expectedCode)) {
+        expect(svg).toContain('data-branded-artwork="true"');
+        expect(svg).not.toContain('transform="translate(143 143) scale(4)"');
+      } else {
+        expect(svg).toContain(materialEventArtworkPaths[expectedCode]);
+        expect(svg).toContain('transform="translate(143 143) scale(4)"');
+      }
       expect(svg).not.toContain("<image");
       expect(svg).not.toContain("undefined");
       expect(svg).not.toMatch(/\p{Extended_Pictographic}/u);
