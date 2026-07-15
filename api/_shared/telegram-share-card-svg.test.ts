@@ -42,15 +42,14 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("Arial");
   });
 
-  it("renders the category artwork as a raised app badge", () => {
+  it("uses the app event icon on a simple dark tile", () => {
     const svg = buildTelegramShareCardSvg(card);
-    expect(svg).toContain('id="avatarEdge"');
-    expect(svg).toContain('id="badgeShadow"');
-    expect(svg).toContain('id="eventIconShadow"');
-    expect(svg).toContain('id="eventIconHighlightColor"');
-    expect(svg).toContain('clip-path="url(#eventIconHighlight)"');
-    expect(svg).toContain('stroke="url(#avatarEdge)" stroke-width="5"');
-    expect(svg).toContain('scale(1.16)');
+    expect(svg).toContain('data-event-artwork="VB"');
+    expect(svg).toContain("data:image/png;base64,");
+    expect(svg).toContain('stroke="#37422f" stroke-width="2"');
+    expect(svg).not.toContain('id="badgeShadow"');
+    expect(svg).not.toContain('id="eventIconHighlightColor"');
+    expect(svg).not.toContain("scale(1.16)");
   });
 
   it("bundles regular and bold Cyrillic fonts for serverless rendering", () => {
@@ -79,7 +78,6 @@ describe("Telegram event share-card image", () => {
   ])("uses artwork code %s/%s -> %s", (icon, activity, code) => {
     const svg = buildTelegramShareCardSvg({ ...card, icon, activity, title: activity });
     expect(svg).toContain(`data-event-artwork="${code}"`);
-    if (code !== "EV") expect(svg).not.toContain(`<text x="191"`);
   });
 
   it("uses leading emoji for artwork detection but removes it from visible text", () => {
