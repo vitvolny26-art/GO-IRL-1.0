@@ -43,7 +43,10 @@ function assertBudgetReservation(record, estimatedCostUsd) {
 
 function implementerPrompt(record) {
   const handoff = readJson(record.artifacts.codex_handoff.path);
-  return `You are the Codex Implementer for a human-approved GO IRL Mission.\n\n${JSON.stringify(handoff, null, 2)}\n\nWork only inside the exact write scope. Do not commit, push, create a PR, merge, deploy, modify dependencies, or self-approve. Return only one JSON Agent Result matching the provided output schema. changed_files must exactly match the worktree changes you made.`;
+  const specialist = handoff.specialist_profile
+    ? `\nSpecialist profile: ${handoff.specialist_profile.role}. Follow its required reading, cleanup workflow, and write controls while still returning role "Codex Implementer".\n`
+    : '';
+  return `You are the Codex Implementer for a human-approved GO IRL Mission.${specialist}\n${JSON.stringify(handoff, null, 2)}\n\nWork only inside the exact write scope. Do not commit, push, create a PR, merge, deploy, modify dependencies, or self-approve. Return only one JSON Agent Result matching the provided output schema. changed_files must exactly match the worktree changes you made.`;
 }
 
 function reviewerPrompt(record) {

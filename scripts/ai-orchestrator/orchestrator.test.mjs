@@ -171,6 +171,43 @@ describe('Phases 2 and 3 Context Builder and Codex handoff', () => {
     expect(core.loadState(sandbox.stateDir).missions['MISSION-RUNTIME-E2E'].state).toBe('planned');
   });
 
+  it('adds a Project Archivist profile for documentation-ordering missions', () => {
+    const sandbox = createSandbox();
+    fs.mkdirSync(path.join(sandbox.repoRoot, 'docs', 'onboarding'), { recursive: true });
+    fs.mkdirSync(path.join(sandbox.repoRoot, 'docs', 'governance'), { recursive: true });
+    fs.writeFileSync(
+      path.join(sandbox.repoRoot, 'docs', 'onboarding', 'AI_ROLES.md'),
+      'Archivist owns project memory, documentation registry, and source-of-truth control.\n',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(sandbox.repoRoot, 'docs', 'governance', 'AI_ORGANIZATION.md'),
+      'Knowledge Council uses the Archivist to protect documentation continuity.\n',
+      'utf8',
+    );
+    const archivistMission = mission({
+      objective: 'Create a Project Archivist that restores order in project documentation.',
+      source_of_truth_refs: ['README.md', 'docs/onboarding/AI_ROLES.md', 'docs/governance/AI_ORGANIZATION.md'],
+    });
+    core.intakeMission({ mission: archivistMission, stateDir: sandbox.stateDir });
+    core.approveMission({ missionId: 'MISSION-RUNTIME-E2E', actor: 'human-owner', stateDir: sandbox.stateDir });
+    const prepared = workflow.prepareMission({
+      missionId: 'MISSION-RUNTIME-E2E',
+      stateDir: sandbox.stateDir,
+      repoRoot: sandbox.repoRoot,
+      includePatterns: ['scripts/ai-orchestrator/runtime-target.cjs'],
+      grepQueries: ['Archivist', 'documentation'],
+    });
+
+    expect(prepared.plan.specialist_profile).toMatchObject({
+      key: 'project_archivist',
+      role: 'Project Archivist',
+    });
+    expect(prepared.plan.specialist_profile.required_reading).toContain('docs/onboarding/ARCHIVIST_CHARTER.md');
+    expect(prepared.handoff.instructions.at(-1)).toContain('Project Archivist');
+    expect(codexAdapter.implementerPrompt(prepared.record)).toContain('Specialist profile: Project Archivist');
+  });
+
   it('rejects oversized context and every sensitive write path', () => {
     const sandbox = createSandbox();
     expect(() => contextBuilder.buildContextPack({

@@ -12,6 +12,12 @@ It implements:
 
 The runtime never merges or deploys. Real Codex and GitHub mutations require explicit execution flags.
 
+## Project Archivist profile
+
+Documentation-ordering Missions that reference Archivist governance receive a bounded Project Archivist specialist profile in the generated plan and Codex handoff. The profile tells the implementer to preserve project memory, follow the source-of-truth hierarchy, classify documentation findings, and produce a report when canonical docs are outside the exact write scope.
+
+The profile does not grant extra write authority. The normal Mission allowlist, forbidden paths, sensitive-scope guards, independent review, QA gates, Change Approval, and publish-preview-only boundary still apply.
+
 ## EGF-102 approved Mission Intake
 
 The no-LLM Mission Intake boundary connects an upstream human-approved Mission to the runtime and JSON bridge:

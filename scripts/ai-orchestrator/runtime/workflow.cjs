@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { validateAgentResult } = require('../validate-agent-result.cjs');
+const { createArchivistProfile } = require('./archivist.cjs');
 const { buildContextPack } = require('./context-builder.cjs');
 const { captureWorktreeSnapshot, diffWorktreeSnapshots } = require('./worktree.cjs');
 const {
@@ -27,7 +28,8 @@ const QUALITY_COMMANDS = [
 ];
 
 function createPlan(mission, contextPack) {
-  return {
+  const specialistProfile = createArchivistProfile(mission, contextPack);
+  const plan = {
     schema_version: '1.0',
     mission_id: mission.mission_id,
     objective: mission.objective,
@@ -49,10 +51,12 @@ function createPlan(mission, contextPack) {
       external_writes_allowed: false,
     },
   };
+  if (specialistProfile) plan.specialist_profile = specialistProfile;
+  return plan;
 }
 
 function createCodexHandoff(mission, contextPack, plan) {
-  return {
+  const handoff = {
     schema_version: '1.0',
     mission_id: mission.mission_id,
     role: 'Codex Implementer',
@@ -67,6 +71,14 @@ function createCodexHandoff(mission, contextPack, plan) {
       'Return one Agent Result matching schemas/agent-result.schema.json.',
     ],
   };
+  if (plan.specialist_profile) {
+    handoff.specialist_profile = plan.specialist_profile;
+    handoff.instructions = [
+      ...handoff.instructions,
+      `Apply the ${plan.specialist_profile.role} profile while preserving the Codex Implementer Agent Result role.`,
+    ];
+  }
+  return handoff;
 }
 
 function storeWorktreeBaseline(stateDir, missionId, snapshot) {
