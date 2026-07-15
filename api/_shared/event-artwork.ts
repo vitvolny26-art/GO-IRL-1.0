@@ -1,3 +1,6 @@
+import { appEventEmojiSprite } from "./app-event-emoji-sprite.js";
+import { materialEventArtworkPaths } from "./material-event-artwork.js";
+
 export type EventArtworkInput = {
   icon?: string;
   activity?: string;
@@ -17,13 +20,6 @@ const normalize = (value: string) => value
   .replace(/[’']/g, "")
   .replace(/[^\p{L}\p{N}]+/gu, " ")
   .trim();
-
-const xml = (value: string) => value
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;")
-  .replaceAll("'", "&apos;");
 
 export const eventArtworkRegistry: readonly EventArtworkEntry[] = [
   { code: "VB", emoji: "🏐", aliases: ["volleyball", "волейбол", "volejbal"] },
@@ -71,6 +67,11 @@ const aliasIndex = eventArtworkRegistry
   .flatMap((entry) => entry.aliases.map((value) => ({ code: entry.code, value: normalize(value) })))
   .sort((left, right) => right.value.length - left.value.length);
 
+const appSpriteCells: Readonly<Record<string, readonly [number, number]>> = {
+  VB: [0, 0], RN: [72, 0], CF: [144, 0], BG: [216, 0],
+  CH: [0, 72], WK: [72, 72], LX: [144, 72], BR: [216, 72],
+};
+
 export const resolveEventArtworkCode = ({ icon = "", activity = "", title = "" }: EventArtworkInput) => {
   const exact = eventArtworkRegistry.find((entry) => icon.includes(entry.emoji));
   if (exact) return exact.code;
@@ -80,15 +81,26 @@ export const resolveEventArtworkCode = ({ icon = "", activity = "", title = "" }
   return alias?.code || "EV";
 };
 
-export const resolveEventArtworkEmoji = (input: EventArtworkInput) => {
-  const code = resolveEventArtworkCode(input);
-  return eventArtworkRegistry.find((entry) => entry.code === code)?.emoji || "✨";
-};
-
 export const buildEventArtworkSvg = (input: EventArtworkInput) => {
   const code = resolveEventArtworkCode(input);
-  const emoji = resolveEventArtworkEmoji(input);
-  return `<g data-event-artwork="${code}">
-    <text x="191" y="224" text-anchor="middle" font-size="128" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif">${xml(emoji)}</text>
+  const spriteCell = appSpriteCells[code];
+
+  if (spriteCell) {
+    const [x, y] = spriteCell;
+    return `<svg data-event-artwork="${code}" x="111" y="111" width="160" height="160" viewBox="${x} ${y} 72 72" preserveAspectRatio="xMidYMid meet">
+      <image href="${appEventEmojiSprite}" x="0" y="0" width="288" height="144"/>
+    </svg>`;
+  }
+
+  if (code === "EV") {
+    return `<g data-event-artwork="EV" fill="none" stroke="#aeb3bd" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="137" y="132" width="108" height="112" rx="22"/>
+      <path d="M137 166h108M164 119v27M218 119v27M162 191h12M185 191h12M208 191h12M162 216h12M185 216h12"/>
+    </g>`;
+  }
+
+  const materialPath = materialEventArtworkPaths[code];
+  return `<g data-event-artwork="${code}" transform="translate(143 143) scale(4)" fill="#c9ff3d">
+    <path d="${materialPath}"/>
   </g>`;
 };
