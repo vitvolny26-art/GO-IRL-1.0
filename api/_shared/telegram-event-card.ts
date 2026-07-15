@@ -3,6 +3,7 @@ export type TelegramEventCardInput = {
   title: string;
   activity: string;
   date: string;
+  eventDate?: string;
   time: string;
   address: string;
   participants: number;
@@ -27,39 +28,52 @@ export type TelegramEventCardInput = {
 };
 
 const copy = {
-  ru: { date: "Дата", place: "Место", people: "Участники", open: "Открыть событие", map: "Карта" },
-  uk: { date: "Дата", place: "Місце", people: "Учасники", open: "Відкрити подію", map: "Мапа" },
-  cs: { date: "Datum", place: "Místo", people: "Účastníci", open: "Otevřít událost", map: "Mapa" },
-  en: { date: "Date", place: "Place", people: "Participants", open: "Open event", map: "Map" },
+  ru: { open: "Открыть событие", calendar: "В календарь" },
+  uk: { open: "Відкрити подію", calendar: "У календар" },
+  cs: { open: "Otevřít událost", calendar: "Do kalendáře" },
+  en: { open: "Open event", calendar: "Add to calendar" },
 } as const;
 
-const escapeHtml = (value: string) =>
-  value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-
 const clean = (value: string, maxLength: number) => value.trim().slice(0, maxLength);
+const pad = (value: number) => String(value).padStart(2, "0");
+
+const compactGoogleDateTime = (date: Date) =>
+  `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}00`;
+
+const buildCalendarUrl = (input: TelegramEventCardInput) => {
+  if (!input.eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(input.eventDate) || !/^\d{2}:\d{2}$/.test(input.time)) {
+    return undefined;
+  }
+
+  const [year, month, day] = input.eventDate.split("-").map(Number);
+  const [hour, minute] = input.time.split(":").map(Number);
+  const start = new Date(year, month - 1, day, hour, minute, 0);
+  if (Number.isNaN(start.getTime())) return undefined;
+
+  const durationMinutes = Math.max(15, Math.round(input.durationMinutes || 90));
+  const end = new Date(start.getTime() + durationMinutes * 60_000);
+  const location = [clean(input.address, 180), clean(input.city, 80)].filter(Boolean).join(", ");
+  const details = [input.activity, input.inviteUrl].filter(Boolean).join("\n\n");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: clean(input.title || input.activity || "GO IRL", 120),
+    dates: `${compactGoogleDateTime(start)}/${compactGoogleDateTime(end)}`,
+    details,
+    location,
+    ctz: "Europe/Prague",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
 
 export function buildTelegramEventCard(input: TelegramEventCardInput, imageUrl: string) {
   const labels = copy[input.language] || copy.en;
   const activity = clean(input.activity, 120);
   const title = clean(input.title, 120) || activity || "GO IRL";
-  const subtitle = activity && activity.toLocaleLowerCase() !== title.toLocaleLowerCase() ? `\n${escapeHtml(title)}` : "";
   const dateTime = [clean(input.date, 40), clean(input.time, 12)].filter(Boolean).join(" · ");
   const address = clean(input.address, 180);
-  const participants = Math.max(0, Math.trunc(input.participants));
-  const capacity = Math.max(participants, Math.trunc(input.capacity));
-
-  const lines = [
-    `<b>${escapeHtml(activity || title)}</b>${subtitle}`,
-    dateTime ? `<b>${labels.date}:</b> ${escapeHtml(dateTime)}` : "",
-    address ? `<b>${labels.place}:</b> ${escapeHtml(address)}` : "",
-    capacity ? `<b>${labels.people}:</b> ${participants} / ${capacity}` : "",
-  ].filter(Boolean);
-
-  const mapUrl = input.mapUrl || ([input.address, input.city].filter(Boolean).length
-    ? `https://mapy.cz/zakladni?q=${encodeURIComponent([input.address, input.city].filter(Boolean).join(", "))}`
-    : undefined);
+  const calendarUrl = buildCalendarUrl(input);
   const buttons = [{ text: labels.open, url: input.inviteUrl }];
-  if (mapUrl) buttons.push({ text: labels.map, url: mapUrl });
+  if (calendarUrl) buttons.push({ text: labels.calendar, url: calendarUrl });
 
   return {
     type: "photo" as const,
@@ -70,8 +84,7 @@ export function buildTelegramEventCard(input: TelegramEventCardInput, imageUrl: 
     photo_height: 900,
     title: (activity || title).slice(0, 256),
     description: [dateTime, address].filter(Boolean).join(" · ").slice(0, 512),
-    caption: lines.join("\n\n"),
-    parse_mode: "HTML" as const,
+    caption: "",
     reply_markup: {
       inline_keyboard: [buttons],
     },
