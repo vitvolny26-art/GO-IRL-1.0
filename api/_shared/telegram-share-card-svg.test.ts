@@ -10,6 +10,7 @@ const card: TelegramEventCardInput = {
   title: "Волейбол на ZŠ Demlova <вечером>",
   activity: "Волейбол",
   date: "19 июл",
+  eventDate: "2026-07-19",
   time: "16:30",
   address: "ZŠ Demlova & park",
   participants: 2,
@@ -59,10 +60,14 @@ describe("Telegram event share-card image", () => {
     expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
   });
 
-  it("uses bundled color artwork for inline skating", () => {
-    const svg = buildTelegramShareCardSvg({ ...card, icon: "🛼", activity: "Ролики" });
-    expect(svg).toContain('fill="#bce9ff"');
-    expect(svg).toContain('stroke="#ff7cab"');
+  it.each([
+    ["🏐", "Волейбол", "VB"],
+    ["🛼", "Ролики", "SK"],
+    ["♟️", "Шахматы", "CH"],
+    ["", "Пользовательское событие", "EV"],
+  ])("uses artwork code %s/%s -> %s", (icon, activity, code) => {
+    const svg = buildTelegramShareCardSvg({ ...card, icon, activity, title: activity });
+    expect(svg).toContain(`data-event-artwork="${code}"`);
   });
 
   it("renders the compact Meta invitation without weather", async () => {
@@ -75,9 +80,8 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("23°C");
     expect(svg).not.toContain("12%");
     expect(svg).not.toContain("19 km/h");
-    expect(svg).toContain('transform="translate(118 118) scale(4.0555556)"');
-    expect(svg).toContain('fill="#E6E7E8"');
-    expect(svg).toContain('fill="#99AAB5"');
+    expect(svg).toContain('data-event-artwork="VB"');
+    expect(svg).toBe(buildTelegramShareCardSvg(metaCard));
 
     const jpeg = await renderMetaInvitationCardJpeg(metaCard);
     const metadata = await sharp(jpeg).metadata();

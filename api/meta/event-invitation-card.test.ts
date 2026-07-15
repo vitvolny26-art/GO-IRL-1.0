@@ -13,6 +13,7 @@ const card: TelegramEventCardInput = {
   title: "Волейбол на ZŠ Demlova",
   activity: "Волейбол",
   date: "19 июл",
+  eventDate: "2026-07-19",
   time: "16:30",
   address: "ZŠ Demlova",
   participants: 2,
