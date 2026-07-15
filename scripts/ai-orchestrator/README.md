@@ -67,7 +67,7 @@ Supported commands:
 | `qa run` | `mission_id`; optional `final: true`; after a failed gate, `retry_actor` | Run the first-red quality gate or its single audited retry. |
 | `report create` | `mission_id`, `report_path` | Create the required Agent Report after Change Approval. |
 | `publish preview` | `mission_id`, `selected_files`, `commit_message`, `pr_title`; optional `pr_body` | Validate and return a guarded publication preview without executing Git or GitHub writes. |
-| `archive` | `mission_id`, `actor` | Release a Mission already recorded as `draft_pr`. |
+| `archive` | `mission_id`, `actor` | Release a Mission after a recorded publication preview or Draft PR. |
 
 Every successful response has exactly this public envelope:
 
@@ -84,6 +84,8 @@ Every successful response has exactly this public envelope:
 Rejected calls use the same five fields plus a sanitized `error` object. `artifacts` contains logical artifact names only. Responses never contain state-file paths, artifact paths, SHA-256 metadata, command plans, absolute local paths, credentials, or private runtime data. The machine-readable response contract is `schemas/bridge-response.schema.json`.
 
 The bridge intentionally supports publication preview only. It cannot commit, push, create a PR, merge, deploy, publish/activate n8n, or bypass Mission Approval, Change Approval, scope, budget, review, or QA gates.
+
+A successful `publish preview` is recorded in runtime state without executing any command from the returned plan. The Mission may then be archived through the bridge to release the active slot. A `report_ready` Mission without that recorded preview cannot be archived.
 
 ## Working directory
 

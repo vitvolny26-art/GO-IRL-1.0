@@ -133,7 +133,20 @@ function publishDraft({
       ['gh', 'pr', 'create', '--draft', '--base', 'main', '--head', currentBranch, '--title', prTitle],
     ],
   };
-  if (!execute) return { executed: false, plan };
+  if (!execute) {
+    record.publish_preview = {
+      created_at: now.toISOString(),
+      branch: currentBranch,
+      selected_files: selected,
+      commit_message: commitMessage,
+      pr_title: prTitle,
+      draft: true,
+      merge: false,
+      deploy: false,
+    };
+    saveState(stateDir, state);
+    return { executed: false, plan, record };
+  }
 
   const preexistingStagedFiles = readStagedFiles(repoRoot, runner);
   if (preexistingStagedFiles.length > 0) {
