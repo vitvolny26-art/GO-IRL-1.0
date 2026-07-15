@@ -1,4 +1,4 @@
-import { appEventEmojiSprite } from "./app-event-emoji-sprite.js";
+import { appEventArtworkSvg } from "./app-event-emoji-sprite.js";
 import { materialEventArtworkPaths } from "./material-event-artwork.js";
 
 export type EventArtworkInput = {
@@ -16,91 +16,4 @@ type EventArtworkEntry = {
 const normalize = (value: string) => value
   .toLocaleLowerCase()
   .normalize("NFKD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/[’']/g, "")
-  .replace(/[^\p{L}\p{N}]+/gu, " ")
-  .trim();
-
-export const eventArtworkRegistry: readonly EventArtworkEntry[] = [
-  { code: "VB", emoji: "🏐", aliases: ["volleyball", "волейбол", "volejbal"] },
-  { code: "FB", emoji: "⚽", aliases: ["football", "футбол", "fotbal"] },
-  { code: "BB", emoji: "🏀", aliases: ["basketball", "баскетбол", "basketbal"] },
-  { code: "TN", emoji: "🎾", aliases: ["tennis", "теннис", "tenis"] },
-  { code: "GY", emoji: "🏋️", aliases: ["gym", "тренажерный зал", "posilovna"] },
-  { code: "RN", emoji: "🏃", aliases: ["running", "бег", "beh"] },
-  { code: "CY", emoji: "🚴", aliases: ["cycling", "велосипед", "kolo"] },
-  { code: "BD", emoji: "🏸", aliases: ["badminton", "бадминтон"] },
-  { code: "TT", emoji: "🏓", aliases: ["table tennis", "настольный теннис", "stolni tenis"] },
-  { code: "YG", emoji: "🧘", aliases: ["yoga", "йога", "joga"] },
-  { code: "CF", emoji: "☕", aliases: ["coffee", "кофе", "kava"] },
-  { code: "MV", emoji: "🎬", aliases: ["cinema", "кино", "kino"] },
-  { code: "BW", emoji: "🎳", aliases: ["bowling", "боулинг"] },
-  { code: "BG", emoji: "🎲", aliases: ["board games", "настольные игры", "deskove hry"] },
-  { code: "CH", emoji: "♟️", aliases: ["chess", "шахматы", "sachy"] },
-  { code: "KR", emoji: "🎤", aliases: ["karaoke", "караоке"] },
-  { code: "SK", emoji: "🛼", aliases: ["inline skating", "ролики", "inline brusleni"] },
-  { code: "BR", emoji: "🍺", aliases: ["lets get a beer", "идем на пиво", "jdeme na pivo"] },
-  { code: "QZ", emoji: "🧠", aliases: ["pub quiz", "паб квиз", "pub kviz"] },
-  { code: "WN", emoji: "🍷", aliases: ["wine evening", "винный вечер", "vecer s vinem"] },
-  { code: "CN", emoji: "🎵", aliases: ["concert", "концерт", "koncert"] },
-  { code: "FS", emoji: "🎪", aliases: ["festival", "фестиваль"] },
-  { code: "DN", emoji: "💃", aliases: ["dancing", "танцы", "tanec"] },
-  { code: "HK", emoji: "🥾", aliases: ["hike", "поход", "vylet"] },
-  { code: "WK", emoji: "🚶", aliases: ["park walk", "walk", "прогулка в парке", "прогулка", "prochazka v parku", "prochazka"] },
-  { code: "SW", emoji: "🏊", aliases: ["swimming", "плавание", "plavani"] },
-  { code: "PC", emoji: "🧺", aliases: ["picnic", "пикник", "piknik"] },
-  { code: "CP", emoji: "⛺", aliases: ["camping", "кемпинг", "kempovani"] },
-  { code: "FI", emoji: "🎣", aliases: ["fishing", "рыбалка", "rybareni"] },
-  { code: "KY", emoji: "🛶", aliases: ["kayaking", "каяки", "kajaky"] },
-  { code: "DR", emoji: "🍽️", aliases: ["dinner", "ужин", "vecere"] },
-  { code: "LX", emoji: "🗣️", aliases: ["language exchange", "языковой обмен", "jazykova vymena"] },
-  { code: "CW", emoji: "💻", aliases: ["coworking", "коворкинг"] },
-  { code: "MT", emoji: "🤝", aliases: ["meet new people", "новые знакомства", "nova seznameni"] },
-  { code: "AR", emoji: "🎨", aliases: ["drawing", "рисование", "malovani"] },
-  { code: "PH", emoji: "📸", aliases: ["photo walk", "фотопрогулка", "fotoprochazka"] },
-  { code: "CR", emoji: "🏺", aliases: ["ceramics", "керамика", "keramika"] },
-  { code: "JM", emoji: "🎸", aliases: ["music jam", "музыкальный джем", "hudebni jam"] },
-  { code: "WS", emoji: "🧶", aliases: ["workshop", "мастерская", "dilna"] },
-] as const;
-
-const aliasIndex = eventArtworkRegistry
-  .flatMap((entry) => entry.aliases.map((value) => ({ code: entry.code, value: normalize(value) })))
-  .sort((left, right) => right.value.length - left.value.length);
-
-const appSpriteCells: Readonly<Record<string, readonly [number, number]>> = {
-  VB: [0, 0], RN: [72, 0], CF: [144, 0], BG: [216, 0],
-  CH: [0, 72], WK: [72, 72], LX: [144, 72], BR: [216, 72],
-};
-
-export const resolveEventArtworkCode = ({ icon = "", activity = "", title = "" }: EventArtworkInput) => {
-  const exact = eventArtworkRegistry.find((entry) => icon.includes(entry.emoji));
-  if (exact) return exact.code;
-
-  const haystack = ` ${normalize(`${activity} ${title}`)} `;
-  const alias = aliasIndex.find(({ value }) => haystack.includes(` ${value} `));
-  return alias?.code || "EV";
-};
-
-export const buildEventArtworkSvg = (input: EventArtworkInput) => {
-  const code = resolveEventArtworkCode(input);
-  const spriteCell = appSpriteCells[code];
-
-  if (spriteCell) {
-    const [x, y] = spriteCell;
-    return `<svg data-event-artwork="${code}" x="111" y="111" width="160" height="160" viewBox="${x} ${y} 72 72" preserveAspectRatio="xMidYMid meet">
-      <image href="${appEventEmojiSprite}" x="0" y="0" width="288" height="144"/>
-    </svg>`;
-  }
-
-  if (code === "EV") {
-    return `<g data-event-artwork="EV" fill="none" stroke="#aeb3bd" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="137" y="132" width="108" height="112" rx="22"/>
-      <path d="M137 166h108M164 119v27M218 119v27M162 191h12M185 191h12M208 191h12M162 216h12M185 216h12"/>
-    </g>`;
-  }
-
-  const materialPath = materialEventArtworkPaths[code];
-  return `<g data-event-artwork="${code}" transform="translate(143 143) scale(4)" fill="#c9ff3d">
-    <path d="${materialPath}"/>
-  </g>`;
-};
+  .

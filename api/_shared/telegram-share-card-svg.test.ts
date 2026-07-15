@@ -42,11 +42,14 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("Arial");
   });
 
-  it("uses the app event icon on a simple dark tile", () => {
+  it("uses visible inline app artwork on a simple dark tile", () => {
     const svg = buildTelegramShareCardSvg(card);
     expect(svg).toContain('data-event-artwork="VB"');
-    expect(svg).toContain("data:image/png;base64,");
+    expect(svg).toContain('data-app-event-artwork="true"');
+    expect(svg).toContain('id="app-vb-ball"');
     expect(svg).toContain('stroke="#37422f" stroke-width="2"');
+    expect(svg).not.toContain("<image");
+    expect(svg).not.toContain("data:image/png;base64,");
     expect(svg).not.toContain('id="badgeShadow"');
     expect(svg).not.toContain('id="eventIconHighlightColor"');
     expect(svg).not.toContain("scale(1.16)");
