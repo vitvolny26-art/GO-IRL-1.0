@@ -143,6 +143,6 @@ function publish() {
 const command = process.argv[2];
 if (command === 'prepare') prepare();
 else if (command === 'codex') codex();
-else if (command === 'checks') checks();
-else if (command === 'publish') publish();
+else if (command === 'checks' || command === 'q') checks();
+else if (command === 'publish' || command === 'r') publish();
 else fail('USAGE: prepare | codex | checks | publish');
