@@ -1215,15 +1215,27 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const avatar = genericActivityAvatar(activity, language, category.icon);
   const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
   const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
-  const cardRightLabel = joined ? t.joined : pending ? t.requested : action;
-  const cardRightDisabled = joined || pending || interaction.disabled;
-  const cardLeftLabel = joined ? t.leave : pending ? t.cancelRequest : waiting ? t.leave : t.details;
+  const membershipActive = joined || pending || waiting;
+  const cardRightLabel = joined || waiting ? t.leave : pending ? t.cancelRequest : action;
+  const cardRightDisabled = !membershipActive && interaction.disabled;
+  const cardLeftLabel = joined ? t.cardOpenChat : t.details;
   const handleCardLeftAction = () => {
-    if (joined || pending || waiting) {
-      onJoin(activity);
+    if (joined) {
+      onOpen(activity, { focusChat: true });
       return;
     }
     onOpen(activity);
+  };
+  const handleCardRightAction = () => {
+    if (membershipActive) {
+      onJoin(activity);
+      return;
+    }
+    runEventPrimaryAction(interaction.primaryAction, {
+      open: () => onOpen(activity),
+      openChat: () => onOpen(activity, { focusChat: true }),
+      join: () => onJoin(activity),
+    });
   };
   const helperAction = isOrganizer
     ? helperState === "confirmed"
@@ -1255,12 +1267,6 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
     };
   }, [activity.id]);
   const status = t[eventStatusTranslationKey(interaction)];
-  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
-    open: () => onOpen(activity),
-    openChat: () => onOpen(activity, { focusChat: true }),
-    join: () => onJoin(activity),
-  });
-
   return (
     <article className="activity-card sport-card compact-sport-card unified-event-card">
       <div className="sport-card-top-actions">
@@ -1312,12 +1318,12 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-footer compact-sport-actions">
-        {joined || pending || waiting
+        {joined
           ? <button className="sport-coach-action" onClick={handleCardLeftAction} type="button"><UsersRound size={18} /><span>{cardLeftLabel}</span></button>
           : showHelperAction
             ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} /><span>{helperAction}</span></button>
             : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
-        <button className={interaction.canJoin && !pending ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={cardRightDisabled}>
+        <button className={membershipActive ? "card-join card-leave" : interaction.canJoin && !pending ? "card-join" : "card-join secondary"} onClick={handleCardRightAction} type="button" disabled={cardRightDisabled}>
           {cardRightLabel}
         </button>
       </div>
@@ -1495,10 +1501,10 @@ function GenericActivitySheet({
             </div>
           </details>
         </div>
-        {!isOrganizer && joined && (
+        {!isOrganizer && (joined || waiting || pending) && (
           <button className="danger-action membership-leave-action" onClick={() => onJoin(activity)} type="button">
             <X size={18} />
-            {t.leave}
+            {pending ? t.cancelRequest : t.leave}
           </button>
         )}
         {canDelete && (

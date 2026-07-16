@@ -122,3 +122,28 @@
 .compact-sport-card .compact-sport-actions .card-join:disabled:active {
   transform: none !important;
 }
+
+.compact-sport-card .compact-sport-actions .card-join.card-leave {
+  color: #ffaaaa !important;
+  background: rgba(255, 88, 88, .14) !important;
+  border-color: rgba(255, 105, 105, .42) !important;
+}
+
+.activity-sheet .danger-action.membership-leave-action {
+  position: static !important;
+  width: 100% !important;
+  min-height: 56px !important;
+  margin: 14px 0 0 !important;
+  padding: 0 18px !important;
+  border-radius: 16px !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
+
+.activity-sheet .danger-action.membership-leave-action svg {
+  transform: none !important;
+}
