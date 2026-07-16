@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Dumbbell, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
@@ -366,6 +366,7 @@ export function SportActivitySheet({
   const { joinedIds, waitingIds, pendingIds, userRole, reviewRequest } = useAppStore();
   const [membersOpen, setMembersOpen] = useState(initialMembersOpen);
   const [chatOpenRequest, setChatOpenRequest] = useState(initialChatRequest);
+  const moreActionsRef = useRef<HTMLDetailsElement>(null);
   const t = getTranslation(language);
   const [weatherText, setWeatherText] = useState(t.weatherPlaceholder);
   const [weather, setWeather] = useState<WeatherResult | null>(null);
@@ -405,6 +406,25 @@ export function SportActivitySheet({
   useEffect(() => {
     setChatOpenRequest(initialChatRequest);
   }, [activity.id, initialChatRequest]);
+
+  useEffect(() => {
+    const closeMoreActions = () => {
+      if (moreActionsRef.current?.open) moreActionsRef.current.open = false;
+    };
+    const handlePointerDown = (event: Event) => {
+      const details = moreActionsRef.current;
+      if (details?.open && event.target instanceof Node && !details.contains(event.target)) {
+        details.open = false;
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("scroll", closeMoreActions, true);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("scroll", closeMoreActions, true);
+    };
+  }, [activity.id]);
 
   useEffect(() => {
     let active = true;
@@ -570,7 +590,7 @@ export function SportActivitySheet({
 
         <div className="sheet-actions compact-sheet-actions">
           <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>
-          <details className="event-more-actions">
+          <details ref={moreActionsRef} className="event-more-actions">
             <summary className="square-action" aria-label="Еще" title="Еще"><Ellipsis aria-hidden="true" /></summary>
             <div className="event-more-menu">
               <button onClick={() => void onShare(activity)} type="button"><Share2 size={18} />{t.share}</button>
