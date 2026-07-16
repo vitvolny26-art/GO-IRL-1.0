@@ -3,8 +3,8 @@ title: GO IRL Documentation Status Registry
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-16
+next_review: 2026-07-23
 ---
 
 # GO IRL Documentation Status Registry
@@ -27,6 +27,8 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/DATABASE_SCHEMA_AUDIT.md` is the source of truth for current schema-vs-future-schema documentation conflicts.
 - `docs/audit/KNOWLEDGE_DEBT.md` is the source of truth for open documentation and knowledge debt.
 - `docs/governance/KNOWLEDGE_PLATFORM.md` is the source of truth for knowledge status model, review cadence, knowledge debt, and Project Memory Bus.
+- `docs/governance/ARCHIVIST_OPERATING_POLICY.md` is the source of truth for Archivist authority, human gates, report lifecycle, and automation boundaries.
+- `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` is the source of truth for the deployed documentation-governance workflow IDs, schedule, destinations, deduplication, and error handling.
 - `docs/onboarding/ARCHIVIST_CHARTER.md` is the source of truth for the Project Archivist role.
 - `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` is the source of truth for the report-only Project Coordinator role and AI Staff OS mission boundaries.
 - `docs/onboarding/AI_ROLES.md` is the working registry for reusable AI roles.
@@ -98,8 +100,11 @@ next_review:
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
 | `docs/onboarding/AI_FIXER_AGENT.md` | Onboarding / AI Agent Prompt | Active | Да | Source of truth for small bug, QA, and UX polish agent behavior and safety limits. |
 | `docs/reports/README.md` | Reports / AI Work Logs | Active | Нет | Defines report location and format for AI Fixer task reports. |
+| `docs/reports/2026-07-16-agent-report-archivist-finalization.md` | Reports / Agent Work Log | Draft | Нет | Durable record of the Archivist governance rollout; not runtime or governance authority. |
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, escalation, and Coordinator interaction. |
 | `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
+| `docs/governance/ARCHIVIST_OPERATING_POLICY.md` | Governance / Archivist Policy | Active | Да | Canonical authority, lifecycle, human-gate, and automation-boundary rules. |
+| `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` | Automation / Governance Workflow | Active | Да | Deployed n8n workflow IDs and operational boundaries; GitHub remains authority. |
 | `docs/roadmap/SPRINTS.md` | Roadmap / Sprint Overview | Draft | Нет | Roadmap-folder copy of sprint plan; not current MVP scope by itself. |
 | `docs/roadmap/SPRINT_0.md` | Roadmap / Sprint Record | Archived | Нет | Historical Sprint 0 record; Netlify references are historical only. |
 | `docs/roadmap/SPRINT_1.md` | Roadmap / Sprint Record | Archived | Нет | Historical MVP Core record; current scope controlled by ROADMAP/BACKLOG/README. |
@@ -216,7 +221,11 @@ GO IRL Documentation
 ├── Governance
 │   └── docs/governance/
 │       ├── AI_ORGANIZATION.md
-│       └── KNOWLEDGE_PLATFORM.md
+│       ├── KNOWLEDGE_PLATFORM.md
+│       └── ARCHIVIST_OPERATING_POLICY.md
+├── Automation
+│   └── docs/automation/
+│       └── DOCUMENTATION_GOVERNANCE_ARCHIVIST.md
 ├── Onboarding
 │   └── docs/onboarding/
 │       ├── ARCHIVIST_CHARTER.md
@@ -225,7 +234,8 @@ GO IRL Documentation
 │       └── AI_FIXER_AGENT.md
 ├── Reports
 │   └── docs/reports/
-│       └── README.md
+│       ├── README.md
+│       └── 2026-07-16-agent-report-archivist-finalization.md
 ├── Roadmap / Sprints
 │   ├── ROADMAP.md
 │   ├── BACKLOG.md
