@@ -3,8 +3,8 @@ title: ChatGPT Project Setup
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-16
+next_review: 2026-07-23
 ---
 
 # ChatGPT Project Setup
@@ -75,23 +75,33 @@ If red:
 Use max one short command block per answer.
 Ask only for the red error block when failing.
 
-Source of truth order:
+Required reading order:
 1. DOCS_INDEX.md
 2. README.md
 3. ROADMAP.md
 4. BACKLOG.md
 5. docs/audit/KNOWLEDGE_DEBT.md
-6. docs/GO_IRL_CONSTITUTION.md
-7. docs/MARKET_POSITIONING.md
-8. docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md
-9. docs/onboarding/CHATGPT_PROJECT_SETUP.md
+6. docs/governance/ARCHIVIST_OPERATING_POLICY.md
+7. docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md
+8. docs/onboarding/ARCHIVIST_CHARTER.md
+9. docs/GO_IRL_CONSTITUTION.md
+10. docs/MARKET_POSITIONING.md
+11. docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md
+12. docs/onboarding/CHATGPT_PROJECT_SETUP.md
 
-GitHub is source of truth.
-Google Drive is an export mirror.
-NotebookLM is Q&A/search over exported docs.
-Gemini is Assistant Archivist and writes reports only.
-n8n is automation glue only, not an authority.
-ChatGPT successor is final reviewer and patch planner.
+Authority model:
+- Runtime Truth is determined by deployed evidence, current main, applied schema or migrations, and verified checks.
+- Governance Truth is determined by DOCS_INDEX.md, approved governance and constitution documents, ADRs, README, ROADMAP, BACKLOG, Knowledge Debt, active audits, drafts, and history.
+- Governance cannot override verified runtime evidence. Conflicts require a human-reviewed pull request.
+
+System boundaries:
+- GitHub is source of truth for code and durable project documentation.
+- Google Drive is an export and review mirror.
+- NotebookLM is passive Q&A/search over exported docs.
+- ClickUp tracks operational work and review state.
+- Gemini is Assistant Archivist and writes reports only.
+- n8n performs orchestration only and is not an authority.
+- ChatGPT successor is final reviewer and patch planner.
 ```
 
 ## Agent roles
@@ -169,6 +179,10 @@ Use disposable chats.
 At chat start, agent must read or be given:
 
 ```text
+DOCS_INDEX.md
+docs/governance/ARCHIVIST_OPERATING_POLICY.md
+docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md
+docs/onboarding/ARCHIVIST_CHARTER.md
 docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md
 docs/onboarding/CHATGPT_PROJECT_SETUP.md
 ```
@@ -237,53 +251,48 @@ Exclude:
 
 NotebookLM reads this folder only. It is not source of truth.
 
-## n8n sync scheme
+## Active n8n governance workflow
 
-Safe phase 1:
-
-```text
-GitHub repo -> export script -> Google Drive /GO IRL DOC -> NotebookLM
-```
-
-Safe phase 2:
+Production configuration:
 
 ```text
-Google Drive /AI Reports -> n8n -> GitHub docs/reports draft file
+Workflow: Documentation Governance Archivist
+Workflow ID: eEQiF6O2PUFyo49P
+Error workflow ID: fQRdemYreOGDzWAw
+Schedule: every 12 hours
+Timezone: Europe/Prague
 ```
+
+Flow:
+
+```text
+Read ClickUp + DOCS_INDEX + BACKLOG
+-> normalize evidence
+-> SHA-256 deduplication
+-> create Draft report in Google Drive /AI Reports/Inbox
+-> comment on persistent ClickUp task
+-> human review
+```
+
+Allowed automation:
+
+- collect and normalize governance evidence;
+- deduplicate unchanged findings;
+- prepare Draft reports;
+- save Draft reports to Drive Inbox;
+- comment on the persistent ClickUp task;
+- send failure notifications through the error workflow.
 
 Forbidden automation:
 
 - no auto-merge;
-- no auto-push code;
-- no automatic DOCS_INDEX edits;
+- no auto-push code or documentation;
+- no automatic `DOCS_INDEX.md` edits;
 - no automatic Knowledge Debt closure;
-- no auth/RLS/secret edits.
+- no automatic governance task completion;
+- no auth, RLS, secret, `.env`, destructive SQL, or migration edits.
 
-## Recommended n8n workflow
-
-Trigger:
-
-```text
-Schedule Trigger: every 6 or 12 hours
-```
-
-Steps:
-
-```text
-1. Google Drive: list files in /AI Reports
-2. Filter: modified since last run
-3. Download file
-4. GitHub: create file in docs/reports/
-5. Notify user in Telegram/Gmail
-```
-
-State:
-
-```text
-Store processed file IDs and timestamps in n8n static data or a small Google Sheet.
-```
-
-No OpenAI call is required for phase 1.
+Google Drive and NotebookLM remain non-authoritative mirrors. A Draft report reaches GitHub only after human review and a separate pull request.
 
 ## Token-saving rules
 
@@ -296,8 +305,8 @@ No OpenAI call is required for phase 1.
 
 ## Current priority
 
-1. Fix current red state in code repo.
-2. Finish beta create taxonomy filter.
-3. Run lint/build/test.
-4. Commit only if green.
-5. Continue docs cleanup.
+1. Do not reopen the resolved beta taxonomy red block without evidence from current `main`.
+2. Run lint, build, test, and typecheck after code changes.
+3. Complete the real Telegram smoke test and remaining manual release verification.
+4. Keep the six-category closed-beta scope locked.
+5. Continue documentation cleanup and review governance Draft reports.

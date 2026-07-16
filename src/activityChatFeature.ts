@@ -206,7 +206,7 @@ export async function hideOwnActivityChatMessage(messageId: string) {
     writeDemoChatState({
       ...state,
       messages: state.messages.map((message) =>
-        message.id === messageId ? { ...message, status: "hidden", deletedAt: new Date().toISOString() } : message,
+        message.id === messageId ? { ...message, status: "deleted", deletedAt: new Date().toISOString() } : message,
       ),
     });
     return;
@@ -217,7 +217,7 @@ export async function hideOwnActivityChatMessage(messageId: string) {
 
   const { error } = await supabase
     .from("activity_chat_messages")
-    .update({ status: "hidden", deleted_at: new Date().toISOString() })
+    .update({ status: "deleted", deleted_at: new Date().toISOString() })
     .eq("id", messageId)
     .eq("sender_user_key", identity.userKey);
 

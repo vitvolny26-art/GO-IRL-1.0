@@ -3,8 +3,8 @@ title: AI Successor Instructions
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-12
-next_review: 2026-07-19
+last_review: 2026-07-16
+next_review: 2026-07-23
 ---
 
 # AI Successor Instructions
@@ -72,7 +72,7 @@ main
 
 Use pnpm only.
 
-## Source of truth order
+## Required reading order
 
 Read first:
 
@@ -81,15 +81,31 @@ Read first:
 3. `ROADMAP.md`
 4. `BACKLOG.md`
 5. `docs/audit/KNOWLEDGE_DEBT.md`
-6. `docs/GO_IRL_CONSTITUTION.md`
-7. `docs/MARKET_POSITIONING.md`
-8. `docs/bible/00-completion-audit.md`
-9. `docs/bible/00-bible-roadmap.md`
-10. `docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md`
+6. `docs/governance/ARCHIVIST_OPERATING_POLICY.md`
+7. `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md`
+8. `docs/onboarding/ARCHIVIST_CHARTER.md`
+9. `docs/GO_IRL_CONSTITUTION.md`
+10. `docs/MARKET_POSITIONING.md`
+11. `docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md`
+12. `docs/onboarding/CHATGPT_PROJECT_SETUP.md`
 
-GitHub is source of truth.
+## Authority model
 
-Google Drive and NotebookLM are read-only mirrors for AI analysis.
+Runtime Truth is determined by deployed evidence, current `main`, applied schema or migrations, and verified checks.
+
+Governance Truth is determined by `DOCS_INDEX.md`, approved governance and constitution documents, ADRs, README, ROADMAP, BACKLOG, Knowledge Debt, active audits, drafts, and history.
+
+Governance cannot override verified runtime evidence. Conflicts must be recorded and resolved through a human-reviewed pull request.
+
+System boundaries:
+
+- GitHub is the source of truth for code and durable project documentation.
+- Google Drive is an export and review mirror.
+- NotebookLM is passive search and Q&A over the exported corpus.
+- ClickUp tracks operational work and review state.
+- n8n performs orchestration only and is not an authority.
+- Gemini produces reports only.
+- ChatGPT successor reviews evidence and prepares minimal patches.
 
 ## Work style
 
@@ -234,7 +250,7 @@ Avoid:
 - automatic Drive -> GitHub commits;
 - using NotebookLM as source of truth.
 
-## External AI roles
+## External AI and automation roles
 
 Gemini:
 
@@ -250,13 +266,16 @@ NotebookLM:
 
 n8n:
 
-- Future automation only.
-- May copy reports and notify.
-- Must not auto-merge, auto-push, or close Knowledge Debt.
+- Active production orchestration for documentation reconciliation.
+- Production workflow: `eEQiF6O2PUFyo49P`.
+- Error workflow: `fQRdemYreOGDzWAw`.
+- Runs every 12 hours in `Europe/Prague`.
+- May collect evidence, deduplicate, create Draft reports, save them to Drive Inbox, and comment on the persistent ClickUp task.
+- Must not auto-merge, auto-push, edit `DOCS_INDEX.md`, close Knowledge Debt, complete governance tasks, or modify auth, RLS, secrets, `.env`, destructive SQL, or migrations.
 
 ChatGPT successor:
 
-- Final reviewer for Gemini reports.
+- Final reviewer for Gemini and automation reports.
 - Creates minimal patches.
 - Enforces checks.
 - Keeps MVP scope locked.
