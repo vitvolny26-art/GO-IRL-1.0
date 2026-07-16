@@ -1495,6 +1495,12 @@ function GenericActivitySheet({
             </div>
           </details>
         </div>
+        {!isOrganizer && joined && (
+          <button className="danger-action membership-leave-action" onClick={() => onJoin(activity)} type="button">
+            <X size={18} />
+            {t.leave}
+          </button>
+        )}
         {canDelete && (
           <button className="danger-action" onClick={() => onDelete(activity)} type="button">
             <Trash2 size={18} />
