@@ -1,7 +1,7 @@
 ---
 title: Agent Report
 owner: QA Agent
-status: Draft
+status: Complete
 source_of_truth: false
 last_review: 2026-07-16
 next_review: 2026-07-23
@@ -24,46 +24,40 @@ Assess the current Telegram Mini App smoke-test readiness on latest `main` witho
 ## Findings
 
 - The repository already contains a complete manual Telegram, Vercel, Supabase, browser-demo, share-link, and core-loop checklist. A duplicate checklist is not required.
-- Latest `main` commit inspected: `d48b6239298613692f437d6f1bdb7691a43e3019`.
-- Vercel status for latest `main` is `success`.
-- No GitHub Actions workflow run was found for the latest documentation-only commit.
-- Existing automated quality-gate results from older reports must not be treated as proof for the latest `main` unless rerun or confirmed by current CI.
-- Real Telegram verification still requires at least two Telegram identities and physical client interaction.
-- The required core flow remains: create event -> share -> second user opens link -> join/request -> participant state updates -> event chat -> time and location are understandable.
+- Latest `main` commit initially inspected: `d48b6239298613692f437d6f1bdb7691a43e3019`.
+- Vercel status for the inspected `main` commit was `success`.
+- No GitHub Actions workflow run was found for the inspected documentation-only commit.
+- The GO IRL owner manually confirmed the Telegram smoke test as PASS on 2026-07-16.
+- The confirmed Telegram scope includes Mini App open and the create -> share -> second identity -> join/request -> participant state -> event chat flow.
+- Device-specific iOS and Android breakdown, screenshots, and link samples were not recorded in this report.
 - Browser Demo Mode must remain local-only and must not create production Supabase writes.
-- No evidence was available in this audit to mark Telegram, Supabase, or the complete two-user core loop as PASS.
+- Telegram PASS does not prove Supabase/RLS or current automated quality gates.
 
 ## Changes made
 
-- Added this Draft readiness report only.
+- Recorded the owner-confirmed Telegram smoke PASS.
+- Updated the report status from Draft to Complete for the Telegram smoke task only.
 - No runtime or configuration changes were made.
 
 ## Checks
 
-- Latest `main` Vercel deployment status — PASS.
+- Telegram Mini App open from bot or deep link — PASS, manually confirmed by owner on 2026-07-16.
+- Two-user create/share/join-or-request/chat loop — PASS, manually confirmed by owner on 2026-07-16.
+- Device-specific iOS share and join result — NOT RECORDED.
+- Device-specific Android share and join result — NOT RECORDED.
+- Latest inspected `main` Vercel deployment status — PASS.
 - Existing release and beta checklists — PRESENT.
-- Latest `main` GitHub Actions workflow — NOT RUN / no workflow run found.
-- Telegram Mini App open from bot or deep link — NOT RUN.
-- iOS share and join flow — NOT RUN.
-- Android share and join flow — NOT RUN.
-- Two-user create/share/join/chat loop — NOT RUN.
-- Supabase production visibility and RLS smoke — NOT RUN.
-- Browser Demo Mode local-only write verification — NOT RUN.
+- Supabase production visibility and RLS smoke — NOT RUN / not confirmed in this report.
+- Browser Demo Mode local-only write verification — NOT RUN / not confirmed in this report.
 - `pnpm run lint` — NOT RUN in this audit.
 - `pnpm run build` — NOT RUN in this audit.
 - `pnpm run test` — NOT RUN in this audit.
 
 ## Next step
 
-Run one focused manual session using `BETA_CHECKLIST.md`:
+- Keep the Telegram smoke gate marked PASS.
+- Verify Supabase production visibility and RLS boundaries without changing policies.
+- Run or confirm current `pnpm run lint`, `pnpm run build`, `pnpm run test`, and `pnpm run typecheck` before any beta-ready claim.
+- Record device-specific Telegram evidence during the next release session when available.
 
-1. Confirm the bot Mini App URL points to the current Vercel production deployment.
-2. Open the Mini App on Android from Telegram.
-3. Create one event in a canonical beta category.
-4. Share its Telegram Mini App deep link.
-5. Open the link using a second Telegram identity.
-6. Join or request access and verify participant state.
-7. Open event chat and verify time/location coordination.
-8. Record only the first failing step, device, link type, expected result, and actual result.
-
-Until these checks pass, the correct release state remains `beta stabilization in progress`, not `beta ready`.
+The Telegram gate is complete. The overall release state remains `beta stabilization in progress` until the remaining release gates pass.
