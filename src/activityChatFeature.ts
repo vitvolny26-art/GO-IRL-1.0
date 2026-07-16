@@ -118,4 +118,108 @@ export async function loadActivityChat(activityId: string) {
 
 export async function loadActivityChatMessages(activityId: string) {
   if (isActivityChatDemoMode()) {
-    const state = read
+    const state = readDemoChatState();
+    return state.messages
+      .filter((message) => message.activityId === activityId && message.status === "visible")
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  const { data, error } = await supabase
+    .from("activity_chat_messages")
+    .select("*")
+    .eq("activity_id", activityId)
+    .eq("status", "visible")
+    .order("created_at", { ascending: true })
+    .limit(100);
+
+  if (error) throw error;
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    chatId: row.chat_id,
+    activityId: row.activity_id,
+    senderUserKey: row.sender_user_key,
+    senderDisplayName: row.sender_display_name,
+    body: row.body,
+    status: row.status,
+    createdAt: row.created_at,
+    editedAt: row.edited_at,
+    deletedAt: row.deleted_at,
+  })) as ActivityChatMessage[];
+}
+
+export async function sendActivityChatMessage(activityId: string, body: string) {
+  const trimmed = body.trim();
+
+  if (!trimmed) {
+    throw new Error("empty_message");
+  }
+
+  if (trimmed.length > 1000) {
+    throw new Error("message_too_long");
+  }
+
+  const identity = await getCurrentChatIdentity();
+
+  if (!identity.userKey) {
+    throw new Error("auth_required");
+  }
+
+  const chatId = await ensureActivityChat(activityId);
+
+  if (isActivityChatDemoMode()) {
+    const state = readDemoChatState();
+    const now = new Date().toISOString();
+    state.messages.push({
+      id: `demo-message-${Date.now()}`,
+      chatId,
+      activityId,
+      senderUserKey: identity.userKey,
+      senderDisplayName: identity.displayName,
+      body: trimmed,
+      status: "visible",
+      createdAt: now,
+      editedAt: null,
+      deletedAt: null,
+    });
+    writeDemoChatState(state);
+    return;
+  }
+
+  const { error } = await supabase
+    .from("activity_chat_messages")
+    .insert({
+      chat_id: chatId,
+      activity_id: activityId,
+      sender_user_key: identity.userKey,
+      sender_display_name: identity.displayName,
+      body: trimmed,
+      status: "visible",
+    });
+
+  if (error) throw error;
+}
+
+export async function hideOwnActivityChatMessage(messageId: string) {
+  if (isActivityChatDemoMode()) {
+    const state = readDemoChatState();
+    writeDemoChatState({
+      ...state,
+      messages: state.messages.map((message) =>
+        message.id === messageId ? { ...message, status: "deleted", deletedAt: new Date().toISOString() } : message,
+      ),
+    });
+    return;
+  }
+
+  const identity = await getCurrentChatIdentity();
+  if (!identity.userKey) throw new Error("auth_required");
+
+  const { error } = await supabase
+    .from("activity_chat_messages")
+    .update({ status: "deleted", deleted_at: new Date().toISOString() })
+    .eq("id", messageId)
+    .eq("sender_user_key", identity.userKey);
+
+  if (error) throw error;
+}
