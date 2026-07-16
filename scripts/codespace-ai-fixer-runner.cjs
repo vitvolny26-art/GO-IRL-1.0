@@ -6,6 +6,8 @@ const path = require('node:path');
 
 const REPO = '/workspaces/GO-IRL-1.0';
 const ALLOWED_BRANCH = /^(fix|feat|chore|docs|test)\/[a-z0-9._/-]+$/;
+const DEFAULT_COMMIT = 'fix: apply AI Fixer mission';
+const DEFAULT_PR_TITLE = 'fix: apply AI Fixer mission';
 
 function fail(message, code = 1) {
   process.stderr.write(`${message}\n`);
@@ -63,15 +65,10 @@ function prepare() {
 function codex() {
   ensureRepo();
   const promptB64 = value('prompt-b64');
-  let prompt = '';
-  try {
-    prompt = Buffer.from(promptB64, 'base64').toString('utf8').trim();
-  } catch {
-    fail('INVALID_PROMPT_BASE64');
-  }
+  const prompt = Buffer.from(promptB64, 'base64').toString('utf8').trim();
   if (!prompt) fail('EMPTY_PROMPT');
 
-  run('codex', ['exec', '--sandbox', 'workspace-write', '-C', REPO, prompt]);
+  run('codex', ['exec', '--full-auto', '--sandbox', 'workspace-write', '-C', REPO, prompt]);
   run('git', ['diff', '--check']);
   run('git', ['diff', '--stat']);
   process.stdout.write('GO_IRL_CODEX_GREEN\n');
@@ -101,18 +98,14 @@ function checks() {
 function publish() {
   ensureRepo();
   const branch = value('branch');
-  const commitMessage = Buffer.from(value('commit-b64'), 'base64').toString('utf8').trim();
-  const prTitle = Buffer.from(value('title-b64'), 'base64').toString('utf8').trim();
   validateBranch(branch);
-  if (!commitMessage) fail('EMPTY_COMMIT_MESSAGE');
-  if (!prTitle) fail('EMPTY_PR_TITLE');
 
   run('git', ['add', '-A']);
   const staged = run('git', ['diff', '--cached', '--quiet'], { allowFailure: true });
   if (staged.status === 0) fail('NO_CHANGES');
   if (staged.status !== 1) process.exit(staged.status ?? 1);
 
-  run('git', ['commit', '-m', commitMessage]);
+  run('git', ['commit', '-m', DEFAULT_COMMIT]);
   run('git', ['push', '-u', 'origin', branch]);
 
   const existing = spawnSync('gh', ['pr', 'view', branch, '--json', 'url', '-q', '.url'], {
@@ -132,7 +125,7 @@ function publish() {
         '--head',
         branch,
         '--title',
-        prTitle,
+        DEFAULT_PR_TITLE,
         '--body',
         '## Summary\n- AI Fixer mission applied\n\n## Checks\n- pnpm run lint\n- pnpm run build\n- pnpm run test\n\n## Safety\n- human review and merge required',
       ],
