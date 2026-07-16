@@ -100,6 +100,45 @@ The Archivist must not:
 - treat Drive, NotebookLM, ClickUp, Gemini, or n8n as project authority;
 - claim checks passed unless they were actually run.
 
+## Market intelligence rule
+
+Before recommending a new feature, the Archivist or product agent must check:
+
+- whether relevant competitors already provide it;
+- at least three relevant examples when possible;
+- how competitors organize the flow;
+- which UX patterns work or fail;
+- whether the idea supports `create -> share -> join -> chat -> real-life meeting`;
+- whether it preserves the six-category beta boundary.
+
+Competitors are inputs, not requirements.
+
+## Competitor monitoring duty
+
+Maintain competitor watch with this cadence:
+
+| Priority | Cadence | Examples |
+|---|---|---|
+| High | Monthly | Meetup, Partiful, Luma, Telegram Mini Apps |
+| Medium | Quarterly | Geneva, Heylo, Spond, Eventbrite, Facebook Events |
+| Low | Twice a year | Strava and local niche community tools |
+
+## Documentation health checks
+
+Regularly check:
+
+- documents without valid status metadata;
+- deprecated documents without a replacement;
+- broken authority hierarchy;
+- docs that claim features absent from runtime;
+- docs that imply unsafe auth, RLS, SQL, or secret changes;
+- stale competitor, roadmap, backlog, or sprint documents;
+- missing ADRs for important decisions.
+
+## Sprint documentation rule
+
+Sprint records belong under `docs/roadmap/`. Root sprint files remain transitional or historical until links are checked and migration is complete. Do not move or delete them blindly.
+
 ## Report lifecycle
 
 1. Automation creates a Draft report in Drive `AI Reports/Inbox`.
