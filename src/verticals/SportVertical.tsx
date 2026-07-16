@@ -199,6 +199,16 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     hasWaitingList: false,
   });
   const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
+  const cardRightLabel = joined ? t.joined : pending ? t.requested : action;
+  const cardRightDisabled = joined || pending || interaction.disabled;
+  const cardLeftLabel = joined ? t.leave : pending ? t.cancelRequest : waiting ? t.leave : t.details;
+  const handleCardLeftAction = () => {
+    if (joined || pending || waiting) {
+      onJoin(activity);
+      return;
+    }
+    onOpen(activity);
+  };
   const status = t[eventStatusTranslationKey(interaction)];
   const durationLabel = eventDurationLabel(meta.durationMinutes, t.minutesShort);
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
@@ -320,10 +330,12 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-footer compact-sport-actions">
-        {showCoachAction
-          ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} /><span>{coachAction}</span></button>
-          : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
-        <button className={interaction.canJoin ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{action}</button>
+        {joined || pending || waiting
+          ? <button className="sport-coach-action" onClick={handleCardLeftAction} type="button"><Dumbbell size={18} /><span>{cardLeftLabel}</span></button>
+          : showCoachAction
+            ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} /><span>{coachAction}</span></button>
+            : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
+        <button className={interaction.canJoin && !pending ? "card-join" : "card-join secondary"} onClick={handlePrimaryAction} type="button" disabled={cardRightDisabled}>{cardRightLabel}</button>
       </div>
     </article>
   );
