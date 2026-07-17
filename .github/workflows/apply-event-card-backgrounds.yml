@@ -44,8 +44,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Apply event card patch
+        id: patch
+        continue-on-error: true
         run: |
-          if [ -f patch.log ]; then cat patch.log; exit 1; fi
           mkdir -p .ci-bin
           cat > .ci-bin/curl <<'SH'
           #!/usr/bin/env bash
@@ -82,20 +83,20 @@ jobs:
           rm -f "$cookie" "$page"
           SH
           chmod +x .ci-bin/curl
-          set +e
           PATH="$PWD/.ci-bin:$PATH" node scripts/patches/apply-event-card-backgrounds.cjs > patch.log 2>&1
-          status=$?
-          set -e
-          cat patch.log
-          if [ "$status" -ne 0 ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add patch.log
-            git commit -m "chore: capture event card patch failure"
-            git push origin HEAD:fix/event-card-backgrounds
-            exit "$status"
-          fi
-          rm -f patch.log
+
+      - name: Upload patch diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: event-card-patch-log
+          path: patch.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Stop on patch failure
+        if: steps.patch.outcome == 'failure'
+        run: exit 1
 
       - name: Test
         run: pnpm run test
@@ -125,6 +126,7 @@ jobs:
 
       - name: Verify changed paths
         run: |
+          rm -f patch.log
           bad=$(git status --short | awk '{print $2}' | grep -Ev '^(api/_shared/event-artwork\.ts|src/App\.tsx|src/main\.tsx|src/verticals/SportVertical\.tsx|src/components/EventCardArtwork\.tsx|src/components/EventCardPrimitives\.tsx|src/components/OrganizerProfilePortal\.tsx|src/eventBackgrounds\.ts|src/glass-event-card\.css|src/assets/event-backgrounds/[^/]+\.webp|docs/reports/2026-07-17-agent-report-event-backgrounds\.md|scripts/patches/apply-event-card-backgrounds\.cjs|\.github/workflows/apply-event-card-backgrounds\.yml)$' || true)
           if [ -n "$bad" ]; then
             echo "Unexpected changed paths:"
