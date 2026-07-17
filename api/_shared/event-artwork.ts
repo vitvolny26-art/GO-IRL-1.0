@@ -45,7 +45,8 @@ export const eventArtworkRegistry: readonly EventArtworkEntry[] = [
   { code: "FS", emoji: "🎪", aliases: ["festival", "фестиваль"] },
   { code: "DN", emoji: "💃", aliases: ["dancing", "танцы", "tanec"] },
   { code: "HK", emoji: "🥾", aliases: ["hike", "поход", "vylet"] },
-  { code: "WK", emoji: "🚶", aliases: ["park walk", "walk", "прогулка в парке", "прогулка", "prochazka v parku", "prochazka"] },
+  { code: "WK", emoji: "🚶", aliases: ["park walk", "прогулка в парке", "prochazka v parku"] },
+  { code: "CT", emoji: "🚶", aliases: ["city walk", "walk", "городская прогулка", "прогулка", "mestska prochazka", "prochazka"] },
   { code: "SW", emoji: "🏊", aliases: ["swimming", "плавание", "plavani"] },
   { code: "PC", emoji: "🧺", aliases: ["picnic", "пикник", "piknik"] },
   { code: "CP", emoji: "⛺", aliases: ["camping", "кемпинг", "kempovani"] },
@@ -105,12 +106,12 @@ const betaArtwork: Readonly<Record<string, string>> = {
 };
 
 export const resolveEventArtworkCode = ({ icon = "", activity = "", title = "" }: EventArtworkInput) => {
-  const exact = eventArtworkRegistry.find((entry) => icon.includes(entry.emoji));
-  if (exact) return exact.code;
-
   const haystack = ` ${normalize(`${activity} ${title}`)} `;
   const alias = aliasIndex.find(({ value }) => haystack.includes(` ${value} `));
-  return alias?.code || "EV";
+  if (alias) return alias.code;
+
+  const exact = eventArtworkRegistry.find((entry) => icon.includes(entry.emoji));
+  return exact?.code || "EV";
 };
 
 export const buildEventArtworkSvg = (input: EventArtworkInput) => {

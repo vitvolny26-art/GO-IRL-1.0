@@ -67,7 +67,7 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
-import { EventCardMetaItem, EventDetailsAction } from "./components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction } from "./components/EventCardPrimitives";
 import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
 import { EventCardArtwork } from "./components/EventCardArtwork";
@@ -1307,13 +1307,13 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
           )) : <div className="sport-card-members-empty">{t.noParticipants || "Пока никого нет"}</div>}
         </div>
       )}
+      <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-details sport-details-grid">
         <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
         <EventCardMetaItem icon={<Ticket />} caption={t.price.split(",")[0]} value={activity.price ? `${activity.price} Kč` : t.free} />
         <EventCardMetaItem icon={<MapPin />} caption={t.address} value={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
-        <EventCardMetaItem icon={<CircleUserRound />} caption={t.organizer} value={activity.organizer} />
+        <OrganizerAvatarAction organizerKey={activity.organizerKey} organizerName={activity.organizer} />
       </div>
-      <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-footer compact-sport-actions">
         {joined
           ? <button className="sport-coach-action" onClick={handleCardLeftAction} type="button"><UsersRound size={18} /><span>{cardLeftLabel}</span></button>

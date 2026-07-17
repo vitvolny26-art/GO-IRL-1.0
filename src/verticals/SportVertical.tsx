@@ -9,7 +9,7 @@ import { getUserKey } from "../supabase";
 import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
-import { EventCardMetaItem, EventDetailsAction } from "../components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction } from "../components/EventCardPrimitives";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
 import { getOrganizerRoleRequestState } from "../coachFeature";
 import { getCity } from "../config/cities";
@@ -324,16 +324,16 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           )}
         </div>
       )}
+      <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-details sport-details-grid">
         <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
         <EventCardMetaItem icon={<Ticket />} caption={t.price.split(",")[0]} value={activity.price ? `${activity.price} Kč` : t.free} />
         <EventCardMetaItem icon={<MapPin />} caption={t.address} value={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
-        <EventCardMetaItem icon={<CircleUserRound />} caption={t.organizer} value={activity.organizer} />
+        <OrganizerAvatarAction organizerKey={activity.organizerKey} organizerName={activity.organizer} />
       </div>
-      <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-footer compact-sport-actions">
         {joined
-          ? <button className="sport-coach-action" onClick={handleCardLeftAction} type="button"><Dumbbell size={18} /><span>{cardLeftLabel}</span></button>
+          ? <button className="sport-coach-action" onClick={handleCardLeftAction} type="button"><span>{cardLeftLabel}</span></button>
           : showCoachAction
             ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} /><span>{coachAction}</span></button>
             : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
