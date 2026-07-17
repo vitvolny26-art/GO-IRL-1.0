@@ -43,9 +43,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Drive downloader
-        run: python3 -m pip install --user --break-system-packages --disable-pip-version-check gdown
-
       - name: Apply event card patch
         run: |
           mkdir -p .ci-bin
@@ -53,18 +50,32 @@ jobs:
           #!/usr/bin/env bash
           set -euo pipefail
           destination=""
-          url=""
+          source_url=""
           while [ "$#" -gt 0 ]; do
             case "$1" in
               -o) destination="$2"; shift 2 ;;
-              http*) url="$1"; shift ;;
+              http*) source_url="$1"; shift ;;
               *) shift ;;
             esac
           done
-          id="$(printf '%s' "$url" | sed -n 's/.*[?&]id=\([^&]*\).*/\1/p')"
+          id="$(printf '%s' "$source_url" | sed -n 's/.*[?&]id=\([^&]*\).*/\1/p')"
           test -n "$destination"
           test -n "$id"
-          python3 -m gdown "https://drive.google.com/uc?id=$id" -O "$destination"
+          cookie="$(mktemp)"
+          page="$(mktemp)"
+          /usr/bin/curl -sS -L -c "$cookie" "https://drive.google.com/uc?export=download&id=$id" -o "$page"
+          if unzip -t "$page" >/dev/null 2>&1; then
+            mv "$page" "$destination"
+            rm -f "$cookie"
+            exit 0
+          fi
+          confirm="$(grep -oE 'confirm=[0-9A-Za-z_-]+' "$page" | head -n1 | cut -d= -f2 || true)"
+          uuid="$(grep -oE 'uuid=[^&\"]+' "$page" | head -n1 | cut -d= -f2 || true)"
+          test -n "$confirm"
+          download="https://drive.usercontent.google.com/download?id=$id&export=download&confirm=$confirm"
+          if [ -n "$uuid" ]; then download="$download&uuid=$uuid"; fi
+          /usr/bin/curl -fL -b "$cookie" "$download" -o "$destination"
+          rm -f "$cookie" "$page"
           SH
           chmod +x .ci-bin/curl
           PATH="$PWD/.ci-bin:$PATH" node scripts/patches/apply-event-card-backgrounds.cjs
