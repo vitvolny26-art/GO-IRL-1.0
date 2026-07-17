@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - fix/event-card-backgrounds
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/patches/apply-event-card-backgrounds.cjs
+      - .github/workflows/apply-event-card-backgrounds.yml
 
 permissions:
   contents: write
