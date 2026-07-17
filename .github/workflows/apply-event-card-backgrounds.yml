@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - fix/event-card-backgrounds
-  pull_request:
-    branches:
-      - main
-    paths:
-      - scripts/patches/apply-event-card-backgrounds.cjs
-      - .github/workflows/apply-event-card-backgrounds.yml
 
 permissions:
   contents: write
@@ -44,9 +38,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Drive downloader
-        run: python3 -m pip install --user --disable-pip-version-check gdown
+        run: python3 -m pip install --user --break-system-packages --disable-pip-version-check gdown
 
-      - name: Apply backgrounds and weather placement
+      - name: Apply event card patch
         run: |
           mkdir -p .ci-bin
           cat > .ci-bin/curl <<'SH'
@@ -56,17 +50,9 @@ jobs:
           url=""
           while [ "$#" -gt 0 ]; do
             case "$1" in
-              -o)
-                destination="$2"
-                shift 2
-                ;;
-              http*)
-                url="$1"
-                shift
-                ;;
-              *)
-                shift
-                ;;
+              -o) destination="$2"; shift 2 ;;
+              http*) url="$1"; shift ;;
+              *) shift ;;
             esac
           done
           id="$(printf '%s' "$url" | sed -n 's/.*[?&]id=\([^&]*\).*/\1/p')"
@@ -105,7 +91,7 @@ jobs:
 
       - name: Verify changed paths
         run: |
-          bad=$(git status --short | awk '{print $2}' | grep -Ev '^(api/_shared/event-artwork\.ts|src/App\.tsx|src/verticals/SportVertical\.tsx|src/components/EventCardArtwork\.tsx|src/eventBackgrounds\.ts|src/assets/event-backgrounds/[^/]+\.webp|docs/reports/2026-07-17-agent-report-event-backgrounds\.md|scripts/patches/apply-event-card-backgrounds\.cjs|\.github/workflows/apply-event-card-backgrounds\.yml)$' || true)
+          bad=$(git status --short | awk '{print $2}' | grep -Ev '^(api/_shared/event-artwork\.ts|src/App\.tsx|src/main\.tsx|src/verticals/SportVertical\.tsx|src/components/EventCardArtwork\.tsx|src/components/EventCardPrimitives\.tsx|src/components/OrganizerProfilePortal\.tsx|src/eventBackgrounds\.ts|src/glass-event-card\.css|src/assets/event-backgrounds/[^/]+\.webp|docs/reports/2026-07-17-agent-report-event-backgrounds\.md|scripts/patches/apply-event-card-backgrounds\.cjs|\.github/workflows/apply-event-card-backgrounds\.yml)$' || true)
           if [ -n "$bad" ]; then
             echo "Unexpected changed paths:"
             echo "$bad"
@@ -119,5 +105,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "feat: apply category backgrounds to event cards"
+          git commit -m "feat: apply event card visual fixes"
           git push origin HEAD:fix/event-card-backgrounds
