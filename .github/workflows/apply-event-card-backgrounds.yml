@@ -106,8 +106,19 @@ jobs:
           let source = fs.readFileSync(material, 'utf8');
           source = source.replace('  WK: mdiWalk,', '  WK: mdiWalk,\n  CT: mdiWalk,');
           fs.writeFileSync(material, source);
+
+          const resolver = 'api/_shared/event-artwork.ts';
+          source = fs.readFileSync(resolver, 'utf8');
+          source = source.replace(
+            '  const exact = eventArtworkRegistry.find((entry) => icon.includes(entry.emoji));\n  if (exact) return exact.code;\n\n  const haystack = ` ${normalize(`${activity} ${title}`)} `;\n  const alias = aliasIndex.find(({ value }) => haystack.includes(` ${value} `));\n  return alias?.code || "EV";',
+            '  const haystack = ` ${normalize(`${activity} ${title}`)} `;\n  const alias = aliasIndex.find(({ value }) => haystack.includes(` ${value} `));\n  if (alias) return alias.code;\n\n  const exact = eventArtworkRegistry.find((entry) => icon.includes(entry.emoji));\n  return exact?.code || "EV";',
+          );
+          fs.writeFileSync(resolver, source);
+
           const test = 'api/_shared/event-artwork.test.ts';
-          source = fs.readFileSync(test, 'utf8').replace('toHaveLength(39)', 'toHaveLength(40)');
+          source = fs.readFileSync(test, 'utf8')
+            .replace('toHaveLength(39)', 'toHaveLength(40)')
+            .replace('const expectedCode = resolveEventArtworkCode({ icon: option.icon });', 'const expectedCode = resolveEventArtworkCode({ activity: option.name.en });');
           fs.writeFileSync(test, source);
           NODE
 
