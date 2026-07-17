@@ -61,21 +61,31 @@ jobs:
             esac
           done
           id="$(printf '%s' "$source_url" | sed -n 's/.*[?&]id=\([^&]*\).*/\1/p')"
-          test -n "$destination"
-          test -n "$id"
           cookie="$(mktemp)"
           page="$(mktemp)"
           /usr/bin/curl -sS -L -c "$cookie" "https://drive.google.com/uc?export=download&id=$id" -o "$page"
-          if unzip -t "$page" >/dev/null 2>&1; then
-            mv "$page" "$destination"
-            rm -f "$cookie"
-            exit 0
+          if unzip -t "$page" >/dev/null 2>&1; then mv "$page" "$destination"; rm -f "$cookie"; exit 0; fi
+          values="$(python3 - "$page" <<'PY'
+import re,sys
+text=open(sys.argv[1],encoding='utf-8',errors='replace').read()
+def field(name):
+    match=re.search(r'name=["\x27]%s["\x27][^>]*value=["\x27]([^"\x27]+)' % name,text,re.I|re.S)
+    if not match:
+        match=re.search(r'value=["\x27]([^"\x27]+)["\x27][^>]*name=["\x27]%s["\x27]' % name,text,re.I|re.S)
+    return match.group(1) if match else ''
+print(field('confirm'))
+print(field('uuid'))
+PY
+)"
+          confirm="$(printf '%s\n' "$values" | sed -n '1p')"
+          uuid="$(printf '%s\n' "$values" | sed -n '2p')"
+          if [ -z "$confirm" ]; then
+            echo "Drive response did not contain a confirmation form for file $id"
+            file "$page" || true
+            head -c 2000 "$page" || true
+            echo
+            exit 1
           fi
-          confirm="$(grep -oE 'confirm=[0-9A-Za-z_-]+' "$page" | head -n1 | cut -d= -f2 || true)"
-          [ -n "$confirm" ] || confirm="$(sed -n 's/.*name="confirm" value="\([^"]*\)".*/\1/p' "$page" | head -n1)"
-          uuid="$(grep -oE 'uuid=[^&\"]+' "$page" | head -n1 | cut -d= -f2 || true)"
-          [ -n "$uuid" ] || uuid="$(sed -n 's/.*name="uuid" value="\([^"]*\)".*/\1/p' "$page" | head -n1)"
-          test -n "$confirm"
           download="https://drive.usercontent.google.com/download?id=$id&export=download&confirm=$confirm"
           if [ -n "$uuid" ]; then download="$download&uuid=$uuid"; fi
           /usr/bin/curl -fL -b "$cookie" "$download" -o "$destination"
@@ -116,23 +126,15 @@ jobs:
           const fs = require('node:fs');
           const path = 'docs/reports/2026-07-17-agent-report-event-backgrounds.md';
           let text = fs.readFileSync(path, 'utf8');
-          text = text
-            .replace('- Test: PENDING', '- Test: PASS')
-            .replace('- Typecheck: PENDING', '- Typecheck: PASS')
-            .replace('- Lint: PENDING', '- Lint: PASS')
-            .replace('- Build: PENDING', '- Build: PASS');
-          fs.writeFileSync(path, text);
+          text = text.replace('- Test: PENDING','- Test: PASS').replace('- Typecheck: PENDING','- Typecheck: PASS').replace('- Lint: PENDING','- Lint: PASS').replace('- Build: PENDING','- Build: PASS');
+          fs.writeFileSync(path,text);
           NODE
 
       - name: Verify changed paths
         run: |
           rm -f patch.log
           bad=$(git status --short | awk '{print $2}' | grep -Ev '^(api/_shared/event-artwork\.ts|src/App\.tsx|src/main\.tsx|src/verticals/SportVertical\.tsx|src/components/EventCardArtwork\.tsx|src/components/EventCardPrimitives\.tsx|src/components/OrganizerProfilePortal\.tsx|src/eventBackgrounds\.ts|src/glass-event-card\.css|src/assets/event-backgrounds/[^/]+\.webp|docs/reports/2026-07-17-agent-report-event-backgrounds\.md|scripts/patches/apply-event-card-backgrounds\.cjs|\.github/workflows/apply-event-card-backgrounds\.yml)$' || true)
-          if [ -n "$bad" ]; then
-            echo "Unexpected changed paths:"
-            echo "$bad"
-            exit 1
-          fi
+          if [ -n "$bad" ]; then echo "Unexpected changed paths:"; echo "$bad"; exit 1; fi
           count=$(find src/assets/event-backgrounds -maxdepth 1 -type f -name '*.webp' | wc -l)
           test "$count" -eq 40
 
