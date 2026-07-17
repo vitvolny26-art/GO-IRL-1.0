@@ -1,0 +1,86 @@
+name: Apply event card backgrounds
+
+on:
+  push:
+    branches:
+      - fix/event-card-backgrounds
+
+permissions:
+  contents: write
+
+concurrency:
+  group: event-card-backgrounds
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: [self-hosted, Linux, X64, goirl]
+    timeout-minutes: 45
+    steps:
+      - name: Checkout patch branch
+        uses: actions/checkout@v5
+        with:
+          ref: fix/event-card-backgrounds
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply backgrounds and weather placement
+        run: node scripts/patches/apply-event-card-backgrounds.cjs
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Finalize report
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const path = 'docs/reports/2026-07-17-agent-report-event-backgrounds.md';
+          let text = fs.readFileSync(path, 'utf8');
+          text = text
+            .replace('- Test: PENDING', '- Test: PASS')
+            .replace('- Typecheck: PENDING', '- Typecheck: PASS')
+            .replace('- Lint: PENDING', '- Lint: PASS')
+            .replace('- Build: PENDING', '- Build: PASS');
+          fs.writeFileSync(path, text);
+          NODE
+
+      - name: Verify changed paths
+        run: |
+          bad=$(git status --short | awk '{print $2}' | grep -Ev '^(api/_shared/event-artwork\.ts|src/App\.tsx|src/verticals/SportVertical\.tsx|src/components/EventCardArtwork\.tsx|src/eventBackgrounds\.ts|src/assets/event-backgrounds/[^/]+\.webp|docs/reports/2026-07-17-agent-report-event-backgrounds\.md|scripts/patches/apply-event-card-backgrounds\.cjs|\.github/workflows/apply-event-card-backgrounds\.yml)$' || true)
+          if [ -n "$bad" ]; then
+            echo "Unexpected changed paths:"
+            echo "$bad"
+            exit 1
+          fi
+          count=$(find src/assets/event-backgrounds -maxdepth 1 -type f -name '*.webp' | wc -l)
+          test "$count" -eq 40
+
+      - name: Commit verified patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: apply category backgrounds to event cards"
+          git push origin HEAD:fix/event-card-backgrounds
