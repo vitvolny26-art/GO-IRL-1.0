@@ -3,8 +3,8 @@ title: Documentation Governance Archivist
 owner: Technical Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-07-17
+next_review: 2026-07-24
 ---
 
 # Documentation Governance Archivist
@@ -15,6 +15,33 @@ next_review: 2026-07-23
 - Error workflow: `fQRdemYreOGDzWAw`
 - Schedule: every 12 hours
 - Timezone: `Europe/Prague`
+
+## Self-hosted n8n migration
+
+- Instance: `https://n8n.realitka.pp.ua`
+- Workflow: `GO IRL AI Archivist`
+- Workflow ID: `ot1NwNlcqD0vOHrn`
+- Timezone: `Europe/Prague`
+- Revision schedule: `01:00`
+- Approved synchronization schedule: `13:00`
+- GitHub remains source of truth.
+- The self-hosted workflow is not production-active until required credentials are reconnected and a successful revision execution is verified.
+- OpenRouter is connected. Telegram, GitHub, Google Drive, Google Docs, ClickUp, and SSH credentials still require server-side authorization.
+
+## Self-hosted GitHub Actions runner
+
+The GO IRL self-hosted runner is fully configured and verified.
+
+Verification evidence:
+
+- GitHub Actions workflow run: `29549050132`
+- Install dependencies: `PASS`
+- Test: `PASS`
+- Typecheck: `PASS`
+- Lint: `PASS`
+- Build: `PASS`
+
+Routine GO IRL quality gates can now run directly through GitHub Actions. Termius is not required for normal lint, build, test, or typecheck execution.
 
 ## Main flow
 
