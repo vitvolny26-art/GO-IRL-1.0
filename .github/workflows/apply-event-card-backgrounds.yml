@@ -24,7 +24,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64, goirl]
     timeout-minutes: 45
     env:
-      TMPDIR: ${{ runner.temp }}
+      TMPDIR: /tmp
     steps:
       - name: Checkout patch branch
         uses: actions/checkout@v5
