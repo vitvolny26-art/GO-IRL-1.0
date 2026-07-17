@@ -1,3 +1,4 @@
+# retry after resolver fix
 name: Apply event card backgrounds
 
 on:
