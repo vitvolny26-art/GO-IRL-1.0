@@ -66,6 +66,7 @@ export const materialEventArtworkPaths: Readonly<Record<string, string>> = {
   DN: mdiHumanFemaleDance,
   HK: mdiHiking,
   WK: mdiWalk,
+  CT: mdiWalk,
   SW: mdiSwim,
   PC: mdiBasket,
   CP: mdiCampfire,
