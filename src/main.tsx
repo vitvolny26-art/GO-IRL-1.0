@@ -15,6 +15,7 @@ import "./all-event-card-template.css";
 import "./unified-card-actions.css";
 import "./card-share-action.css";
 import "./glass-event-card.css";
+import "./glass-event-card-polish.css";
 import "./avatar-cropper.css";
 import "./participant-notifications.css";
 
