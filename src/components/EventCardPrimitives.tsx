@@ -37,3 +37,20 @@ export function EventStatusBadge({ state, label }: { state: EventInteractionStat
 export function EventDetailsAction({ label, onClick }: { label: string; onClick: () => void }) {
   return <button className="sport-coach-action event-details-action" onClick={onClick} type="button"><Info aria-hidden="true" /> <span>{label}</span></button>;
 }
+
+
+type EventCardMetaItemProps = {
+  icon: ReactNode;
+  caption: string;
+  value: string;
+  ariaLabel?: string;
+  onClick?: () => void;
+};
+
+export function EventCardMetaItem({ icon, caption, value, ariaLabel, onClick }: EventCardMetaItemProps) {
+  const content = <>{icon}<span className="glass-event-card-meta-copy"><small>{caption}</small><strong>{value}</strong></span></>;
+  if (onClick) {
+    return <button className="glass-event-card-meta-item" type="button" aria-label={ariaLabel} onClick={onClick}>{content}</button>;
+  }
+  return <div className="glass-event-card-meta-item">{content}</div>;
+}

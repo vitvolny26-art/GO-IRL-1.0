@@ -9,13 +9,14 @@ import { getUserKey } from "../supabase";
 import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
-import { EventDetailsAction, EventMetaChip, EventStatusBadge } from "../components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction } from "../components/EventCardPrimitives";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
 import { getOrganizerRoleRequestState } from "../coachFeature";
 import { getCity } from "../config/cities";
 import { buildGoogleCalendarUrl } from "../calendar/googleCalendar";
 import { getTelegramWebApp } from "../telegram";
 import { CardShareAction } from "../components/CardShareAction";
+import { EventCardArtwork } from "../components/EventCardArtwork";
 import { stripLeadingEmoji } from "../cardText";
 import { activityIconFromText } from "../activityIcon";
 import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
@@ -23,12 +24,11 @@ import { EventWeatherStrip } from "../components/EventWeatherStrip";
 import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
 import {
   eventActionTranslationKey,
-  eventStatusTranslationKey,
   isActivityFinished,
   resolveEventInteractionState,
   runEventPrimaryAction,
 } from "../eventInteractionState";
-import { eventDurationLabel, sportLevelFormatLabel } from "../eventCardPresentation";
+import { eventDurationLabel } from "../eventCardPresentation";
 import { buildDurationOptions, formatDurationOption } from "../durationOptions";
 
 type CoachRequestsChangedDetail = { activityId?: string };
@@ -221,7 +221,6 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       join: () => onJoin(activity),
     });
   };
-  const status = t[eventStatusTranslationKey(interaction)];
   const durationLabel = eventDurationLabel(meta.durationMinutes, t.minutesShort);
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [coachState, setCoachState] = useState<"none" | "requested" | "confirmed">("none");
@@ -271,7 +270,8 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   }, [activity.id]);
 
   return (
-    <article className="sport-card compact-sport-card unified-event-card">
+    <article className="sport-card compact-sport-card unified-event-card glass-event-card">
+      <EventCardArtwork icon={avatar} activity={activity.activity[language]} title={activity.title[language]} />
       <div className="sport-card-top-actions">
         <CardShareAction
           title={shareTitle}
@@ -282,13 +282,9 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
           onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
         />
       </div>
-      <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
-        <div className="sport-card-symbol"><span className="sport-avatar-glyph">{avatar}</span></div>
-        <div>
-          <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /> <span>{sportLevelFormatLabel(meta.level, meta.format, language)} · {sportEnvironmentLabel(meta.environment, language)}</span></div>
-          <h3>{shareTitle}</h3>
-          <p>{stripLeadingEmoji(activity.title[language])}</p>
-        </div>
+      <button className="sport-card-main glass-event-card-main" onClick={() => onOpen(activity)} type="button">
+        <h3>{shareTitle}</h3>
+        <p>{stripLeadingEmoji(activity.title[language]) || mapLabel}</p>
       </button>
       <div className="sport-chip-row">
         {coachState === "confirmed" ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>{coachCardCopy[language].confirmed}</span></span> : null}
@@ -329,10 +325,10 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <EventMetaChip icon={<CalendarDays />} label={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
-        <EventMetaChip icon={<Ticket />} label={activity.price ? `${activity.price} Kč` : t.free} />
-        <EventMetaChip icon={<MapPin />} label={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
-        <EventStatusBadge state={interaction} label={status} />
+        <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
+        <EventCardMetaItem icon={<Ticket />} caption={t.price.split(",")[0]} value={activity.price ? `${activity.price} Kč` : t.free} />
+        <EventCardMetaItem icon={<MapPin />} caption={t.address} value={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
+        <EventCardMetaItem icon={<CircleUserRound />} caption={t.organizer} value={activity.organizer} />
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-footer compact-sport-actions">

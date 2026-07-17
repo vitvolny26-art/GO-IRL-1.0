@@ -13,6 +13,7 @@ import "./compact-sport-card-final.css";
 import "./all-event-card-template.css";
 import "./unified-card-actions.css";
 import "./card-share-action.css";
+import "./glass-event-card.css";
 import "./avatar-cropper.css";
 import "./participant-notifications.css";
 
