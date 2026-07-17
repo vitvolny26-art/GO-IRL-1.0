@@ -67,9 +67,10 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
-import { EventDetailsAction, EventMetaChip, EventStatusBadge } from "./components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction } from "./components/EventCardPrimitives";
 import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
+import { EventCardArtwork } from "./components/EventCardArtwork";
 import { stripLeadingEmoji } from "./cardText";
 import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation } from "./eventLocations";
 import { openAvatarCropper } from "./avatarCropper";
@@ -1266,9 +1267,9 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
       window.removeEventListener("go-irl-coach-requests-changed", onChanged);
     };
   }, [activity.id]);
-  const status = t[eventStatusTranslationKey(interaction)];
   return (
-    <article className="activity-card sport-card compact-sport-card unified-event-card">
+    <article className="activity-card sport-card compact-sport-card unified-event-card glass-event-card">
+      <EventCardArtwork icon={avatar} activity={activity.activity[language]} title={activity.title[language]} />
       <div className="sport-card-top-actions">
         <CardShareAction
           title={shareTitle}
@@ -1279,13 +1280,9 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
           onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
         />
       </div>
-      <button className="sport-card-main" onClick={() => onOpen(activity)} type="button">
-        <div className={`sport-card-symbol category-${category.id}`}><span className="sport-avatar-glyph">{avatar}</span></div>
-        <div>
-          <div className="sport-eyebrow"><Sparkles size={14} aria-hidden="true" /><span>{category.name[language]}</span></div>
-          <h3>{shareTitle}</h3>
-          <p>{stripLeadingEmoji(activity.title[language])}</p>
-        </div>
+      <button className="sport-card-main glass-event-card-main" onClick={() => onOpen(activity)} type="button">
+        <h3>{shareTitle}</h3>
+        <p>{stripLeadingEmoji(activity.title[language]) || mapLabel}</p>
       </button>
       <div className="sport-chip-row">
         <button
@@ -1311,10 +1308,10 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
         </div>
       )}
       <div className="activity-card-details sport-details-grid">
-        <EventMetaChip icon={<CalendarDays />} label={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
-        <EventMetaChip icon={<Ticket />} label={activity.price ? `${activity.price} Kč` : t.free} />
-        <EventMetaChip icon={<MapPin />} label={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
-        <EventStatusBadge state={interaction} label={status} />
+        <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
+        <EventCardMetaItem icon={<Ticket />} caption={t.price.split(",")[0]} value={activity.price ? `${activity.price} Kč` : t.free} />
+        <EventCardMetaItem icon={<MapPin />} caption={t.address} value={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
+        <EventCardMetaItem icon={<CircleUserRound />} caption={t.organizer} value={activity.organizer} />
       </div>
       <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
       <div className="activity-card-footer compact-sport-actions">

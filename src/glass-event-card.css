@@ -1,0 +1,465 @@
+.glass-event-card {
+  position: relative !important;
+  isolation: isolate !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: clamp(470px, 132vw, 585px) !important;
+  padding: 18px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: 28px !important;
+  background: #0a0e10 !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .30), inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+}
+
+.glass-event-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  display: block !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(180deg, rgba(4, 7, 9, .82) 0%, rgba(4, 7, 9, .28) 32%, rgba(4, 7, 9, .18) 48%, rgba(4, 7, 9, .88) 76%, rgba(4, 7, 9, .96) 100%) !important;
+}
+
+.glass-event-card > :not(.glass-event-card-artwork) {
+  position: relative;
+  z-index: 2;
+}
+
+.glass-event-card-artwork {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+  background: #11181c !important;
+}
+
+.glass-event-card-artwork-image {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  filter: saturate(.92) brightness(.86) contrast(1.04) !important;
+  transform: scale(1.015) !important;
+}
+
+.glass-event-card-artwork-fallback {
+  display: grid !important;
+  width: 100% !important;
+  height: 100% !important;
+  place-items: center !important;
+  background:
+    radial-gradient(circle at 68% 30%, rgba(201, 255, 61, .22), transparent 30%),
+    radial-gradient(circle at 24% 72%, rgba(85, 210, 224, .14), transparent 34%),
+    linear-gradient(145deg, #172026, #090d10 68%) !important;
+  font-size: clamp(90px, 30vw, 150px) !important;
+  line-height: 1 !important;
+  opacity: .78 !important;
+}
+
+.glass-event-card .sport-card-top-actions {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  z-index: 8 !important;
+  margin: 0 !important;
+}
+
+.glass-event-card .sport-card-icon-action {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, .18) !important;
+  border-radius: 999px !important;
+  background: rgba(10, 14, 16, .34) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  backdrop-filter: blur(18px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+  color: rgba(238, 255, 196, .94) !important;
+}
+
+.glass-event-card .sport-card-icon-action:active {
+  transform: scale(.96) !important;
+  background: rgba(201, 255, 61, .12) !important;
+}
+
+.glass-event-card .sport-card-main,
+.glass-event-card .sport-card-main.glass-event-card-main {
+  pointer-events: auto !important;
+  display: block !important;
+  width: calc(100% - 102px) !important;
+  min-width: 0 !important;
+  min-height: 88px !important;
+  margin: 0 !important;
+  padding: 4px 0 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, .94) !important;
+  text-align: left !important;
+}
+
+.glass-event-card .sport-card-main h3 {
+  display: -webkit-box !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: rgba(255, 255, 255, .96) !important;
+  font-size: clamp(28px, 8vw, 42px) !important;
+  font-weight: 850 !important;
+  letter-spacing: -.035em !important;
+  line-height: 1.02 !important;
+  overflow-wrap: anywhere !important;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .58) !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.glass-event-card .sport-card-main p {
+  display: -webkit-box !important;
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  color: rgba(255, 255, 255, .66) !important;
+  font-size: 16px !important;
+  font-weight: 650 !important;
+  line-height: 1.25 !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .65) !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.glass-event-card .sport-chip-row {
+  position: absolute !important;
+  top: 72px !important;
+  right: 14px !important;
+  z-index: 7 !important;
+  display: grid !important;
+  grid-template-columns: 90px !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+.glass-event-card .sport-card-chip:first-child {
+  display: none !important;
+}
+
+.glass-event-card .sport-card-participants-chip,
+.glass-event-card .sport-duration-chip {
+  display: flex !important;
+  width: 90px !important;
+  min-width: 90px !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: 999px !important;
+  background: rgba(10, 14, 16, .34) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  backdrop-filter: blur(18px) !important;
+  color: rgba(255, 255, 255, .90) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07) !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+.glass-event-card .sport-card-participants-chip svg,
+.glass-event-card .sport-duration-chip svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 auto !important;
+  color: var(--lime) !important;
+}
+
+.glass-event-card .sport-card-members-preview {
+  position: absolute !important;
+  top: 172px !important;
+  right: 14px !important;
+  z-index: 12 !important;
+  width: min(230px, calc(100% - 28px)) !important;
+  max-height: 190px !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  overflow: auto !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: 18px !important;
+  background: rgba(10, 14, 16, .68) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .32) !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: auto 0 0 !important;
+  padding: 8px 4px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: 22px !important;
+  background: rgba(10, 14, 16, .38) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  backdrop-filter: blur(18px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item {
+  display: flex !important;
+  min-width: 0 !important;
+  min-height: 82px !important;
+  margin: 0 !important;
+  padding: 7px 6px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, .94) !important;
+  font: inherit !important;
+  text-align: center !important;
+  box-shadow: none !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item + .glass-event-card-meta-item {
+  border-left: 1px solid rgba(255, 255, 255, .12) !important;
+}
+
+.glass-event-card-meta-item > svg {
+  width: 21px !important;
+  height: 21px !important;
+  flex: 0 0 auto !important;
+  color: var(--lime) !important;
+}
+
+.glass-event-card-meta-copy {
+  display: flex !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  align-items: center !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.glass-event-card-meta-copy small {
+  display: block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  color: rgba(255, 255, 255, .62) !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  line-height: 1.1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.glass-event-card-meta-copy strong {
+  display: -webkit-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: rgba(255, 255, 255, .94) !important;
+  font-size: 13px !important;
+  font-weight: 760 !important;
+  line-height: 1.15 !important;
+  overflow-wrap: anywhere !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.glass-event-card .event-card-weather {
+  min-height: 34px !important;
+  margin-top: 8px !important;
+  padding: 6px 8px !important;
+  gap: 4px !important;
+  border: 1px solid rgba(255, 255, 255, .10) !important;
+  border-radius: 14px !important;
+  background: rgba(10, 14, 16, .18) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  box-shadow: none !important;
+}
+
+.glass-event-card .event-card-weather > span {
+  color: rgba(255, 255, 255, .72) !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+}
+
+.glass-event-card .event-card-weather b {
+  font-size: 14px !important;
+}
+
+.glass-event-card .compact-sport-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  margin-top: 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.glass-event-card .compact-sport-actions > .sport-coach-action,
+.glass-event-card .compact-sport-actions > .card-join {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, .18) !important;
+  border-radius: 16px !important;
+  background: rgba(10, 14, 16, .30) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  backdrop-filter: blur(18px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+  color: rgba(255, 255, 255, .94) !important;
+  font-size: 15px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join:not(.secondary):not(.card-leave) {
+  border-color: rgba(201, 255, 61, .48) !important;
+  background: rgba(201, 255, 61, .15) !important;
+  color: rgba(232, 255, 174, .98) !important;
+  box-shadow: 0 0 24px rgba(201, 255, 61, .12), inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.secondary,
+.glass-event-card .compact-sport-actions > .card-join:disabled {
+  border-color: rgba(255, 255, 255, .12) !important;
+  background: rgba(10, 14, 16, .26) !important;
+  color: rgba(255, 255, 255, .62) !important;
+  opacity: .82 !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.card-leave {
+  border-color: rgba(255, 126, 126, .34) !important;
+  background: rgba(255, 88, 88, .10) !important;
+  color: rgba(255, 190, 190, .94) !important;
+}
+
+.glass-event-card .compact-sport-actions > button:active:not(:disabled) {
+  transform: scale(.975) !important;
+}
+
+.glass-event-card .compact-sport-actions svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 auto !important;
+  color: var(--lime) !important;
+}
+
+.glass-event-card .card-share-channel-list {
+  z-index: 20 !important;
+}
+
+@media (max-width: 430px) {
+  .glass-event-card {
+    min-height: clamp(468px, 132vw, 568px) !important;
+    padding: 16px !important;
+    border-radius: 26px !important;
+  }
+
+  .glass-event-card .sport-card-top-actions,
+  .glass-event-card .sport-chip-row {
+    right: 12px !important;
+  }
+
+  .glass-event-card .sport-card-top-actions { top: 12px !important; }
+  .glass-event-card .sport-chip-row { top: 68px !important; }
+  .glass-event-card .sport-card-main { width: calc(100% - 94px) !important; }
+  .glass-event-card .sport-card-main h3 { font-size: clamp(28px, 8.2vw, 36px) !important; }
+  .glass-event-card .sport-card-main p { font-size: 15px !important; }
+  .glass-event-card .sport-card-participants-chip,
+  .glass-event-card .sport-duration-chip { width: 86px !important; min-width: 86px !important; }
+  .glass-event-card .sport-card-members-preview { right: 12px !important; }
+}
+
+@media (max-width: 390px) {
+  .glass-event-card {
+    min-height: 500px !important;
+    padding: 14px !important;
+  }
+
+  .glass-event-card .sport-card-main { width: calc(100% - 88px) !important; }
+  .glass-event-card .sport-card-main h3 { font-size: 31px !important; }
+  .glass-event-card .sport-card-participants-chip,
+  .glass-event-card .sport-duration-chip { width: 82px !important; min-width: 82px !important; padding-inline: 7px !important; font-size: 12px !important; }
+  .glass-event-card .activity-card-details.sport-details-grid { padding-inline: 2px !important; border-radius: 19px !important; }
+  .glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item { min-height: 78px !important; padding-inline: 4px !important; }
+  .glass-event-card-meta-copy small { font-size: 9px !important; }
+  .glass-event-card-meta-copy strong { font-size: 12px !important; }
+  .glass-event-card .compact-sport-actions { gap: 8px !important; }
+  .glass-event-card .compact-sport-actions > .sport-coach-action,
+  .glass-event-card .compact-sport-actions > .card-join { font-size: 14px !important; }
+}
+
+@media (max-width: 360px) {
+  .glass-event-card {
+    min-height: 490px !important;
+    padding: 12px !important;
+    border-radius: 24px !important;
+  }
+
+  .glass-event-card .sport-card-top-actions,
+  .glass-event-card .sport-chip-row { right: 10px !important; }
+  .glass-event-card .sport-card-top-actions { top: 10px !important; }
+  .glass-event-card .sport-chip-row { top: 64px !important; }
+  .glass-event-card .sport-card-icon-action { width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; }
+  .glass-event-card .sport-card-main { width: calc(100% - 84px) !important; min-height: 82px !important; }
+  .glass-event-card .sport-card-main h3 { font-size: 28px !important; }
+  .glass-event-card .sport-card-main p { font-size: 14px !important; }
+  .glass-event-card .sport-card-participants-chip,
+  .glass-event-card .sport-duration-chip { width: 78px !important; min-width: 78px !important; min-height: 44px !important; }
+  .glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item { min-height: 76px !important; padding-inline: 3px !important; }
+  .glass-event-card-meta-item > svg { width: 19px !important; height: 19px !important; }
+  .glass-event-card-meta-copy strong { font-size: 11px !important; }
+  .glass-event-card .compact-sport-actions > .sport-coach-action,
+  .glass-event-card .compact-sport-actions > .card-join { padding-inline: 8px !important; font-size: 13px !important; }
+}
+
+@media (max-width: 320px) {
+  .glass-event-card {
+    min-height: 480px !important;
+    padding: 10px !important;
+  }
+
+  .glass-event-card .sport-card-main { width: calc(100% - 80px) !important; }
+  .glass-event-card .sport-card-main h3 { font-size: 26px !important; }
+  .glass-event-card .sport-card-participants-chip,
+  .glass-event-card .sport-duration-chip { width: 74px !important; min-width: 74px !important; gap: 4px !important; padding-inline: 5px !important; font-size: 11px !important; }
+  .glass-event-card .activity-card-details.sport-details-grid { border-radius: 17px !important; }
+  .glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item { min-height: 74px !important; padding-inline: 2px !important; }
+  .glass-event-card-meta-copy small { font-size: 8px !important; }
+  .glass-event-card-meta-copy strong { font-size: 10px !important; }
+  .glass-event-card .event-card-weather > span { font-size: 11px !important; }
+  .glass-event-card .compact-sport-actions { gap: 6px !important; }
+  .glass-event-card .compact-sport-actions > .sport-coach-action,
+  .glass-event-card .compact-sport-actions > .card-join { font-size: 12px !important; }
+}
