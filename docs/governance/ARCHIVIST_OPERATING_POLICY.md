@@ -3,8 +3,8 @@ title: Archivist Operating Policy
 owner: Technical Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-07-17
+next_review: 2026-07-24
 ---
 
 # Archivist Operating Policy
@@ -32,6 +32,15 @@ Governance cannot override verified runtime evidence. Conflicts must be recorded
 3. Approved reports move to `Reviewed`; rejected reports move to `Rejected`.
 4. Source-of-truth changes require a reviewed GitHub pull request.
 
+## Export workflow
+
+- Revision run: `01:00 Europe/Prague`.
+- Approved synchronization run: `13:00 Europe/Prague`.
+- Export updates must preserve Drive file IDs whenever possible.
+- Before writing, search the target folder by exact title and compare freshness.
+- Drive copies must always use `source_of_truth: false`.
+- Duplicates must be marked and moved to `Legacy`; never delete them automatically.
+
 ## Automation boundaries
 
 Automation must not:
@@ -43,6 +52,16 @@ Automation must not:
 - modify auth, RLS, secrets, `.env`, destructive SQL, or migrations;
 - treat Drive, NotebookLM, ClickUp, Gemini, or n8n as a source of truth.
 
+## Working method
+
+- Process one bounded documentation batch at a time.
+- Read canonical GitHub sources before editing Drive.
+- Prefer update-in-place over creating new files.
+- Verify destination folder, title, authority flags, and file ID after every write.
+- Record proxy failures, fallbacks, duplicates, and unresolved conflicts in an agent report.
+- Accept owner commands in Russian; use English for internal execution artifacts; return a brief owner-facing report in Russian.
+- Include a PR, workflow run, preview, or Drive interface link whenever available.
+
 ## Review cadence
 
-The Archivist reconciliation runs every 12 hours. Unresolved conflicts older than seven days must be escalated to the persistent ClickUp governance task for human review.
+Revision and synchronization are separate controlled runs. Unresolved conflicts older than seven days must be escalated to the persistent ClickUp governance task for human review.
