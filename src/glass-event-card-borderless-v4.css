@@ -1,0 +1,112 @@
+/* Borderless card refinement v4. Loaded after prior card styles. */
+
+/* Raise title slightly and allow four lines for the supporting text. */
+.glass-event-card .sport-card-main,
+.glass-event-card .sport-card-main.glass-event-card-main {
+  padding-top: 0 !important;
+  transform: translateY(-6px) !important;
+}
+
+.glass-event-card .sport-card-main p {
+  -webkit-line-clamp: 4 !important;
+  max-height: calc(1.25em * 4) !important;
+}
+
+/* Top controls: fully transparent and borderless. */
+.glass-event-card .sport-card-icon-action,
+.glass-event-card .sport-card-participants-chip,
+.glass-event-card .sport-duration-chip {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Weather: fully transparent and borderless, still stacked in three rows. */
+.glass-event-card .event-card-weather {
+  bottom: 172px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.glass-event-card .event-card-weather > span + span {
+  border-top: 0 !important;
+}
+
+/* Metadata panel: lower, fully transparent, no outer outline. */
+.glass-event-card .activity-card-details.sport-details-grid,
+.glass-event-card:not(:has(.event-card-weather)) .activity-card-details.sport-details-grid {
+  width: calc(100% + 24px) !important;
+  margin: auto -12px -2px !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  transform: translateY(12px) !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item {
+  min-height: 72px !important;
+  padding: 6px 5px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item + .glass-event-card-meta-item {
+  border-left: 1px solid rgba(255, 255, 255, .18) !important;
+}
+
+/* Bottom actions: fully transparent and without outlines. */
+.glass-event-card .compact-sport-actions > .sport-coach-action,
+.glass-event-card .compact-sport-actions > .card-join,
+.glass-event-card .compact-sport-actions > .card-join:not(.secondary):not(.card-leave),
+.glass-event-card .compact-sport-actions > .card-join.card-leave,
+.glass-event-card .compact-sport-actions > .card-join.secondary,
+.glass-event-card .compact-sport-actions > .card-join:disabled {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.glass-event-card .compact-sport-actions {
+  margin-top: 18px !important;
+}
+
+@media (max-width: 430px) {
+  .glass-event-card .event-card-weather {
+    bottom: 168px !important;
+  }
+
+  .glass-event-card .activity-card-details.sport-details-grid,
+  .glass-event-card:not(:has(.event-card-weather)) .activity-card-details.sport-details-grid {
+    transform: translateY(10px) !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .glass-event-card .sport-card-main,
+  .glass-event-card .sport-card-main.glass-event-card-main {
+    transform: translateY(-4px) !important;
+  }
+
+  .glass-event-card .event-card-weather {
+    bottom: 162px !important;
+  }
+
+  .glass-event-card .compact-sport-actions {
+    margin-top: 16px !important;
+  }
+}
