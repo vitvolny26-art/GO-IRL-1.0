@@ -167,7 +167,8 @@ jobs:
       - name: Verify changed paths
         run: |
           rm -f patch.log test.log
-          bad=$(git status --short | awk '{print $2}' | grep -Ev '^(api/_shared/event-artwork\.ts|api/_shared/material-event-artwork\.ts|api/_shared/event-artwork\.test\.ts|src/App\.tsx|src/main\.tsx|src/verticals/SportVertical\.tsx|src/components/EventCardArtwork\.tsx|src/components/EventCardPrimitives\.tsx|src/components/OrganizerProfilePortal\.tsx|src/eventBackgrounds\.ts|src/glass-event-card\.css|src/assets/event-backgrounds/[^/]+\.webp|docs/reports/2026-07-17-agent-report-event-backgrounds\.md|scripts/patches/apply-event-card-backgrounds\.cjs|\.github/workflows/apply-event-card-backgrounds\.yml)$' || true)
+          rm -rf .ci-bin
+          bad=$(git status --short --untracked-files=all | awk '{print $2}' | grep -Ev '^(api/_shared/event-artwork\.ts|api/_shared/material-event-artwork\.ts|api/_shared/event-artwork\.test\.ts|src/App\.tsx|src/main\.tsx|src/verticals/SportVertical\.tsx|src/components/EventCardArtwork\.tsx|src/components/EventCardPrimitives\.tsx|src/components/OrganizerProfilePortal\.tsx|src/eventBackgrounds\.ts|src/glass-event-card\.css|src/assets/event-backgrounds/[^/]+\.webp|docs/reports/2026-07-17-agent-report-event-backgrounds\.md|scripts/patches/apply-event-card-backgrounds\.cjs|\.github/workflows/apply-event-card-backgrounds\.yml)$' || true)
           if [ -n "$bad" ]; then echo "Unexpected changed paths:"; echo "$bad"; exit 1; fi
           count=$(find src/assets/event-backgrounds -maxdepth 1 -type f -name '*.webp' | wc -l)
           test "$count" -eq 40
