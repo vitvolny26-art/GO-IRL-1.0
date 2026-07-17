@@ -19,7 +19,7 @@ describe("event artwork registry", () => {
     expect(Object.keys(materialEventArtworkPaths)).toHaveLength(40);
 
     for (const option of knownOptions) {
-      const expectedCode = resolveEventArtworkCode({ icon: option.icon });
+      const expectedCode = resolveEventArtworkCode({ activity: option.name.en });
       expect(expectedCode, option.name.en).not.toBe("EV");
       for (const language of ["ru", "cs", "en"] as const) {
         expect(resolveEventArtworkCode({ activity: option.name[language] }), `${language}: ${option.name[language]}`)

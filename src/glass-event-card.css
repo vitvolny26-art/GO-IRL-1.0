@@ -463,3 +463,24 @@
   .glass-event-card .compact-sport-actions > .sport-coach-action,
   .glass-event-card .compact-sport-actions > .card-join { font-size: 12px !important; }
 }
+
+/* event-card-visual-fix-v2 */
+.glass-event-card-artwork-image { object-position: center !important; transform: none !important; image-rendering: auto !important; }
+.glass-event-card .event-card-weather { margin: auto 0 0 !important; }
+.glass-event-card .activity-card-details.sport-details-grid { margin: 8px 0 0 !important; }
+.glass-event-card-meta-copy small { display: none !important; }
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item { min-height: 72px !important; justify-content: center !important; }
+.glass-event-card-meta-copy { gap: 0 !important; }
+.glass-event-card-meta-copy strong { -webkit-line-clamp: 3 !important; }
+.organizer-avatar-thumb, .organizer-profile-avatar-large { display:grid; overflow:hidden; place-items:center; border:1px solid rgba(201,255,61,.48); border-radius:999px; background:rgba(10,14,16,.72); color:var(--lime); font-weight:850; }
+.organizer-avatar-thumb { width:44px; height:44px; font-size:13px; }
+.organizer-avatar-thumb img, .organizer-profile-avatar-large img { width:100%; height:100%; object-fit:cover; }
+.glass-event-card .compact-sport-actions > .card-join.card-leave { border-color:rgba(255,126,126,.62) !important; background:transparent !important; color:rgba(255,190,190,.98) !important; box-shadow:none !important; }
+.organizer-profile-backdrop { position:fixed; inset:0; z-index:120; display:flex; align-items:flex-end; justify-content:center; padding:18px; background:rgba(0,0,0,.68); backdrop-filter:blur(10px); }
+.organizer-profile-sheet { position:relative; width:min(100%,520px); padding:28px 22px calc(26px + env(safe-area-inset-bottom)); border:1px solid rgba(255,255,255,.16); border-radius:28px; background:rgba(12,17,20,.97); color:#fff; text-align:center; }
+.organizer-profile-close { position:absolute; top:14px; right:14px; display:grid; width:42px; height:42px; padding:0; place-items:center; border:1px solid rgba(255,255,255,.16); border-radius:999px; background:rgba(255,255,255,.06); color:#fff; }
+.organizer-profile-avatar-large { width:92px; height:92px; margin:0 auto 14px; font-size:24px; }
+.organizer-profile-sheet > small { color:rgba(255,255,255,.56); font-size:12px; font-weight:750; text-transform:uppercase; }
+.organizer-profile-sheet h2 { margin:6px 0 2px; font-size:28px; }
+.organizer-profile-sheet > p { margin:0; color:rgba(255,255,255,.64); }
+.organizer-profile-count { display:flex; margin:22px auto 0; width:120px; padding:12px; align-items:center; justify-content:center; gap:8px; border:1px solid rgba(255,255,255,.12); border-radius:16px; background:rgba(255,255,255,.05); }

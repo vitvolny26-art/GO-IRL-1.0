@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
+import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -35,6 +36,7 @@ createRoot(document.getElementById("root")!).render(
       <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}>
         <App />
       </Suspense>
+      <OrganizerProfilePortal />
     </QueryClientProvider>
   </StrictMode>,
 );
