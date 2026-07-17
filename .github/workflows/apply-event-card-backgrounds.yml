@@ -43,8 +43,39 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Drive downloader
+        run: python3 -m pip install --user --disable-pip-version-check gdown
+
       - name: Apply backgrounds and weather placement
-        run: node scripts/patches/apply-event-card-backgrounds.cjs
+        run: |
+          mkdir -p .ci-bin
+          cat > .ci-bin/curl <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          destination=""
+          url=""
+          while [ "$#" -gt 0 ]; do
+            case "$1" in
+              -o)
+                destination="$2"
+                shift 2
+                ;;
+              http*)
+                url="$1"
+                shift
+                ;;
+              *)
+                shift
+                ;;
+            esac
+          done
+          id="$(printf '%s' "$url" | sed -n 's/.*[?&]id=\([^&]*\).*/\1/p')"
+          test -n "$destination"
+          test -n "$id"
+          python3 -m gdown "https://drive.google.com/uc?id=$id" -O "$destination"
+          SH
+          chmod +x .ci-bin/curl
+          PATH="$PWD/.ci-bin:$PATH" node scripts/patches/apply-event-card-backgrounds.cjs
 
       - name: Test
         run: pnpm run test
