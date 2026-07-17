@@ -1,0 +1,27 @@
+name: Codex runner smoke
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codex-runner-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    if: github.repository == 'vitvolny26-art/GO-IRL-1.0'
+    runs-on: [self-hosted, Linux, X64, goirl]
+    timeout-minutes: 5
+
+    steps:
+      - name: Verify Codex CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v codex
+          codex --version
+
+      - name: Verify
