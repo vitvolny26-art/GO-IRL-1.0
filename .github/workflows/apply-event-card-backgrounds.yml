@@ -70,11 +70,14 @@ jobs:
             exit 0
           fi
           confirm="$(grep -oE 'confirm=[0-9A-Za-z_-]+' "$page" | head -n1 | cut -d= -f2 || true)"
+          [ -n "$confirm" ] || confirm="$(sed -n 's/.*name="confirm" value="\([^"]*\)".*/\1/p' "$page" | head -n1)"
           uuid="$(grep -oE 'uuid=[^&\"]+' "$page" | head -n1 | cut -d= -f2 || true)"
+          [ -n "$uuid" ] || uuid="$(sed -n 's/.*name="uuid" value="\([^"]*\)".*/\1/p' "$page" | head -n1)"
           test -n "$confirm"
           download="https://drive.usercontent.google.com/download?id=$id&export=download&confirm=$confirm"
           if [ -n "$uuid" ]; then download="$download&uuid=$uuid"; fi
           /usr/bin/curl -fL -b "$cookie" "$download" -o "$destination"
+          unzip -t "$destination" >/dev/null
           rm -f "$cookie" "$page"
           SH
           chmod +x .ci-bin/curl
