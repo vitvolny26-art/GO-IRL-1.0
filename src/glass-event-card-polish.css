@@ -1,0 +1,127 @@
+/* Stable bottom stack and low-fill glass controls for generic and Sport cards. */
+.glass-event-card {
+  --card-control-fill: rgba(4, 7, 9, .045);
+  --card-control-fill-active: rgba(255, 255, 255, .075);
+  --card-control-border: rgba(255, 255, 255, .18);
+}
+
+/* Keep metadata and actions aligned at the bottom whether weather is rendered or not. */
+.glass-event-card .event-card-weather {
+  margin: auto 0 0 !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid {
+  grid-template-columns: 56px minmax(0, 1.25fr) minmax(0, .9fr) minmax(0, 1.05fr) !important;
+  margin: 8px 0 0 !important;
+}
+
+.glass-event-card:not(:has(.event-card-weather)) .activity-card-details.sport-details-grid {
+  margin-top: auto !important;
+}
+
+/* Preserve the approved visual order: organizer, date, price, location. */
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item:nth-child(4) { order: 1 !important; }
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item:nth-child(1) { order: 2 !important; }
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item:nth-child(2) { order: 3 !important; }
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item:nth-child(3) { order: 4 !important; }
+
+/* Prevent inherited ellipsis rules from cutting date, time and location copy. */
+.glass-event-card .glass-event-card-meta-copy,
+.glass-event-card .activity-card-details.sport-details-grid > button .glass-event-card-meta-copy {
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.glass-event-card .glass-event-card-meta-copy strong {
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+/* Every interactive card control uses the same maximally transparent glass treatment. */
+.glass-event-card .sport-card-icon-action,
+.glass-event-card .sport-card-participants-chip,
+.glass-event-card .compact-sport-actions > .sport-coach-action,
+.glass-event-card .compact-sport-actions > .card-join {
+  background: var(--card-control-fill) !important;
+  border-color: var(--card-control-border) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid > button,
+.glass-event-card .sport-card-main,
+.glass-event-card .sport-card-main.glass-event-card-main {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.glass-event-card .sport-card-icon-action:active,
+.glass-event-card .sport-card-participants-chip:active,
+.glass-event-card .activity-card-details.sport-details-grid > button:active,
+.glass-event-card .compact-sport-actions > button:active:not(:disabled) {
+  background: var(--card-control-fill-active) !important;
+  box-shadow: none !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join:not(.secondary):not(.card-leave) {
+  background: var(--card-control-fill) !important;
+  border-color: rgba(201, 255, 61, .58) !important;
+  color: rgba(232, 255, 174, .98) !important;
+  box-shadow: none !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.card-leave {
+  background: transparent !important;
+  border-color: rgba(255, 126, 126, .58) !important;
+  color: rgba(255, 190, 190, .98) !important;
+  box-shadow: none !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.secondary,
+.glass-event-card .compact-sport-actions > .card-join:disabled {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, .13) !important;
+  color: rgba(255, 255, 255, .60) !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Keep photo and initials fallbacks visually identical. */
+.glass-event-card .organizer-avatar-thumb {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 390px) {
+  .glass-event-card .activity-card-details.sport-details-grid {
+    grid-template-columns: 52px minmax(0, 1.22fr) minmax(0, .9fr) minmax(0, 1.05fr) !important;
+  }
+
+  .glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item {
+    padding-inline: 3px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .glass-event-card .activity-card-details.sport-details-grid {
+    grid-template-columns: 48px minmax(0, 1.2fr) minmax(0, .88fr) minmax(0, 1fr) !important;
+  }
+
+  .glass-event-card .organizer-avatar-thumb {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+}
