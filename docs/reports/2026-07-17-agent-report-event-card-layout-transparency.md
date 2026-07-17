@@ -39,9 +39,13 @@ Stabilize the event-card bottom layout and make all card controls maximally tran
 
 ## Checks
 
-- GitHub CI: PENDING
+- GitHub CI run `29598220593`: PASS
+- Test: PASS
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
 - Mobile visual smoke test: PENDING
 
 ## Next step
 
-Wait for CI, then verify 360-430 px Telegram screenshots before merge.
+Verify 360-430 px Telegram screenshots before merge.
