@@ -105,7 +105,9 @@ jobs:
           const fs = require('node:fs');
           const material = 'api/_shared/material-event-artwork.ts';
           let source = fs.readFileSync(material, 'utf8');
-          source = source.replace('  WK: mdiWalk,', '  WK: mdiWalk,\n  CT: mdiWalk,');
+          if (!source.includes('  CT: mdiWalk,')) {
+            source = source.replace('  WK: mdiWalk,', '  WK: mdiWalk,\n  CT: mdiWalk,');
+          }
           fs.writeFileSync(material, source);
 
           const resolver = 'api/_shared/event-artwork.ts';
