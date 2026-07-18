@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Share2 } from "lucide-react";
 import { buildCardShareTarget, buildCardShareText, type CardShareChannel } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
@@ -12,9 +13,12 @@ type CardShareActionProps = {
   onTelegramShare?: () => Promise<PreparedTelegramShareResult>;
 };
 
+type ShareChannel = CardShareChannel | "native";
+
 const channels = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
   { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
+  { id: "native", label: "Поделиться", icon: null },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
   { id: "instagram", label: "Instagram", icon: "/icons/instagram.svg" },
 ] as const;
@@ -40,8 +44,17 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     };
   }, [open]);
 
-  const share = async (channel: CardShareChannel) => {
+  const copyShareText = async () => {
+    try {
+      await navigator.clipboard.writeText(buildCardShareText(content));
+    } catch {
+      // Clipboard access may be unavailable inside some embedded browsers.
+    }
+  };
+
+  const share = async (channel: ShareChannel) => {
     setOpen(false);
+
     if (channel === "telegram") {
       if (onTelegramShare) {
         const result = await onTelegramShare();
@@ -50,16 +63,33 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       openTelegramShareTarget(buildCardShareTarget(channel, content));
       return;
     }
-    if (channel === "instagram") {
-      const message = buildCardShareText(content);
-      try {
-        await navigator.clipboard.writeText(message);
-      } catch {
-        // Instagram has no supported web URL for prefilled shares; opening Direct still gives a useful fallback.
+
+    if (channel === "native") {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: `GO IRL: ${title}`,
+            text: [date, address].filter(Boolean).join("\n"),
+            url,
+          });
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+        }
       }
-      window.open("https://www.instagram.com/direct/inbox/", "_blank", "noopener,noreferrer");
+      await copyShareText();
       return;
     }
+
+    if (channel === "instagram" || channel === "messenger") {
+      await copyShareText();
+      const target = channel === "instagram"
+        ? "https://www.instagram.com/direct/inbox/"
+        : "https://www.messenger.com/";
+      window.open(target, "_blank", "noopener,noreferrer");
+      return;
+    }
+
     window.open(buildCardShareTarget(channel, content), "_blank", "noopener,noreferrer");
   };
 
@@ -88,6 +118,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               type="button"
               role="menuitem"
               aria-label={channel.label}
+              title={channel.label}
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -95,7 +126,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               }}
             >
               <span className="card-share-icon-circle">
-                <img src={channel.icon} alt="" decoding="async" />
+                {channel.icon
+                  ? <img src={channel.icon} alt="" decoding="async" />
+                  : <Share2 size={28} aria-hidden="true" />}
               </span>
             </button>
           ))}
