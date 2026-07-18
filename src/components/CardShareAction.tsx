@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Forward } from "lucide-react";
 import { buildCardShareTarget, buildCardShareText, type CardShareChannel } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
@@ -77,7 +76,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           setOpen((current) => !current);
         }}
       >
-        <Forward size={20} aria-hidden="true" />
+        <svg className="card-share-forward-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 19c1.3-5.6 4.7-8 10-8V6l6 6-6 6v-4c-4.2 0-7.4 1.3-10 5Z" />
+        </svg>
       </button>
       {open ? (
         <span className="card-share-channel-list" role="menu" aria-label={label}>
