@@ -84,7 +84,7 @@ const coachStatusLabel = (status: CoachRequest["status"], variant: CoachRequestP
   }
 };
 
-const canCancelRequest = (request?: CoachRequest) =>
+export const isActiveCoachRequest = (request?: CoachRequest) =>
   Boolean(request && !["cancelled", "completed", "rejected"].includes(request.status));
 
 export function CoachRequestPanel({ activity, userRole, variant = "coach" }: CoachRequestPanelProps) {
@@ -99,12 +99,12 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
   const canManage = isOrganizer || userRole === "admin" || userRole === "moderator";
 
   const organizerRequest = useMemo(
-    () => requests.find((request) => request.requestType === "organizer_request" && request.status !== "cancelled"),
+    () => requests.find((request) => request.requestType === "organizer_request" && isActiveCoachRequest(request)),
     [requests],
   );
 
   const participantInterest = useMemo(
-    () => requests.find((request) => request.requestType === "participant_interest" && request.requesterUserKey === currentUserKey && request.status !== "cancelled"),
+    () => requests.find((request) => request.requestType === "participant_interest" && request.requesterUserKey === currentUserKey && isActiveCoachRequest(request)),
     [requests, currentUserKey],
   );
 
@@ -114,7 +114,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
   );
 
   const activeRequest = canManage ? organizerRequest : participantInterest;
-  const canCancel = canCancelRequest(activeRequest);
+  const canCancel = isActiveCoachRequest(activeRequest);
 
   const reload = async () => {
     const [userKey, coachRequests] = await Promise.all([
