@@ -1,5 +1,7 @@
 import type { Activity, CoachRequest, CoachRequestType, UserRole } from "./types";
 
+export type CoachRequestDetails = Pick<CoachRequest, "goal" | "level">;
+
 const activeCoachRequestStatuses = new Set<CoachRequest["status"]>([
   "pending",
   "matched",
@@ -30,3 +32,10 @@ export const resolveCoachRequestType = (
 
   return isJoinedParticipant ? "participant_interest" : null;
 };
+
+export const normalizeCoachRequestDetails = (
+  details?: CoachRequestDetails,
+): CoachRequestDetails => ({
+  goal: details?.goal?.trim() || undefined,
+  level: details?.level?.trim() || undefined,
+});

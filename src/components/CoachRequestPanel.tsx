@@ -7,7 +7,7 @@ import {
   requestCoachForActivity,
 } from "../coachFeature";
 import { isActiveCoachRequest, resolveCoachRequestType } from "../coachRequestState";
-import type { Activity, CoachRequest, UserRole } from "../types";
+import type { Activity, CoachRequest, SportLevel, UserRole } from "../types";
 
 type CoachRequestPanelVariant = "coach" | "event_helper";
 type CoachRequestsChangedDetail = { activityId: string };
@@ -19,6 +19,11 @@ type CoachRequestPanelProps = {
 };
 
 const coachRequestsChangedEvent = "go-irl-coach-requests-changed";
+const levelOptions: Array<{ value: SportLevel; label: string }> = [
+  { value: "beginner", label: "Новички" },
+  { value: "intermediate", label: "Средний уровень" },
+  { value: "advanced", label: "Продвинутые" },
+];
 
 const notifyCoachRequestsChanged = (activityId: string) => {
   if (typeof window === "undefined") return;
@@ -88,6 +93,8 @@ const coachStatusLabel = (status: CoachRequest["status"], variant: CoachRequestP
 export function CoachRequestPanel({ activity, userRole, variant = "coach" }: CoachRequestPanelProps) {
   const [requests, setRequests] = useState<CoachRequest[]>([]);
   const [currentUserKey, setCurrentUserKey] = useState<string | null>(null);
+  const [goal, setGoal] = useState("");
+  const [level, setLevel] = useState<SportLevel | "">(activity.metadata?.sport?.level || "");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const copy = copyByVariant[variant];
@@ -136,7 +143,11 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
     setMessage(null);
 
     try {
-      await requestCoachForActivity(activity, requestType);
+      await requestCoachForActivity(
+        activity,
+        requestType,
+        canManage ? { goal, level: level || undefined } : undefined,
+      );
       await reload();
       notifyCoachRequestsChanged(activity.id);
       setMessage(canManage ? copy.submitSuccess : copy.participantSuccess);
@@ -199,6 +210,30 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
         <div className="coach-panel-status">
           <Star size={18} aria-hidden="true" />
           <span>{copy.participantWanted}</span>
+        </div>
+      ) : null}
+
+      {canManage && !organizerRequest ? (
+        <div className="coach-panel-fields">
+          <label>
+            <span>Уровень участников</span>
+            <select value={level} onChange={(event) => setLevel(event.target.value as SportLevel | "")}>
+              <option value="">Не указан</option>
+              {levelOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Что должен сделать тренер</span>
+            <textarea
+              value={goal}
+              onChange={(event) => setGoal(event.target.value)}
+              maxLength={240}
+              rows={3}
+              placeholder="Например: провести разминку и помочь новичкам с правилами"
+            />
+          </label>
         </div>
       ) : null}
 
