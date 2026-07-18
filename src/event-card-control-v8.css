@@ -1,0 +1,47 @@
+/* Final upper-right event-card control alignment. */
+.glass-event-card .sport-card-top-actions {
+  right: 14px !important;
+  overflow: visible !important;
+}
+
+.glass-event-card .sport-card-icon-action,
+.glass-event-card .card-share-action {
+  overflow: visible !important;
+}
+
+.glass-event-card .card-share-forward-icon {
+  display: block !important;
+  width: 55px !important;
+  height: 55px !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+  fill: var(--lime) !important;
+  stroke: none !important;
+  transform: translateX(-10px) !important;
+}
+
+.glass-event-card .sport-chip-row {
+  right: 0 !important;
+  justify-items: end !important;
+}
+
+@media (max-width: 430px) {
+  .glass-event-card .sport-card-top-actions {
+    right: 12px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    right: 0 !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .glass-event-card .sport-card-top-actions {
+    right: 10px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    right: 0 !important;
+  }
+}
