@@ -1,0 +1,8 @@
+/* Organizer-only card labels. Keep participant/join/request states untouched. */
+.glass-event-card .activity-card-footer:has(> .card-join.secondary:not(.card-leave)) > .sport-coach-action > span {
+  display: none;
+}
+
+.glass-event-card .activity-card-footer:has(> .card-join.secondary:not(.card-leave)) > .sport-coach-action::after {
+  content: "Пригласить тренера";
+}
