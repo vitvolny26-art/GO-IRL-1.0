@@ -1,4 +1,4 @@
-import type { CoachRequest } from "./types";
+import type { Activity, CoachRequest, CoachRequestType, UserRole } from "./types";
 
 const activeCoachRequestStatuses = new Set<CoachRequest["status"]>([
   "pending",
@@ -8,3 +8,8 @@ const activeCoachRequestStatuses = new Set<CoachRequest["status"]>([
 
 export const isActiveCoachRequest = (request?: Pick<CoachRequest, "status">) =>
   Boolean(request && activeCoachRequestStatuses.has(request.status));
+
+export const resolveCoachRequestType = (
+  activity: Pick<Activity, "organizerKey" | "members">,
+  currentUserKey: string | null,
+  userRole: UserRole,
