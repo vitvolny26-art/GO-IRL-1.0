@@ -23,15 +23,26 @@ GitHub remains the source of truth. Drive is a governed mirror and operational w
 
 ## Documentation work numbering
 
-All documentation-governance work uses one sequential internal work ID starting with `PR1000`.
+Documentation-governance work uses a sequential internal work ID that is independent from the numeric GitHub pull request number.
 
-Rules:
+Historical IDs `PR1000`, `PR1001`, and `PR1002` remain unchanged for traceability.
 
-- inspect open and closed pull requests before assigning the next ID;
-- use the next unused ID: `PR1000`, `PR1001`, `PR1002`, and so on;
-- use the same ID in the branch name, pull request title, commit message, Drive inventory record, handoff record, and agent report;
-- pull request title format: `PR1000-docs: description`;
-- branch format: `docs/pr1000-description`.
+Starting with the next documentation-governance task, the sequence uses the `DOC` prefix:
+
+- first new ID: `DOC1003`;
+- then `DOC1004`, `DOC1005`, and so on;
+- never reuse or renumber an issued ID;
+- inspect existing branches, pull requests, reports, Drive inventory records, and handoff records before assigning the next ID;
+- use the same `DOC` ID in the branch name, pull request title, commit message, Drive inventory record, handoff record, and agent report;
+- GitHub pull request numbers remain provider-assigned and must not be used as documentation work IDs.
+
+Required formats:
+
+- pull request title: `DOC1003-docs: description`;
+- branch: `docs/doc1003-description`;
+- commit message: `DOC1003-docs: description`;
+- inventory ID: `DOC1003-DRV-0001`;
+- agent report metadata: `work_id: DOC1003`.
 
 ## Required execution order
 
@@ -99,8 +110,8 @@ Files classified as `REVIEW` must never be deleted automatically.
 Every Drive file and folder must have a complete inventory card with these fields:
 
 ```yaml
-inventory_id: PR1000-DRV-0001
-work_id: PR1000
+inventory_id: DOC1003-DRV-0001
+work_id: DOC1003
 item_name:
 item_type: file | folder
 mime_type:
