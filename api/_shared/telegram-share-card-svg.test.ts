@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg";
-import { configureTelegramShareCardFonts, hasBetaEventIllustration, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
+import { configureTelegramShareCardFonts, hasEventShareBackground, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
 import type { TelegramEventCardInput } from "./telegram-event-card";
 
 const card: TelegramEventCardInput = {
@@ -28,7 +28,7 @@ const card: TelegramEventCardInput = {
 };
 
 describe("Telegram event share-card image", () => {
-  it("renders escaped event data into the GO IRL layout", () => {
+  it("renders escaped event data into the GO IRL layout without the obsolete artwork tile", () => {
     const svg = buildTelegramShareCardSvg(card);
     expect(svg).toContain('width="1080" height="900"');
     expect(svg).toContain("Волейбол на ZŠ");
@@ -36,19 +36,18 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain("ZŠ Demlova &amp; park");
     expect(svg).toContain("Нужен тренер");
     expect(svg).toContain("Открыть");
+    expect(svg).not.toContain('width="230" height="230"');
+    expect(svg).not.toContain("data-event-artwork");
     expect(svg).not.toContain("23°C");
     expect(svg).not.toContain("Прогноз");
     expect(svg).toContain("DejaVu Sans");
     expect(svg).not.toContain("Arial");
   });
 
-  it("keeps the SVG renderer self-contained and overlays beta illustrations only in JPEG rendering", () => {
-    const svg = buildTelegramShareCardSvg(card);
-    expect(svg).toContain('data-event-artwork="VB"');
-    expect(svg).not.toContain("<image");
-    expect(svg).not.toContain("data:image/png;base64,");
-    expect(hasBetaEventIllustration(card)).toBe(true);
-    expect(hasBetaEventIllustration({ ...card, icon: "🛼", activity: "Ролики", title: "Ролики" })).toBe(false);
+  it("resolves approved category artwork as the full-card JPEG background", () => {
+    expect(hasEventShareBackground(card)).toBe(true);
+    expect(hasEventShareBackground({ ...card, activity: "Ролики", title: "Ролики" })).toBe(true);
+    expect(hasEventShareBackground({ ...card, icon: "", activity: "Пользовательское событие", title: "Пользовательское событие" })).toBe(false);
   });
 
   it("bundles regular and bold Cyrillic fonts for serverless rendering", () => {
@@ -60,29 +59,22 @@ describe("Telegram event share-card image", () => {
     expect(existsSync(fonts.configFile)).toBe(true);
   });
 
-  it("produces a Telegram-compatible JPEG with the illustration composite", async () => {
+  it("produces a Telegram-compatible JPEG with category image variation across the canvas", async () => {
     const jpeg = await renderTelegramShareCardJpeg(card);
     const metadata = await sharp(jpeg).metadata();
-    const tileStats = await sharp(jpeg).extract({ left: 76, top: 76, width: 230, height: 230 }).stats();
+    const topLeftStats = await sharp(jpeg).extract({ left: 40, top: 40, width: 300, height: 260 }).stats();
+    const bottomRightStats = await sharp(jpeg).extract({ left: 740, top: 560, width: 300, height: 260 }).stats();
     expect(metadata.format).toBe("jpeg");
     expect(metadata.width).toBe(1080);
     expect(metadata.height).toBe(900);
     expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
-    expect(tileStats.isOpaque).toBe(true);
-    expect(tileStats.channels.some((channel) => channel.stdev > 25)).toBe(true);
+    expect(topLeftStats.isOpaque).toBe(true);
+    expect(bottomRightStats.isOpaque).toBe(true);
+    expect(topLeftStats.channels.some((channel) => channel.stdev > 15)).toBe(true);
+    expect(bottomRightStats.channels.some((channel) => channel.stdev > 15)).toBe(true);
   });
 
-  it.each([
-    ["🏐", "Волейбол", "VB"],
-    ["🛼", "Ролики", "SK"],
-    ["♟️", "Шахматы", "CH"],
-    ["", "Пользовательское событие", "EV"],
-  ])("uses artwork code %s/%s -> %s", (icon, activity, code) => {
-    const svg = buildTelegramShareCardSvg({ ...card, icon, activity, title: activity });
-    expect(svg).toContain(`data-event-artwork="${code}"`);
-  });
-
-  it("uses leading emoji for artwork detection but removes it from visible text", () => {
+  it("uses leading emoji for background detection but removes it from visible text", () => {
     const languageCard = {
       ...card,
       icon: "",
@@ -92,7 +84,7 @@ describe("Telegram event share-card image", () => {
     const telegramSvg = buildTelegramShareCardSvg(languageCard);
     const metaSvg = buildMetaInvitationCardSvg(languageCard);
 
-    expect(telegramSvg).toContain('data-event-artwork="LX"');
+    expect(hasEventShareBackground(languageCard)).toBe(true);
     expect(telegramSvg).toContain("Языковой обмен");
     expect(telegramSvg).toContain("Английский");
     expect(telegramSvg).not.toContain("🗣️");
@@ -109,7 +101,7 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("23°C");
     expect(svg).not.toContain("12%");
     expect(svg).not.toContain("19 km/h");
-    expect(svg).toContain('data-event-artwork="VB"');
+    expect(svg).not.toContain("data-event-artwork");
     expect(svg).toBe(buildTelegramShareCardSvg(metaCard));
 
     const jpeg = await renderMetaInvitationCardJpeg(metaCard);
