@@ -77,7 +77,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           setOpen((current) => !current);
         }}
       >
-        <Forward size={20} aria-hidden="true" />
+        <Forward size={32} strokeWidth={2.2} aria-hidden="true" />
       </button>
       {open ? (
         <span className="card-share-channel-list" role="menu" aria-label={label}>
