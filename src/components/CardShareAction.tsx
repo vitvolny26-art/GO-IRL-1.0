@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Share2 } from "lucide-react";
+import { Forward } from "lucide-react";
 import { buildCardShareTarget, buildCardShareText, type CardShareChannel } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
@@ -77,7 +77,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           setOpen((current) => !current);
         }}
       >
-        <Share2 size={20} aria-hidden="true" />
+        <Forward size={20} aria-hidden="true" />
       </button>
       {open ? (
         <span className="card-share-channel-list" role="menu" aria-label={label}>
