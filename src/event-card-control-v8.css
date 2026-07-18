@@ -12,48 +12,4 @@
   overflow: visible !important;
 }
 
-.glass-event-card .card-share-action {
-  width: 48px !important;
-  height: 48px !important;
-  overflow: visible !important;
-}
-
-.glass-event-card .card-share-forward-icon {
-  display: block !important;
-  width: 70px !important;
-  height: 70px !important;
-  max-width: none !important;
-  max-height: none !important;
-  overflow: visible !important;
-  fill: var(--lime) !important;
-  stroke: none !important;
-  transform: translateX(-8px) !important;
-}
-
-.glass-event-card .sport-chip-row {
-  top: 71px !important;
-  right: 6px !important;
-  justify-items: end !important;
-}
-
-@media (max-width: 430px) {
-  .glass-event-card .sport-card-top-actions {
-    right: 12px !important;
-  }
-
-  .glass-event-card .sport-chip-row {
-    top: 69px !important;
-    right: 6px !important;
-  }
-}
-
-@media (max-width: 360px) {
-  .glass-event-card .sport-card-top-actions {
-    right: 10px !important;
-  }
-
-  .glass-event-card .sport-chip-row {
-    top: 67px !important;
-    right: 7px !important;
-  }
-}
+.glass-event
