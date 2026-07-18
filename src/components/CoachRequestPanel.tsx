@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Dumbbell, Star, UserCheck, XCircle } from "lucide-react";
+import { Dumbbell, MapPin, Star, UserCheck, XCircle } from "lucide-react";
 import {
   cancelCoachRequest,
   getCurrentCoachUserKey,
+  getDemoCoachProfile,
   loadCoachRequestsForActivity,
   requestCoachForActivity,
 } from "../coachFeature";
@@ -107,6 +108,10 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
     [requests],
   );
 
+  const demoCoach = organizerRequest?.status === "confirmed"
+    ? getDemoCoachProfile(organizerRequest.coachProfileId)
+    : null;
+
   const participantInterest = useMemo(
     () => requests.find((request) => request.requestType === "participant_interest" && request.requesterUserKey === currentUserKey && isActiveCoachRequest(request)),
     [requests, currentUserKey],
@@ -196,6 +201,17 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
         <div className="coach-panel-status">
           <UserCheck size={18} aria-hidden="true" />
           <span>{copy.requested} · {coachStatusLabel(organizerRequest.status, variant)}</span>
+        </div>
+      ) : null}
+
+      {demoCoach ? (
+        <div className="coach-profile-card">
+          <div className="coach-profile-avatar">AL</div>
+          <div>
+            <strong>{demoCoach.displayName}</strong>
+            <span>Sport Coach</span>
+            <small><MapPin size={13} aria-hidden="true" />{demoCoach.city}</small>
+          </div>
         </div>
       ) : null}
 

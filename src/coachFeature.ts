@@ -7,6 +7,7 @@ import {
   readAuthUserKey,
 } from "./authSession";
 import { normalizeCoachRequestDetails, type CoachRequestDetails } from "./coachRequestState";
+import { attachDemoCoachProfile, demoCoachProfile } from "./demoCoachProfile";
 import { supabase } from "./supabase";
 import type { Activity, CoachRequest, CoachRequestType } from "./types";
 
@@ -18,7 +19,8 @@ const isCoachDemoMode = () =>
 
 const readDemoCoachRequests = () => {
   try {
-    return JSON.parse(localStorage.getItem(demoCoachStorageKey) || "[]") as CoachRequest[];
+    const requests = JSON.parse(localStorage.getItem(demoCoachStorageKey) || "[]") as CoachRequest[];
+    return requests.map(attachDemoCoachProfile);
   } catch {
     return [] as CoachRequest[];
   }
@@ -74,6 +76,10 @@ export async function loadCoachRequestsForActivity(activityId: string) {
   })) as CoachRequest[];
 }
 
+export function getDemoCoachProfile(profileId?: string) {
+  return profileId === demoCoachProfile.id ? demoCoachProfile : null;
+}
+
 export async function hasConfirmedCoachForActivity(activityId: string) {
   const requests = await loadCoachRequestsForActivity(activityId);
   return requests.some(isConfirmedOrganizerCoachRequest);
@@ -111,6 +117,7 @@ export async function requestCoachForActivity(
       id,
       activityId: activity.id,
       requesterUserKey: userKey,
+      coachProfileId: requestType === "organizer_request" ? demoCoachProfile.id : undefined,
       requestType,
       sportType: activity.categoryId || "sport",
       goal: details.goal,
