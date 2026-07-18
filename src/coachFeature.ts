@@ -6,6 +6,7 @@ import {
   isTrustedAuthReady,
   readAuthUserKey,
 } from "./authSession";
+import { normalizeCoachRequestDetails, type CoachRequestDetails } from "./coachRequestState";
 import { supabase } from "./supabase";
 import type { Activity, CoachRequest, CoachRequestType } from "./types";
 
@@ -93,8 +94,10 @@ export async function getOrganizerRoleRequestState(activityId: string) {
 export async function requestCoachForActivity(
   activity: Activity,
   requestType: CoachRequestType,
+  requestDetails?: CoachRequestDetails,
 ) {
   const userKey = await getCurrentCoachUserKey();
+  const details = normalizeCoachRequestDetails(requestDetails);
 
   if (!userKey) {
     throw new Error("auth_required");
@@ -110,7 +113,8 @@ export async function requestCoachForActivity(
       requesterUserKey: userKey,
       requestType,
       sportType: activity.categoryId || "sport",
-      level: undefined,
+      goal: details.goal,
+      level: details.level,
       paymentMode: "split",
       status: requestType === "organizer_request" ? "confirmed" : "pending",
       createdAt: requests.find((request) => request.id === id)?.createdAt || now,
@@ -131,7 +135,8 @@ export async function requestCoachForActivity(
       requester_user_key: userKey,
       request_type: requestType,
       sport_type: activity.categoryId || "sport",
-      level: null,
+      goal: details.goal || null,
+      level: details.level || null,
       payment_mode: "split",
       status: "pending",
     }, {
