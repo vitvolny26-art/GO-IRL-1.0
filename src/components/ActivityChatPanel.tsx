@@ -8,10 +8,8 @@ import {
 } from "../activityChatFeature";
 import { getCity } from "../config/cities";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
-import { useAppStore } from "../store";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
 import { isOutdoorGenericActivity } from "../eventWeather";
-import { CoachRequestPanel } from "./CoachRequestPanel";
 
 type ActivityChatPanelProps = {
   activity: Activity;
@@ -99,8 +97,7 @@ function OutdoorWeatherPanel({ activity }: { activity: Activity }) {
   );
 }
 
-export function ActivityChatPanel({ activity, openRequest = 0, showHelperAction = true }: ActivityChatPanelProps) {
-  const userRole = useAppStore((state) => state.userRole);
+export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPanelProps) {
   const [open, setOpen] = useState(false);
   const [chat, setChat] = useState<ActivityChat | null>(null);
   const [messages, setMessages] = useState<ActivityChatMessage[]>([]);
@@ -110,7 +107,6 @@ export function ActivityChatPanel({ activity, openRequest = 0, showHelperAction 
   const [error, setError] = useState<string | null>(null);
   const panelRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const showEventHelperPanel = activity.type !== "sport" && activity.categoryId !== "sport";
   const showOutdoorWeather = isOutdoorGenericActivity(activity);
 
   const expired = useMemo(() => {
@@ -172,8 +168,6 @@ export function ActivityChatPanel({ activity, openRequest = 0, showHelperAction 
   return (
     <>
       {showOutdoorWeather ? <OutdoorWeatherPanel activity={activity} /> : null}
-
-      {showEventHelperPanel && showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} variant="event_helper" /> : null}
 
       <section className="activity-chat-panel" ref={panelRef}>
         <button
