@@ -18,6 +18,7 @@ const card: TelegramEventCardInput = {
   icon: "🏐",
   inviteUrl: "https://t.me/GOirl_bot?startapp=3b172dd9-d5e2-4328-86a4-d4107a6359fc",
   city: "Оломоуц",
+  organizer: "Vitalii Pashyn",
   durationMinutes: 90,
   price: 0,
   level: "Любитель",
@@ -28,20 +29,43 @@ const card: TelegramEventCardInput = {
 };
 
 describe("Telegram event share-card image", () => {
-  it("renders escaped event data into the GO IRL layout without the obsolete artwork tile", () => {
+  it("renders the transparent original-card composition without visual action buttons", () => {
     const svg = buildTelegramShareCardSvg(card);
     expect(svg).toContain('width="1080" height="900"');
     expect(svg).toContain("Волейбол на ZŠ");
     expect(svg).toContain("&lt;вечером&gt;");
-    expect(svg).toContain("ZŠ Demlova &amp; park");
-    expect(svg).toContain("Нужен тренер");
-    expect(svg).toContain("Открыть");
+    expect(svg).toContain("ZŠ Demlova");
+    expect(svg).toContain("&amp;");
+    expect(svg).toContain("park");
+    expect(svg).toContain("Vitalii Pashyn");
+    expect(svg).toContain(">VP<");
+    expect(svg).toContain('data-card-frame="expanded"');
+    expect(svg).toContain('data-share-participants="two-row"');
+    expect(svg).toContain('data-share-footer="two-row"');
+    expect(svg).not.toContain("90 мин");
+    expect(svg).not.toContain("Нужен тренер");
+    expect(svg).not.toContain("Подробнее");
+    expect(svg).not.toContain(">Открыть<");
+    expect(svg).not.toContain('width="440" height="116"');
     expect(svg).not.toContain('width="230" height="230"');
     expect(svg).not.toContain("data-event-artwork");
-    expect(svg).not.toContain("23°C");
-    expect(svg).not.toContain("Прогноз");
     expect(svg).toContain("DejaVu Sans");
     expect(svg).not.toContain("Arial");
+  });
+
+  it("shows weather only when weather data is present", () => {
+    const withoutWeather = buildTelegramShareCardSvg(card);
+    expect(withoutWeather).not.toContain("19°C");
+    expect(withoutWeather).not.toContain("60%");
+    expect(withoutWeather).not.toContain("6 km/h");
+
+    const withWeather = buildTelegramShareCardSvg({
+      ...card,
+      weather: { icon: "🌧️", temperature: 19, rain: 60, wind: 6 },
+    });
+    expect(withWeather).toContain("19°C");
+    expect(withWeather).toContain("60%");
+    expect(withWeather).toContain("6 km/h");
   });
 
   it("resolves approved category artwork as the full-card JPEG background", () => {
@@ -91,16 +115,15 @@ describe("Telegram event share-card image", () => {
     expect(metaSvg).toBe(telegramSvg);
   });
 
-  it("renders the compact Meta invitation without weather", async () => {
+  it("renders the same transparent composition for Meta", async () => {
     const metaCard = {
       ...card,
       weather: { icon: "🌤️", temperature: 23, rain: 12, wind: 19 },
     };
     const svg = buildMetaInvitationCardSvg(metaCard);
-    expect(svg).toContain('width="1080" height="900"');
-    expect(svg).not.toContain("23°C");
-    expect(svg).not.toContain("12%");
-    expect(svg).not.toContain("19 km/h");
+    expect(svg).toContain("23°C");
+    expect(svg).toContain("12%");
+    expect(svg).toContain("19 km/h");
     expect(svg).not.toContain("data-event-artwork");
     expect(svg).toBe(buildTelegramShareCardSvg(metaCard));
 

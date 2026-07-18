@@ -80,6 +80,7 @@ export function normalizeTelegramEventCardInput(value: unknown): TelegramEventCa
     inviteUrl,
     mapUrl: safeMapUrl(raw.mapUrl),
     city: stringValue(raw.city, 100),
+    organizer: stringValue(raw.organizer, 120) || undefined,
     durationMinutes: Number.isFinite(duration) ? Math.round(clamp(duration, 15, 480)) : undefined,
     price: clamp(numberValue(raw.price), 0, 100_000),
     level: stringValue(raw.level, 80),

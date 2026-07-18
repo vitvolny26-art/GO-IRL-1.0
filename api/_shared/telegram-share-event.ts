@@ -31,6 +31,7 @@ type ActivityRow = {
   metadata: Record<string, unknown> | null;
   price: number;
   capacity: number;
+  organizer: string;
 };
 
 const client = () => createClient(
@@ -130,7 +131,7 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
   const db = client();
   const { data, error } = await db
     .from("activities")
-    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity")
+    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity,organizer")
     .eq("id", eventId)
     .maybeSingle();
   if (error) throw error;
@@ -166,6 +167,7 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     inviteUrl: buildOfficialInviteUrl(row.id),
     mapUrl: row.location_url || undefined,
     city: cityName(row.city_id, language),
+    organizer: row.organizer,
     durationMinutes: number(sport?.durationMinutes, 90),
     price: row.price,
     level: localizedSportValue(sport?.level, language, generic.level),

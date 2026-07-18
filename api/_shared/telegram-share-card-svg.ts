@@ -1,10 +1,10 @@
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 
 const copy = {
-  ru: { free: "Бесплатно", minutes: "мин", coach: "Нужен тренер", details: "Подробнее", open: "Открыть" },
-  uk: { free: "Безкоштовно", minutes: "хв", coach: "Потрібен тренер", details: "Докладніше", open: "Відкрити" },
-  cs: { free: "Zdarma", minutes: "min", coach: "Potřebujeme trenéra", details: "Podrobnosti", open: "Otevřít" },
-  en: { free: "Free", minutes: "min", coach: "Coach needed", details: "Details", open: "Open" },
+  ru: { free: "Бесплатно", minutes: "мин" },
+  uk: { free: "Безкоштовно", minutes: "хв" },
+  cs: { free: "Zdarma", minutes: "min" },
+  en: { free: "Free", minutes: "min" },
 } as const;
 
 const xml = (value: string) => value
@@ -38,109 +38,86 @@ const wrap = (value: string, maxChars: number, maxLines = 2) => {
   return lines.slice(0, maxLines);
 };
 
-const textLines = (lines: string[], x: number, y: number, lineHeight: number) =>
-  lines.map((line, index) => `<tspan x="${x}" y="${y + index * lineHeight}">${xml(line)}</tspan>`).join("");
+const textLines = (lines: string[], x: number, y: number, lineHeight: number, anchor = "start") =>
+  lines.map((line, index) => `<tspan x="${x}" y="${y + index * lineHeight}" text-anchor="${anchor}">${xml(line)}</tspan>`).join("");
 
-type MetricIcon = "calendar" | "ticket" | "pin" | "status";
+const initials = (name: string) => clean(name, 80)
+  .split(" ")
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0]?.toUpperCase())
+  .join("") || "GO";
 
-const metricIcon = (kind: MetricIcon, x: number, y: number) => {
-  const left = x + 38;
-  const top = y + 34;
-
-  if (kind === "calendar") {
-    return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="${left}" y="${top}" width="42" height="40" rx="7"/>
-      <path d="M${left} ${top + 13}h42M${left + 11} ${top - 5}v12M${left + 31} ${top - 5}v12"/>
-    </g>`;
-  }
-
-  if (kind === "ticket") {
-    return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M${left} ${top + 5}h43v11a10 10 0 0 0 0 20v11h-43v-11a10 10 0 0 0 0-20z"/>
-      <path d="M${left + 22} ${top + 7}v38" stroke-dasharray="4 8"/>
-    </g>`;
-  }
-
-  if (kind === "pin") {
-    return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M${left + 21} ${top + 47}s19-19 19-31a19 19 0 1 0-38 0c0 12 19 31 19 31z"/>
-      <circle cx="${left + 21}" cy="${top + 16}" r="6"/>
-    </g>`;
-  }
-
-  return `<g fill="none" stroke="#c9ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="${left + 21}" cy="${top + 20}" r="18"/>
-    <path d="M${left + 21} ${top + 8}v13l9 7"/>
-  </g>`;
+const metricIcon = (kind: "calendar" | "ticket" | "pin", x: number, y: number) => {
+  if (kind === "calendar") return `<g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="${x}" y="${y}" width="36" height="34" rx="6"/><path d="M${x} ${y + 11}h36M${x + 9} ${y - 4}v10M${x + 27} ${y - 4}v10"/></g>`;
+  if (kind === "ticket") return `<g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M${x} ${y + 4}h38v9a9 9 0 0 0 0 18v9h-38v-9a9 9 0 0 0 0-18z"/><path d="M${x + 19} ${y + 6}v32" stroke-dasharray="4 7"/></g>`;
+  return `<g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M${x + 18} ${y + 39}s17-17 17-28a17 17 0 1 0-34 0c0 11 17 28 17 28z"/><circle cx="${x + 18}" cy="${y + 11}" r="5"/></g>`;
 };
 
-const metric = (x: number, y: number, icon: MetricIcon, value: string, lines = 1) => {
-  const wrapped = wrap(value, lines === 1 ? 24 : 20, lines);
-  return `<g>
-    <rect x="${x}" y="${y}" width="440" height="116" rx="30" fill="#111518" fill-opacity="0.88" stroke="#4a5157" stroke-opacity="0.72" stroke-width="2"/>
-    ${metricIcon(icon, x, y)}
-    <text x="${x + 98}" y="${y + 58}" fill="#eef1f4" font-size="31" font-weight="800" font-family="DejaVu Sans, sans-serif">${textLines(wrapped, x + 98, y + (wrapped.length > 1 ? 43 : 68), 38)}</text>
+const weatherBlock = (input: TelegramEventCardInput) => {
+  if (!input.weather) return "";
+  const weather = input.weather;
+  return `<g font-family="DejaVu Sans, sans-serif" font-size="30" font-weight="800" fill="#f5f7f8">
+    <text x="76" y="520">${xml(weather.icon)}  ${Math.round(weather.temperature)}°C</text>
+    <text x="76" y="582">☔  ${Math.round(weather.rain)}%</text>
+    <text x="76" y="644">💨  ${Math.round(weather.wind)} km/h</text>
   </g>`;
 };
 
 const buildShareCardSvg = (input: TelegramEventCardInput) => {
   const labels = copy[input.language] || copy.en;
-  const canvasHeight = 900;
-  const cardHeight = 832;
-  const actionsY = 682;
   const headline = cleanEventText(input.activity || input.title, 80) || "GO IRL";
   const subtitle = cleanEventText(input.title, 120);
   const dateTime = [clean(input.date, 40), clean(input.time, 20)].filter(Boolean).join(" · ");
-  const place = clean(input.address || input.city, 140);
-  const status = [clean(input.level, 50), clean(input.format, 50)].filter(Boolean).join(" · ");
+  const place = clean(input.address || input.city, 80);
   const price = input.price > 0 ? `${Math.round(input.price)} Kč` : labels.free;
-  const duration = `${Math.max(15, Math.round(input.durationMinutes || 90))} ${labels.minutes}`;
   const headlineLines = wrap(headline, 18, 2);
   const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 28, 2);
-  const environment = clean(input.environment, 60);
+  const organizer = clean(input.organizer || "GO IRL", 80);
+  const participantCount = `${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${canvasHeight}" viewBox="0 0 1080 ${canvasHeight}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="900" viewBox="0 0 1080 900">
   <defs>
     <linearGradient id="readability" x1="0" y1="0" x2="0" y2="1">
-      <stop stop-color="#050708" stop-opacity="0.88"/>
-      <stop offset="0.45" stop-color="#050708" stop-opacity="0.56"/>
-      <stop offset="1" stop-color="#050708" stop-opacity="0.92"/>
+      <stop stop-color="#030506" stop-opacity="0.86"/>
+      <stop offset="0.46" stop-color="#030506" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#030506" stop-opacity="0.9"/>
     </linearGradient>
-    <linearGradient id="secondaryAction" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#263414" stop-opacity="0.94"/><stop offset="1" stop-color="#172111" stop-opacity="0.94"/></linearGradient>
   </defs>
-  <rect width="1080" height="${canvasHeight}" fill="url(#readability)"/>
-  <rect x="34" y="34" width="1012" height="${cardHeight}" rx="58" fill="#0b0f10" fill-opacity="0.32" stroke="#6d8f2b" stroke-opacity="0.58" stroke-width="3"/>
+  <rect width="1080" height="900" fill="url(#readability)"/>
+  <rect data-card-frame="expanded" x="18" y="18" width="1044" height="864" rx="64" fill="none" stroke="#78963a" stroke-opacity="0.42" stroke-width="3"/>
 
-  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 76, 132, 60)}</text>
-  <text fill="#d1d5db" font-size="34" font-weight="600" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 76, 260, 42)}</text>
+  <text fill="#f7f8f9" font-size="62" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 76, 132, 64)}</text>
+  <text fill="#d3d7dc" font-size="34" font-weight="600" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 76, 258, 42)}</text>
 
-  <g>
-    <rect x="914" y="60" width="90" height="90" rx="28" fill="#111518" fill-opacity="0.88" stroke="#697177" stroke-opacity="0.64" stroke-width="2"/>
-    <path d="M947 102l24-14M947 108l24 14" fill="none" stroke="#bdff32" stroke-width="6" stroke-linecap="round"/>
-    <circle cx="941" cy="105" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="84" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="126" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/>
-  </g>
-  <g><rect x="810" y="166" width="194" height="72" rx="32" fill="#111815" fill-opacity="0.9" stroke="#679525" stroke-opacity="0.72" stroke-width="2"/><text x="907" y="213" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(duration)}</text></g>
-  <g>
-    <rect x="810" y="250" width="194" height="72" rx="32" fill="#111815" fill-opacity="0.9" stroke="#679525" stroke-opacity="0.72" stroke-width="2"/>
-    <g fill="none" stroke="#e5ffa7" stroke-width="4" stroke-linecap="round">
-      <circle cx="848" cy="278" r="9"/><path d="M832 303c2-12 9-18 16-18s14 6 16 18"/>
-    </g>
-    <text x="922" y="297" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text>
+  <g data-share-participants="two-row" font-family="DejaVu Sans, sans-serif" font-weight="900">
+    <g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round"><circle cx="930" cy="126" r="13"/><path d="M906 171c2-19 11-29 24-29s22 10 24 29"/></g>
+    <text x="930" y="220" text-anchor="middle" fill="#f7f8f9" font-size="32">${xml(participantCount)}</text>
   </g>
 
-  <line x1="76" y1="340" x2="1004" y2="340" stroke="#d5d9dd" stroke-opacity="0.3" stroke-width="2"/>
-  ${metric(76, 374, "calendar", dateTime)}
-  ${metric(564, 374, "ticket", price)}
-  ${metric(76, 510, "pin", place, 2)}
-  ${metric(564, 510, "status", status || environment, 2)}
+  ${weatherBlock(input)}
 
-  <rect x="76" y="${actionsY}" width="440" height="120" rx="42" fill="url(#secondaryAction)" stroke="#6e9a29" stroke-opacity="0.86" stroke-width="2"/>
-  <text x="296" y="${actionsY + 72}" text-anchor="middle" fill="#c9ff3d" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(input.isSport ? labels.coach : labels.details)}</text>
-  <rect x="564" y="${actionsY}" width="440" height="120" rx="42" fill="#bdff32"/>
-  <text x="784" y="${actionsY + 72}" text-anchor="middle" fill="#090b0d" font-size="36" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(labels.open)}</text>
+  <g data-share-footer="two-row">
+    <line x1="58" y1="690" x2="1022" y2="690" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+    <line x1="242" y1="714" x2="242" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+    <line x1="510" y1="714" x2="510" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+    <line x1="750" y1="714" x2="750" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+
+    <circle cx="145" cy="752" r="36" fill="#111518" fill-opacity="0.28" stroke="#c9ff3d" stroke-opacity="0.55" stroke-width="2"/>
+    <text x="145" y="762" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(initials(organizer))}</text>
+    <text x="145" y="826" text-anchor="middle" fill="#d3d7dc" font-size="18" font-weight="700" font-family="DejaVu Sans, sans-serif">${xml(clean(organizer, 16))}</text>
+
+    ${metricIcon("calendar", 358, 735)}
+    <text x="376" y="826" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(dateTime)}</text>
+
+    ${metricIcon("ticket", 611, 735)}
+    <text x="630" y="826" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(price)}</text>
+
+    ${metricIcon("pin", 856, 732)}
+    <text fill="#f7f8f9" font-size="24" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(wrap(place, 20, 1), 874, 826, 30, "middle")}</text>
+  </g>
   </svg>`;
 };
 
 export const buildTelegramShareCardSvg = (input: TelegramEventCardInput) => buildShareCardSvg(input);
-
 export const buildMetaInvitationCardSvg = (input: TelegramEventCardInput) => buildShareCardSvg(input);
