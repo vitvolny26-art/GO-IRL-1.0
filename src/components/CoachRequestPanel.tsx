@@ -6,7 +6,7 @@ import {
   loadCoachRequestsForActivity,
   requestCoachForActivity,
 } from "../coachFeature";
-import { isActiveCoachRequest } from "../coachRequestState";
+import { isActiveCoachRequest, resolveCoachRequestType } from "../coachRequestState";
 import type { Activity, CoachRequest, UserRole } from "../types";
 
 type CoachRequestPanelVariant = "coach" | "event_helper";
@@ -92,9 +92,8 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
   const [message, setMessage] = useState<string | null>(null);
   const copy = copyByVariant[variant];
   const PanelIcon = variant === "coach" ? Dumbbell : UserCheck;
-
-  const isOrganizer = activity.organizerKey === currentUserKey;
-  const canManage = isOrganizer || userRole === "admin" || userRole === "moderator";
+  const requestType = resolveCoachRequestType(activity, currentUserKey, userRole);
+  const canManage = requestType === "organizer_request";
 
   const organizerRequest = useMemo(
     () => requests.find((request) => request.requestType === "organizer_request" && isActiveCoachRequest(request)),
@@ -131,15 +130,13 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
   }, [activity.id, copy.loadError]);
 
   const handleRequest = async () => {
+    if (!requestType) return;
+
     setLoading(true);
     setMessage(null);
 
     try {
-      await requestCoachForActivity(
-        activity,
-        canManage ? "organizer_request" : "participant_interest",
-      );
-
+      await requestCoachForActivity(activity, requestType);
       await reload();
       notifyCoachRequestsChanged(activity.id);
       setMessage(canManage ? copy.submitSuccess : copy.participantSuccess);
@@ -170,7 +167,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
 
   const buttonLabel = canManage ? copy.organizerButton : copy.participantButton;
   const cancelLabel = canManage ? copy.organizerCancelButton : copy.participantCancelButton;
-  const disabled = loading || Boolean(activeRequest);
+  const disabled = loading || !requestType || Boolean(activeRequest);
 
   return (
     <section className="coach-panel" aria-label={copy.ariaLabel}>
@@ -198,7 +195,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
         </div>
       ) : null}
 
-      {!canManage && participantInterest ? (
+      {requestType === "participant_interest" && participantInterest ? (
         <div className="coach-panel-status">
           <Star size={18} aria-hidden="true" />
           <span>{copy.participantWanted}</span>
@@ -212,7 +209,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
           onClick={handleRequest}
           disabled={disabled}
         >
-          {disabled ? copy.disabledButton : buttonLabel}
+          {!requestType ? "Недоступно" : disabled ? copy.disabledButton : buttonLabel}
         </button>
 
         {canCancel ? (
