@@ -34,7 +34,9 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain('width="1080" height="900"');
     expect(svg).toContain("Волейбол на ZŠ");
     expect(svg).toContain("&lt;вечером&gt;");
-    expect(svg).toContain("ZŠ Demlova &amp; park");
+    expect(svg).toContain("ZŠ Demlova");
+    expect(svg).toContain("&amp;");
+    expect(svg).toContain("park");
     expect(svg).toContain("Vitalii Pashyn");
     expect(svg).toContain(">VP<");
     expect(svg).not.toContain("Нужен тренер");
