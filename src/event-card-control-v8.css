@@ -20,18 +20,19 @@
 
 .glass-event-card .card-share-forward-icon {
   display: block !important;
-  width: 55px !important;
-  height: 55px !important;
+  width: 62px !important;
+  height: 62px !important;
   max-width: none !important;
   max-height: none !important;
   overflow: visible !important;
   fill: var(--lime) !important;
   stroke: none !important;
-  transform: translateX(-12px) !important;
+  transform: translateX(-8px) !important;
 }
 
 .glass-event-card .sport-chip-row {
-  right: -4px !important;
+  top: 81px !important;
+  right: -2px !important;
   justify-items: end !important;
 }
 
@@ -41,7 +42,8 @@
   }
 
   .glass-event-card .sport-chip-row {
-    right: -4px !important;
+    top: 79px !important;
+    right: -2px !important;
   }
 }
 
@@ -51,6 +53,7 @@
   }
 
   .glass-event-card .sport-chip-row {
-    right: -3px !important;
+    top: 77px !important;
+    right: -1px !important;
   }
 }
