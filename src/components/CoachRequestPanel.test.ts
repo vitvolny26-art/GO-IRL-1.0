@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
-import type { CoachRequest } from "../types";
-import { isActiveCoachRequest } from "../coachRequestState";
+import type { Activity, CoachRequest } from "../types";
+import { isActiveCoachRequest, resolveCoachRequestType } from "../coachRequestState";
 
 const requestWithStatus = (status: CoachRequest["status"]) => ({ status }) as CoachRequest;
+
+const activity = {
+  organizerKey: "organizer-1",
+  members: [
+    { userKey: "joined-1", name: "Joined", status: "joined" },
+    { userKey: "waiting-1", name: "Waiting", status: "waiting" },
+  ],
+} as Pick<Activity, "organizerKey" | "members">;
 
 describe("isActiveCoachRequest", () => {
   it.each(["pending", "matched", "confirmed"] as const)("treats %s as active", (status) => {
@@ -15,5 +23,27 @@ describe("isActiveCoachRequest", () => {
 
   it("treats a missing request as inactive", () => {
     expect(isActiveCoachRequest()).toBe(false);
+  });
+});
+
+describe("resolveCoachRequestType", () => {
+  it("waits until the current user is resolved", () => {
+    expect(resolveCoachRequestType(activity, null, "user")).toBeNull();
+  });
+
+  it("uses organizer_request for the event organizer", () => {
+    expect(resolveCoachRequestType(activity, "organizer-1", "user")).toBe("organizer_request");
+  });
+
+  it.each(["admin", "moderator"] as const)("uses organizer_request for %s", (role) => {
+    expect(resolveCoachRequestType(activity, "staff-1", role)).toBe("organizer_request");
+  });
+
+  it("uses participant_interest for a joined participant", () => {
+    expect(resolveCoachRequestType(activity, "joined-1", "user")).toBe("participant_interest");
+  });
+
+  it.each(["waiting-1", "outsider-1"])("blocks %s from creating Coach interest", (userKey) => {
+    expect(resolveCoachRequestType(activity, userKey, "user")).toBeNull();
   });
 });
