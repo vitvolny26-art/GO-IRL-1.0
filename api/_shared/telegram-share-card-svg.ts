@@ -38,8 +38,8 @@ const wrap = (value: string, maxChars: number, maxLines = 2) => {
   return lines.slice(0, maxLines);
 };
 
-const textLines = (lines: string[], x: number, y: number, lineHeight: number) =>
-  lines.map((line, index) => `<tspan x="${x}" y="${y + index * lineHeight}">${xml(line)}</tspan>`).join("");
+const textLines = (lines: string[], x: number, y: number, lineHeight: number, anchor = "start") =>
+  lines.map((line, index) => `<tspan x="${x}" y="${y + index * lineHeight}" text-anchor="${anchor}">${xml(line)}</tspan>`).join("");
 
 const initials = (name: string) => clean(name, 80)
   .split(" ")
@@ -71,10 +71,10 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   const dateTime = [clean(input.date, 40), clean(input.time, 20)].filter(Boolean).join(" · ");
   const place = clean(input.address || input.city, 80);
   const price = input.price > 0 ? `${Math.round(input.price)} Kč` : labels.free;
-  const duration = `${Math.max(15, Math.round(input.durationMinutes || 90))} ${labels.minutes}`;
   const headlineLines = wrap(headline, 18, 2);
   const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 28, 2);
   const organizer = clean(input.organizer || "GO IRL", 80);
+  const participantCount = `${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="900" viewBox="0 0 1080 900">
   <defs>
@@ -85,36 +85,37 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
     </linearGradient>
   </defs>
   <rect width="1080" height="900" fill="url(#readability)"/>
-  <rect x="34" y="34" width="1012" height="832" rx="58" fill="none" stroke="#78963a" stroke-opacity="0.42" stroke-width="3"/>
+  <rect data-card-frame="expanded" x="18" y="18" width="1044" height="864" rx="64" fill="none" stroke="#78963a" stroke-opacity="0.42" stroke-width="3"/>
 
   <text fill="#f7f8f9" font-size="62" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 76, 132, 64)}</text>
   <text fill="#d3d7dc" font-size="34" font-weight="600" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 76, 258, 42)}</text>
 
-  <g font-family="DejaVu Sans, sans-serif" font-weight="900" fill="#f7f8f9">
-    <text x="930" y="188" text-anchor="end" font-size="31">${xml(duration)}</text>
-    <g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round"><circle cx="842" cy="265" r="11"/><path d="M822 301c2-16 10-24 20-24s18 8 20 24"/></g>
-    <text x="930" y="293" text-anchor="end" font-size="31">${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text>
+  <g data-share-participants="two-row" font-family="DejaVu Sans, sans-serif" font-weight="900">
+    <g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round"><circle cx="930" cy="126" r="13"/><path d="M906 171c2-19 11-29 24-29s22 10 24 29"/></g>
+    <text x="930" y="220" text-anchor="middle" fill="#f7f8f9" font-size="32">${xml(participantCount)}</text>
   </g>
 
   ${weatherBlock(input)}
 
-  <line x1="76" y1="690" x2="1004" y2="690" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
-  <line x1="224" y1="718" x2="224" y2="830" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
-  <line x1="515" y1="718" x2="515" y2="830" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
-  <line x1="744" y1="718" x2="744" y2="830" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+  <g data-share-footer="two-row">
+    <line x1="58" y1="690" x2="1022" y2="690" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+    <line x1="242" y1="714" x2="242" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+    <line x1="510" y1="714" x2="510" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
+    <line x1="750" y1="714" x2="750" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
 
-  <circle cx="142" cy="774" r="48" fill="#111518" fill-opacity="0.28" stroke="#c9ff3d" stroke-opacity="0.55" stroke-width="2"/>
-  <text x="142" y="785" text-anchor="middle" fill="#f7f8f9" font-size="30" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(initials(organizer))}</text>
-  <text x="142" y="844" text-anchor="middle" fill="#d3d7dc" font-size="20" font-weight="700" font-family="DejaVu Sans, sans-serif">${xml(organizer)}</text>
+    <circle cx="145" cy="752" r="36" fill="#111518" fill-opacity="0.28" stroke="#c9ff3d" stroke-opacity="0.55" stroke-width="2"/>
+    <text x="145" y="762" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(initials(organizer))}</text>
+    <text x="145" y="826" text-anchor="middle" fill="#d3d7dc" font-size="18" font-weight="700" font-family="DejaVu Sans, sans-serif">${xml(clean(organizer, 16))}</text>
 
-  ${metricIcon("calendar", 274, 744)}
-  <text x="315" y="799" fill="#f7f8f9" font-size="30" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(dateTime)}</text>
+    ${metricIcon("calendar", 358, 735)}
+    <text x="376" y="826" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(dateTime)}</text>
 
-  ${metricIcon("ticket", 567, 744)}
-  <text x="611" y="799" fill="#f7f8f9" font-size="30" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(price)}</text>
+    ${metricIcon("ticket", 611, 735)}
+    <text x="630" y="826" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(price)}</text>
 
-  ${metricIcon("pin", 795, 744)}
-  <text fill="#f7f8f9" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(wrap(place, 14, 2), 839, 786, 34)}</text>
+    ${metricIcon("pin", 856, 732)}
+    <text fill="#f7f8f9" font-size="24" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(wrap(place, 20, 1), 874, 826, 30, "middle")}</text>
+  </g>
   </svg>`;
 };
 
