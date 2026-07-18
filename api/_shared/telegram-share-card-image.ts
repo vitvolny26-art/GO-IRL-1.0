@@ -3,9 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { resolveEventArtworkCode } from "./event-artwork.js";
 import { resolveEventShareBackgroundUrl } from "./event-share-backgrounds.js";
-import { betaEventIllustrationSpriteBase64, betaEventIllustrationTiles } from "./event-illustration-sprite.js";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
 
 const require = createRequire(import.meta.url);
@@ -46,53 +44,24 @@ const loadSharp = () => {
   return sharpPromise;
 };
 
-const spriteBuffer = Buffer.from(betaEventIllustrationSpriteBase64, "base64");
-const illustrationMask = Buffer.from(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="230" height="230"><rect width="230" height="230" rx="58" fill="white"/></svg>',
-);
-
-export const hasBetaEventIllustration = (input: TelegramEventCardInput) => {
-  const code = resolveEventArtworkCode(input);
-  return code in betaEventIllustrationTiles;
-};
-
 export const hasEventShareBackground = (input: TelegramEventCardInput) => {
   const backgroundUrl = resolveEventShareBackgroundUrl(input);
   return Boolean(backgroundUrl && existsSync(backgroundUrl));
 };
 
-const renderArtworkTile = async (sharp: typeof import("sharp").default, input: TelegramEventCardInput) => {
+const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) => {
+  const sharp = await loadSharp();
   const backgroundUrl = resolveEventShareBackgroundUrl(input);
+
   if (backgroundUrl && existsSync(backgroundUrl)) {
     return sharp(readFileSync(backgroundUrl))
-      .resize(230, 230, { fit: "cover" })
-      .composite([{ input: illustrationMask, blend: "dest-in" }])
-      .png()
+      .resize(1080, 900, { fit: "cover", position: "attention" })
+      .composite([{ input: Buffer.from(svg), left: 0, top: 0 }])
+      .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
       .toBuffer();
   }
 
-  const code = resolveEventArtworkCode(input) as keyof typeof betaEventIllustrationTiles;
-  const tile = betaEventIllustrationTiles[code];
-  if (!tile) return null;
-
-  return sharp(spriteBuffer)
-    .extract({ left: tile.left, top: tile.top, width: 96, height: 96 })
-    .resize(230, 230, { fit: "cover" })
-    .composite([{ input: illustrationMask, blend: "dest-in" }])
-    .png()
-    .toBuffer();
-};
-
-const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) => {
-  const sharp = await loadSharp();
-  const image = sharp(Buffer.from(svg));
-  const artworkTile = await renderArtworkTile(sharp, input);
-
-  if (artworkTile) {
-    image.composite([{ input: artworkTile, left: 76, top: 76 }]);
-  }
-
-  return image
+  return sharp(Buffer.from(svg))
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };
