@@ -1,5 +1,4 @@
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { buildEventArtworkSvg } from "./event-artwork.js";
 
 const copy = {
   ru: { free: "Бесплатно", minutes: "мин", coach: "Нужен тренер", details: "Подробнее", open: "Открыть" },
@@ -78,9 +77,9 @@ const metricIcon = (kind: MetricIcon, x: number, y: number) => {
 const metric = (x: number, y: number, icon: MetricIcon, value: string, lines = 1) => {
   const wrapped = wrap(value, lines === 1 ? 24 : 20, lines);
   return `<g>
-    <rect x="${x}" y="${y}" width="440" height="116" rx="30" fill="#171a1d" stroke="#303439" stroke-width="2"/>
+    <rect x="${x}" y="${y}" width="440" height="116" rx="30" fill="#111518" fill-opacity="0.88" stroke="#4a5157" stroke-opacity="0.72" stroke-width="2"/>
     ${metricIcon(icon, x, y)}
-    <text x="${x + 98}" y="${y + 58}" fill="#aeb3bd" font-size="31" font-weight="800" font-family="DejaVu Sans, sans-serif">${textLines(wrapped, x + 98, y + (wrapped.length > 1 ? 43 : 68), 38)}</text>
+    <text x="${x + 98}" y="${y + 58}" fill="#eef1f4" font-size="31" font-weight="800" font-family="DejaVu Sans, sans-serif">${textLines(wrapped, x + 98, y + (wrapped.length > 1 ? 43 : 68), 38)}</text>
   </g>`;
 };
 
@@ -96,47 +95,46 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   const status = [clean(input.level, 50), clean(input.format, 50)].filter(Boolean).join(" · ");
   const price = input.price > 0 ? `${Math.round(input.price)} Kč` : labels.free;
   const duration = `${Math.max(15, Math.round(input.durationMinutes || 90))} ${labels.minutes}`;
-  const headlineLines = wrap(headline, 15, 2);
-  const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 24, 2);
+  const headlineLines = wrap(headline, 18, 2);
+  const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 28, 2);
   const environment = clean(input.environment, 60);
-  const eventArtwork = buildEventArtworkSvg(input);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${canvasHeight}" viewBox="0 0 1080 ${canvasHeight}">
   <defs>
-    <linearGradient id="page" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080b0d"/><stop offset="1" stop-color="#0f1511"/></linearGradient>
-    <linearGradient id="avatar" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#202a1c"/><stop offset="1" stop-color="#101314"/></linearGradient>
-    <linearGradient id="secondaryAction" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#263414"/><stop offset="1" stop-color="#172111"/></linearGradient>
+    <linearGradient id="readability" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#050708" stop-opacity="0.88"/>
+      <stop offset="0.45" stop-color="#050708" stop-opacity="0.56"/>
+      <stop offset="1" stop-color="#050708" stop-opacity="0.92"/>
+    </linearGradient>
+    <linearGradient id="secondaryAction" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#263414" stop-opacity="0.94"/><stop offset="1" stop-color="#172111" stop-opacity="0.94"/></linearGradient>
   </defs>
-  <rect width="1080" height="${canvasHeight}" fill="url(#page)"/>
-  <rect x="34" y="34" width="1012" height="${cardHeight}" rx="58" fill="#101314" stroke="#314514" stroke-width="3"/>
+  <rect width="1080" height="${canvasHeight}" fill="url(#readability)"/>
+  <rect x="34" y="34" width="1012" height="${cardHeight}" rx="58" fill="#0b0f10" fill-opacity="0.32" stroke="#6d8f2b" stroke-opacity="0.58" stroke-width="3"/>
 
-  <rect x="76" y="76" width="230" height="230" rx="58" fill="url(#avatar)" stroke="#37422f" stroke-width="2"/>
-  ${eventArtwork}
-
-  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 344, 142, 60)}</text>
-  <text fill="#969ca7" font-size="34" font-weight="500" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 344, 260, 42)}</text>
+  <text fill="#f5f7f8" font-size="58" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 76, 132, 60)}</text>
+  <text fill="#d1d5db" font-size="34" font-weight="600" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 76, 260, 42)}</text>
 
   <g>
-    <rect x="914" y="60" width="90" height="90" rx="28" fill="#171a1d" stroke="#343a3f" stroke-width="2"/>
+    <rect x="914" y="60" width="90" height="90" rx="28" fill="#111518" fill-opacity="0.88" stroke="#697177" stroke-opacity="0.64" stroke-width="2"/>
     <path d="M947 102l24-14M947 108l24 14" fill="none" stroke="#bdff32" stroke-width="6" stroke-linecap="round"/>
     <circle cx="941" cy="105" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="84" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/><circle cx="977" cy="126" r="8" fill="#171a1d" stroke="#bdff32" stroke-width="5"/>
   </g>
-  <g><rect x="810" y="166" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/><text x="907" y="213" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(duration)}</text></g>
+  <g><rect x="810" y="166" width="194" height="72" rx="32" fill="#111815" fill-opacity="0.9" stroke="#679525" stroke-opacity="0.72" stroke-width="2"/><text x="907" y="213" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(duration)}</text></g>
   <g>
-    <rect x="810" y="250" width="194" height="72" rx="32" fill="#1a2415" stroke="#3d571a" stroke-width="2"/>
+    <rect x="810" y="250" width="194" height="72" rx="32" fill="#111815" fill-opacity="0.9" stroke="#679525" stroke-opacity="0.72" stroke-width="2"/>
     <g fill="none" stroke="#e5ffa7" stroke-width="4" stroke-linecap="round">
       <circle cx="848" cy="278" r="9"/><path d="M832 303c2-12 9-18 16-18s14 6 16 18"/>
     </g>
     <text x="922" y="297" text-anchor="middle" fill="#e5ffa7" font-size="28" font-weight="900" font-family="DejaVu Sans, sans-serif">${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}</text>
   </g>
 
-  <line x1="76" y1="340" x2="1004" y2="340" stroke="#2b2e32" stroke-width="2"/>
+  <line x1="76" y1="340" x2="1004" y2="340" stroke="#d5d9dd" stroke-opacity="0.3" stroke-width="2"/>
   ${metric(76, 374, "calendar", dateTime)}
   ${metric(564, 374, "ticket", price)}
   ${metric(76, 510, "pin", place, 2)}
   ${metric(564, 510, "status", status || environment, 2)}
 
-  <rect x="76" y="${actionsY}" width="440" height="120" rx="42" fill="url(#secondaryAction)" stroke="#54751d" stroke-width="2"/>
+  <rect x="76" y="${actionsY}" width="440" height="120" rx="42" fill="url(#secondaryAction)" stroke="#6e9a29" stroke-opacity="0.86" stroke-width="2"/>
   <text x="296" y="${actionsY + 72}" text-anchor="middle" fill="#c9ff3d" font-size="32" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(input.isSport ? labels.coach : labels.details)}</text>
   <rect x="564" y="${actionsY}" width="440" height="120" rx="42" fill="#bdff32"/>
   <text x="784" y="${actionsY + 72}" text-anchor="middle" fill="#090b0d" font-size="36" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(labels.open)}</text>
