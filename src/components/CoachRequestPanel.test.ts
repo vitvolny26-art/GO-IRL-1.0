@@ -6,4 +6,21 @@ let isActiveCoachRequest: typeof import("./CoachRequestPanel")["isActiveCoachReq
 beforeAll(async () => {
   vi.stubEnv("VITE_SUPABASE_URL", "http://127.0.0.1:54321");
   vi.stubEnv("VITE_SUPABASE_PUBLISHABLE_KEY", "test-publishable-key");
-  ({ isActiveCoachRequest } = await import
+  ({ isActiveCoachRequest } = await import("./CoachRequestPanel"));
+});
+
+const requestWithStatus = (status: CoachRequest["status"]) => ({ status }) as CoachRequest;
+
+describe("isActiveCoachRequest", () => {
+  it.each(["pending", "matched", "confirmed"] as const)("treats %s as active", (status) => {
+    expect(isActiveCoachRequest(requestWithStatus(status))).toBe(true);
+  });
+
+  it.each(["cancelled", "completed", "rejected"] as const)("treats %s as terminal", (status) => {
+    expect(isActiveCoachRequest(requestWithStatus(status))).toBe(false);
+  });
+
+  it("treats a missing request as inactive", () => {
+    expect(isActiveCoachRequest()).toBe(false);
+  });
+});
