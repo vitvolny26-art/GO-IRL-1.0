@@ -19,9 +19,8 @@ export const demoCoachProfile: CoachProfile = {
 };
 
 export const attachDemoCoachProfile = (request: CoachRequest): CoachRequest =>
-  request.requestType === "organizer_request" && request.status === "confirmed"
+  request.requestType === "organizer_request" &&
+  request.status === "confirmed" &&
+  !request.coachProfileId
     ? { ...request, coachProfileId: demoCoachProfile.id }
     : request;
-
-export const resolveDemoCoachProfile = (request?: Pick<CoachRequest, "coachProfileId">) =>
-  request?.coachProfileId === demoCoachProfile.id ? demoCoachProfile : null;
