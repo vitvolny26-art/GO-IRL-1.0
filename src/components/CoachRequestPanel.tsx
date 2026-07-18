@@ -6,6 +6,7 @@ import {
   loadCoachRequestsForActivity,
   requestCoachForActivity,
 } from "../coachFeature";
+import { isActiveCoachRequest } from "../coachRequestState";
 import type { Activity, CoachRequest, UserRole } from "../types";
 
 type CoachRequestPanelVariant = "coach" | "event_helper";
@@ -83,9 +84,6 @@ const coachStatusLabel = (status: CoachRequest["status"], variant: CoachRequestP
     default: return "в обработке";
   }
 };
-
-export const isActiveCoachRequest = (request?: CoachRequest) =>
-  Boolean(request && !["cancelled", "completed", "rejected"].includes(request.status));
 
 export function CoachRequestPanel({ activity, userRole, variant = "coach" }: CoachRequestPanelProps) {
   const [requests, setRequests] = useState<CoachRequest[]>([]);
