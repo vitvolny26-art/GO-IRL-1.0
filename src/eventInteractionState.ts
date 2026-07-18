@@ -108,7 +108,7 @@ export type EventActionSurface = "card" | "sheet";
 
 export const eventActionTranslationKey = (action: EventPrimaryAction, surface: EventActionSurface) => {
   switch (action) {
-    case "manage": return surface === "card" ? "open" : "edit";
+    case "manage": return "edit";
     case "open-chat": return "cardOpenChat";
     case "join": return surface === "card" ? "cardJoin" : "join";
     case "request-join": return surface === "card" ? "cardJoinRequest" : "request";
