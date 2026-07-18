@@ -9,4 +9,17 @@
   height: 48px !important;
   min-width: 48px !important;
   min-height: 48px !important;
-  overflow: visible !important
+  overflow: visible !important;
+}
+
+.glass-event-card .card-share-action {
+  width: 48px !important;
+  height: 48px !important;
+  overflow: visible !important;
+}
+
+.glass-event-card .card-share-forward-icon {
+  display: block !important;
+  width: 70px !important;
+  height: 70px !important;
+  max-width: none !important
