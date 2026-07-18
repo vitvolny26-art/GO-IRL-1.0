@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Activity, CoachRequest } from "../types";
-import { isActiveCoachRequest, resolveCoachRequestType } from "../coachRequestState";
+import {
+  isActiveCoachRequest,
+  normalizeCoachRequestDetails,
+  resolveCoachRequestType,
+} from "../coachRequestState";
 
 const requestWithStatus = (status: CoachRequest["status"]) => ({ status }) as CoachRequest;
 
@@ -45,5 +49,21 @@ describe("resolveCoachRequestType", () => {
 
   it.each(["waiting-1", "outsider-1"])("blocks %s from creating Coach interest", (userKey) => {
     expect(resolveCoachRequestType(activity, userKey, "user")).toBeNull();
+  });
+});
+
+describe("normalizeCoachRequestDetails", () => {
+  it("trims organizer details", () => {
+    expect(normalizeCoachRequestDetails({ goal: "  Help beginners  ", level: " beginner " })).toEqual({
+      goal: "Help beginners",
+      level: "beginner",
+    });
+  });
+
+  it("drops empty values", () => {
+    expect(normalizeCoachRequestDetails({ goal: "  ", level: "" })).toEqual({
+      goal: undefined,
+      level: undefined,
+    });
   });
 });
