@@ -76,7 +76,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           setOpen((current) => !current);
         }}
       >
-        <svg className="card-share-forward-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <svg className="card-share-forward-icon" viewBox="8 12 50 36" aria-hidden="true">
           <path d="M10 45C16 30 27 23 42 23V13L56 28 42 43V33C29 33 20 37 10 45Z" />
         </svg>
       </button>
