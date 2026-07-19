@@ -37,7 +37,22 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Apply patch
-        run: node /tmp/plan1149-unify-organizer-avatar.cjs
+        id: apply
+        continue-on-error: true
+        run: node /tmp/plan1149-unify-organizer-avatar.cjs > /tmp/plan1149-patch.log 2>&1
+
+      - name: Upload patch diagnostics
+        if: steps.apply.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan1149-patch-diagnostics
+          path: /tmp/plan1149-patch.log
+
+      - name: Stop on patch failure
+        if: steps.apply.outcome == 'failure'
+        run: |
+          cat /tmp/plan1149-patch.log
+          exit 1
 
       - name: Test
         run: pnpm run test
