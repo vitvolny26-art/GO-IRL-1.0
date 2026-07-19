@@ -6,11 +6,20 @@ import { useAppStore } from "../store";
 import type { Activity, Language } from "../types";
 import { OrganizerDetailAction } from "./EventCardPrimitives";
 
-export const findActivityForSheetTitle = (activities: Activity[], language: Language, title: string) => {
-  const normalized = title.trim();
-  return activities.find((activity) => stripLeadingEmoji(activity.title[language]).trim() === normalized)
-    || activities.find((activity) => Object.values(activity.title).some((value) => stripLeadingEmoji(value).trim() === normalized))
-    || null;
+const normalizeText = (value: string) => stripLeadingEmoji(value).trim();
+
+export const findActivityForSheet = (
+  activities: Activity[],
+  language: Language,
+  title: string,
+  description: string,
+) => {
+  const normalizedTitle = title.trim();
+  const normalizedDescription = description.trim();
+  return activities.find((activity) => (
+    normalizeText(activity.title[language]) === normalizedTitle
+    && normalizeText(activity.description[language]) === normalizedDescription
+  )) || null;
 };
 
 type PortalState = {
@@ -19,10 +28,11 @@ type PortalState = {
   legacyRow: HTMLElement | null;
 };
 
-const findLegacyOrganizerRow = (detailList: HTMLElement) => {
+const findLegacyOrganizerRow = (detailList: HTMLElement, organizerLabel: string) => {
   return Array.from(detailList.children).find((child) => {
     if (!(child instanceof HTMLElement)) return false;
-    return Boolean(child.querySelector(".lucide-circle-user-round"));
+    const label = child.querySelector(":scope > span")?.textContent?.trim() || "";
+    return label === organizerLabel;
   }) as HTMLElement | undefined;
 };
 
@@ -36,7 +46,8 @@ export function OrganizerEventDetailsPortal() {
       const sheet = document.querySelector<HTMLElement>(".activity-sheet");
       const detailList = sheet?.querySelector<HTMLElement>(".detail-list");
       const title = sheet?.querySelector("h2")?.textContent || "";
-      const activity = detailList ? findActivityForSheetTitle(activities, language, title) : null;
+      const description = sheet?.querySelector(".sheet-description, .sport-sheet-hero p")?.textContent || "";
+      const activity = detailList ? findActivityForSheet(activities, language, title, description) : null;
 
       if (!detailList || !activity) {
         setPortal((current) => {
@@ -52,7 +63,7 @@ export function OrganizerEventDetailsPortal() {
         current?.target.remove();
         current?.legacyRow?.classList.remove("organizer-detail-legacy-hidden");
 
-        const legacyRow = findLegacyOrganizerRow(detailList) || null;
+        const legacyRow = findLegacyOrganizerRow(detailList, labels.organizer) || null;
         legacyRow?.classList.add("organizer-detail-legacy-hidden");
         const target = document.createElement("div");
         target.className = "organizer-detail-portal-slot";
@@ -72,7 +83,7 @@ export function OrganizerEventDetailsPortal() {
         return null;
       });
     };
-  }, [activities, language]);
+  }, [activities, language, labels.organizer]);
 
   if (!portal) return null;
   return createPortal(
