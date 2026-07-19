@@ -7,11 +7,19 @@ import {
 } from "./invitationLink";
 
 const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
+const persistedEventId = "86016a39-4684-d288-afc9-7e206c027568";
 
 describe("invitation links", () => {
   it("puts only the event UUID into startapp", () => {
     expect(buildTelegramActivityInviteUrl(eventId, "@GOirl_bot"))
       .toBe(`https://t.me/GOirl_bot?startapp=${eventId}`);
+  });
+
+  it("accepts persisted UUID-shaped event ids used by preview data", () => {
+    expect(parseInvitationStartParam(persistedEventId))
+      .toEqual({ valid: true, eventId: persistedEventId });
+    expect(buildTelegramActivityInviteUrl(persistedEventId, "GOirl_bot"))
+      .toBe(`https://t.me/GOirl_bot?startapp=${persistedEventId}`);
   });
 
   it("rejects invitation text glued to the UUID", () => {
