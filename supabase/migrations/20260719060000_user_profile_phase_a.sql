@@ -59,6 +59,30 @@ before update on public.user_profiles
 for each row
 execute function public.go_irl_touch_updated_at();
 
+create or replace function public.go_irl_validate_profile_interest_limit()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if (
+    select count(*)
+    from public.user_profile_interests interest
+    where interest.user_key = new.user_key
+  ) >= 12 then
+    raise exception 'maximum 12 profile interests allowed' using errcode = '22023';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists user_profile_interests_limit on public.user_profile_interests;
+create trigger user_profile_interests_limit
+before insert on public.user_profile_interests
+for each row
+execute function public.go_irl_validate_profile_interest_limit();
+
 alter table public.user_profiles enable row level security;
 alter table public.user_profile_interests enable row level security;
 
@@ -75,6 +99,10 @@ create policy "user profiles own insert"
 on public.user_profiles for insert to authenticated
 with check (
   user_key = public.go_irl_auth_user_key()
+  and (
+    avatar_path is null
+    or split_part(avatar_path, '/', 1) = public.go_irl_auth_user_key()
+  )
 );
 
 drop policy if exists "user profiles own update" on public.user_profiles;
@@ -85,6 +113,10 @@ using (
 )
 with check (
   user_key = public.go_irl_auth_user_key()
+  and (
+    avatar_path is null
+    or split_part(avatar_path, '/', 1) = public.go_irl_auth_user_key()
+  )
 );
 
 drop policy if exists "user profile interests readable" on public.user_profile_interests;
@@ -133,10 +165,15 @@ as $$
 declare
   v_user_key text := public.go_irl_auth_user_key();
   v_interest_slugs text[] := coalesce(p_interest_slugs, array[]::text[]);
+  v_avatar_path text := nullif(p_avatar_path, '');
   v_profile public.user_profiles%rowtype;
 begin
   if v_user_key is null then
     raise exception 'trusted authentication required' using errcode = '42501';
+  end if;
+
+  if v_avatar_path is not null and split_part(v_avatar_path, '/', 1) <> v_user_key then
+    raise exception 'avatar path must use the authenticated user prefix' using errcode = '42501';
   end if;
 
   if cardinality(v_interest_slugs) > 12 then
@@ -173,7 +210,7 @@ begin
     btrim(p_display_name),
     coalesce(p_bio, ''),
     coalesce(p_city_id, 'olomouc'),
-    nullif(p_avatar_path, ''),
+    v_avatar_path,
     nullif(p_avatar_code, ''),
     coalesce(p_is_public, true),
     coalesce(p_show_favorites, true)
@@ -205,11 +242,15 @@ revoke all on table public.user_profiles from anon;
 revoke all on table public.user_profile_interests from public;
 revoke all on table public.user_profile_interests from anon;
 
-grant select, insert, update on table public.user_profiles to authenticated;
-grant select, insert, delete on table public.user_profile_interests to authenticated;
+revoke all on function public.go_irl_validate_profile_interest_limit() from public;
+revoke all on function public.go_irl_validate_profile_interest_limit() from anon;
+revoke all on function public.go_irl_validate_profile_interest_limit() from authenticated;
 
 revoke all on function public.save_my_profile(text, text, text, text, text, boolean, boolean, text[]) from public;
 revoke all on function public.save_my_profile(text, text, text, text, text, boolean, boolean, text[]) from anon;
+
+grant select, insert, update on table public.user_profiles to authenticated;
+grant select, insert, delete on table public.user_profile_interests to authenticated;
 grant execute on function public.save_my_profile(text, text, text, text, text, boolean, boolean, text[]) to authenticated;
 
 notify pgrst, 'reload schema';
