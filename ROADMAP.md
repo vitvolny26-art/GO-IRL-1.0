@@ -3,8 +3,8 @@ title: Roadmap
 owner: Product Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-19
+next_review: 2026-07-26
 ---
 
 # Roadmap
@@ -38,7 +38,7 @@ Current release gate:
 - `pnpm run build`: pending after latest commits.
 - `pnpm run test`: pending after latest commits.
 - Real Telegram smoke test: pending.
-- Supabase production table/RLS verification: pending/manual.
+- Supabase production table/RLS verification: Coach read-only inventory completed on 2026-07-19; corrective design pending manual approval.
 - Vercel may fail because of build-rate-limit; this is operational, not automatically a code failure.
 
 Do not claim beta-ready until the latest `main` passes local quality gates and manual smoke tests.
@@ -117,10 +117,13 @@ Before new vertical expansion, Closed Beta must validate the Sport Coach hypothe
    - Remove dependency on legacy local fallback where possible after production migration is applied.
 3. Sport Coach MVP 1.1
    - Keep Coach sport-only.
-   - Stabilize coach request flow for sport events.
-   - Add demo confirmed coach for browser mock mode.
-   - Add coach detail block and sport card badge.
-   - Measure show-up rate and beginner comfort.
+   - Stabilize organizer Coach request and joined-participant interest.
+   - Keep organizer note in the existing `goal` field.
+   - Add the manual assignment and assigned-Coach acceptance foundation only after approved RLS/backend design.
+   - Keep the browser demo local-only with Alex as the confirmed mock Coach.
+   - Show Coach details and the sport card badge only for a safely projected confirmed assignment.
+   - Keep Activity Chat close to the Coach block.
+   - Defer Role Choice and the full Review Flow to Sport Roles 1.2+.
 4. Performance
    - Lazy loading.
    - Code splitting.
@@ -182,22 +185,27 @@ The coach helps with:
    - Browser/no Telegram demo uses Alex, Sport Coach, Olomouc.
    - Demo request becomes confirmed immediately.
    - Demo writes never touch production Supabase.
-3. Sport Coach Bottom Sheet
+3. Sport Coach Request Panel
    - Button: "Need a coach" / "Нужен тренер".
-   - Choice: Sport Coach, Beginner Helper, Team Captain.
-   - Organizer note.
-   - Status: requested or confirmed.
-4. Sport Coach Event Block
-   - Event detail shows confirmed coach.
-   - Chat link stays close to coach block.
-   - Copy explains that coach helps beginners and event flow.
-5. Sport Coach Badge
-   - Sport cards show "✨ Есть тренер" only for confirmed coach.
-   - Pending requests must not show the confirmed badge.
-6. Minimal Review
-   - 1-5 rating.
-   - Short comment.
-   - Beginner comfort marker: "Did the coach help you feel comfortable if you came alone?"
+   - Organizer note uses the existing `goal` field.
+   - Joined participants may express `participant_interest`.
+   - Request states remain compatible with `pending`, `matched`, `confirmed`, and terminal states.
+   - Role Choice, Beginner Helper, and Team Captain selection are future Sport Roles 1.2+.
+4. Sport Coach Assignment
+   - Staff manual matching and assigned-Coach accept/reject require an approved backend/RLS design.
+   - A Coach becomes publicly confirmed only after assigned-Coach acceptance.
+   - The current production RLS does not yet support Coach inbox or public confirmed assignment reads.
+5. Sport Coach Event Block
+   - Event detail shows only a safely projected confirmed Coach.
+   - Chat link stays close to the Coach block.
+   - Copy explains that the Coach helps beginners and event flow.
+6. Sport Coach Badge
+   - Sport cards show "✨ Есть тренер" only for a safely projected confirmed Coach.
+   - Pending and matched requests must not show the confirmed badge.
+7. Feedback boundary
+   - The beginner-comfort question remains a beta metric definition.
+   - Attendance-linked feedback implementation and the full Review Flow are future Sport Roles 1.2+ work requiring separate schema approval.
+   - Public ratings/reviews remain out of beta scope.
 
 ### Beta metrics
 
@@ -214,11 +222,30 @@ Supporting:
 - repeat sport attendance;
 - organizer coach-request conversion.
 
+Metrics requiring actual attendance must not be claimed as implemented until an approved attendance model exists.
+
+### Production security gate
+
+A read-only production inventory completed on 2026-07-19 found overlapping Coach policy families and no public-safe confirmed assignment projection or assigned-Coach request permission.
+
+Before matching, confirmation, Coach inbox, public Coach badge/profile, or Review Flow production work:
+
+- reconcile the duplicate production policy families;
+- approve backend-authoritative state transitions;
+- approve a public-safe batch Coach summary;
+- protect verification and rating aggregate fields;
+- verify organizer, participant, assigned Coach, outsider, and moderator/admin identities;
+- approve and test rollback before applying any migration.
+
+See `docs/reports/2026-07-19-coach-production-rls-inventory.md`.
+
 ### Not now
 
 - Payments.
 - Marketplace.
 - Universal event roles.
+- Role Choice.
+- Full Review Flow.
 - Referee.
 - City guide.
 - Language buddy.
