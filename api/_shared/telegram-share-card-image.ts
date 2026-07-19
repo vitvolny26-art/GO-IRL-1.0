@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { resolveEventShareBackgroundUrl } from "./event-share-backgrounds.js";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
+import { readEnv } from "./env.js";
 
 const require = createRequire(import.meta.url);
 let sharpPromise: Promise<typeof import("sharp").default> | null = null;
@@ -49,19 +50,22 @@ export const hasEventShareBackground = (input: TelegramEventCardInput) => {
   return Boolean(backgroundUrl && existsSync(backgroundUrl));
 };
 
-const trustedAvatarHosts = ["t.me", "telegram.org", "telegram-cdn.org"];
+const trustedTelegramAvatarHosts = ["t.me", "telegram.org", "telegram-cdn.org"];
 
-const isTrustedTelegramAvatarUrl = (value: string) => {
+export const isTrustedOrganizerAvatarUrl = (value: string) => {
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && trustedAvatarHosts.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`));
+    if (url.protocol !== "https:") return false;
+    if (trustedTelegramAvatarHosts.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`))) return true;
+    const supabaseUrl = readEnv("SUPABASE_URL");
+    return Boolean(supabaseUrl && url.hostname === new URL(supabaseUrl).hostname);
   } catch {
     return false;
   }
 };
 
 const loadOrganizerAvatar = async (value?: string) => {
-  if (!value || !isTrustedTelegramAvatarUrl(value)) return null;
+  if (!value || !isTrustedOrganizerAvatarUrl(value)) return null;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4_000);
   try {

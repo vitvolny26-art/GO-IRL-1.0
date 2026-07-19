@@ -115,7 +115,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const telegramOrganizerKey = `telegram:${verified.user.id}`;
     const verifiedUser = verified.user as typeof verified.user & { photo_url?: string };
     const photoUrl = typeof verifiedUser.photo_url === "string" ? verifiedUser.photo_url.trim() : "";
-    if (card.organizerKey === telegramOrganizerKey && /^https:\/\//i.test(photoUrl)) {
+    if (!card.organizerAvatarUrl && card.organizerKey === telegramOrganizerKey && /^https:\/\//i.test(photoUrl)) {
       card.organizerAvatarUrl = photoUrl;
     }
 

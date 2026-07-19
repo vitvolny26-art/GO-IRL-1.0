@@ -146,6 +146,21 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     .eq("status", "joined");
   if (countError) throw countError;
 
+  const profileResult = await db
+    .from("user_profiles")
+    .select("avatar_path")
+    .eq("user_key", row.organizer_key)
+    .maybeSingle();
+  if (profileResult.error) throw profileResult.error;
+
+  let organizerAvatarUrl: string | undefined;
+  const avatarPath = typeof profileResult.data?.avatar_path === "string" ? profileResult.data.avatar_path.trim() : "";
+  if (avatarPath) {
+    const signed = await db.storage.from("avatars").createSignedUrl(avatarPath, 300);
+    if (signed.error) throw signed.error;
+    organizerAvatarUrl = signed.data.signedUrl;
+  }
+
   const activity = localized(row, language, "activity");
   const sport = sportMetadata(row.metadata);
   const generic = language === "cs"
@@ -170,6 +185,7 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     city: cityName(row.city_id, language),
     organizer: row.organizer,
     organizerKey: row.organizer_key,
+    organizerAvatarUrl,
     durationMinutes: number(sport?.durationMinutes, 90),
     price: row.price,
     level: localizedSportValue(sport?.level, language, generic.level),

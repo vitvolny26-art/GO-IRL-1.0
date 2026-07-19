@@ -1,6 +1,8 @@
-import type { MouseEvent, ReactNode } from "react";
+import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { Clock3, Info, ShieldCheck, Star, UserRoundCheck, UsersRound } from "lucide-react";
 import type { EventInteractionState, EventInteractionStatus } from "../eventInteractionState";
+import { getCurrentAuthIdentity } from "../authSession";
+import { createProfileRepository } from "../profile/profileRepository";
 
 type EventMetaChipProps = { icon: ReactNode; label: string; ariaLabel?: string; onClick?: () => void };
 
@@ -61,7 +63,33 @@ export const resolveOrganizerAvatar = (_organizerKey: string, organizerName: str
 };
 
 export function OrganizerAvatarAction({ organizerKey, organizerName }: { organizerKey: string; organizerName: string }) {
-  const avatar = resolveOrganizerAvatar(organizerKey, organizerName);
+  const [avatar, setAvatar] = useState(() => resolveOrganizerAvatar(organizerKey, organizerName));
+
+  useEffect(() => {
+    let active = true;
+    const identity = getCurrentAuthIdentity();
+    if (identity?.source !== "trusted-telegram" || identity.user.userKey !== organizerKey) return undefined;
+
+    void (async () => {
+      const { supabase } = await import("../supabase");
+      const repository = createProfileRepository({
+        identity,
+        supabaseClient: supabase,
+        storage: localStorage,
+        fallbackDisplayName: organizerName,
+        fallbackCityId: "olomouc",
+      });
+      const profile = await repository.loadOwnProfile();
+      if (!profile) return;
+      const resolved = profile.avatarPath
+        ? await repository.resolveAvatarUrl(profile.avatarPath)
+        : profile.avatarCode || initials(organizerName);
+      if (active && resolved) setAvatar(resolved);
+    })().catch(() => undefined);
+
+    return () => { active = false; };
+  }, [organizerKey, organizerName]);
+
   const openProfile = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
