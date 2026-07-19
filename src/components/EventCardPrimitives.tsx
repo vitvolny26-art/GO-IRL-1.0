@@ -46,14 +46,20 @@ export type OrganizerProfileDetail = OrganizerIdentity;
 export const isOrganizerAvatarImage = (avatar: string) => /^(data:image\/|https?:\/\/)/i.test(avatar);
 export const resolveOrganizerAvatar = (_organizerKey: string, organizerName: string) => organizerInitials(organizerName);
 
+const fallbackOrganizerIdentity = (organizerKey: string, organizerName: string): OrganizerIdentity => ({
+  organizerKey,
+  displayName: organizerName,
+  bio: "",
+  cityId: "",
+  avatar: organizerInitials(organizerName),
+});
+
+const dispatchOrganizerProfile = (identity: OrganizerIdentity) => {
+  window.dispatchEvent(new CustomEvent<OrganizerProfileDetail>(organizerProfileEventName, { detail: identity }));
+};
+
 export function OrganizerAvatarAction({ organizerKey, organizerName }: { organizerKey: string; organizerName: string }) {
-  const [identity, setIdentity] = useState<OrganizerIdentity>(() => ({
-    organizerKey,
-    displayName: organizerName,
-    bio: "",
-    cityId: "",
-    avatar: organizerInitials(organizerName),
-  }));
+  const [identity, setIdentity] = useState<OrganizerIdentity>(() => fallbackOrganizerIdentity(organizerKey, organizerName));
 
   useEffect(() => {
     let active = true;
@@ -66,12 +72,32 @@ export function OrganizerAvatarAction({ organizerKey, organizerName }: { organiz
   const openProfile = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    window.dispatchEvent(new CustomEvent<OrganizerProfileDetail>(organizerProfileEventName, { detail: identity }));
+    dispatchOrganizerProfile(identity);
   };
 
   return (
     <button className="glass-event-card-meta-item organizer-avatar-action" type="button" aria-label={identity.displayName} onClick={openProfile}>
       <span className="organizer-avatar-thumb">{isOrganizerAvatarImage(identity.avatar) ? <img src={identity.avatar} alt="" /> : <span>{identity.avatar}</span>}</span>
+    </button>
+  );
+}
+
+export function OrganizerDetailAction({ organizerKey, organizerName, label }: { organizerKey: string; organizerName: string; label: string }) {
+  const [identity, setIdentity] = useState<OrganizerIdentity>(() => fallbackOrganizerIdentity(organizerKey, organizerName));
+
+  useEffect(() => {
+    let active = true;
+    void resolveOrganizerIdentity(organizerKey, organizerName).then((resolved) => {
+      if (active) setIdentity(resolved);
+    });
+    return () => { active = false; };
+  }, [organizerKey, organizerName]);
+
+  return (
+    <button className="organizer-detail-action" type="button" aria-label={`${label}: ${identity.displayName}`} onClick={() => dispatchOrganizerProfile(identity)}>
+      <span className="organizer-detail-avatar">{isOrganizerAvatarImage(identity.avatar) ? <img src={identity.avatar} alt="" /> : identity.avatar}</span>
+      <span>{label}</span>
+      <strong>{identity.displayName}</strong>
     </button>
   );
 }
