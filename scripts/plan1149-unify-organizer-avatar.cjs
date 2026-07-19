@@ -132,25 +132,27 @@ replace(
   '  if (!value || !isTrustedOrganizerAvatarUrl(value)) return null;',
 );
 
-replace(
-  'api/_shared/telegram-share-card-image.test.ts',
-  'import { configureTelegramShareCardFonts, hasEventShareBackground, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";',
-  'import { configureTelegramShareCardFonts, hasEventShareBackground, isTrustedOrganizerAvatarUrl, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";',
-);
-replace(
-  'api/_shared/telegram-share-card-image.test.ts',
-  `  it("resolves approved category artwork as the full-card JPEG background", () => {`,
-  `  it("accepts only Telegram or configured Supabase organizer avatars", () => {
-    const previous = process.env.SUPABASE_URL;
+fs.writeFileSync(
+  'api/_shared/telegram-share-card-image-avatar.test.ts',
+  `import { afterEach, describe, expect, it } from "vitest";
+import { isTrustedOrganizerAvatarUrl } from "./telegram-share-card-image";
+
+const previousSupabaseUrl = process.env.SUPABASE_URL;
+
+afterEach(() => {
+  if (previousSupabaseUrl === undefined) delete process.env.SUPABASE_URL;
+  else process.env.SUPABASE_URL = previousSupabaseUrl;
+});
+
+describe("organizer avatar URL trust", () => {
+  it("accepts Telegram and the configured Supabase host only", () => {
     process.env.SUPABASE_URL = "https://project-ref.supabase.co";
     expect(isTrustedOrganizerAvatarUrl("https://t.me/i/userpic/320/example.jpg")).toBe(true);
     expect(isTrustedOrganizerAvatarUrl("https://project-ref.supabase.co/storage/v1/object/sign/avatars/example.jpg?token=x")).toBe(true);
     expect(isTrustedOrganizerAvatarUrl("https://evil.example/avatar.jpg")).toBe(false);
-    if (previous === undefined) delete process.env.SUPABASE_URL;
-    else process.env.SUPABASE_URL = previous;
   });
-
-  it("resolves approved category artwork as the full-card JPEG background", () => {`,
+});
+`,
 );
-
+console.log('created api/_shared/telegram-share-card-image-avatar.test.ts');
 console.log('PLAN1149 patch applied');
