@@ -14,7 +14,11 @@ where n.nspname = 'public'
   and p.proname like 'go_irl_%'
 order by p.proname;
 
--- Expected direct external RPC surface after migration:
--- authenticated: go_irl_ensure_activity_chat(uuid)
--- service_role: go_irl_provider_join(uuid, text, text) and maintenance/internal functions
--- anon: no SECURITY DEFINER function execute privileges
+-- Expected after the conservative migration:
+-- 1. anon/authenticated cannot directly execute trigger and maintenance functions.
+-- 2. authenticated can execute go_irl_ensure_activity_chat(uuid).
+-- 3. service_role can execute provider and maintenance functions.
+-- 4. RLS policy helper functions may remain executable by the roles whose policies call them.
+-- 5. go_irl_auth_user_key, go_irl_request_invite_activity,
+--    go_irl_request_user_id, go_irl_request_user_key, and go_irl_touch_updated_at
+--    have an explicit pg_catalog, public search_path.
