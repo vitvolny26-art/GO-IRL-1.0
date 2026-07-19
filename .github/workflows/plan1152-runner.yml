@@ -32,7 +32,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Apply patch
-        run: node /tmp/plan1152-profile-photo-controls.cjs
+        id: apply
+        continue-on-error: true
+        run: node /tmp/plan1152-profile-photo-controls.cjs > /tmp/plan1152-patch.log 2>&1
+      - name: Upload patch diagnostics
+        if: steps.apply.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan1152-patch-diagnostics
+          path: /tmp/plan1152-patch.log
+      - name: Stop on patch failure
+        if: steps.apply.outcome == 'failure'
+        run: |
+          cat /tmp/plan1152-patch.log
+          exit 1
       - name: Test
         run: pnpm run test
       - name: Typecheck
