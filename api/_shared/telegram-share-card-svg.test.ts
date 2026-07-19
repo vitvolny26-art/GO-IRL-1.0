@@ -38,7 +38,7 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain("&amp;");
     expect(svg).toContain("park");
     expect(svg).toContain(">V</text>");
-    expect(svg).toContain('data-organizer-avatar-slot="rounded-square"');
+    expect(svg).toContain('data-organizer-avatar-slot="soft-square"');
     expect(svg).not.toContain(">Vitalii Pashyn<");
     expect(svg).not.toContain('x1="58" y1="690"');
     expect(svg).toContain('data-card-frame="expanded"');
