@@ -5,7 +5,7 @@ import { requireEnv } from "./env.js";
 export type ShareLanguage = "ru" | "uk" | "cs" | "en";
 
 const OFFICIAL_BOT_USERNAME = "GOirl_bot";
-const EVENT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const EVENT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const isShareEventId = (value: unknown): value is string =>
   typeof value === "string" && EVENT_ID_PATTERN.test(value.trim());
