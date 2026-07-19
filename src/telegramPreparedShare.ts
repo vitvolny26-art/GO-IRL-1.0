@@ -7,6 +7,22 @@ export type PreparedTelegramShareResult =
   | "cancelled"
   | "unavailable";
 
+const MAX_PROFILE_AVATAR_LENGTH = 500_000;
+
+const loadProfileAvatarForShare = () => {
+  try {
+    const stored = window.localStorage.getItem("go-irl-profile");
+    const parsed = stored ? JSON.parse(stored) as { avatar?: unknown } : null;
+    const avatar = typeof parsed?.avatar === "string" ? parsed.avatar.trim() : "";
+    return /^data:image\/(?:jpeg|jpg|png|webp);base64,/i.test(avatar)
+      && avatar.length <= MAX_PROFILE_AVATAR_LENGTH
+      ? avatar
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export const canSharePreparedTelegramMessage = () => {
   const webApp = getTelegramWebApp();
   return Boolean(webApp?.shareMessage && getTelegramInitData());
@@ -28,6 +44,7 @@ export async function sharePreparedTelegramEvent(
   }
 
   try {
+    const organizerAvatar = loadProfileAvatarForShare();
     const response = await fetch("/api/telegram/prepared-event-share", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -35,6 +52,7 @@ export async function sharePreparedTelegramEvent(
         initData,
         eventId: activity.id,
         language,
+        ...(organizerAvatar ? { organizerAvatar } : {}),
       }),
     });
 
@@ -49,27 +67,4 @@ export async function sharePreparedTelegramEvent(
       return "unavailable";
     }
 
-    return await new Promise<PreparedTelegramShareResult>((resolve) => {
-      let settled = false;
-
-      const finish = (result: PreparedTelegramShareResult) => {
-        if (settled) return;
-        settled = true;
-        window.clearTimeout(timeout);
-        resolve(result);
-      };
-
-      const timeout = window.setTimeout(
-        () => finish("unavailable"),
-        20_000,
-      );
-
-      webApp.shareMessage?.(
-        preparedMessageId,
-        (success) => finish(success ? "shared" : "cancelled"),
-      );
-    });
-  } catch {
-    return "unavailable";
-  }
-}
+    return await new Promise<PreparedTelegramShare
