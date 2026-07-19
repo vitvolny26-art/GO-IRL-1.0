@@ -59,6 +59,6 @@ jobs:
           git config user.name "GO IRL PLAN1152 Runner"
           git config user.email "goirl-plan1152@users.noreply.github.com"
           git checkout -b fix/profile-photo-controls
-          git add src/App.tsx src/styles.css api/_shared/telegram-share-card-image.ts api/_shared/telegram-share-card-svg.ts api/_shared/telegram-share-card-image.test.ts
+          git add src/App.tsx src/styles.css api/_shared/telegram-share-card-image.ts api/_shared/telegram-share-card-svg.ts api/_shared/telegram-share-card-svg.test.ts
           git commit -m "fix: simplify profile photo controls"
           git push origin HEAD:refs/heads/fix/profile-photo-controls
