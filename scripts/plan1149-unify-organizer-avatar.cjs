@@ -2,8 +2,9 @@ const fs = require('node:fs');
 
 const replace = (path, from, to) => {
   const source = fs.readFileSync(path, 'utf8');
-  if (!source.includes(from)) throw new Error(`missing pattern in ${path}`);
+  if (!source.includes(from)) throw new Error(`missing pattern in ${path}: ${from.slice(0, 80)}`);
   fs.writeFileSync(path, source.replace(from, to));
+  console.log(`patched ${path}`);
 };
 
 replace(
