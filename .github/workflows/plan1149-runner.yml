@@ -55,7 +55,22 @@ jobs:
           exit 1
 
       - name: Test
-        run: pnpm run test
+        id: test
+        continue-on-error: true
+        run: pnpm run test > /tmp/plan1149-test.log 2>&1
+
+      - name: Upload test diagnostics
+        if: steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan1149-test-diagnostics
+          path: /tmp/plan1149-test.log
+
+      - name: Stop on test failure
+        if: steps.test.outcome == 'failure'
+        run: |
+          tail -n 120 /tmp/plan1149-test.log
+          exit 1
 
       - name: Typecheck
         run: pnpm run typecheck
