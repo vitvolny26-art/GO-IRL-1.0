@@ -22,3 +22,7 @@ order by p.proname;
 -- 5. go_irl_auth_user_key, go_irl_request_invite_activity,
 --    go_irl_request_user_id, go_irl_request_user_key, and go_irl_touch_updated_at
 --    have an explicit pg_catalog, public search_path.
+--
+-- Free test validation on 2026-07-19 passed for the privileges above.
+-- Full production-equivalent RLS matrix remains separate because the free project
+-- was reconstructed from repo modules and is not a production clone.
