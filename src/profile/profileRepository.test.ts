@@ -2,7 +2,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 import type { AppAuthIdentity } from "../authSession";
 import { LocalProfileRepository } from "./localProfileRepository";
-import { mapUserProfileDraftToRpc, mapUserProfileRow } from "./profileMappers";
+import {
+  mapUserProfileDraftToRpc,
+  mapUserProfileRow,
+  mapUserProfileToPublicProfile,
+} from "./profileMappers";
 import { createProfileRepository, selectProfileRepositoryKind } from "./profileRepository";
 import { SupabaseProfileRepository } from "./supabaseProfileRepository";
 
@@ -62,6 +66,55 @@ const createOptions = (identity: AppAuthIdentity | null, storage = new MemorySto
   now: () => new Date("2026-07-19T07:00:00.000Z"),
 });
 
+const profile = mapUserProfileRow({
+  user_key: "telegram:1",
+  display_name: "Vit",
+  bio: "Coffee and volleyball",
+  city_id: "olomouc",
+  avatar_path: null,
+  avatar_code: "GI",
+  is_public: true,
+  show_favorites: true,
+  created_at: "2026-07-19T06:00:00.000Z",
+  updated_at: "2026-07-19T06:30:00.000Z",
+}, [{ interest_slug: "coffee" }, { interest_slug: "volleyball" }]);
+
+const createProfileReadClient = (showFavorites: boolean) => {
+  const tables: string[] = [];
+  const profileRow = {
+    user_key: "telegram:1",
+    display_name: "Vit",
+    bio: "Coffee and volleyball",
+    city_id: "olomouc",
+    avatar_path: null,
+    avatar_code: "GI",
+    is_public: true,
+    show_favorites: showFavorites,
+    created_at: "2026-07-19T06:00:00.000Z",
+    updated_at: "2026-07-19T06:30:00.000Z",
+  };
+  const profileQuery = {
+    select: () => profileQuery,
+    eq: () => profileQuery,
+    maybeSingle: async () => ({ data: profileRow, error: null }),
+  };
+  const interestsQuery = {
+    select: () => interestsQuery,
+    eq: () => interestsQuery,
+    order: async () => ({ data: [{ interest_slug: "coffee" }], error: null }),
+  };
+
+  return {
+    client: {
+      from: (table: string) => {
+        tables.push(table);
+        return table === "user_profiles" ? profileQuery : interestsQuery;
+      },
+    } as unknown as SupabaseClient,
+    tables,
+  };
+};
+
 describe("profile repository selection", () => {
   it("selects Supabase only for a trusted Telegram session", () => {
     expect(selectProfileRepositoryKind(trustedIdentity)).toBe("supabase");
@@ -77,18 +130,7 @@ describe("profile repository selection", () => {
 
 describe("profile mappers", () => {
   it("maps database rows and interests into the shared contract", () => {
-    expect(mapUserProfileRow({
-      user_key: "telegram:1",
-      display_name: "Vit",
-      bio: "Coffee and volleyball",
-      city_id: "olomouc",
-      avatar_path: null,
-      avatar_code: "GI",
-      is_public: true,
-      show_favorites: true,
-      created_at: "2026-07-19T06:00:00.000Z",
-      updated_at: "2026-07-19T06:30:00.000Z",
-    }, [{ interest_slug: "coffee" }, { interest_slug: "volleyball" }])).toEqual({
+    expect(profile).toEqual({
       userKey: "telegram:1",
       displayName: "Vit",
       bio: "Coffee and volleyball",
@@ -124,6 +166,22 @@ describe("profile mappers", () => {
       p_interest_slugs: ["coffee"],
     });
   });
+
+  it("returns only public profile fields and respects hidden favorites", () => {
+    expect(mapUserProfileToPublicProfile(profile)).toEqual({
+      userKey: "telegram:1",
+      displayName: "Vit",
+      bio: "Coffee and volleyball",
+      cityId: "olomouc",
+      avatarPath: null,
+      avatarCode: "GI",
+      favoriteActivityIds: ["coffee", "volleyball"],
+      updatedAt: "2026-07-19T06:30:00.000Z",
+    });
+
+    expect(mapUserProfileToPublicProfile({ ...profile, showFavorites: false })?.favoriteActivityIds).toEqual([]);
+    expect(mapUserProfileToPublicProfile({ ...profile, isPublic: false })).toBeNull();
+  });
 });
 
 describe("LocalProfileRepository", () => {
@@ -140,11 +198,36 @@ describe("LocalProfileRepository", () => {
     }));
 
     const repository = createProfileRepository(createOptions(localIdentity, storage));
-    const profile = await repository.loadOwnProfile();
+    const loadedProfile = await repository.loadOwnProfile();
 
-    expect(profile?.userKey).toBe("guest:test");
-    expect(profile?.avatarPath).toBe("data:image/png;base64,abc");
-    expect(profile?.avatarCode).toBeNull();
-    expect(profile?.favoriteActivityIds).toEqual(["coffee"]);
+    expect(loadedProfile?.userKey).toBe("guest:test");
+    expect(loadedProfile?.avatarPath).toBe("data:image/png;base64,abc");
+    expect(loadedProfile?.avatarCode).toBeNull();
+    expect(loadedProfile?.favoriteActivityIds).toEqual(["coffee"]);
+  });
+
+  it("exposes only the current demo profile through the public contract", async () => {
+    const repository = createProfileRepository(createOptions(localIdentity));
+
+    expect(await repository.loadPublicProfile("other-user")).toBeNull();
+    expect((await repository.loadPublicProfile("guest:test"))?.userKey).toBe("guest:test");
+  });
+});
+
+describe("SupabaseProfileRepository", () => {
+  it("keeps hidden favorites available to the profile owner", async () => {
+    const { client: readClient, tables } = createProfileReadClient(false);
+    const repository = new SupabaseProfileRepository(readClient, "telegram:1");
+
+    expect((await repository.loadOwnProfile())?.favoriteActivityIds).toEqual(["coffee"]);
+    expect(tables).toEqual(["user_profiles", "user_profile_interests"]);
+  });
+
+  it("omits hidden favorites from the public projection", async () => {
+    const { client: readClient, tables } = createProfileReadClient(false);
+    const repository = new SupabaseProfileRepository(readClient, "telegram:1");
+
+    expect((await repository.loadPublicProfile("telegram:1"))?.favoriteActivityIds).toEqual([]);
+    expect(tables).toEqual(["user_profiles"]);
   });
 });

@@ -1,7 +1,11 @@
 import { readProfileAvatarAsDataUrl } from "../profileAvatar";
-import { mapLegacyLocalProfile, mapUserProfileDraftToLegacy } from "./profileMappers";
+import {
+  mapLegacyLocalProfile,
+  mapUserProfileDraftToLegacy,
+  mapUserProfileToPublicProfile,
+} from "./profileMappers";
 import type { ProfileRepository } from "./profileRepository";
-import type { LegacyLocalProfile, UserProfile, UserProfileDraft } from "./profileTypes";
+import type { LegacyLocalProfile, PublicProfile, UserProfile, UserProfileDraft } from "./profileTypes";
 
 const profileStorageKey = "go-irl-profile";
 const registeredAtStorageKey = "go-irl-registered-at";
@@ -43,6 +47,11 @@ export class LocalProfileRepository implements ProfileRepository {
     } catch {
       return mapLegacyLocalProfile({}, fallback);
     }
+  }
+
+  async loadPublicProfile(userKey: string): Promise<PublicProfile | null> {
+    if (userKey !== this.options.userKey) return null;
+    return mapUserProfileToPublicProfile(await this.loadOwnProfile());
   }
 
   async saveOwnProfile(input: UserProfileDraft): Promise<UserProfile> {

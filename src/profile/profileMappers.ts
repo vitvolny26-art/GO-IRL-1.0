@@ -1,5 +1,6 @@
 import type {
   LegacyLocalProfile,
+  PublicProfile,
   SaveMyProfileRpcArgs,
   UserProfile,
   UserProfileDraft,
@@ -28,6 +29,21 @@ export function mapUserProfileRow(
     favoriteActivityIds: interests.map((interest) => interest.interest_slug),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+export function mapUserProfileToPublicProfile(profile: UserProfile): PublicProfile | null {
+  if (!profile.isPublic) return null;
+
+  return {
+    userKey: profile.userKey,
+    displayName: profile.displayName,
+    bio: profile.bio,
+    cityId: profile.cityId,
+    avatarPath: profile.avatarPath,
+    avatarCode: profile.avatarCode,
+    favoriteActivityIds: profile.showFavorites ? [...profile.favoriteActivityIds] : [],
+    updatedAt: profile.updatedAt,
   };
 }
 
