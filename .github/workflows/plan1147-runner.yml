@@ -1,9 +1,9 @@
 name: PLAN1147 temporary patch runner
 
 on:
-  push:
+  pull_request:
     branches:
-      - tmp/plan1147-runner
+      - main
     paths:
       - .github/workflows/plan1147-runner.yml
 
