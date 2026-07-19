@@ -4,7 +4,7 @@ import {
   mapUserProfileDraftToLegacy,
   mapUserProfileToPublicProfile,
 } from "./profileMappers";
-import type { ProfileRepository } from "./profileRepository";
+import type { ProfileRepository, PublicProfileMap } from "./profileRepository";
 import type { LegacyLocalProfile, PublicProfile, UserProfile, UserProfileDraft } from "./profileTypes";
 
 const profileStorageKey = "go-irl-profile";
@@ -50,8 +50,19 @@ export class LocalProfileRepository implements ProfileRepository {
   }
 
   async loadPublicProfile(userKey: string): Promise<PublicProfile | null> {
-    if (userKey !== this.options.userKey) return null;
-    return mapUserProfileToPublicProfile(await this.loadOwnProfile());
+    return (await this.loadPublicProfiles([userKey])).get(userKey) ?? null;
+  }
+
+  async loadPublicProfiles(userKeys: readonly string[]): Promise<PublicProfileMap> {
+    const uniqueKeys = [...new Set(userKeys)];
+    const ownProfile = uniqueKeys.includes(this.options.userKey)
+      ? mapUserProfileToPublicProfile(await this.loadOwnProfile())
+      : null;
+
+    return new Map(uniqueKeys.map((userKey) => [
+      userKey,
+      userKey === this.options.userKey ? ownProfile : null,
+    ]));
   }
 
   async saveOwnProfile(input: UserProfileDraft): Promise<UserProfile> {
