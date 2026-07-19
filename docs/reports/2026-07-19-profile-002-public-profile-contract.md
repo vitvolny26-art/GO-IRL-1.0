@@ -38,7 +38,7 @@ Complete PROFILE-002 by adding a read-only public-profile contract without wirin
 - Preserved hidden favorites for `loadOwnProfile()` after review found a regression.
 - Added focused regression tests.
 - No UI consumer was connected.
-- No auth, RLS, schema, migration, secret, or production-data change was made.
+- No auth, RLS, schema, migration, secret, Storage policy, or production-data change was made.
 
 ## Checks
 
