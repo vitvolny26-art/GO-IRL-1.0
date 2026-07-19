@@ -15,7 +15,7 @@ replace(
 replace(
   'src/components/EventCardPrimitives.tsx',
   'import type { EventInteractionState, EventInteractionStatus } from "../eventInteractionState";',
-  'import type { EventInteractionState, EventInteractionStatus } from "../eventInteractionState";\nimport { getCurrentAuthIdentity } from "../authSession";\nimport { createProfileRepository } from "../profile/profileRepository";\nimport { supabase } from "../supabase";',
+  'import type { EventInteractionState, EventInteractionStatus } from "../eventInteractionState";\nimport { getCurrentAuthIdentity } from "../authSession";\nimport { createProfileRepository } from "../profile/profileRepository";',
 );
 replace(
   'src/components/EventCardPrimitives.tsx',
@@ -30,23 +30,22 @@ replace(
     const identity = getCurrentAuthIdentity();
     if (identity?.source !== "trusted-telegram" || identity.user.userKey !== organizerKey) return undefined;
 
-    const repository = createProfileRepository({
-      identity,
-      supabaseClient: supabase,
-      storage: localStorage,
-      fallbackDisplayName: organizerName,
-      fallbackCityId: "olomouc",
-    });
-
-    void repository.loadOwnProfile()
-      .then(async (profile) => {
-        if (!profile) return;
-        const resolved = profile.avatarPath
-          ? await repository.resolveAvatarUrl(profile.avatarPath)
-          : profile.avatarCode || initials(organizerName);
-        if (active && resolved) setAvatar(resolved);
-      })
-      .catch(() => undefined);
+    void (async () => {
+      const { supabase } = await import("../supabase");
+      const repository = createProfileRepository({
+        identity,
+        supabaseClient: supabase,
+        storage: localStorage,
+        fallbackDisplayName: organizerName,
+        fallbackCityId: "olomouc",
+      });
+      const profile = await repository.loadOwnProfile();
+      if (!profile) return;
+      const resolved = profile.avatarPath
+        ? await repository.resolveAvatarUrl(profile.avatarPath)
+        : profile.avatarCode || initials(organizerName);
+      if (active && resolved) setAvatar(resolved);
+    })().catch(() => undefined);
 
     return () => { active = false; };
   }, [organizerKey, organizerName]);
