@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Dumbbell, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
@@ -335,7 +335,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         {joined
           ? <button className="sport-coach-action" onClick={handleCardLeftAction} type="button"><span>{cardLeftLabel}</span></button>
           : showCoachAction
-            ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><Dumbbell size={18} /><span>{coachAction}</span></button>
+            ? <button className="sport-coach-action sport-coach-action-wrap" onClick={() => onOpen(activity)} type="button"><span>{coachAction}</span></button>
             : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
         <button className={membershipActive ? "card-join card-leave" : interaction.canJoin && !pending ? "card-join" : "card-join secondary"} onClick={handleCardRightAction} type="button" disabled={cardRightDisabled}>{cardRightLabel}</button>
       </div>

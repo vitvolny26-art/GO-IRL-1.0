@@ -42,6 +42,22 @@ const safeMapUrl = (value: unknown) => {
   }
 };
 
+const safeTelegramAvatarUrl = (value) => {
+  const raw = stringValue(value, 500);
+  if (!raw) return undefined;
+  try {
+    const url = new URL(raw);
+    const hostname = url.hostname.toLocaleLowerCase();
+    const hosts = ["t.me", "telegram.org", "telegram-cdn.org"];
+    return url.protocol === "https:"
+      && hosts.some((host) => hostname === host || hostname.endsWith("." + host))
+      ? raw
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 const weatherValue = (value: unknown): TelegramEventCardInput["weather"] => {
   if (!value || typeof value !== "object") return undefined;
   const raw = value as Record<string, unknown>;
@@ -81,6 +97,8 @@ export function normalizeTelegramEventCardInput(value: unknown): TelegramEventCa
     mapUrl: safeMapUrl(raw.mapUrl),
     city: stringValue(raw.city, 100),
     organizer: stringValue(raw.organizer, 120) || undefined,
+    organizerKey: stringValue(raw.organizerKey, 160) || undefined,
+    organizerAvatarUrl: safeTelegramAvatarUrl(raw.organizerAvatarUrl),
     durationMinutes: Number.isFinite(duration) ? Math.round(clamp(duration, 15, 480)) : undefined,
     price: clamp(numberValue(raw.price), 0, 100_000),
     level: stringValue(raw.level, 80),

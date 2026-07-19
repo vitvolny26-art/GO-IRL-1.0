@@ -14,6 +14,8 @@ describe("normalizeTelegramEventCardInput", () => {
       title: "Волейбол",
       activity: "Волейбол",
       organizer: "  Vitalii Pashyn  ",
+      organizerKey: "telegram:1",
+      organizerAvatarUrl: "https://t.me/i/userpic/320/example.jpg",
       eventDate: "2026-07-19",
       participants: "2",
       capacity: "12",
@@ -23,6 +25,8 @@ describe("normalizeTelegramEventCardInput", () => {
       weather: { temperature: null, rain: 12, wind: 19 },
     })).toMatchObject({
       organizer: "Vitalii Pashyn",
+      organizerKey: "telegram:1",
+      organizerAvatarUrl: "https://t.me/i/userpic/320/example.jpg",
       participants: 2,
       capacity: 12,
       price: 0,

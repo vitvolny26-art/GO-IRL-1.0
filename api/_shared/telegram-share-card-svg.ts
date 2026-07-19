@@ -41,12 +41,6 @@ const wrap = (value: string, maxChars: number, maxLines = 2) => {
 const textLines = (lines: string[], x: number, y: number, lineHeight: number, anchor = "start") =>
   lines.map((line, index) => `<tspan x="${x}" y="${y + index * lineHeight}" text-anchor="${anchor}">${xml(line)}</tspan>`).join("");
 
-const initials = (name: string) => clean(name, 80)
-  .split(" ")
-  .filter(Boolean)
-  .slice(0, 2)
-  .map((part) => part[0]?.toUpperCase())
-  .join("") || "GO";
 
 const metricIcon = (kind: "calendar" | "ticket" | "pin", x: number, y: number) => {
   if (kind === "calendar") return `<g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="${x}" y="${y}" width="36" height="34" rx="6"/><path d="M${x} ${y + 11}h36M${x + 9} ${y - 4}v10M${x + 27} ${y - 4}v10"/></g>`;
@@ -72,8 +66,9 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   const place = clean(input.address || input.city, 80);
   const price = input.price > 0 ? `${Math.round(input.price)} Kč` : labels.free;
   const headlineLines = wrap(headline, 18, 2);
-  const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 28, 2);
+  const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 28, 4);
   const organizer = clean(input.organizer || "GO IRL", 80);
+  const organizerInitial = organizer.trim().slice(0, 1).toUpperCase() || "G";
   const participantCount = `${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="900" viewBox="0 0 1080 900">
@@ -87,8 +82,8 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   <rect width="1080" height="900" fill="url(#readability)"/>
   <rect data-card-frame="expanded" x="18" y="18" width="1044" height="864" rx="64" fill="none" stroke="#78963a" stroke-opacity="0.42" stroke-width="3"/>
 
-  <text fill="#f7f8f9" font-size="62" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 76, 132, 64)}</text>
-  <text fill="#d3d7dc" font-size="34" font-weight="600" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 76, 258, 42)}</text>
+  <text fill="#f7f8f9" font-size="62" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 76, 108, 64)}</text>
+  <text fill="#d3d7dc" font-size="34" font-weight="600" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 76, 208, 42)}</text>
 
   <g data-share-participants="two-row" font-family="DejaVu Sans, sans-serif" font-weight="900">
     <g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round"><circle cx="930" cy="126" r="13"/><path d="M906 171c2-19 11-29 24-29s22 10 24 29"/></g>
@@ -98,14 +93,12 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   ${weatherBlock(input)}
 
   <g data-share-footer="two-row">
-    <line x1="58" y1="690" x2="1022" y2="690" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
     <line x1="242" y1="714" x2="242" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
     <line x1="510" y1="714" x2="510" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
     <line x1="750" y1="714" x2="750" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
 
-    <circle cx="145" cy="752" r="36" fill="#111518" fill-opacity="0.28" stroke="#c9ff3d" stroke-opacity="0.55" stroke-width="2"/>
-    <text x="145" y="762" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(initials(organizer))}</text>
-    <text x="145" y="826" text-anchor="middle" fill="#d3d7dc" font-size="18" font-weight="700" font-family="DejaVu Sans, sans-serif">${xml(clean(organizer, 16))}</text>
+    <rect data-organizer-avatar-slot="rounded-square" x="78" y="716" width="128" height="128" rx="26" fill="#111518" fill-opacity="0.42" stroke="#c9ff3d" stroke-opacity="0.58" stroke-width="3"/>
+    <text x="142" y="793" text-anchor="middle" fill="#f7f8f9" font-size="42" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(organizerInitial)}</text>
 
     ${metricIcon("calendar", 358, 735)}
     <text x="376" y="826" text-anchor="middle" fill="#f7f8f9" font-size="27" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(dateTime)}</text>

@@ -49,19 +49,58 @@ export const hasEventShareBackground = (input: TelegramEventCardInput) => {
   return Boolean(backgroundUrl && existsSync(backgroundUrl));
 };
 
+const trustedAvatarHosts = ["t.me", "telegram.org", "telegram-cdn.org"];
+
+const isTrustedTelegramAvatarUrl = (value: string) => {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && trustedAvatarHosts.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`));
+  } catch {
+    return false;
+  }
+};
+
+const loadOrganizerAvatar = async (value?: string) => {
+  if (!value || !isTrustedTelegramAvatarUrl(value)) return null;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4_000);
+  try {
+    const response = await fetch(value, { signal: controller.signal, redirect: "follow" });
+    if (!response.ok) return null;
+    const length = Number(response.headers.get("content-length") || 0);
+    if (length > 2_000_000) return null;
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (bytes.length > 2_000_000) return null;
+    const sharp = await loadSharp();
+    const mask = Buffer.from('<svg width="128" height="128"><rect width="128" height="128" rx="26" fill="white"/></svg>');
+    return sharp(bytes)
+      .resize(128, 128, { fit: "cover", position: "attention" })
+      .composite([{ input: mask, blend: "dest-in" }])
+      .png()
+      .toBuffer();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) => {
   const sharp = await loadSharp();
   const backgroundUrl = resolveEventShareBackgroundUrl(input);
+  const organizerAvatar = await loadOrganizerAvatar(input.organizerAvatarUrl);
+  const overlays = [{ input: Buffer.from(svg), left: 0, top: 0 }, ...(organizerAvatar ? [{ input: organizerAvatar, left: 78, top: 716 }] : [])];
 
   if (backgroundUrl && existsSync(backgroundUrl)) {
     return sharp(readFileSync(backgroundUrl))
       .resize(1080, 900, { fit: "cover", position: "attention" })
-      .composite([{ input: Buffer.from(svg), left: 0, top: 0 }])
+      .composite(overlays)
       .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
       .toBuffer();
   }
 
   return sharp(Buffer.from(svg))
+    .composite(organizerAvatar ? [{ input: organizerAvatar, left: 78, top: 716 }] : [])
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };
