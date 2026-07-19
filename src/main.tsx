@@ -22,6 +22,7 @@ import "./event-card-control-v8.css";
 import "./sport-organizer-card-labels.css";
 import "./avatar-cropper.css";
 import "./participant-notifications.css";
+import "./profile-avatar-proportions.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
