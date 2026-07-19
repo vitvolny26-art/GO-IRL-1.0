@@ -35,11 +35,11 @@ export class SupabaseProfileRepository implements ProfileRepository {
   ) {}
 
   async loadOwnProfile(): Promise<UserProfile | null> {
-    return this.loadProfile(this.userKey);
+    return this.loadProfile(this.userKey, true);
   }
 
   async loadPublicProfile(userKey: string): Promise<PublicProfile | null> {
-    const profile = await this.loadProfile(userKey);
+    const profile = await this.loadProfile(userKey, false);
     return profile ? mapUserProfileToPublicProfile(profile) : null;
   }
 
@@ -83,7 +83,10 @@ export class SupabaseProfileRepository implements ProfileRepository {
     return result.data.signedUrl;
   }
 
-  private async loadProfile(userKey: string): Promise<UserProfile | null> {
+  private async loadProfile(
+    userKey: string,
+    includeHiddenFavorites: boolean,
+  ): Promise<UserProfile | null> {
     const profileResult = await this.client
       .from("user_profiles")
       .select("user_key, display_name, bio, city_id, avatar_path, avatar_code, is_public, show_favorites, created_at, updated_at")
@@ -94,7 +97,7 @@ export class SupabaseProfileRepository implements ProfileRepository {
     if (!profileResult.data) return null;
 
     const row = profileResult.data as UserProfileRow;
-    const interestsResult = row.show_favorites
+    const interestsResult = includeHiddenFavorites || row.show_favorites
       ? await this.client
         .from("user_profile_interests")
         .select("interest_slug")
