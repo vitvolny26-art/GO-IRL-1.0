@@ -12,7 +12,7 @@ replaceOnce('src/App.tsx', /^\s*UploadCloud,\r?\n/m, '', 'UploadCloud import');
 replaceOnce(
   'src/App.tsx',
   /\s{12}<div className="profile-edit-avatar">[\s\S]*?<i aria-hidden="true"><Camera size=\{16\} \/><\/i>\r?\n\s{12}<\/div>/,
-  `            <label className={\`profile-edit-avatar${avatarBusy ? " is-busy" : ""}\`}>
+  `            <label className={\`profile-edit-avatar\${avatarBusy ? " is-busy" : ""}\`}>
               <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
                 const input = event.currentTarget;
                 void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
