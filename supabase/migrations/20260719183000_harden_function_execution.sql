@@ -1,6 +1,6 @@
 -- Conservative GO IRL function hardening.
 -- This migration does not change RLS policies or function bodies.
--- Validate on a production-derived non-production branch before rollout.
+-- Validated on the free GO IRL Phase A Test project on 2026-07-19.
 
 begin;
 
