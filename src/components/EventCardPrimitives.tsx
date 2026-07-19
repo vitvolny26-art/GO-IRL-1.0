@@ -1,8 +1,7 @@
 import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { Clock3, Info, ShieldCheck, Star, UserRoundCheck, UsersRound } from "lucide-react";
 import type { EventInteractionState, EventInteractionStatus } from "../eventInteractionState";
-import { getCurrentAuthIdentity } from "../authSession";
-import { createProfileRepository } from "../profile/profileRepository";
+import { organizerInitials, resolveOrganizerIdentity, type OrganizerIdentity } from "../profile/organizerIdentityResolver";
 
 type EventMetaChipProps = { icon: ReactNode; label: string; ariaLabel?: string; onClick?: () => void };
 
@@ -42,62 +41,37 @@ export function EventCardMetaItem({ icon, caption, value, ariaLabel, onClick }: 
 }
 
 export const organizerProfileEventName = "go-irl-open-organizer-profile";
-export type OrganizerProfileDetail = { organizerKey: string; organizerName: string; avatar: string };
+export type OrganizerProfileDetail = OrganizerIdentity;
 
-const initials = (name: string) => name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "GO";
 export const isOrganizerAvatarImage = (avatar: string) => /^(data:image\/|https?:\/\/)/i.test(avatar);
-
-export const resolveOrganizerAvatar = (_organizerKey: string, organizerName: string) => {
-  if (typeof window !== "undefined") {
-    try {
-      const stored = window.localStorage.getItem("go-irl-profile");
-      const parsed = stored ? JSON.parse(stored) as { name?: unknown; avatar?: unknown } : null;
-      const name = String(parsed?.name || "").trim();
-      const avatar = String(parsed?.avatar || "").trim();
-      if (name && name === organizerName.trim() && avatar) return avatar;
-    } catch {
-      // Use initials when profile storage is unavailable.
-    }
-  }
-  return initials(organizerName);
-};
+export const resolveOrganizerAvatar = (_organizerKey: string, organizerName: string) => organizerInitials(organizerName);
 
 export function OrganizerAvatarAction({ organizerKey, organizerName }: { organizerKey: string; organizerName: string }) {
-  const [avatar, setAvatar] = useState(() => resolveOrganizerAvatar(organizerKey, organizerName));
+  const [identity, setIdentity] = useState<OrganizerIdentity>(() => ({
+    organizerKey,
+    displayName: organizerName,
+    bio: "",
+    cityId: "",
+    avatar: organizerInitials(organizerName),
+  }));
 
   useEffect(() => {
     let active = true;
-    const identity = getCurrentAuthIdentity();
-    if (identity?.source !== "trusted-telegram" || identity.user.userKey !== organizerKey) return undefined;
-
-    void (async () => {
-      const { supabase } = await import("../supabase");
-      const repository = createProfileRepository({
-        identity,
-        supabaseClient: supabase,
-        storage: localStorage,
-        fallbackDisplayName: organizerName,
-        fallbackCityId: "olomouc",
-      });
-      const profile = await repository.loadOwnProfile();
-      if (!profile) return;
-      const resolved = profile.avatarPath
-        ? await repository.resolveAvatarUrl(profile.avatarPath)
-        : profile.avatarCode || initials(organizerName);
-      if (active && resolved) setAvatar(resolved);
-    })().catch(() => undefined);
-
+    void resolveOrganizerIdentity(organizerKey, organizerName).then((resolved) => {
+      if (active) setIdentity(resolved);
+    });
     return () => { active = false; };
   }, [organizerKey, organizerName]);
 
   const openProfile = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    window.dispatchEvent(new CustomEvent<OrganizerProfileDetail>(organizerProfileEventName, { detail: { organizerKey, organizerName, avatar } }));
+    window.dispatchEvent(new CustomEvent<OrganizerProfileDetail>(organizerProfileEventName, { detail: identity }));
   };
+
   return (
-    <button className="glass-event-card-meta-item organizer-avatar-action" type="button" aria-label={organizerName} onClick={openProfile}>
-      <span className="organizer-avatar-thumb">{isOrganizerAvatarImage(avatar) ? <img src={avatar} alt="" /> : <span>{avatar}</span>}</span>
+    <button className="glass-event-card-meta-item organizer-avatar-action" type="button" aria-label={identity.displayName} onClick={openProfile}>
+      <span className="organizer-avatar-thumb">{isOrganizerAvatarImage(identity.avatar) ? <img src={identity.avatar} alt="" /> : <span>{identity.avatar}</span>}</span>
     </button>
   );
 }
