@@ -37,8 +37,10 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain("ZŠ Demlova");
     expect(svg).toContain("&amp;");
     expect(svg).toContain("park");
-    expect(svg).toContain("Vitalii Pashyn");
-    expect(svg).toContain(">VP<");
+    expect(svg).toContain(">V</text>");
+    expect(svg).toContain('data-organizer-avatar-slot="rounded-square"');
+    expect(svg).not.toContain(">Vitalii Pashyn<");
+    expect(svg).not.toContain('x1="58" y1="690"');
     expect(svg).toContain('data-card-frame="expanded"');
     expect(svg).toContain('data-share-participants="two-row"');
     expect(svg).toContain('data-share-footer="two-row"');
@@ -51,6 +53,8 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain("data-event-artwork");
     expect(svg).toContain("DejaVu Sans");
     expect(svg).not.toContain("Arial");
+    expect(svg).toContain('x="76" y="108"');
+    expect(svg).toContain('x="76" y="208"');
   });
 
   it("shows weather only when weather data is present", () => {

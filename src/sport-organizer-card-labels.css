@@ -6,3 +6,20 @@
 .glass-event-card .activity-card-footer:has(> .card-join.secondary:not(.card-leave)) > .sport-coach-action::after {
   content: "Пригласить тренера";
 }
+
+
+/* Keep the organizer coach action readable without an icon. */
+.sport-coach-action-wrap {
+  white-space: normal;
+  text-align: center;
+  line-height: 1.05;
+}
+
+.sport-coach-action-wrap > span,
+.glass-event-card .activity-card-footer:has(> .card-join.secondary:not(.card-leave)) > .sport-coach-action::after {
+  display: block;
+  max-width: 10ch;
+  margin-inline: auto;
+  white-space: normal;
+  line-height: 1.05;
+}

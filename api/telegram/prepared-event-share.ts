@@ -112,8 +112,15 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const card = await loadTrustedTelegramEventCard(body.eventId, body.language);
     if (!card) return json(response, 404, { error: "event_not_found" });
 
+    const telegramOrganizerKey = `telegram:${verified.user.id}`;
+    const verifiedUser = verified.user as typeof verified.user & { photo_url?: string };
+    const photoUrl = typeof verifiedUser.photo_url === "string" ? verifiedUser.photo_url.trim() : "";
+    if (card.organizerKey === telegramOrganizerKey && /^https:\/\//i.test(photoUrl)) {
+      card.organizerAvatarUrl = photoUrl;
+    }
+
     const imageToken = createTelegramShareCardToken(card, botToken);
-    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}&v=6`;
+    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}&v=7`;
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
