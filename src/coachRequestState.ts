@@ -39,3 +39,10 @@ export const normalizeCoachRequestDetails = (
   goal: details?.goal?.trim() || undefined,
   level: details?.level?.trim() || undefined,
 });
+
+export const buildCoachRequestRetryPatch = (updatedAt: string) => ({
+  coach_profile_id: null,
+  admin_note: null,
+  status: "pending" as const,
+  updated_at: updatedAt,
+});
