@@ -1,0 +1,61 @@
+name: PLAN1149 temporary avatar runner
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/plan1149-runner.yml
+      - scripts/plan1149-unify-organizer-avatar.cjs
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch patch script
+        run: git show origin/tmp/plan1149-runner:scripts/plan1149-unify-organizer-avatar.cjs > /tmp/plan1149-unify-organizer-avatar.cjs
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply patch
+        run: node /tmp/plan1149-unify-organizer-avatar.cjs
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Push verified feature branch
+        run: |
+          git config user.name "GO IRL PLAN1149 Runner"
+          git config user.email "goirl-plan1149@users.noreply.github.com"
+          git checkout -b fix/unify-organizer-avatar
+          git add src/components/EventCardPrimitives.tsx api/_shared/telegram-share-event.ts api/telegram/prepared-event-share.ts api/_shared/telegram-share-card-image.ts api/_shared/telegram-share-card-image.test.ts
+          git commit -m "fix: unify organizer avatar sources"
+          git push origin HEAD:refs/heads/fix/unify-organizer-avatar
