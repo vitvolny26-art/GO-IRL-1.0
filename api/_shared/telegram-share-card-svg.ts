@@ -97,7 +97,7 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
     <line x1="510" y1="714" x2="510" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
     <line x1="750" y1="714" x2="750" y2="846" stroke="#f5f7f8" stroke-opacity="0.2" stroke-width="2"/>
 
-    <rect data-organizer-avatar-slot="soft-square" x="78" y="716" width="128" height="128" rx="8" fill="#111518" fill-opacity="0.42" stroke="#c9ff3d" stroke-opacity="0.58" stroke-width="3"/>
+    <rect data-organizer-avatar-slot="soft-square" x="78" y="716" width="128" height="128" rx="16" fill="#111518" fill-opacity="0.42" stroke="#c9ff3d" stroke-opacity="0.58" stroke-width="3"/>
     <text x="142" y="793" text-anchor="middle" fill="#f7f8f9" font-size="42" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(organizerInitial)}</text>
 
     ${metricIcon("calendar", 358, 735)}

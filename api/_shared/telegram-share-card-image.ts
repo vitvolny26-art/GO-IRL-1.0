@@ -76,7 +76,7 @@ const loadOrganizerAvatar = async (value?: string) => {
     const bytes = Buffer.from(await response.arrayBuffer());
     if (bytes.length > 2_000_000) return null;
     const sharp = await loadSharp();
-    const mask = Buffer.from('<svg width="128" height="128"><rect width="128" height="128" rx="8" fill="white"/></svg>');
+    const mask = Buffer.from('<svg width="128" height="128"><rect width="128" height="128" rx="16" fill="white"/></svg>');
     return sharp(bytes)
       .resize(128, 128, { fit: "cover", position: "attention" })
       .composite([{ input: mask, blend: "dest-in" }])
