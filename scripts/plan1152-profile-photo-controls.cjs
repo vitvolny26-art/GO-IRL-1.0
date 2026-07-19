@@ -30,32 +30,38 @@ replaceOnce(
   'large avatar upload block',
 );
 
-replaceOnce(
-  'src/styles.css',
-  /\.profile-edit-avatar \{[^}]*\}/,
-  '.profile-edit-avatar { position: relative; display: grid; place-items: center; width: 152px; height: 152px; margin-top: 8px; overflow: visible; border: 1px solid rgba(201,255,61,.34); border-radius: 28px; background: linear-gradient(135deg, rgba(201,255,61,.26), rgba(87,217,232,.12)); color: var(--text); font-size: 30px; font-weight: 950; box-shadow: 0 18px 42px rgba(0,0,0,.34); cursor: pointer; }',
-  'profile avatar size',
-);
-replaceOnce(
-  'src/styles.css',
-  /\.profile-edit-avatar img \{[^}]*\}/,
-  '.profile-edit-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }',
-  'profile avatar image',
-);
-replaceOnce(
-  'src/styles.css',
-  /\.profile-edit-avatar i \{[^}]*\}/,
-  '.profile-edit-avatar i { position: absolute; right: -10px; bottom: -10px; display: grid; place-items: center; width: 46px; height: 46px; border: 3px solid #12151a; border-radius: 15px; background: var(--lime); color: var(--lime-text); box-shadow: 0 9px 24px rgba(0,0,0,.38); }',
-  'profile camera button',
-);
-replaceOnce(
-  'src/styles.css',
-  /\.profile-edit-avatar img \{ width: 100%; height: 100%; object-fit: cover; border-radius: inherit; \}/,
-  `.profile-edit-avatar input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.profile-edit-avatar.is-busy { pointer-events: none; opacity: .7; }
-.profile-edit-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }`,
-  'profile hidden input',
-);
+fs.appendFileSync('src/styles.css', `
+
+/* PLAN1152 profile photo controls */
+.profile-edit-avatar {
+  width: 152px;
+  height: 152px;
+  margin-top: 8px;
+  border-radius: 28px;
+  font-size: 30px;
+  box-shadow: 0 18px 42px rgba(0,0,0,.34);
+  cursor: pointer;
+}
+.profile-edit-avatar input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.profile-edit-avatar.is-busy {
+  pointer-events: none;
+  opacity: .7;
+}
+.profile-edit-avatar i {
+  right: -10px;
+  bottom: -10px;
+  width: 46px;
+  height: 46px;
+  border-width: 3px;
+  border-radius: 15px;
+}
+`);
 
 replaceOnce(
   'api/_shared/telegram-share-card-image.ts',
