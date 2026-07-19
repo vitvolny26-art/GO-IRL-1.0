@@ -48,7 +48,8 @@ export class SupabaseProfileRepository implements ProfileRepository {
   }
 
   async loadPublicProfile(userKey: string): Promise<PublicProfile | null> {
-    return (await this.loadPublicProfiles([userKey])).get(userKey) ?? null;
+    const profile = await this.loadProfile(userKey, false);
+    return profile ? mapUserProfileToPublicProfile(profile) : null;
   }
 
   async loadPublicProfiles(userKeys: readonly string[]): Promise<PublicProfileMap> {
