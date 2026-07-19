@@ -76,7 +76,7 @@ replaceOnce(
   'share avatar slot',
 );
 replaceOnce(
-  'api/_shared/telegram-share-card-image.test.ts',
+  'api/_shared/telegram-share-card-svg.test.ts',
   /data-organizer-avatar-slot="rounded-square"/g,
   'data-organizer-avatar-slot="soft-square"',
   'share avatar test marker',
