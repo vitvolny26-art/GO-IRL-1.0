@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { requireEnv } from "./env.js";
+import { loadShareWeather } from "./share-weather.js";
 
 export type ShareLanguage = "ru" | "uk" | "cs" | "en";
 
@@ -128,6 +129,15 @@ const localizedSportValue = (
   return sportValueCopy[language][key] || raw;
 };
 
+export const isOutdoorShareEvent = (row: Pick<ActivityRow, "activity_type">, activity: string, title: string, sport: Record<string, unknown> | null) => {
+  const environment = text(sport?.environment, "").toLocaleLowerCase();
+  if (row.activity_type === "sport" || sport) return environment === "outdoor";
+
+  const haystack = `${activity} ${title}`.toLocaleLowerCase();
+  return ["прогул", "proch", "walk", "walking", "похід", "поход", "hike", "hiking", "park", "пикник", "picnic", "camping"]
+    .some((term) => haystack.includes(term));
+};
+
 export async function loadTrustedTelegramEventCard(eventId: string, language: ShareLanguage): Promise<TelegramEventCardInput | null> {
   const db = client();
   const { data, error } = await db
@@ -162,16 +172,24 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
   }
 
   const activity = localized(row, language, "activity");
+  const title = localized(row, language, "title");
   const sport = sportMetadata(row.metadata);
   const generic = language === "cs"
     ? { level: "Pro všechny", format: "Otevřené", environment: "Ve městě" }
     : language === "en"
       ? { level: "All levels", format: "Open", environment: "In the city" }
       : { level: "Для всех", format: "Открыто", environment: "В городе" };
+  const durationMinutes = number(sport?.durationMinutes, 90);
+  const weather = await loadShareWeather({
+    date: row.event_date,
+    time: row.event_time,
+    cityId: row.city_id,
+    enabled: isOutdoorShareEvent(row, activity, title, sport),
+  });
 
   return {
     eventId: row.id,
-    title: localized(row, language, "title"),
+    title,
     activity,
     date: compactDate(row.event_date, language),
     eventDate: row.event_date,
@@ -186,12 +204,13 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     organizer: row.organizer,
     organizerKey: row.organizer_key,
     organizerAvatarUrl,
-    durationMinutes: number(sport?.durationMinutes, 90),
+    durationMinutes,
     price: row.price,
     level: localizedSportValue(sport?.level, language, generic.level),
     format: localizedSportValue(sport?.format, language, generic.format),
     environment: localizedSportValue(sport?.environment, language, generic.environment),
     isSport: row.activity_type === "sport" || Boolean(sport),
+    weather,
     language,
   };
 }
