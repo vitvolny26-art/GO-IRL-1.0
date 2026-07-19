@@ -1,0 +1,23 @@
+/* PLAN1154 profile avatar proportions */
+.profile-hero {
+  grid-template-columns: 112px minmax(0, 1fr);
+}
+
+.profile-avatar {
+  width: 112px;
+  height: 112px;
+  border-radius: 16px;
+}
+
+.profile-edit-avatar {
+  width: min(100%, 320px);
+  height: 196px;
+  border-radius: 20px;
+}
+
+.profile-edit-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
