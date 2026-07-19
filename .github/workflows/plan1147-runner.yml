@@ -1,0 +1,60 @@
+name: PLAN1147 temporary patch runner
+
+on:
+  push:
+    branches:
+      - tmp/plan1147-runner
+    paths:
+      - .github/workflows/plan1147-runner.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch patch script
+        run: git show origin/tmp/plan1147-runner:scripts/plan1147-profile-view.cjs > /tmp/plan1147-profile-view.cjs
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply patch
+        run: node /tmp/plan1147-profile-view.cjs
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Push verified feature branch
+        run: |
+          git config user.name "GO IRL PLAN1147 Runner"
+          git config user.email "goirl-plan1147@users.noreply.github.com"
+          git checkout -B feat/user-profile-view-repository-a4
+          git add src/App.tsx
+          git commit -m "feat: connect profile view to repository layer"
+          git push --force-with-lease origin feat/user-profile-view-repository-a4
