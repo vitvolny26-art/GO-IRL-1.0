@@ -1255,3 +1255,34 @@ button, input, textarea, select { letter-spacing: 0; }
   display: block;
   object-fit: cover;
 }
+
+
+/* PLAN1152 profile photo controls */
+.profile-edit-avatar {
+  width: 152px;
+  height: 152px;
+  margin-top: 8px;
+  border-radius: 28px;
+  font-size: 30px;
+  box-shadow: 0 18px 42px rgba(0,0,0,.34);
+  cursor: pointer;
+}
+.profile-edit-avatar input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.profile-edit-avatar.is-busy {
+  pointer-events: none;
+  opacity: .7;
+}
+.profile-edit-avatar i {
+  right: -10px;
+  bottom: -10px;
+  width: 46px;
+  height: 46px;
+  border-width: 3px;
+  border-radius: 15px;
+}

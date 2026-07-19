@@ -23,7 +23,6 @@ import {
   Star,
   Ticket,
   Trash2,
-  UploadCloud,
   UserRoundCheck,
   UsersRound,
   X,
@@ -1183,10 +1182,14 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
           <div className="profile-edit-intro">
             <h1>{profileCopy.title}</h1>
             <p>{profileCopy.hint}</p>
-            <div className="profile-edit-avatar">
+            <label className={`profile-edit-avatar${avatarBusy ? " is-busy" : ""}`}>
+              <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
+                const input = event.currentTarget;
+                void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
+              }} />
               {isProfileAvatarImage(avatarDraft) ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
-              <i aria-hidden="true"><Camera size={16} /></i>
-            </div>
+              <i aria-hidden="true"><Camera size={20} /></i>
+            </label>
           </div>
           <label><span>{t.name}</span><input name="profileName" defaultValue={profile.name} required /></label>
           <label><span>{t.shortBio}</span><textarea name="profileBio" rows={3} defaultValue={profile.bio} placeholder={t.profileBioPlaceholder} /></label>
@@ -1212,22 +1215,7 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
               </label>
             ))}
           </div>
-          <label
-            className={`profile-avatar-upload${avatarBusy ? " is-busy" : ""}`}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              void processAvatarFile(event.dataTransfer.files?.[0]);
-            }}
-          >
-            <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
-              const input = event.currentTarget;
-              void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
-            }} />
-            <UploadCloud aria-hidden="true" />
-            <strong>{avatarBusy ? "…" : profileCopy.upload}</strong>
-            <small>{profileCopy.formats}</small>
-          </label>
+
           {avatarError && <div className="profile-avatar-error" role="alert">{avatarError}</div>}
           <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
         </form>
