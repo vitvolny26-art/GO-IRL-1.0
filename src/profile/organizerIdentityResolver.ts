@@ -1,5 +1,4 @@
 import { getCurrentAuthIdentity } from "../authSession";
-import { supabase } from "../supabase";
 import { createProfileRepository, type ProfileRepository } from "./profileRepository";
 
 export type OrganizerIdentity = {
@@ -30,23 +29,26 @@ const fallbackIdentity = (organizerKey: string, fallbackName: string): Organizer
   avatar: organizerInitials(fallbackName),
 });
 
-const createRepository = () => createProfileRepository({
-  identity: getCurrentAuthIdentity(),
-  supabaseClient: supabase,
-  storage: localStorage,
-  fallbackDisplayName: "GO IRL User",
-  fallbackCityId: "olomouc",
-});
+const createRepository = async () => {
+  const { supabase } = await import("../supabase");
+  return createProfileRepository({
+    identity: getCurrentAuthIdentity(),
+    supabaseClient: supabase,
+    storage: localStorage,
+    fallbackDisplayName: "GO IRL User",
+    fallbackCityId: "olomouc",
+  });
+};
 
 const flush = async () => {
   scheduled = false;
   const requests = pending.splice(0, pending.length);
   if (!requests.length) return;
 
-  const repository = repositoryOverride || createRepository();
   const keys = requests.map((request) => request.organizerKey);
 
   try {
+    const repository = repositoryOverride || await createRepository();
     const profiles = await repository.loadPublicProfiles(keys);
     await Promise.all(requests.map(async (request) => {
       const profile = profiles.get(request.organizerKey) || null;
