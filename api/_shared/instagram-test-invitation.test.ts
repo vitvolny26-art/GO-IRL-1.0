@@ -53,6 +53,7 @@ describe("Instagram test invitation trigger", () => {
     expect(response.status).toBe(204);
     expect(response.headers.get("access-control-allow-origin")).toBe("https://hoppscotch.io");
     expect(response.headers.get("access-control-allow-methods")).toBe("POST, OPTIONS");
+    expect(response.headers.get("cache-control")).toBe("no-store");
   });
 
   it("rejects requests without the configured bearer token before dependencies run", async () => {
