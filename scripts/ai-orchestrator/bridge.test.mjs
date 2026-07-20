@@ -138,20 +138,46 @@ describe('Orchestrator bridge v0.1', () => {
       first_failed_command: 'pnpm run typecheck',
     });
     expect(JSON.stringify(failedQa)).not.toContain('private runner output');
-    expectEnvelope(run(sandbox, 'qa run', {
+    const expectedQaCommands = [
+      'pnpm run typecheck',
+      'pnpm run lint',
+      'pnpm run build',
+      'pnpm run test',
+      'git diff --check',
+    ].map((command) => ({ command, status: 'PASS' }));
+
+    const retryQa = run(sandbox, 'qa run', {
       mission_id: 'MISSION-BRIDGE-E2E', retry_actor: 'human-owner',
     }, {
       qaRunner: () => ({ status: 0, stdout: 'PASS', stderr: '' }),
-    }), 'awaiting_change_approval', 'mission approve');
+    });
+
+    expectEnvelope(retryQa, 'awaiting_change_approval', 'mission approve');
+    expect(retryQa.qa.reviewed_diff).toMatchObject({
+      green: true,
+      completed_at: expect.any(String),
+      commands: expectedQaCommands,
+      first_failed_command: null,
+    });
     expectEnvelope(run(sandbox, 'mission approve', {
       mission_id: 'MISSION-BRIDGE-E2E', actor: 'human-owner', approval_type: 'change',
     }), 'awaiting_change_approval', 'report create');
     expectEnvelope(run(sandbox, 'report create', {
       mission_id: 'MISSION-BRIDGE-E2E', report_path: 'docs/reports/bridge-e2e.md',
     }), 'report_ready', 'qa run');
-    expectEnvelope(run(sandbox, 'qa run', { mission_id: 'MISSION-BRIDGE-E2E', final: true }, {
+    const finalQa = run(sandbox, 'qa run', {
+      mission_id: 'MISSION-BRIDGE-E2E', final: true,
+    }, {
       qaRunner: () => ({ status: 0, stdout: 'PASS', stderr: '' }),
-    }), 'report_ready', 'publish preview');
+    });
+
+    expectEnvelope(finalQa, 'report_ready', 'publish preview');
+    expect(finalQa.qa.final).toMatchObject({
+      green: true,
+      completed_at: expect.any(String),
+      commands: expectedQaCommands,
+      first_failed_command: null,
+    });
 
     const selected = ['scripts/ai-orchestrator/bridge-target.cjs', 'docs/reports/bridge-e2e.md'];
     const preview = run(sandbox, 'publish preview', {
