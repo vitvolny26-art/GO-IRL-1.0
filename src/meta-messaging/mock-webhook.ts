@@ -83,4 +83,3 @@ export function handleMetaMockWebhook(
 
   return { status: 405, body: { error: "method_not_allowed" } };
 }
-

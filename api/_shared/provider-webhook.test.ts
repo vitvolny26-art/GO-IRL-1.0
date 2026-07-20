@@ -80,7 +80,6 @@ describe("production provider webhook boundary", () => {
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: "invalid_signature" });
   });
-
   it("answers a signed Messenger text with the GO IRL welcome screen", async () => {
     runtimeEnv.MESSENGER_PAGE_ACCESS_TOKEN = "page-token";
     runtimeEnv.MESSENGER_PAGE_ID = "page-id";
@@ -90,7 +89,7 @@ describe("production provider webhook boundary", () => {
       object: "page",
       entry: [{ messaging: [{
         sender: { id: "psid-1" },
-        message: { mid: "mid-1", text: "РџСЂРёРІРµС‚" },
+        message: { mid: "mid-1", text: "Привет" },
       }] }],
     });
     const signature = `sha256=${createHmac("sha256", "test-app-secret").update(rawBody).digest("hex")}`;
@@ -119,4 +118,3 @@ describe("production provider webhook boundary", () => {
     });
   });
 });
-

@@ -11,7 +11,7 @@ const event: MetaEventSummary = {
   eventId: "event-meta-1",
   title: "Board games in Olomouc",
   dateTime: "2026-07-16 19:00",
-  location: "DobrГЎ ДЌajovna",
+  location: "Dobrá čajovna",
   availableSpots: 4,
 };
 
@@ -20,10 +20,10 @@ describe("Meta messaging payload builders", () => {
     const payload = buildInstagramInvitationPayload("ig-user-1", event);
 
     expect(payload.recipient.id).toBe("ig-user-1");
-    expect(payload.message.text).toContain("РћСЃС‚Р°Р»РѕСЃСЊ РјРµСЃС‚: 4");
+    expect(payload.message.text).toContain("Осталось мест: 4");
     expect(payload.message.quick_replies?.[0]).toEqual({
       content_type: "text",
-      title: "РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊСЃСЏ",
+      title: "Присоединиться",
       payload: "join:event-meta-1",
     });
   });
@@ -34,10 +34,10 @@ describe("Meta messaging payload builders", () => {
     expect(payload.messaging_type).toBe("RESPONSE");
     expect(payload.recipient.id).toBe("psid-1");
     expect(payload.message.text).toContain("Board games in Olomouc");
-    expect(payload.message.text).toContain("РћСЃС‚Р°Р»РѕСЃСЊ РјРµСЃС‚: 4");
+    expect(payload.message.text).toContain("Осталось мест: 4");
     expect(payload.message.quick_replies).toEqual([
-      { content_type: "text", title: "РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊСЃСЏ", payload: "join:event-meta-1" },
-      { content_type: "text", title: "РџРѕРґСЂРѕР±РЅРµРµ", payload: "details:event-meta-1" },
+      { content_type: "text", title: "Присоединиться", payload: "join:event-meta-1" },
+      { content_type: "text", title: "Подробнее", payload: "details:event-meta-1" },
     ]);
   });
 
@@ -53,7 +53,7 @@ describe("Meta messaging payload builders", () => {
           payload: {
             template_type: "button",
             text: expect.stringContaining("GO IRL"),
-            buttons: [{ type: "web_url", title: "РћС‚РєСЂС‹С‚СЊ GO IRL", url: "https://go-irl.example" }],
+            buttons: [{ type: "web_url", title: "Открыть GO IRL", url: "https://go-irl.example" }],
           },
         },
       },
@@ -70,8 +70,8 @@ describe("Meta messaging payload builders", () => {
     expect(element?.image_url).toContain("event-invitation-card");
     expect(element?.default_action?.url).toContain("t.me/GOirl_bot");
     expect(element?.buttons).toEqual([
-      { type: "postback", title: "РџСЂРёСЃРѕРµРґРёРЅРёС‚СЊСЃСЏ", payload: "join:event-meta-1" },
-      { type: "web_url", title: "РћС‚РєСЂС‹С‚СЊ", url: "https://t.me/GOirl_bot?startapp=event-meta-1" },
+      { type: "postback", title: "Присоединиться", payload: "join:event-meta-1" },
+      { type: "web_url", title: "Открыть", url: "https://t.me/GOirl_bot?startapp=event-meta-1" },
     ]);
   });
 
@@ -85,8 +85,8 @@ describe("Meta messaging payload builders", () => {
       ],
     });
 
-    expect(payload.message.text).toContain("Р”РѕР±Р°РІРёС‚СЊ РІ РєР°Р»РµРЅРґР°СЂСЊ: https://calendar.example/meta-1");
-    expect(payload.message.text).toContain("РћС‚РєСЂС‹С‚СЊ РєР°СЂС‚Сѓ: https://maps.example/meta-1");
+    expect(payload.message.text).toContain("Добавить в календарь: https://calendar.example/meta-1");
+    expect(payload.message.text).toContain("Открыть карту: https://maps.example/meta-1");
   });
 
   it("builds a clear Messenger waitlist result for a full event", () => {
@@ -98,7 +98,7 @@ describe("Meta messaging payload builders", () => {
     });
 
     expect(payload.join_status).toBe("waitlisted");
-    expect(payload.message.text).toBe("РЎРІРѕР±РѕРґРЅС‹С… РјРµСЃС‚ РЅРµС‚. Р’С‹ РґРѕР±Р°РІР»РµРЅС‹ РІ Р»РёСЃС‚ РѕР¶РёРґР°РЅРёСЏ.");
+    expect(payload.message.text).toBe("Свободных мест нет. Вы добавлены в лист ожидания.");
   });
 
   it("builds a Russian duplicate-join response with localized actions", () => {
@@ -112,10 +112,9 @@ describe("Meta messaging payload builders", () => {
     });
 
     expect(payload.message.text).toBe([
-      "Р’С‹ СѓР¶Рµ СѓС‡Р°СЃС‚РІСѓРµС‚Рµ РІ СЌС‚РѕРј СЃРѕР±С‹С‚РёРё.",
-      "Р”РѕР±Р°РІРёС‚СЊ РІ РєР°Р»РµРЅРґР°СЂСЊ: https://calendar.example/meta-1",
-      "РћС‚РєСЂС‹С‚СЊ РєР°СЂС‚Сѓ: https://maps.example/meta-1",
+      "Вы уже участвуете в этом событии.",
+      "Добавить в календарь: https://calendar.example/meta-1",
+      "Открыть карту: https://maps.example/meta-1",
     ].join("\n"));
   });
 });
-

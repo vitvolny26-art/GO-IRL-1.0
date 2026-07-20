@@ -54,19 +54,20 @@ const invitationCardInput = (event: MetaEventSummary): TelegramEventCardInput =>
   title: event.title,
   activity: event.activity || event.title,
   date: event.date || event.dateTime,
+  eventDate: event.date || "",
   time: event.time || "",
   address: event.location,
   participants: event.participants ?? Math.max((event.capacity || 0) - event.availableSpots, 0),
   capacity: event.capacity ?? event.availableSpots,
-  icon: event.icon || "вњЁ",
+  icon: event.icon || "✨",
   inviteUrl: event.inviteUrl || "",
   mapUrl: event.mapUrl,
   city: event.city || event.location,
   durationMinutes: event.durationMinutes,
   price: event.price || 0,
-  level: event.level || "Р”Р»СЏ РІСЃРµС…",
-  format: event.format || "РћС‚РєСЂС‹С‚Рѕ",
-  environment: event.environment || "Р’ РіРѕСЂРѕРґРµ",
+  level: event.level || "Для всех",
+  format: event.format || "Открыто",
+  environment: event.environment || "В городе",
   isSport: event.isSport,
   weather: event.weather,
   language: event.language || "ru",
@@ -80,7 +81,7 @@ const withInvitationImage = (provider: MessagingProvider, event: MetaEventSummar
     : readEnv("META_APP_SECRET");
   if (!origin || !secret) return event;
   const token = createMetaInvitationCardToken(invitationCardInput(event), secret);
-  return { ...event, imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}` };
+  return { ...event, imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=3` };
 };
 
 export async function sendProviderInvitation(
@@ -146,4 +147,3 @@ export async function sendMessengerWelcome(recipientId: string) {
     buildMessengerWelcomePayload(recipientId, origin),
   );
 }
-

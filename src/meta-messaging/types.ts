@@ -52,4 +52,3 @@ export type MetaJoinResultPayload = {
   message: { text: string };
   join_status: JoinResult["status"];
 };
-
