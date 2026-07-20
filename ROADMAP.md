@@ -19,9 +19,11 @@ Competitor-driven product signals are tracked in [docs/COMPETITOR_WATCH.md](docs
 
 For the Sport Coach MVP 1.1 scope, see [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md).
 
-## Current beta gate
+## Current release preparation gate
 
-Current stabilization state:
+Closed Beta was completed on 2026-07-20. The current phase is Release Preparation and focused post-beta stabilization. Broad public launch is not yet claimed.
+
+Current proven baseline:
 
 - Browser Mock Mode is patched for non-Telegram browser usage.
 - Browser demo writes are local-only and must not touch production Supabase.
@@ -34,24 +36,23 @@ Current stabilization state:
 
 Current release gate:
 
-- `pnpm run lint`: pending after latest commits.
-- `pnpm run build`: pending after latest commits.
-- `pnpm run test`: pending after latest commits.
-- Real Telegram smoke test: pending.
-- Supabase production table/RLS verification: pending/manual.
-- Vercel may fail because of build-rate-limit; this is operational, not automatically a code failure.
+- Typecheck, lint, build, tests, and `git diff --check` must pass on every reviewed change.
+- Real Telegram smoke verification is required before broad public launch.
+- Supabase production verification remains manual and production-sensitive.
+- Vercel deployment, support, monitoring, analytics, and moderation readiness must be verified.
+- Operational provider limits are not automatically code failures.
 
-Do not claim beta-ready until the latest `main` passes local quality gates and manual smoke tests.
+Do not claim public-launch-ready until the latest `main` passes quality gates and required operational smoke checks.
 
-## Market guardrail for beta
+## Market guardrail for release preparation
 
-Closed beta is not a generic event calendar, ticketing platform, sport-only app, dating product, or social feed.
+Release Preparation does not turn GO IRL into a generic event calendar, ticketing platform, sport-only app, dating product, or social feed.
 
-Closed beta validates one focused market thesis:
+Release Preparation preserves the validated closed-beta thesis:
 
 > GO IRL is a Telegram-first local meetup layer for small real-life activities in Olomouc.
 
-Beta product scope must stay centered on:
+Release-preparation scope must stay centered on:
 
 - create event in 30-60 seconds;
 - share through Telegram;
@@ -61,7 +62,7 @@ Beta product scope must stay centered on:
 - organizer/host trust;
 - people showing up in real life.
 
-Canonical beta categories:
+Proven closed-beta baseline categories:
 
 1. Volleyball
 2. Running
@@ -76,9 +77,9 @@ Before adding any feature, apply this test:
 
 If not, it is future scope.
 
-## Explicit beta non-goals
+## Explicit release-preparation non-goals
 
-Do not build before beta:
+Do not build during Release Preparation without an explicit reviewed product decision:
 
 - ticketing or payments;
 - club CRM;
@@ -92,22 +93,22 @@ Do not build before beta:
 - complex profiles;
 - dating, friends, travel, or lifestyle verticals.
 
-These may be revisited after Olomouc proves event creation, join rate, chat activation, and real attendance.
+These may be revisited only after release readiness and Olomouc product evidence justify expansion.
 
 ## Strategic Development Order
 
-The current product priority is foundation and infrastructure. Friends, Travel, Dating, ticketing, and broad social features are intentionally deferred until the Olomouc beta loop is stable.
+The current product priority is release preparation, foundation, and infrastructure. Friends, Travel, Dating, ticketing, and broad social features remain deferred until the proven Olomouc loop and release operations are stable.
 
-Before new vertical expansion, Closed Beta must validate the Sport Coach hypothesis in Olomouc:
+Before new vertical expansion, release evidence must validate the Sport Coach hypothesis in Olomouc:
 
 > Sport events with a confirmed coach should have a higher show-up rate and higher beginner comfort than sport events without a coach.
 
-1. Closed Beta Loop Stability
+1. Proven Closed-Beta Loop Stability
    - Browser demo/mock mode works without Telegram.
    - Event cards are stable and readable.
    - Join state, participant count, event chat, and share flow work reliably.
    - Profile basics create enough trust to join an event.
-   - The six beta categories stay focused and visible.
+   - The proven six-category baseline remains stable unless changed by an explicit reviewed product decision.
 2. Infrastructure Hardening
    - Supabase production readiness.
    - Safe, repeatable migrations.
@@ -199,7 +200,7 @@ The coach helps with:
    - Short comment.
    - Beginner comfort marker: "Did the coach help you feel comfortable if you came alone?"
 
-### Beta metrics
+### Validation metrics
 
 Primary:
 
