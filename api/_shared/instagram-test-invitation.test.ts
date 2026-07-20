@@ -127,4 +127,3 @@ describe("Instagram test invitation trigger", () => {
     );
   });
 });
-
