@@ -112,5 +112,11 @@ const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) =
 export const renderTelegramShareCardJpeg = (input: TelegramEventCardInput) =>
   renderShareCardJpeg(buildTelegramShareCardSvg(input), input);
 
-export const renderMetaInvitationCardJpeg = (input: TelegramEventCardInput) =>
-  renderShareCardJpeg(buildMetaInvitationCardSvg(input), input);
+export const renderMetaInvitationCardJpeg = async (input: TelegramEventCardInput) => {
+  const sharp = await loadSharp();
+  const portraitCard = await renderShareCardJpeg(buildMetaInvitationCardSvg(input), input);
+  return sharp(portraitCard)
+    .resize(1200, 630, { fit: "contain", background: "#0a0e10" })
+    .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
+    .toBuffer();
+};
