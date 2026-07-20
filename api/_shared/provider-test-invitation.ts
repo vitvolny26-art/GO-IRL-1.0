@@ -19,6 +19,7 @@ const corsHeaders = {
   "access-control-allow-methods": "POST, OPTIONS",
   "access-control-allow-headers": "authorization, content-type",
   "cache-control": "no-store",
+  "x-content-type-options": "nosniff",
 };
 
 const jsonResponse = (body: unknown, status: number, extraHeaders: Record<string, string> = {}) =>
