@@ -1,0 +1,43 @@
+.participant-identity-portal-slot {
+  display: contents;
+}
+
+.participant-identity-legacy-hidden {
+  display: none !important;
+}
+
+.member-avatar img,
+.sport-card-member-avatar img,
+.activity-chat-sender-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.activity-chat-sender {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.activity-chat-sender-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  overflow: hidden;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.activity-chat-sender-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
