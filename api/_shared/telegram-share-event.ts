@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { requireEnv } from "./env.js";
+import { loadTelegramShareWeather } from "./telegram-share-weather.js";
 
 export type ShareLanguage = "ru" | "uk" | "cs" | "en";
 
@@ -139,6 +140,16 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
   if (!data) return null;
 
   const row = data as ActivityRow;
+  const activity = localized(row, language, "activity");
+  const sport = sportMetadata(row.metadata);
+  const weatherPromise = loadTelegramShareWeather({
+    eventDate: row.event_date,
+    time: row.event_time.slice(0, 5),
+    cityId: row.city_id,
+    activity,
+    environment: sport?.environment,
+  });
+
   const { count, error: countError } = await db
     .from("activity_members")
     .select("activity_id", { count: "exact", head: true })
@@ -161,8 +172,7 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     organizerAvatarUrl = signed.data.signedUrl;
   }
 
-  const activity = localized(row, language, "activity");
-  const sport = sportMetadata(row.metadata);
+  const weather = await weatherPromise;
   const generic = language === "cs"
     ? { level: "Pro všechny", format: "Otevřené", environment: "Ve městě" }
     : language === "en"
@@ -192,6 +202,7 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     format: localizedSportValue(sport?.format, language, generic.format),
     environment: localizedSportValue(sport?.environment, language, generic.environment),
     isSport: row.activity_type === "sport" || Boolean(sport),
+    weather: weather || undefined,
     language,
   };
 }
