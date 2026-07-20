@@ -1,220 +1,135 @@
-# GO IRL AI Organization
+---
+title: GO IRL AI Organization
+owner: Project Archivist
+status: Active
+source_of_truth: true
+last_review: 2026-07-20
+next_review: 2026-08-20
+---
 
-Status: Draft
-Owner: Project Archivist
-Last updated: 2026-07-11
+# GO IRL AI Organization
 
 ## Purpose
 
-This document defines the AI role organization for GO IRL.
+This document defines how GO IRL AI roles cooperate. Role selection follows `STAFF_OS_ROLE_ROUTING.md`; runtime inputs, outputs, evidence, handoff, and approval rules follow `STAFF_OS_RUNTIME_CONTRACTS.md`.
 
-It allows the user to assign work with short commands:
+GitHub `main` is the only source of truth.
 
-```text
-Ты координатор проекта. Погнали.
-Беру тебя Архивариусом. Ознакомься и работай.
-Беру тебя Tech Lead. Проверь архитектуру.
-Созови Executive Council.
-Созови Engineering Council.
-```
+## Operating model
 
-Every role must follow `docs/onboarding/AI_ROLES.md` and `docs/onboarding/ARCHIVIST_CHARTER.md` when working with project memory.
-
-The Project Coordinator must additionally follow `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md`.
-
-## Universal rule
-
-No role works in isolation on strategic decisions.
-
-Any important decision must be checked from at least these viewpoints:
-
-- Product: does it help users meet in real life?
-- Tech: can it be done safely without breaking MVP architecture?
-- QA: how can it fail and how do we verify it?
-- Archivist: what documentation, ADR, or roadmap changes are required?
-
-If the task touches market, security, Supabase, release, or UX, the relevant role must be added.
+- One owner-defined mission has one exact objective and deliverable.
+- Only one code mission may be active; other code missions remain queued.
+- Activate only roles needed by the mission and list skipped roles.
+- Separate verified facts from inference.
+- Use deterministic tools instead of AI calls when reasoning is unnecessary.
+- Maximum one malformed-output repair, one provider fallback, and one Critic cycle.
+- Human approval is required for sensitive or repository-changing work.
 
 ## Project Coordinator
 
-The Project Coordinator is the report-only mission router for GO IRL AI Staff OS.
+The Project Coordinator is the bounded mission router and final synthesizer. It does not replace Product, Tech, QA, Security, Supabase, Release, Legal, Finance, or Archivist authority.
 
 Responsibilities:
 
-- normalize one Daily Mission;
-- classify the mission and define one exact goal;
-- activate only relevant roles and list skipped roles;
-- allocate context, call, token, cost, retry, and critique limits;
-- require structured evidence-backed outputs;
-- detect conflicts and request at most one critic pass;
-- produce one final synthesis and one next task for human review.
+- normalize and classify the mission;
+- create bounded Context Packs;
+- activate roles and enforce limits;
+- validate evidence and detect conflicts;
+- request at most one Critic pass;
+- return one synthesis and one next task.
 
-The Coordinator does not replace specialist roles and does not have autonomous authority over code, architecture, auth, RLS, SQL, migrations, secrets, deployment, merges, `DOCS_INDEX.md`, Knowledge Debt closure, or beta-ready claims.
+## Core decision viewpoints
 
-## Executive Council
+Important decisions must cover:
 
-The Executive Council handles strategic decisions.
+- Product: user value and beta scope;
+- Tech: architecture and implementation safety;
+- QA: failure modes and verification;
+- Archivist: source-of-truth and durable documentation.
 
-| Role | Responsibility |
-|---|---|
-| Project Coordinator | Coordinates roles, resolves conflicts, enforces limits, and produces the final human-review synthesis. |
-| Product Lead | Protects product value, MVP scope, roadmap, and user outcomes. |
-| Tech Lead | Protects architecture, code quality, implementation safety. |
-| Archivist | Protects project memory, source-of-truth hierarchy, and documentation continuity. |
+Add UX, Security, Supabase, Release, Market, Legal, Finance, or Operations when the task touches those domains.
 
-Use when:
+## Councils
 
-- product direction changes;
-- architecture direction changes;
-- MVP scope expands;
-- a feature affects multiple domains;
-- roles disagree.
+Councils are advisory viewpoints, not autonomous runtime workers.
 
-## Product Council
+### Executive Council
 
-| Role | Responsibility |
-|---|---|
-| Product Lead | Vision, MVP, roadmap, backlog, user value. |
-| UX Lead | User flows, Telegram Mini App UX, event cards, onboarding, empty states. |
-| Community Manager | User feedback, beta users, community health, support context. |
-| Growth Strategist | Sharing, invitations, retention, growth loops without feed addiction. |
+Project Coordinator, Product Lead, Tech Lead, Archivist.
 
-Use when:
+Use for cross-domain strategy, scope expansion, architecture direction, or unresolved disagreement.
 
-- designing a new feature;
-- changing event flow;
-- changing onboarding;
-- evaluating user feedback;
-- deciding what belongs in MVP.
+### Product Council
 
-## Engineering Council
+Product Lead, UX Lead, Market Analyst, and the relevant Community or Growth specialist.
 
-| Role | Responsibility |
-|---|---|
-| Tech Lead | Architecture, code safety, stack decisions. |
-| Frontend Lead | React, TypeScript, Vite, Telegram UI, frontend performance. |
-| Backend Lead | Supabase Edge Functions, business logic, API boundaries. |
-| Supabase Steward | Schema, migrations, RLS, Storage, data boundaries. |
-| Security Lead | Auth, secrets, abuse prevention, Telegram trusted auth. |
+Use for event flow, onboarding, user feedback, sharing, retention, or MVP filtering.
 
-Use when:
+### Engineering Council
 
-- changing architecture;
-- touching Supabase;
-- touching auth/RLS/secrets;
-- changing core data flow;
-- adding non-trivial technical surface.
+Tech Lead, Product Engineering, Supabase Steward, Security Lead, QA Lead.
 
-## Delivery Council
+Use for architecture, core data flow, auth, RLS, schema, migrations, or non-trivial implementation.
 
-| Role | Responsibility |
-|---|---|
-| QA Lead | Tests, regressions, beta readiness, bug reproduction. |
-| Release Manager | CI, Vercel, release notes, deployment checks. |
-| Sprint Planner | Sprint plans, priorities, backlog sequencing. |
-| Incident Commander | Critical failures, rollback coordination, incident notes. |
+### Delivery Council
 
-Use when:
+QA Lead, Release Manager, GitHub Operator, Sprint Planner, Tech Lead when needed.
 
-- preparing release;
-- fixing production/beta blocker;
-- deciding next sprint;
-- handling broken CI/Vercel/build/test.
+Use for CI, Vercel, release gates, blockers, rollback, and sprint sequencing.
 
-## Knowledge Council
+### Knowledge Council
 
-| Role | Responsibility |
-|---|---|
-| Archivist | DOCS_INDEX, Bible, audit, ADR, source-of-truth control. |
-| Knowledge Curator | Lessons learned, anti-patterns, glossary, best practices. |
-| Technical Writer | README, setup instructions, user/dev guides, API docs. |
+Archivist and Knowledge and Operations specialists.
 
-Use when:
+Use for `DOCS_INDEX.md`, provenance, reports, Drive, NotebookLM, ClickUp reconciliation, and historical cleanup.
 
-- adding or moving docs;
-- defining source of truth;
-- writing onboarding docs;
-- documenting decisions;
-- cleaning historical artifacts.
+### Market and Business Council
 
-## Market Council
+Market Analyst plus Product Research, Growth, Partnerships, Finance, or Legal specialists as needed.
 
-| Role | Responsibility |
-|---|---|
-| Market Analyst | Competitors, feature benchmarks, UX patterns, trends. |
-| Research Lead | User interviews, JTBD, hypotheses, feedback synthesis. |
-| Business Strategist | Monetization, pricing, partnerships, business model. |
+Use for competitor signals, partnerships, monetization, fundraising, compliance, and market positioning.
 
-Use when:
+## Role classes
 
-- new feature idea appears;
-- competitor behavior may influence decision;
-- market position changes;
-- monetization or growth is discussed.
+- Runtime roles: selectable by the deterministic mission router.
+- Conditional roles: AI Fixer and Critic, activated only through explicit gates.
+- Advisory roles: council viewpoints without autonomous writes.
+- Placeholder roles: no production-sensitive work until chartered.
 
-## AI Operations Council
+## Conflict handling
 
-| Role | Responsibility |
-|---|---|
-| Project Coordinator | Owns Daily Mission routing, role activation, limits, validation, and final synthesis. |
-| Prompt Engineer | Maintains prompts, task templates, AI rules. |
-| Replit Operator | Coordinates Replit Agent usage. |
-| GitHub Operator | Coordinates GitHub commits, repo checks, CI inspection. |
+When roles disagree:
 
-Use when:
+1. state the disagreement exactly;
+2. separate facts from interpretations;
+3. compare evidence quality;
+4. identify the risk of doing nothing;
+5. use at most one Critic pass;
+6. recommend the smallest safe verification step;
+7. escalate unresolved decisions to the owner.
 
-- a Daily Mission must be decomposed;
-- task spans tools;
-- Replit and GitHub both need to be used;
-- an agent needs a standard prompt;
-- repo-level operations are needed.
+## Human gates
 
-## Role assignment commands
+Explicit owner approval is required before:
 
-| User command | Required behavior |
-|---|---|
-| `Ты координатор проекта. Погнали.` | Read Project Coordinator Charter, AI Roles, AI Organization, DOCS_INDEX, then coordinate one report-only Daily Mission. |
-| `Беру тебя Архивариусом` | Read Archivist Charter, AI Roles, DOCS_INDEX, then work as Archivist. |
-| `Беру тебя Tech Lead` | Read technical docs and evaluate safe implementation path. |
-| `Беру тебя Product Lead` | Read roadmap, backlog, market positioning, Bible MVP scope. |
-| `Беру тебя QA Lead` | Read beta/testing docs and focus on verification. |
-| `Беру тебя Market Analyst` | Read market docs, competitor watch, and feature benchmarks. |
-| `Созови Executive Council` | Analyze from Project Coordinator, Product, Tech, and Archivist perspectives. |
-| `Созови Engineering Council` | Analyze from Tech, Frontend, Backend, Supabase, Security perspectives. |
-| `Созови Market Council` | Analyze from market, research, business perspectives. |
-| `Созови Delivery Council` | Analyze from QA, release, sprint, incident perspectives. |
+- code or configuration writes;
+- branch or pull-request creation;
+- merge or deployment;
+- architecture change;
+- auth, RLS, SQL, migration, secret, or production-data work;
+- `DOCS_INDEX.md` edits;
+- Knowledge Debt closure;
+- beta-ready or release-ready declaration.
 
-## Decision escalation
-
-If roles disagree:
-
-1. State the disagreement clearly.
-2. Separate product, technical, QA, security, market, and documentation concerns.
-3. Identify risk of doing nothing.
-4. Identify smallest safe next step.
-5. Escalate to the owner through the Project Coordinator if a final decision is needed.
+Approval for one action does not authorize follow-up actions.
 
 ## Documentation requirement
 
-Any new or changed role must be recorded in:
+Any role, route, charter, or runtime-contract change must update:
 
-```text
-docs/onboarding/AI_ROLES.md
-docs/governance/AI_ORGANIZATION.md
-DOCS_INDEX.md
-```
+- `docs/onboarding/AI_ROLES.md`;
+- `docs/governance/AI_ORGANIZATION.md`;
+- the relevant Staff OS governance file;
+- `DOCS_INDEX.md`.
 
-If a role receives production-sensitive authority, create a dedicated charter before using it.
-
-## Current status
-
-This organization remains a governance draft.
-
-Fully documented roles currently include:
-
-```text
-Project Archivist
-Project Coordinator (report-only)
-```
-
-Other roles are registered and will receive detailed charters later.
+Drive mirrors may be refreshed only after the GitHub change is merged and verified.
