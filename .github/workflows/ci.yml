@@ -32,7 +32,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Test
-        run: pnpm run test
+        run: |
+          set -o pipefail
+          pnpm run test 2>&1 | tee test.log
+
+      - name: Upload failed test log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-test-log
+          path: test.log
 
       - name: Typecheck
         run: pnpm run typecheck
