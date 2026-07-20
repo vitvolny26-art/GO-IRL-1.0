@@ -37,6 +37,11 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
   return dialogUrl.toString();
 };
 
+export const buildAndroidMessengerIntent = (content: CardShareContent) => {
+  const shareText = buildCardShareText({ ...content, url: buildMessengerPreviewUrl(content) });
+  return `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};package=com.facebook.orca;end`;
+};
+
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
   const message = buildCardShareText(content);
   const encodedUrl = encodeURIComponent(content.url);
