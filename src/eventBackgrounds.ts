@@ -1,6 +1,7 @@
-const webpModules = import.meta.glob("./assets/event-backgrounds/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
+const legacyWebpModules = import.meta.glob("./assets/event-backgrounds/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
+const cardWebpModules = import.meta.glob("./assets/event-backgrounds/card-3x4/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
 const svgModules = import.meta.glob("./assets/event-backgrounds/*.svg", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
-const modules: Readonly<Record<string,string>> = { ...webpModules, ...svgModules };
+const modules: Readonly<Record<string,string>> = { ...legacyWebpModules, ...cardWebpModules, ...svgModules };
 
 const files: Readonly<Record<string,string>> = {
   "VB": "01-volleyball.webp",
@@ -49,6 +50,6 @@ export const getEventBackground = (code:string) => {
   const file = files[code];
   if (!file) return null;
   const [asset, fragment] = file.split("#");
-  const url = modules[`./assets/event-backgrounds/${asset}`];
+  const url = modules[`./assets/event-backgrounds/card-3x4/${asset}`] || modules[`./assets/event-backgrounds/${asset}`];
   return url ? `${url}${fragment ? `#${fragment}` : ""}` : null;
 };

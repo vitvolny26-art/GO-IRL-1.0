@@ -97,7 +97,7 @@ const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) =
 
   if (backgroundUrl && existsSync(backgroundUrl)) {
     return sharp(readFileSync(backgroundUrl))
-      .resize(1080, 900, { fit: "cover", position: "attention" })
+      .resize(1080, 900, { fit: "contain", background: "#0a0e10" })
       .composite(overlays)
       .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
       .toBuffer();

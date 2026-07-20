@@ -2,10 +2,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AppAuthIdentity } from "../authSession";
 import { LocalProfileRepository } from "./localProfileRepository";
 import { SupabaseProfileRepository } from "./supabaseProfileRepository";
-import type { UserProfile, UserProfileDraft } from "./profileTypes";
+import type { PublicProfile, UserProfile, UserProfileDraft } from "./profileTypes";
+
+export type PublicProfileMap = ReadonlyMap<string, PublicProfile | null>;
 
 export interface ProfileRepository {
   loadOwnProfile(): Promise<UserProfile | null>;
+  loadPublicProfile(userKey: string): Promise<PublicProfile | null>;
+  loadPublicProfiles(userKeys: readonly string[]): Promise<PublicProfileMap>;
   saveOwnProfile(input: UserProfileDraft): Promise<UserProfile>;
   uploadAvatar(file: File): Promise<string>;
   resolveAvatarUrl(path: string): Promise<string>;

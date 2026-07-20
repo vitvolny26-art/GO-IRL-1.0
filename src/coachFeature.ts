@@ -6,7 +6,11 @@ import {
   isTrustedAuthReady,
   readAuthUserKey,
 } from "./authSession";
-import { normalizeCoachRequestDetails, type CoachRequestDetails } from "./coachRequestState";
+import {
+  buildCoachRequestRetryPatch,
+  normalizeCoachRequestDetails,
+  type CoachRequestDetails,
+} from "./coachRequestState";
 import { attachDemoCoachProfile, demoCoachProfile } from "./demoCoachProfile";
 import { supabase } from "./supabase";
 import type { Activity, CoachRequest, CoachRequestType } from "./types";
@@ -135,6 +139,7 @@ export async function requestCoachForActivity(
     return;
   }
 
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from("coach_requests")
     .upsert({
@@ -145,7 +150,7 @@ export async function requestCoachForActivity(
       goal: details.goal || null,
       level: details.level || null,
       payment_mode: "split",
-      status: "pending",
+      ...buildCoachRequestRetryPatch(now),
     }, {
       onConflict: "activity_id,requester_user_key,request_type",
       ignoreDuplicates: false,

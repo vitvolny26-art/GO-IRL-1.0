@@ -21,7 +21,7 @@
   min-height: 0;
   max-height: none;
   aspect-ratio: 1 / 1;
-  overflow: hidden;
+  overflow: visible;
   background: #05070a;
 }
 
@@ -32,4 +32,39 @@
   max-height: none;
   object-fit: contain;
   object-position: center;
+}
+
+/* PLAN1157 only the camera control opens the file picker */
+.profile-page.is-editing .profile-edit-avatar {
+  pointer-events: none;
+  cursor: default;
+}
+
+.profile-page.is-editing .profile-edit-avatar > input[type="file"] {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 4;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.profile-page.is-editing .profile-edit-avatar > i {
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  pointer-events: none;
+}
+
+.profile-page.is-editing .profile-edit-avatar > input[type="file"]:focus-visible ~ i {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
 }

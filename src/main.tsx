@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
+import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -23,6 +24,7 @@ import "./sport-organizer-card-labels.css";
 import "./avatar-cropper.css";
 import "./participant-notifications.css";
 import "./profile-avatar-proportions.css";
+import "./organizer-event-details.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
@@ -43,6 +45,7 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </Suspense>
       <OrganizerProfilePortal />
+      <OrganizerEventDetailsPortal />
     </QueryClientProvider>
   </StrictMode>,
 );

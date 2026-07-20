@@ -12,6 +12,18 @@ export type UserProfile = {
   updatedAt: string;
 };
 
+export type PublicProfile = Pick<
+  UserProfile,
+  | "userKey"
+  | "displayName"
+  | "bio"
+  | "cityId"
+  | "avatarPath"
+  | "avatarCode"
+  | "favoriteActivityIds"
+  | "updatedAt"
+>;
+
 export type UserProfileDraft = Pick<
   UserProfile,
   | "displayName"

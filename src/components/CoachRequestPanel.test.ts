@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Activity, CoachRequest } from "../types";
 import {
+  buildCoachRequestRetryPatch,
   isActiveCoachRequest,
   normalizeCoachRequestDetails,
   resolveCoachRequestType,
@@ -64,6 +65,17 @@ describe("normalizeCoachRequestDetails", () => {
     expect(normalizeCoachRequestDetails({ goal: "  ", level: "" })).toEqual({
       goal: undefined,
       level: undefined,
+    });
+  });
+});
+
+describe("buildCoachRequestRetryPatch", () => {
+  it("clears stale assignment fields and restarts the request as pending", () => {
+    expect(buildCoachRequestRetryPatch("2026-07-19T20:00:00.000Z")).toEqual({
+      coach_profile_id: null,
+      admin_note: null,
+      status: "pending",
+      updated_at: "2026-07-19T20:00:00.000Z",
     });
   });
 });
