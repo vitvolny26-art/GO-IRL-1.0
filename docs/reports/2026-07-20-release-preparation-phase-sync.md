@@ -15,15 +15,18 @@ Record the owner decision that GO IRL 1.0 has exited beta and align GitHub and C
 
 ## Files inspected
 
+- `DOCS_INDEX.md`
 - `README.md`
+- `ROADMAP.md`
 - `docs/release/CLOSED_BETA_STATUS.md`
+- `docs/release/CURRENT_PHASE.md`
 - current GitHub `main`
 - merged PR #252
 - ClickUp Release Gate and beta-related operational tasks
 
 ## Findings
 
-- Closed/Public Beta was completed on 2026-07-20.
+- Closed Beta was completed on 2026-07-20.
 - The active phase is Release Preparation with focused post-beta stabilization.
 - Broad public launch has not yet been claimed.
 - README still presented closed beta as the current product focus.
@@ -31,7 +34,9 @@ Record the owner decision that GO IRL 1.0 has exited beta and align GitHub and C
 
 ## Changes made
 
-- Added `docs/release/CURRENT_PHASE.md` as the canonical current-phase record.
+- Added `docs/release/CURRENT_PHASE.md` as the canonical lifecycle-phase record.
+- Registered its authority boundary in `DOCS_INDEX.md`.
+- Aligned active phase wording in `ROADMAP.md`.
 - Updated README reading order, current focus, deployment wording, and stabilization status.
 - Reclassified the six beta categories as historical acceptance evidence rather than an active phase restriction.
 - Renamed the ClickUp Beta Gate list to Release Gate.

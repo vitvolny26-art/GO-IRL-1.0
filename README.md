@@ -13,8 +13,8 @@ next_review: 2026-08-20
 
 Before contributing or implementing new features, read:
 
-0. [docs/release/CURRENT_PHASE.md](docs/release/CURRENT_PHASE.md)
-1. [DOCS_INDEX.md](DOCS_INDEX.md)
+0. [DOCS_INDEX.md](DOCS_INDEX.md)
+1. [docs/release/CURRENT_PHASE.md](docs/release/CURRENT_PHASE.md)
 2. [docs/PRODUCT_PHILOSOPHY.md](docs/PRODUCT_PHILOSOPHY.md)
 3. [docs/GO_IRL_CONSTITUTION.md](docs/GO_IRL_CONSTITUTION.md)
 4. [docs/MARKET_POSITIONING.md](docs/MARKET_POSITIONING.md)
@@ -36,7 +36,7 @@ All major product and architecture decisions must follow the [GO IRL Constitutio
 
 Current phase: **Release Preparation and focused post-beta stabilization**.
 
-Public Beta was completed on 2026-07-20. The proven Olomouc real-life event loop remains the release baseline:
+Closed Beta was completed on 2026-07-20. The proven Olomouc real-life event loop remains the release baseline:
 
 create event -> share -> participants join -> event chat -> people show up in real life.
 
@@ -219,7 +219,7 @@ Date: 2026-07-20
 
 Current phase:
 
-- Public Beta: completed and archived.
+- Closed Beta: completed and archived.
 - Release Preparation: active.
 - Focused post-beta stabilization: active.
 - Broad public launch: not yet claimed.

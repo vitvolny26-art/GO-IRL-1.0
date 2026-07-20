@@ -11,9 +11,9 @@ next_review: 2026-08-20
 
 ## Decision
 
-GO IRL 1.0 is no longer in beta.
+GO IRL 1.0 has completed Closed Beta and is now in Release Preparation.
 
-- Previous phase: **Public Beta** — completed on 2026-07-20.
+- Previous phase: **Closed Beta** — completed on 2026-07-20.
 - Current phase: **Release Preparation and focused post-beta stabilization**.
 - Broad public launch: **not yet claimed**.
 
@@ -33,7 +33,9 @@ Adding or exposing new categories and verticals still requires an explicit revie
 
 ## Source-of-truth rule
 
-This document overrides active wording that still describes GO IRL 1.0 as being in closed or public beta.
+This document defines the current lifecycle phase. `DOCS_INDEX.md` remains the documentation registry and must list this file explicitly.
+
+`RELEASE_NOTES.md` remains the source of truth for release implementation status; this file owns only the lifecycle-phase decision.
 
 Historical beta reports, checklists, tests, and acceptance records remain valid historical evidence and should not be rewritten.
 
