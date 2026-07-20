@@ -4,7 +4,7 @@ import { parseWhatsAppTestPayload } from "../../src/whatsapp/mock-webhook.js";
 import { readEnv, requireEnv } from "./env.js";
 import { verifyMetaSignature } from "./meta-signature.js";
 import { getProviderEventSummary, joinProviderEvent } from "./provider-join-service.js";
-import { sendProviderInvitation, sendProviderJoinResult, type MessagingProvider } from "./provider-messages.js";
+import { sendMessengerWelcome, sendProviderInvitation, sendProviderJoinResult, type MessagingProvider } from "./provider-messages.js";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -12,6 +12,7 @@ type InboundAction = {
   id: string;
   providerUserId: string;
   displayName: string;
+  text?: string;
   actionPayload?: string;
 };
 
@@ -47,6 +48,7 @@ function parseMetaActions(provider: MetaMessagingProvider, payload: unknown): In
     id: message.id,
     providerUserId: message.senderId,
     displayName: provider === "instagram" ? "Instagram User" : "Messenger User",
+    text: message.text,
     actionPayload: message.actionPayload,
   }));
 }
@@ -65,7 +67,12 @@ const providerSecret = (
   : requireEnv(sharedName);
 
 async function processAction(provider: MessagingProvider, action: InboundAction) {
-  if (!action.actionPayload) return;
+  if (!action.actionPayload) {
+    if (provider === "messenger" && action.text?.trim()) {
+      await sendMessengerWelcome(action.providerUserId);
+    }
+    return;
+  }
   const separator = action.actionPayload.indexOf(":");
   if (separator < 1) return;
   const command = action.actionPayload.slice(0, separator);
@@ -127,3 +134,4 @@ export async function handleProviderWebhook(provider: MessagingProvider, request
   if (failures.length) return jsonResponse({ error: "processing_failed", failed: failures.length }, 500);
   return jsonResponse({ received: actions.length });
 }
+

@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createHmac } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { handleProviderWebhook } from "./provider-webhook.js";
 
 const runtimeEnv = (globalThis as typeof globalThis & {
@@ -16,6 +17,11 @@ describe("production provider webhook boundary", () => {
     delete runtimeEnv.META_APP_SECRET;
     delete runtimeEnv.INSTAGRAM_VERIFY_TOKEN;
     delete runtimeEnv.INSTAGRAM_APP_SECRET;
+    delete runtimeEnv.MESSENGER_PAGE_ACCESS_TOKEN;
+    delete runtimeEnv.MESSENGER_PAGE_ID;
+    delete runtimeEnv.META_GRAPH_VERSION;
+    delete runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL;
+    vi.unstubAllGlobals();
   });
 
   it("completes Meta GET verification with the configured token", async () => {
@@ -74,4 +80,43 @@ describe("production provider webhook boundary", () => {
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({ error: "invalid_signature" });
   });
+
+  it("answers a signed Messenger text with the GO IRL welcome screen", async () => {
+    runtimeEnv.MESSENGER_PAGE_ACCESS_TOKEN = "page-token";
+    runtimeEnv.MESSENGER_PAGE_ID = "page-id";
+    runtimeEnv.META_GRAPH_VERSION = "v23.0";
+    runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL = "go-irl-1-0.vercel.app";
+    const rawBody = JSON.stringify({
+      object: "page",
+      entry: [{ messaging: [{
+        sender: { id: "psid-1" },
+        message: { mid: "mid-1", text: "РџСЂРёРІРµС‚" },
+      }] }],
+    });
+    const signature = `sha256=${createHmac("sha256", "test-app-secret").update(rawBody).digest("hex")}`;
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await handleProviderWebhook("messenger", new Request(
+      "https://example.test/api/messenger/webhook",
+      { method: "POST", body: rawBody, headers: { "x-hub-signature-256": signature } },
+    ));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ received: 1 });
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("https://graph.facebook.com/v23.0/page-id/messages");
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
+      messaging_type: "RESPONSE",
+      recipient: { id: "psid-1" },
+      message: {
+        attachment: {
+          payload: {
+            template_type: "button",
+            buttons: [{ type: "web_url", url: "https://go-irl-1-0.vercel.app" }],
+          },
+        },
+      },
+    });
+  });
 });
+

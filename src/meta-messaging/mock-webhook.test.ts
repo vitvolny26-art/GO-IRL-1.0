@@ -62,4 +62,17 @@ describe("disabled Meta messaging mock webhooks", () => {
       },
     });
   });
+
+  it("ignores Messenger echo messages to prevent reply loops", () => {
+    const messages = parseMetaMessagingTestPayload("messenger", {
+      object: "page",
+      entry: [{ messaging: [{
+        sender: { id: "page-id" },
+        message: { mid: "echo-mid", text: "Bot reply", is_echo: true },
+      }] }],
+    });
+
+    expect(messages).toEqual([]);
+  });
 });
+

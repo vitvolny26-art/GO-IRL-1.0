@@ -29,6 +29,10 @@ export type MetaMessage = {
         default_action?: { type: "web_url"; url: string };
         buttons: MetaTemplateButton[];
       }>;
+    } | {
+      template_type: "button";
+      text: string;
+      buttons: MetaTemplateButton[];
     };
   };
 };
@@ -48,3 +52,4 @@ export type MetaJoinResultPayload = {
   message: { text: string };
   join_status: JoinResult["status"];
 };
+

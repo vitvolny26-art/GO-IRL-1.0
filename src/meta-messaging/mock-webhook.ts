@@ -43,7 +43,7 @@ export function parseMetaMessagingTestPayload(
         : typeof event.timestamp === "number"
           ? `${provider}:${senderId}:${event.timestamp}`
           : "";
-      if (!senderId || !id) return [];
+      if (!senderId || !id || message?.is_echo === true) return [];
       return [{
         provider,
         id,
@@ -83,3 +83,4 @@ export function handleMetaMockWebhook(
 
   return { status: 405, body: { error: "method_not_allowed" } };
 }
+
