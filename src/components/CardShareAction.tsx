@@ -17,10 +17,8 @@ type ShareChannel = CardShareChannel | "native";
 
 const channels = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
-  { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
-  { id: "native", label: "Поделиться", icon: null },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
-  { id: "instagram", label: "Instagram", icon: "/icons/instagram.svg" },
+  { id: "native", label: "Поделиться", icon: null },
 ] as const;
 
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
@@ -78,15 +76,6 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         }
       }
       await copyShareText();
-      return;
-    }
-
-    if (channel === "instagram" || channel === "messenger") {
-      await copyShareText();
-      const target = channel === "instagram"
-        ? "https://www.instagram.com/direct/inbox/"
-        : "https://www.messenger.com/";
-      window.open(target, "_blank", "noopener,noreferrer");
       return;
     }
 
