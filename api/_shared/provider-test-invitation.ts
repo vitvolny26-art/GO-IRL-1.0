@@ -14,10 +14,16 @@ type TriggerOptions = {
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const recipientPattern = /^[1-9][0-9]{4,31}$/;
 
+const corsHeaders = {
+  "access-control-allow-origin": "https://hoppscotch.io",
+  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-allow-headers": "authorization, content-type",
+};
+
 const jsonResponse = (body: unknown, status: number, extraHeaders: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json", ...extraHeaders },
+    headers: { "content-type": "application/json", ...corsHeaders, ...extraHeaders },
   });
 
 const asRecord = (value: unknown) =>
@@ -40,8 +46,11 @@ async function secureEqual(left: string, right: string) {
 
 export const createProviderTestInvitationHandler = ({ tokenEnv, dependencies }: TriggerOptions) =>
   async (request: Request, overrides: Dependencies = dependencies) => {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
     if (request.method !== "POST") {
-      return jsonResponse({ error: "method_not_allowed" }, 405, { allow: "POST" });
+      return jsonResponse({ error: "method_not_allowed" }, 405, { allow: "POST, OPTIONS" });
     }
 
     const configuredToken = readEnv(tokenEnv);
@@ -76,8 +85,13 @@ export const createProviderTestInvitationHandler = ({ tokenEnv, dependencies }: 
 
     try {
       await overrides.sendInvitation(recipientId, event);
-    } catch {
+    } catch (error) {
+      console.error(
+        "provider_test_invitation_send_failed",
+        error instanceof Error ? error.message : "unknown_provider_error",
+      );
       return jsonResponse({ error: "invitation_send_failed" }, 502);
     }
     return jsonResponse({ accepted: true }, 202);
   };
+
