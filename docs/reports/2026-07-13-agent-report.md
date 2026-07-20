@@ -63,3 +63,35 @@ Prepare the safe Phase 1 scaffold for WhatsApp event join MVP in GitHub Issue #7
 ## Next step
 
 After explicit Phase 2 approval, validate payloads in the Meta test environment and design signature verification plus shared join-service persistence before enabling any endpoint.
+
+
+## Follow-up — Instagram invitation smoke test (2026-07-20)
+
+### Task
+
+Run the production Instagram invitation trigger safely, identify the first live blocker, and remove the temporary trigger credential after the test.
+
+### Findings
+
+- Production deployment and trigger authentication worked.
+- The authenticated request reached `sendProviderInvitation("instagram", ...)` but returned `502 invitation_send_failed`.
+- The shared trigger handler swallowed the provider error, so Vercel logs could not expose the Meta rejection reason.
+- Hoppscotch preflight returned `405` because the trigger did not support `OPTIONS`.
+- Vercel `Redeploy` clones the selected deployment configuration; it must not be used as proof that a deleted environment variable is absent from a newly sourced deployment.
+
+### Changes prepared
+
+- Added Hoppscotch-scoped CORS and `OPTIONS` handling to the provider test trigger.
+- Added server-only provider failure logging while keeping the public response generic.
+- Added unit coverage for preflight and sanitized provider diagnostics.
+- Removed the temporary `INSTAGRAM_TEST_TRIGGER_TOKEN` value from Vercel after the smoke test.
+
+### Checks
+
+- `pnpm run lint` — PASS
+- `pnpm run build` — PASS
+- `pnpm run test` — PASS (45 files, 236 tests)
+
+### Next step
+
+Publish the minimal diagnostics patch from current `main`, create a fresh production deployment, recreate a short-lived trigger token, repeat one invitation, read the Meta error from Vercel logs, then delete the trigger token and create another fresh deployment.
