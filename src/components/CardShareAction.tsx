@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
 import { buildAndroidMessengerIntent, buildCardShareTarget, buildCardShareText, buildMessengerPreviewUrl } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
+import { getTelegramWebApp } from "../telegram";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
@@ -65,6 +66,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     if (channel === "messenger") {
       const previewUrl = buildMessengerPreviewUrl(content);
       if (/Android/i.test(navigator.userAgent)) {
+        const telegramWebApp = getTelegramWebApp();
+        if (telegramWebApp?.openLink) {
+          telegramWebApp.openLink(buildCardShareTarget(channel, content));
+          return;
+        }
         window.location.href = buildAndroidMessengerIntent(content);
         return;
       }
