@@ -9,6 +9,7 @@ export type CardShareContent = {
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const fallbackOrigin = "https://go-irl-1-0.vercel.app";
+const metaAppId = "2315026155981238";
 
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
   [url, [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n")].filter(Boolean).join("\n\n");
@@ -28,13 +29,21 @@ export const buildMessengerPreviewUrl = (content: CardShareContent) => {
   }
 };
 
+export const buildMessengerSendTarget = (content: CardShareContent) => {
+  const dialogUrl = new URL("https://www.facebook.com/dialog/send");
+  dialogUrl.searchParams.set("app_id", metaAppId);
+  dialogUrl.searchParams.set("link", buildMessengerPreviewUrl(content));
+  dialogUrl.searchParams.set("redirect_uri", fallbackOrigin);
+  return dialogUrl.toString();
+};
+
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
   const message = buildCardShareText(content);
-  const encodedUrl = encodeURIComponent(channel === "messenger" ? buildMessengerPreviewUrl(content) : content.url);
+  const encodedUrl = encodeURIComponent(content.url);
   if (channel === "telegram") {
     const textWithoutUrl = buildCardShareText({ ...content, url: "" });
     return `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(textWithoutUrl)}`;
   }
   if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
-  return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+  return buildMessengerSendTarget(content);
 };

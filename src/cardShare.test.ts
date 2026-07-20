@@ -19,10 +19,12 @@ describe("card share", () => {
     expect(decodeURIComponent(buildCardShareTarget("whatsapp", content))).toContain(content.url);
   });
 
-  it("routes Messenger through the GO IRL event preview", () => {
-    const target = decodeURIComponent(buildCardShareTarget("messenger", content));
-    expect(target).toContain("https://go-irl-1-0.vercel.app/api/meta/event-preview");
-    expect(target).toContain(`event=${eventId}`);
-    expect(target).not.toContain("u=https://t.me/");
+  it("opens the official Messenger Send Dialog with the GO IRL preview", () => {
+    const target = new URL(buildCardShareTarget("messenger", content));
+    expect(target.origin + target.pathname).toBe("https://www.facebook.com/dialog/send");
+    expect(target.searchParams.get("app_id")).toBe("2315026155981238");
+    expect(target.searchParams.get("link")).toContain("https://go-irl-1-0.vercel.app/api/meta/event-preview");
+    expect(target.searchParams.get("link")).toContain(`event=${eventId}`);
+    expect(target.searchParams.get("redirect_uri")).toBe("https://go-irl-1-0.vercel.app");
   });
 });
