@@ -6,6 +6,12 @@ import {
   isTrustedAuthReady,
   readAuthUserKey,
 } from "./authSession";
+import {
+  buildCoachRequestRetryPatch,
+  normalizeCoachRequestDetails,
+  type CoachRequestDetails,
+} from "./coachRequestState";
+import { attachDemoCoachProfile, demoCoachProfile } from "./demoCoachProfile";
 import { supabase } from "./supabase";
 import type { Activity, CoachRequest, CoachRequestType } from "./types";
 
@@ -17,7 +23,8 @@ const isCoachDemoMode = () =>
 
 const readDemoCoachRequests = () => {
   try {
-    return JSON.parse(localStorage.getItem(demoCoachStorageKey) || "[]") as CoachRequest[];
+    const requests = JSON.parse(localStorage.getItem(demoCoachStorageKey) || "[]") as CoachRequest[];
+    return requests.map(attachDemoCoachProfile);
   } catch {
     return [] as CoachRequest[];
   }
@@ -73,6 +80,10 @@ export async function loadCoachRequestsForActivity(activityId: string) {
   })) as CoachRequest[];
 }
 
+export function getDemoCoachProfile(profileId?: string) {
+  return profileId === demoCoachProfile.id ? demoCoachProfile : null;
+}
+
 export async function hasConfirmedCoachForActivity(activityId: string) {
   const requests = await loadCoachRequestsForActivity(activityId);
   return requests.some(isConfirmedOrganizerCoachRequest);
@@ -93,8 +104,10 @@ export async function getOrganizerRoleRequestState(activityId: string) {
 export async function requestCoachForActivity(
   activity: Activity,
   requestType: CoachRequestType,
+  requestDetails?: CoachRequestDetails,
 ) {
   const userKey = await getCurrentCoachUserKey();
+  const details = normalizeCoachRequestDetails(requestDetails);
 
   if (!userKey) {
     throw new Error("auth_required");
@@ -108,9 +121,11 @@ export async function requestCoachForActivity(
       id,
       activityId: activity.id,
       requesterUserKey: userKey,
+      coachProfileId: requestType === "organizer_request" ? demoCoachProfile.id : undefined,
       requestType,
       sportType: activity.categoryId || "sport",
-      level: undefined,
+      goal: details.goal,
+      level: details.level,
       paymentMode: "split",
       status: requestType === "organizer_request" ? "confirmed" : "pending",
       createdAt: requests.find((request) => request.id === id)?.createdAt || now,
@@ -124,6 +139,7 @@ export async function requestCoachForActivity(
     return;
   }
 
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from("coach_requests")
     .upsert({
@@ -131,9 +147,10 @@ export async function requestCoachForActivity(
       requester_user_key: userKey,
       request_type: requestType,
       sport_type: activity.categoryId || "sport",
-      level: null,
+      goal: details.goal || null,
+      level: details.level || null,
       payment_mode: "split",
-      status: "pending",
+      ...buildCoachRequestRetryPatch(now),
     }, {
       onConflict: "activity_id,requester_user_key,request_type",
       ignoreDuplicates: false,

@@ -1,11 +1,11 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { resolveEventArtworkCode } from "./event-artwork.js";
-import { betaEventIllustrationSpriteBase64, betaEventIllustrationTiles } from "./event-illustration-sprite.js";
+import { resolveEventShareBackgroundUrl } from "./event-share-backgrounds.js";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
+import { readEnv } from "./env.js";
 
 const require = createRequire(import.meta.url);
 let sharpPromise: Promise<typeof import("sharp").default> | null = null;
@@ -45,34 +45,66 @@ const loadSharp = () => {
   return sharpPromise;
 };
 
-const spriteBuffer = Buffer.from(betaEventIllustrationSpriteBase64, "base64");
-const illustrationMask = Buffer.from(
-  '<svg xmlns="http://www.w3.org/2000/svg" width="230" height="230"><rect width="230" height="230" rx="58" fill="white"/></svg>',
-);
+export const hasEventShareBackground = (input: TelegramEventCardInput) => {
+  const backgroundUrl = resolveEventShareBackgroundUrl(input);
+  return Boolean(backgroundUrl && existsSync(backgroundUrl));
+};
 
-export const hasBetaEventIllustration = (input: TelegramEventCardInput) => {
-  const code = resolveEventArtworkCode(input);
-  return code in betaEventIllustrationTiles;
+const trustedTelegramAvatarHosts = ["t.me", "telegram.org", "telegram-cdn.org"];
+
+export const isTrustedOrganizerAvatarUrl = (value: string) => {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return false;
+    if (trustedTelegramAvatarHosts.some((host) => url.hostname === host || url.hostname.endsWith(`.${host}`))) return true;
+    const supabaseUrl = readEnv("SUPABASE_URL");
+    return Boolean(supabaseUrl && url.hostname === new URL(supabaseUrl).hostname);
+  } catch {
+    return false;
+  }
+};
+
+const loadOrganizerAvatar = async (value?: string) => {
+  if (!value || !isTrustedOrganizerAvatarUrl(value)) return null;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4_000);
+  try {
+    const response = await fetch(value, { signal: controller.signal, redirect: "follow" });
+    if (!response.ok) return null;
+    const length = Number(response.headers.get("content-length") || 0);
+    if (length > 2_000_000) return null;
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (bytes.length > 2_000_000) return null;
+    const sharp = await loadSharp();
+    const mask = Buffer.from('<svg width="128" height="128"><rect width="128" height="128" rx="16" fill="white"/></svg>');
+    return sharp(bytes)
+      .resize(128, 128, { fit: "cover", position: "attention" })
+      .composite([{ input: mask, blend: "dest-in" }])
+      .png()
+      .toBuffer();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
 const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) => {
   const sharp = await loadSharp();
-  const code = resolveEventArtworkCode(input) as keyof typeof betaEventIllustrationTiles;
-  const tile = betaEventIllustrationTiles[code];
-  const image = sharp(Buffer.from(svg));
+  const backgroundUrl = resolveEventShareBackgroundUrl(input);
+  const organizerAvatar = await loadOrganizerAvatar(input.organizerAvatarUrl);
+  const overlays = [{ input: Buffer.from(svg), left: 0, top: 0 }, ...(organizerAvatar ? [{ input: organizerAvatar, left: 78, top: 716 }] : [])];
 
-  if (tile) {
-    const illustration = await sharp(spriteBuffer)
-      .extract({ left: tile.left, top: tile.top, width: 96, height: 96 })
-      .resize(230, 230, { fit: "cover" })
-      .composite([{ input: illustrationMask, blend: "dest-in" }])
-      .png()
+  if (backgroundUrl && existsSync(backgroundUrl)) {
+    return sharp(readFileSync(backgroundUrl))
+      .resize(1080, 900, { fit: "contain", background: "#0a0e10" })
+      .composite(overlays)
+      .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
       .toBuffer();
-
-    image.composite([{ input: illustration, left: 76, top: 76 }]);
   }
 
-  return image
+  return sharp(Buffer.from(svg))
+    .composite(organizerAvatar ? [{ input: organizerAvatar, left: 78, top: 716 }] : [])
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };
@@ -80,5 +112,11 @@ const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) =
 export const renderTelegramShareCardJpeg = (input: TelegramEventCardInput) =>
   renderShareCardJpeg(buildTelegramShareCardSvg(input), input);
 
-export const renderMetaInvitationCardJpeg = (input: TelegramEventCardInput) =>
-  renderShareCardJpeg(buildMetaInvitationCardSvg(input), input);
+export const renderMetaInvitationCardJpeg = async (input: TelegramEventCardInput) => {
+  const sharp = await loadSharp();
+  const portraitCard = await renderShareCardJpeg(buildMetaInvitationCardSvg(input), input);
+  return sharp(portraitCard)
+    .resize(1200, 630, { fit: "contain", background: "#0a0e10" })
+    .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
+    .toBuffer();
+};

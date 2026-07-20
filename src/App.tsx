@@ -23,7 +23,6 @@ import {
   Star,
   Ticket,
   Trash2,
-  UploadCloud,
   UserRoundCheck,
   UsersRound,
   X,
@@ -34,7 +33,7 @@ import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
-import { getCurrentStartParam, initializeTrustedAuth } from "./authSession";
+import { getCurrentAuthIdentity, getCurrentStartParam, initializeTrustedAuth } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
@@ -48,7 +47,7 @@ import {
 } from "./recommendations";
 import { useAppStore } from "./store";
 import { ShareTemplateService } from "./share";
-import { getUserKey } from "./supabase";
+import { getUserKey, supabase } from "./supabase";
 import { closeMiniApp, expandMiniApp, getTelegramWebApp, impactTelegram, notifyTelegram, readyMiniApp, showBackButton } from "./telegram";
 import type { Activity, AppView, Category, Language, NewActivity, SportEnvironment, SportFormat, SportLevel, SportMetadata } from "./types";
 import {
@@ -74,7 +73,6 @@ import { EventCardArtwork } from "./components/EventCardArtwork";
 import { stripLeadingEmoji } from "./cardText";
 import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation } from "./eventLocations";
 import { openAvatarCropper } from "./avatarCropper";
-import { readProfileAvatarAsDataUrl } from "./profileAvatar";
 import { activityIconFor } from "./activityIcon";
 import {
   buildBrowserActivityInviteUrl,
@@ -95,6 +93,8 @@ import {
 } from "./eventInteractionState";
 import { isTabSwipeBlockedTarget, resolveAdjacentTab, resolveSwipeDirection } from "./bottom-nav-swipe";
 import { isTemplateCarouselDrag } from "./templateCarousel";
+import { createProfileRepository, type ProfileRepository } from "./profile/profileRepository";
+import type { UserProfile, UserProfileDraft } from "./profile/profileTypes";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -989,16 +989,70 @@ const loadProfile = (fallbackName: string, fallbackCityId: string): LocalProfile
   }
 };
 
+type ProfileViewState = {
+  name: string;
+  bio: string;
+  cityId: string;
+  avatar: string;
+  avatarPath: string | null;
+  avatarCode: string | null;
+  registeredAt: string;
+  favoriteActivities: string[];
+  isPublic: boolean;
+  showFavorites: boolean;
+};
+
+const createFallbackProfileViewState = (name: string, cityId: string): ProfileViewState => ({
+  name,
+  bio: "",
+  cityId,
+  avatar: "GI",
+  avatarPath: null,
+  avatarCode: "GI",
+  registeredAt: new Date().toISOString(),
+  favoriteActivities: [],
+  isPublic: true,
+  showFavorites: true,
+});
+
+const mapProfileViewState = (profile: UserProfile, avatar: string): ProfileViewState => ({
+  name: profile.displayName,
+  bio: profile.bio,
+  cityId: profile.cityId,
+  avatar: avatar || profile.avatarCode || "GI",
+  avatarPath: profile.avatarPath,
+  avatarCode: profile.avatarCode,
+  registeredAt: profile.createdAt,
+  favoriteActivities: profile.favoriteActivityIds,
+  isPublic: profile.isPublic,
+  showFavorites: profile.showFavorites,
+});
+
+const isProfileAvatarImage = (value: string) => value.startsWith("data:image/") || /^https?:\/\//.test(value);
+
 function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onCloseMiniApp: () => void }) {
   const { activities, joinedIds, pendingIds, loading, syncError, selectedCityId, setSelectedCity } = useAppStore();
   const [editing, setEditing] = useState(false);
   const t = getTranslation(language);
   const tgUser = getTelegramWebApp()?.initDataUnsafe?.user;
   const fallbackName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ") || t.guestName;
-  const [profile, setProfile] = useState(() => loadProfile(fallbackName, selectedCityId));
+  const identity = getCurrentAuthIdentity();
+  const identityKey = identity?.source === "trusted-telegram" ? identity.user.userKey : getUserKey();
+  const repository = useMemo<ProfileRepository>(() => createProfileRepository({
+    identity,
+    supabaseClient: supabase,
+    storage: localStorage,
+    fallbackDisplayName: fallbackName,
+    fallbackCityId: selectedCityId,
+  }), [fallbackName, identityKey, selectedCityId]);
+  const [profile, setProfile] = useState<ProfileViewState>(() => createFallbackProfileViewState(fallbackName, selectedCityId));
   const [avatarDraft, setAvatarDraft] = useState(profile.avatar);
+  const [avatarPathDraft, setAvatarPathDraft] = useState<string | null>(profile.avatarPath);
+  const [avatarCodeDraft, setAvatarCodeDraft] = useState<string | null>(profile.avatarCode);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [avatarError, setAvatarError] = useState("");
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
   const userKey = getUserKey();
   const city = getCity(profile.cityId);
   const today = new Date().toISOString().slice(0, 10);
@@ -1012,9 +1066,39 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
   const selectedFavorites = favoriteOptions.filter((option) => profile.favoriteActivities.includes(option.id));
   const profileCopy = profilePolishCopy[language];
 
+  useEffect(() => {
+    let active = true;
+    setProfileLoading(true);
+    setProfileError(false);
+    void repository.loadOwnProfile()
+      .then(async (loaded) => {
+        if (!active) return;
+        if (!loaded) {
+          const fallback = createFallbackProfileViewState(fallbackName, selectedCityId);
+          setProfile(fallback);
+          setAvatarDraft(fallback.avatar);
+          setAvatarPathDraft(null);
+          setAvatarCodeDraft("GI");
+          return;
+        }
+        const resolvedAvatar = loaded.avatarPath
+          ? await repository.resolveAvatarUrl(loaded.avatarPath)
+          : loaded.avatarCode || "GI";
+        if (!active) return;
+        const next = mapProfileViewState(loaded, resolvedAvatar);
+        setProfile(next);
+        setAvatarDraft(next.avatar);
+        setAvatarPathDraft(next.avatarPath);
+        setAvatarCodeDraft(next.avatarCode);
+      })
+      .catch(() => { if (active) setProfileError(true); })
+      .finally(() => { if (active) setProfileLoading(false); });
+    return () => { active = false; };
+  }, [fallbackName, repository, selectedCityId]);
+
   const processAvatarFile = async (file?: File) => {
     if (!file) return;
-    if (!file.type.startsWith("image/") || file.size > maxAvatarBytes) {
+    if (!["image/jpeg", "image/png"].includes(file.type) || file.size > maxAvatarBytes) {
       setAvatarError(profileCopy.invalid);
       return;
     }
@@ -1023,37 +1107,67 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
     setAvatarBusy(true);
     try {
       const cropped = await openAvatarCropper(file);
-      if (cropped) setAvatarDraft(await readProfileAvatarAsDataUrl(cropped));
+      if (!cropped) return;
+      const stored = await repository.uploadAvatar(cropped);
+      const display = stored.startsWith("data:image/") ? stored : await repository.resolveAvatarUrl(stored);
+      setAvatarDraft(display);
+      setAvatarPathDraft(stored);
+      setAvatarCodeDraft(null);
+    } catch {
+      setAvatarError(profileCopy.invalid);
     } finally {
       setAvatarBusy(false);
     }
   };
 
-  const saveProfile = (event: FormEvent<HTMLFormElement>) => {
+  const selectAvatarCode = (avatar: string) => {
+    setAvatarDraft(avatar);
+    setAvatarPathDraft(null);
+    setAvatarCodeDraft(avatar);
+  };
+
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const nextProfile: LocalProfile = {
-      name: String(data.get("profileName") || fallbackName).trim() || fallbackName,
+    const draft: UserProfileDraft = {
+      displayName: String(data.get("profileName") || fallbackName).trim() || fallbackName,
       bio: String(data.get("profileBio") || "").trim(),
       cityId: String(data.get("profileCity") || selectedCityId),
-      avatar: avatarDraft || String(data.get("profileAvatar") || "GI"),
-      registeredAt: profile.registeredAt,
-      favoriteActivities: data.getAll("favoriteActivities").map(String),
+      avatarPath: avatarPathDraft,
+      avatarCode: avatarCodeDraft,
+      isPublic: profile.isPublic,
+      showFavorites: profile.showFavorites,
+      favoriteActivityIds: data.getAll("favoriteActivities").map(String),
     };
-    localStorage.setItem("go-irl-profile", JSON.stringify(nextProfile));
-    setProfile(nextProfile);
-    setAvatarDraft(nextProfile.avatar);
-    setSelectedCity(nextProfile.cityId);
-    setEditing(false);
-    notifyTelegram("success");
+    setAvatarBusy(true);
+    setProfileError(false);
+    try {
+      const saved = await repository.saveOwnProfile(draft);
+      const resolvedAvatar = saved.avatarPath
+        ? await repository.resolveAvatarUrl(saved.avatarPath)
+        : saved.avatarCode || "GI";
+      const next = mapProfileViewState(saved, resolvedAvatar);
+      setProfile(next);
+      setAvatarDraft(next.avatar);
+      setAvatarPathDraft(next.avatarPath);
+      setAvatarCodeDraft(next.avatarCode);
+      setSelectedCity(next.cityId);
+      setEditing(false);
+      notifyTelegram("success");
+    } catch {
+      setProfileError(true);
+      notifyTelegram("error");
+    } finally {
+      setAvatarBusy(false);
+    }
   };
 
   return (
     <section className={`page-section profile-page${editing ? " is-editing" : ""}`}>
-      {loading && <ProfileSkeleton />}
-      {syncError && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
+      {(loading || profileLoading) && <ProfileSkeleton />}
+      {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
       {!editing && <div className="profile-hero">
-        <div className="profile-avatar">{profile.avatar.startsWith("data:image/") ? <img src={profile.avatar} alt={t.avatar} /> : profile.avatar}</div>
+        <div className="profile-avatar">{isProfileAvatarImage(profile.avatar) ? <img src={profile.avatar} alt={t.avatar} /> : profile.avatar}</div>
         <div className="profile-main">
           <div className="profile-kicker"><MapPin />{city.name[language]}</div>
           <h1>{profile.name}</h1>
@@ -1068,10 +1182,14 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
           <div className="profile-edit-intro">
             <h1>{profileCopy.title}</h1>
             <p>{profileCopy.hint}</p>
-            <div className="profile-edit-avatar">
-              {avatarDraft.startsWith("data:image/") ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
-              <i aria-hidden="true"><Camera size={16} /></i>
-            </div>
+            <label className={`profile-edit-avatar${avatarBusy ? " is-busy" : ""}`}>
+              <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
+                const input = event.currentTarget;
+                void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
+              }} />
+              {isProfileAvatarImage(avatarDraft) ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
+              <i aria-hidden="true"><Camera size={20} /></i>
+            </label>
           </div>
           <label><span>{t.name}</span><input name="profileName" defaultValue={profile.name} required /></label>
           <label><span>{t.shortBio}</span><textarea name="profileBio" rows={3} defaultValue={profile.bio} placeholder={t.profileBioPlaceholder} /></label>
@@ -1092,27 +1210,12 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
           <div className="avatar-picker" role="radiogroup" aria-label={t.avatar}>
             {avatarOptions.map((avatar) => (
               <label key={avatar}>
-                <input name="profileAvatar" type="radio" value={avatar} defaultChecked={profile.avatar === avatar} onChange={() => setAvatarDraft(avatar)} />
+                <input name="profileAvatar" type="radio" value={avatar} defaultChecked={profile.avatarCode === avatar} onChange={() => selectAvatarCode(avatar)} />
                 <span>{avatar}</span>
               </label>
             ))}
           </div>
-          <label
-            className={`profile-avatar-upload${avatarBusy ? " is-busy" : ""}`}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              void processAvatarFile(event.dataTransfer.files?.[0]);
-            }}
-          >
-            <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
-              const input = event.currentTarget;
-              void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
-            }} />
-            <UploadCloud aria-hidden="true" />
-            <strong>{avatarBusy ? "…" : profileCopy.upload}</strong>
-            <small>{profileCopy.formats}</small>
-          </label>
+
           {avatarError && <div className="profile-avatar-error" role="alert">{avatarError}</div>}
           <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
         </form>

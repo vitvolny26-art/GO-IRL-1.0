@@ -1,23 +1,49 @@
 import { useEffect, useMemo, useState } from "react";
-import { Dumbbell, Star, UserCheck, XCircle } from "lucide-react";
+import { Dumbbell, MapPin, Star, UserCheck, XCircle } from "lucide-react";
 import {
   cancelCoachRequest,
   getCurrentCoachUserKey,
+  getDemoCoachProfile,
   loadCoachRequestsForActivity,
   requestCoachForActivity,
 } from "../coachFeature";
-import type { Activity, CoachRequest, UserRole } from "../types";
+import { isActiveCoachRequest, resolveCoachRequestType } from "../coachRequestState";
+import type { Activity, CoachRequest, SportLevel, UserRole } from "../types";
 
-type CoachRequestPanelVariant = "coach" | "event_helper";
 type CoachRequestsChangedDetail = { activityId: string };
 
 type CoachRequestPanelProps = {
   activity: Activity;
   userRole: UserRole;
-  variant?: CoachRequestPanelVariant;
 };
 
 const coachRequestsChangedEvent = "go-irl-coach-requests-changed";
+const levelOptions: Array<{ value: SportLevel; label: string }> = [
+  { value: "beginner", label: "Новички" },
+  { value: "intermediate", label: "Средний уровень" },
+  { value: "advanced", label: "Продвинутые" },
+];
+
+const copy = {
+  ariaLabel: "Тренер",
+  title: "Тренер",
+  description: "Тренер поможет провести игру, разминку и объяснить правила новичкам.",
+  requested: "Тренер запрошен",
+  participantWanted: "Вы хотите тренера",
+  participantCount: "участников хотят тренера",
+  organizerButton: "Пригласить тренера",
+  participantButton: "Хочу тренера",
+  disabledButton: "Запрос отправлен",
+  organizerCancelButton: "Больше не нужен",
+  participantCancelButton: "Отменить запрос",
+  loadError: "Не удалось загрузить тренера",
+  submitSuccess: "Тренер запрошен",
+  participantSuccess: "Вы хотите тренера",
+  submitError: "Не удалось отправить запрос",
+  cancelSuccess: "Запрос тренера отменён",
+  participantCancelSuccess: "Запрос отменён",
+  cancelError: "Не удалось отменить запрос",
+};
 
 const notifyCoachRequestsChanged = (activityId: string) => {
   if (typeof window === "undefined") return;
@@ -27,56 +53,11 @@ const notifyCoachRequestsChanged = (activityId: string) => {
   }));
 };
 
-const copyByVariant = {
-  coach: {
-    ariaLabel: "Тренер",
-    title: "Тренер",
-    description: "Тренер поможет провести игру, разминку и объяснить правила новичкам.",
-    requested: "Тренер запрошен",
-    participantWanted: "Вы хотите тренера",
-    participantCount: "участников хотят тренера",
-    organizerButton: "Пригласить тренера",
-    participantButton: "Хочу тренера",
-    disabledButton: "Запрос отправлен",
-    organizerCancelButton: "Больше не нужен",
-    participantCancelButton: "Отменить запрос",
-    loadError: "Не удалось загрузить тренера",
-    submitSuccess: "Тренер запрошен",
-    participantSuccess: "Вы хотите тренера",
-    submitError: "Не удалось отправить запрос",
-    cancelSuccess: "Запрос тренера отменён",
-    participantCancelSuccess: "Запрос отменён",
-    cancelError: "Не удалось отменить запрос",
-  },
-  event_helper: {
-    ariaLabel: "Помощник события",
-    title: "Помощник события",
-    description: "Поможет событию состояться: встретит новичков, объяснит формат и поддержит группу перед встречей.",
-    requested: "Помощник запрошен",
-    participantWanted: "Вы хотите помощника события",
-    participantCount: "участников хотят помощника",
-    organizerButton: "Нужен помощник",
-    participantButton: "Хочу помощника",
-    disabledButton: "Запрос отправлен",
-    organizerCancelButton: "Больше не нужен",
-    participantCancelButton: "Отменить запрос",
-    loadError: "Не удалось загрузить помощника события",
-    submitSuccess: "Помощник события запрошен",
-    participantSuccess: "Вы хотите помощника события",
-    submitError: "Не удалось отправить запрос",
-    cancelSuccess: "Запрос помощника отменён",
-    participantCancelSuccess: "Запрос отменён",
-    cancelError: "Не удалось отменить запрос",
-  },
-} satisfies Record<CoachRequestPanelVariant, Record<string, string>>;
-
-const coachStatusLabel = (status: CoachRequest["status"], variant: CoachRequestPanelVariant) => {
-  const actor = variant === "coach" ? "тренер" : "помощник";
-
+const coachStatusLabel = (status: CoachRequest["status"]) => {
   switch (status) {
     case "pending": return "ожидает подтверждения";
-    case "matched": return `${actor} найден`;
-    case "confirmed": return `${actor} подтверждён`;
+    case "matched": return "тренер найден";
+    case "confirmed": return "тренер подтверждён";
     case "completed": return "завершено";
     case "rejected": return "отклонено";
     case "cancelled": return "отменено";
@@ -84,27 +65,27 @@ const coachStatusLabel = (status: CoachRequest["status"], variant: CoachRequestP
   }
 };
 
-const canCancelRequest = (request?: CoachRequest) =>
-  Boolean(request && !["cancelled", "completed", "rejected"].includes(request.status));
-
-export function CoachRequestPanel({ activity, userRole, variant = "coach" }: CoachRequestPanelProps) {
+export function CoachRequestPanel({ activity, userRole }: CoachRequestPanelProps) {
   const [requests, setRequests] = useState<CoachRequest[]>([]);
   const [currentUserKey, setCurrentUserKey] = useState<string | null>(null);
+  const [goal, setGoal] = useState("");
+  const [level, setLevel] = useState<SportLevel | "">(activity.metadata?.sport?.level || "");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const copy = copyByVariant[variant];
-  const PanelIcon = variant === "coach" ? Dumbbell : UserCheck;
-
-  const isOrganizer = activity.organizerKey === currentUserKey;
-  const canManage = isOrganizer || userRole === "admin" || userRole === "moderator";
+  const requestType = resolveCoachRequestType(activity, currentUserKey, userRole);
+  const canManage = requestType === "organizer_request";
 
   const organizerRequest = useMemo(
-    () => requests.find((request) => request.requestType === "organizer_request" && request.status !== "cancelled"),
+    () => requests.find((request) => request.requestType === "organizer_request" && isActiveCoachRequest(request)),
     [requests],
   );
 
+  const demoCoach = organizerRequest?.status === "confirmed"
+    ? getDemoCoachProfile(organizerRequest.coachProfileId)
+    : null;
+
   const participantInterest = useMemo(
-    () => requests.find((request) => request.requestType === "participant_interest" && request.requesterUserKey === currentUserKey && request.status !== "cancelled"),
+    () => requests.find((request) => request.requestType === "participant_interest" && request.requesterUserKey === currentUserKey && isActiveCoachRequest(request)),
     [requests, currentUserKey],
   );
 
@@ -114,7 +95,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
   );
 
   const activeRequest = canManage ? organizerRequest : participantInterest;
-  const canCancel = canCancelRequest(activeRequest);
+  const canCancel = isActiveCoachRequest(activeRequest);
 
   const reload = async () => {
     const [userKey, coachRequests] = await Promise.all([
@@ -130,18 +111,20 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
     void reload().catch(() => {
       setMessage(copy.loadError);
     });
-  }, [activity.id, copy.loadError]);
+  }, [activity.id]);
 
   const handleRequest = async () => {
+    if (!requestType) return;
+
     setLoading(true);
     setMessage(null);
 
     try {
       await requestCoachForActivity(
         activity,
-        canManage ? "organizer_request" : "participant_interest",
+        requestType,
+        canManage ? { goal, level: level || undefined } : undefined,
       );
-
       await reload();
       notifyCoachRequestsChanged(activity.id);
       setMessage(canManage ? copy.submitSuccess : copy.participantSuccess);
@@ -172,13 +155,13 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
 
   const buttonLabel = canManage ? copy.organizerButton : copy.participantButton;
   const cancelLabel = canManage ? copy.organizerCancelButton : copy.participantCancelButton;
-  const disabled = loading || Boolean(activeRequest);
+  const disabled = loading || !requestType || Boolean(activeRequest);
 
   return (
     <section className="coach-panel" aria-label={copy.ariaLabel}>
       <div className="coach-panel-header">
         <div className="coach-panel-icon">
-          <PanelIcon size={18} aria-hidden="true" />
+          <Dumbbell size={18} aria-hidden="true" />
         </div>
         <div>
           <h3>{copy.title}</h3>
@@ -189,7 +172,18 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
       {organizerRequest ? (
         <div className="coach-panel-status">
           <UserCheck size={18} aria-hidden="true" />
-          <span>{copy.requested} · {coachStatusLabel(organizerRequest.status, variant)}</span>
+          <span>{copy.requested} · {coachStatusLabel(organizerRequest.status)}</span>
+        </div>
+      ) : null}
+
+      {demoCoach ? (
+        <div className="coach-profile-card">
+          <div className="coach-profile-avatar">AL</div>
+          <div>
+            <strong>{demoCoach.displayName}</strong>
+            <span>Sport Coach</span>
+            <small><MapPin size={13} aria-hidden="true" />{demoCoach.city}</small>
+          </div>
         </div>
       ) : null}
 
@@ -200,10 +194,34 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
         </div>
       ) : null}
 
-      {!canManage && participantInterest ? (
+      {requestType === "participant_interest" && participantInterest ? (
         <div className="coach-panel-status">
           <Star size={18} aria-hidden="true" />
           <span>{copy.participantWanted}</span>
+        </div>
+      ) : null}
+
+      {canManage && !organizerRequest ? (
+        <div className="coach-panel-fields">
+          <label>
+            <span>Уровень участников</span>
+            <select value={level} onChange={(event) => setLevel(event.target.value as SportLevel | "")}>
+              <option value="">Не указан</option>
+              {levelOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Что должен сделать тренер</span>
+            <textarea
+              value={goal}
+              onChange={(event) => setGoal(event.target.value)}
+              maxLength={240}
+              rows={3}
+              placeholder="Например: провести разминку и помочь новичкам с правилами"
+            />
+          </label>
         </div>
       ) : null}
 
@@ -214,7 +232,7 @@ export function CoachRequestPanel({ activity, userRole, variant = "coach" }: Coa
           onClick={handleRequest}
           disabled={disabled}
         >
-          {disabled ? copy.disabledButton : buttonLabel}
+          {!requestType ? "Недоступно" : disabled ? copy.disabledButton : buttonLabel}
         </button>
 
         {canCancel ? (

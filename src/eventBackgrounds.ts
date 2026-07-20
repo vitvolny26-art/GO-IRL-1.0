@@ -1,6 +1,7 @@
-const webpModules = import.meta.glob("./assets/event-backgrounds/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
+const legacyWebpModules = import.meta.glob("./assets/event-backgrounds/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
+const cardWebpModules = import.meta.glob("./assets/event-backgrounds/card-3x4/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
 const svgModules = import.meta.glob("./assets/event-backgrounds/*.svg", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
-const modules: Readonly<Record<string,string>> = { ...webpModules, ...svgModules };
+const modules: Readonly<Record<string,string>> = { ...legacyWebpModules, ...cardWebpModules, ...svgModules };
 
 const files: Readonly<Record<string,string>> = {
   "VB": "01-volleyball.webp",
@@ -13,17 +14,17 @@ const files: Readonly<Record<string,string>> = {
   "BD": "08-badminton.webp",
   "TT": "09-table-tennis.webp",
   "YG": "10-yoga.webp",
-  "CF": "11-coffee.svg",
-  "MV": "12-cinema.svg",
-  "BW": "13-21-sprite.svg#bg13",
-  "BG": "13-21-sprite.svg#bg14",
-  "CH": "13-21-sprite.svg#bg15",
-  "KR": "13-21-sprite.svg#bg16",
-  "SK": "13-21-sprite.svg#bg17",
-  "BR": "13-21-sprite.svg#bg18",
-  "QZ": "13-21-sprite.svg#bg19",
-  "WN": "13-21-sprite.svg#bg20",
-  "CN": "13-21-sprite.svg#bg21",
+  "CF": "11-coffee.webp",
+  "MV": "12-cinema.webp",
+  "BW": "13-bowling.webp",
+  "BG": "14-board-games.webp",
+  "CH": "15-chess.webp",
+  "KR": "16-karaoke.webp",
+  "SK": "17-roller-skating.webp",
+  "BR": "18-beer.webp",
+  "QZ": "19-pub-quiz.webp",
+  "WN": "20-wine-evening.webp",
+  "CN": "21-concert.webp",
   "FS": "22-festival.webp",
   "DN": "23-dancing.webp",
   "HK": "24-hiking.webp",
@@ -49,6 +50,8 @@ export const getEventBackground = (code:string) => {
   const file = files[code];
   if (!file) return null;
   const [asset, fragment] = file.split("#");
-  const url = modules[`./assets/event-backgrounds/${asset}`];
+  const cardPath = `./assets/event-backgrounds/card-3x4/${asset}`;
+  const legacyPath = `./assets/event-backgrounds/${asset}`;
+  const url = modules[cardPath] || modules[legacyPath];
   return url ? `${url}${fragment ? `#${fragment}` : ""}` : null;
 };

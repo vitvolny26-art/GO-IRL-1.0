@@ -1,11 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { requireEnv } from "./env.js";
+import { loadTelegramShareWeather } from "./telegram-share-weather.js";
 
 export type ShareLanguage = "ru" | "uk" | "cs" | "en";
 
 const OFFICIAL_BOT_USERNAME = "GOirl_bot";
-const EVENT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const EVENT_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const isShareEventId = (value: unknown): value is string =>
   typeof value === "string" && EVENT_ID_PATTERN.test(value.trim());
@@ -31,6 +32,8 @@ type ActivityRow = {
   metadata: Record<string, unknown> | null;
   price: number;
   capacity: number;
+  organizer: string;
+  organizer_key: string;
 };
 
 const client = () => createClient(
@@ -130,13 +133,23 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
   const db = client();
   const { data, error } = await db
     .from("activities")
-    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity")
+    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity,organizer,organizer_key")
     .eq("id", eventId)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
 
   const row = data as ActivityRow;
+  const activity = localized(row, language, "activity");
+  const sport = sportMetadata(row.metadata);
+  const weatherPromise = loadTelegramShareWeather({
+    eventDate: row.event_date,
+    time: row.event_time.slice(0, 5),
+    cityId: row.city_id,
+    activity,
+    environment: sport?.environment,
+  });
+
   const { count, error: countError } = await db
     .from("activity_members")
     .select("activity_id", { count: "exact", head: true })
@@ -144,8 +157,22 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     .eq("status", "joined");
   if (countError) throw countError;
 
-  const activity = localized(row, language, "activity");
-  const sport = sportMetadata(row.metadata);
+  const profileResult = await db
+    .from("user_profiles")
+    .select("avatar_path")
+    .eq("user_key", row.organizer_key)
+    .maybeSingle();
+  if (profileResult.error) throw profileResult.error;
+
+  let organizerAvatarUrl: string | undefined;
+  const avatarPath = typeof profileResult.data?.avatar_path === "string" ? profileResult.data.avatar_path.trim() : "";
+  if (avatarPath) {
+    const signed = await db.storage.from("avatars").createSignedUrl(avatarPath, 300);
+    if (signed.error) throw signed.error;
+    organizerAvatarUrl = signed.data.signedUrl;
+  }
+
+  const weather = await weatherPromise;
   const generic = language === "cs"
     ? { level: "Pro všechny", format: "Otevřené", environment: "Ve městě" }
     : language === "en"
@@ -166,12 +193,16 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
     inviteUrl: buildOfficialInviteUrl(row.id),
     mapUrl: row.location_url || undefined,
     city: cityName(row.city_id, language),
+    organizer: row.organizer,
+    organizerKey: row.organizer_key,
+    organizerAvatarUrl,
     durationMinutes: number(sport?.durationMinutes, 90),
     price: row.price,
     level: localizedSportValue(sport?.level, language, generic.level),
     format: localizedSportValue(sport?.format, language, generic.format),
     environment: localizedSportValue(sport?.environment, language, generic.environment),
     isSport: row.activity_type === "sport" || Boolean(sport),
+    weather: weather || undefined,
     language,
   };
 }

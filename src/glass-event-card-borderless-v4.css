@@ -110,3 +110,164 @@
     margin-top: 16px !important;
   }
 }
+
+/* Shared event-card layout refinement v5: generic and Sport templates. */
+.glass-event-card .sport-card-top-actions {
+  top: 12px !important;
+  right: 96px !important;
+}
+
+.glass-event-card .sport-chip-row {
+  top: 12px !important;
+  right: 6px !important;
+  gap: 4px !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid,
+.glass-event-card:not(:has(.event-card-weather)) .activity-card-details.sport-details-grid {
+  margin-bottom: -6px !important;
+  transform: translateY(18px) !important;
+}
+
+/* Visual order is avatar, date, price, location. Put separators between cells, not before the avatar. */
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item:nth-child(4) {
+  border-left: 0 !important;
+}
+
+.glass-event-card .activity-card-details.sport-details-grid > .glass-event-card-meta-item:nth-child(1) {
+  border-left: 1px solid rgba(255, 255, 255, .18) !important;
+}
+
+.glass-event-card .compact-sport-actions {
+  margin-top: 26px !important;
+}
+
+.glass-event-card .compact-sport-actions > .sport-coach-action,
+.glass-event-card .compact-sport-actions > .card-join {
+  border: 1px solid rgba(255, 255, 255, .34) !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join:not(.secondary):not(.card-leave) {
+  border-color: rgba(201, 255, 61, .68) !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.secondary,
+.glass-event-card .compact-sport-actions > .card-join:disabled {
+  border-color: rgba(255, 255, 255, .24) !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.card-leave {
+  border-color: rgba(255, 126, 126, .62) !important;
+}
+
+@media (max-width: 430px) {
+  .glass-event-card .sport-card-top-actions {
+    top: 10px !important;
+    right: 92px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    top: 10px !important;
+    right: 4px !important;
+  }
+
+  .glass-event-card .activity-card-details.sport-details-grid,
+  .glass-event-card:not(:has(.event-card-weather)) .activity-card-details.sport-details-grid {
+    transform: translateY(16px) !important;
+  }
+
+  .glass-event-card .compact-sport-actions {
+    margin-top: 24px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .glass-event-card .sport-card-top-actions {
+    top: 8px !important;
+    right: 86px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    top: 8px !important;
+    right: 2px !important;
+    gap: 2px !important;
+  }
+
+  .glass-event-card .activity-card-details.sport-details-grid,
+  .glass-event-card:not(:has(.event-card-weather)) .activity-card-details.sport-details-grid {
+    transform: translateY(14px) !important;
+  }
+
+  .glass-event-card .compact-sport-actions {
+    margin-top: 22px !important;
+  }
+}
+
+/* Shared event-card control stack v6. */
+.glass-event-card .sport-card-top-actions {
+  top: 12px !important;
+  right: 6px !important;
+}
+
+.glass-event-card .sport-chip-row {
+  top: 66px !important;
+  right: 6px !important;
+  grid-template-columns: 90px !important;
+  justify-items: end !important;
+  gap: 4px !important;
+}
+
+.glass-event-card .sport-card-top-actions,
+.glass-event-card .sport-chip-row {
+  justify-content: end !important;
+  text-align: right !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join,
+.glass-event-card .compact-sport-actions > .card-join:not(.secondary):not(.card-leave),
+.glass-event-card .compact-sport-actions > .card-join.secondary,
+.glass-event-card .compact-sport-actions > .card-join:disabled,
+.glass-event-card .compact-sport-actions > .card-join.card-leave {
+  border-width: 1px !important;
+  border-style: solid !important;
+  outline: 1px solid transparent !important;
+  outline-offset: -1px !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join:not(.secondary):not(.card-leave) {
+  outline-color: rgba(201, 255, 61, .68) !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.secondary,
+.glass-event-card .compact-sport-actions > .card-join:disabled {
+  outline-color: rgba(255, 255, 255, .24) !important;
+}
+
+.glass-event-card .compact-sport-actions > .card-join.card-leave {
+  outline-color: rgba(255, 126, 126, .62) !important;
+}
+
+@media (max-width: 430px) {
+  .glass-event-card .sport-card-top-actions {
+    top: 10px !important;
+    right: 4px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    top: 62px !important;
+    right: 4px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .glass-event-card .sport-card-top-actions {
+    top: 8px !important;
+    right: 2px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    top: 58px !important;
+    right: 2px !important;
+    grid-template-columns: 78px !important;
+  }
+}

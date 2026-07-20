@@ -12,6 +12,9 @@ export type TelegramEventCardInput = {
   inviteUrl: string;
   mapUrl?: string;
   city: string;
+  organizer?: string;
+  organizerKey?: string;
+  organizerAvatarUrl?: string;
   durationMinutes?: number;
   price: number;
   level: string;
@@ -77,7 +80,7 @@ export function buildTelegramEventCard(input: TelegramEventCardInput, imageUrl: 
   const dateTime = [clean(input.date, 40), clean(input.time, 12)].filter(Boolean).join(" · ");
   const address = clean(input.address, 180);
   const calendarUrl = buildCalendarUrl(input);
-  const buttons = [{ text: labels.open, url: input.inviteUrl }];
+  const buttons: Array<{ text: string; url: string }> = [{ text: labels.open, url: input.inviteUrl }];
   if (calendarUrl) buttons.push({ text: labels.calendar, url: calendarUrl });
 
   return {

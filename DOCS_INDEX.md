@@ -19,7 +19,8 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/MARKET_POSITIONING.md` is the **source of truth for market positioning and MVP feature filtering**.
 - `docs/COMPETITOR_WATCH.md` is the **source of truth for competitor signals**, but competitor signals must not automatically become MVP scope.
 - `README.md` is the **source of truth for current code scope**: implemented features, stack, setup, and current runtime model.
-- `RELEASE_NOTES.md` is the source of truth for release state and must not contradict `README.md`.
+- `docs/release/CURRENT_PHASE.md` is the source of truth for the current lifecycle phase.
+- `RELEASE_NOTES.md` is the source of truth for release implementation status and must not contradict `README.md` or the current lifecycle phase.
 - `DEPLOYMENT.md` is the source of truth for Vercel-first deployment flow.
 - `docs/SPORT_COACH_MVP.md` is the source of truth for Sport Coach MVP 1.1 boundaries.
 - `docs/MVP_DOC_AUDIT.md` is the source of truth for known documentation conflicts.
@@ -70,9 +71,10 @@ next_review:
 |---|---|---|---|---|
 | `README.md` | Core / Code Scope | Active | Да | Must stay aligned with `RELEASE_NOTES.md` on Trusted Auth and release blockers. |
 | `DOCS_INDEX.md` | Registry | Active | Да | Must be updated after every doc move/status change. |
-| `ROADMAP.md` | Product Planning | Active | Да | Broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
+| `ROADMAP.md` | Product Planning | Active | Да | Release Preparation is current; broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
 | `BACKLOG.md` | Product Planning | Draft | Нет | Future items must remain tagged. |
 | `CHANGELOG.md` | Release History | Draft | Нет | Needs quality-gate verification before release claims. |
+| `docs/release/CURRENT_PHASE.md` | Release / Current Phase | Active | Да | Lifecycle-phase authority; must stay aligned with README, ROADMAP, and RELEASE_NOTES. |
 | `RELEASE_NOTES.md` | Release Status | Active | Да | Trusted Auth is `[SHIPPED/PRODUCTION PATH]`; operational smoke checks remain. |
 | `DEPLOYMENT.md` | Release / Deploy | Active | Да | Must remain Vercel-first; old Netlify references are historical only. |
 | `BETA_CHECKLIST.md` | QA / Beta | Active | Да | Needs sync after deployment wording changes. |
@@ -138,6 +140,7 @@ next_review:
 
 | Conflict | Files | Resolution |
 |---|---|---|
+| Current lifecycle phase wording was split across active beta and release documents. | `docs/release/CURRENT_PHASE.md`, `README.md`, `ROADMAP.md`, `RELEASE_NOTES.md` | CURRENT_PHASE owns lifecycle phase; active documents must align, while beta records remain historical evidence. |
 | Trusted Auth was both current production model and public blocker. | `README.md`, `RELEASE_NOTES.md`, `PATCH_REPORT.md` | `RELEASE_NOTES.md` marks Trusted Auth as `[SHIPPED/PRODUCTION PATH]`; operational checks remain. |
 | Coach UI promise exceeded current implementation. | `docs/SPORT_COACH_MVP.md`, `src/components/CoachRequestPanel.tsx` | Role Choice and Review Flow moved to future scope. |
 | Sprint 0 Netlify proof conflicted with current Vercel beta flow. | `SPRINT0_STATUS.md`, `DEPLOYMENT.md`, `BETA_CHECKLIST.md` | Sprint 0 docs are historical/deprecated. |

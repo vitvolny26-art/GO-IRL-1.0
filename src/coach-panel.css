@@ -60,6 +60,84 @@
   color: var(--lime);
 }
 
+.coach-profile-card {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid rgba(87, 217, 232, .22);
+  border-radius: 8px;
+  background: rgba(87, 217, 232, .07);
+}
+
+.coach-profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(201, 255, 61, .14);
+  color: var(--lime);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.coach-profile-card > div:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.coach-profile-card strong {
+  font-size: 14px;
+}
+
+.coach-profile-card span,
+.coach-profile-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coach-profile-card small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.coach-panel-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.coach-panel-fields label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.coach-panel-fields select,
+.coach-panel-fields textarea {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, .2);
+  color: var(--text);
+  font: inherit;
+}
+
+.coach-panel-fields select {
+  min-height: 42px;
+  padding: 0 10px;
+}
+
+.coach-panel-fields textarea {
+  min-height: 84px;
+  padding: 10px;
+  resize: vertical;
+}
+
 .coach-panel-actions {
   display: grid;
   grid-template-columns: 1fr;

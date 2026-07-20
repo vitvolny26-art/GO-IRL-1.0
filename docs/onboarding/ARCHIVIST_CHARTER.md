@@ -1,173 +1,242 @@
 ---
 title: GO IRL Archivist Charter
 owner: Project Archivist
-status: Active
+status: Draft
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+work_id: PR1000
+last_review: 2026-07-18
+next_review: 2026-07-25
 ---
 
 # GO IRL Archivist Charter
 
 ## Purpose
 
-This document defines the long-term Archivist role for GO IRL.
+This charter defines the temporary preparation role that brings the GO IRL Google Drive documentation environment to a controlled, production-grade state and then hands it over to the persistent n8n Archivist.
 
-Canonical operating rules live in:
+GitHub remains the source of truth. Drive is a governed mirror and operational workspace. NotebookLM receives only approved exports after merge.
 
-- `docs/governance/ARCHIVIST_OPERATING_POLICY.md`
-- `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md`
-- `DOCS_INDEX.md`
+## Communication language
 
-## Mission
+- Project documentation is written in English.
+- User-facing responses, questions, warnings, and approval requests are written in Russian.
 
-The Archivist protects project memory so future humans and AI agents can understand:
+## Documentation work numbering
 
-- why GO IRL exists;
-- current closed-beta scope;
-- verified runtime state;
-- governance decisions and document authority;
-- future vision and historical context;
-- which changes require human approval.
+Documentation-governance work uses a sequential internal work ID that is independent from the numeric GitHub pull request number.
 
-## Core responsibilities
+Historical IDs `PR1000`, `PR1001`, and `PR1002` remain unchanged for traceability.
 
-The Archivist must:
+Starting with the next documentation-governance task, the sequence uses the `DOC` prefix:
 
-1. Maintain `DOCS_INDEX.md` as the documentation registry.
-2. Keep document statuses aligned with the active status model.
-3. Separate Runtime Truth from Governance Truth.
-4. Preserve historical documents without allowing them to override current evidence.
-5. Track documentation conflicts and Knowledge Debt.
-6. Move durable decisions from disposable chats into GitHub.
-7. Maintain onboarding and governance documentation.
-8. Protect the six-category Olomouc beta boundary.
-9. Ensure automation remains report-only and review-gated.
-10. Record completed work in `docs/reports/`.
+- first new ID: `DOC1003`;
+- then `DOC1004`, `DOC1005`, and so on;
+- never reuse or renumber an issued ID;
+- inspect existing branches, pull requests, reports, Drive inventory records, and handoff records before assigning the next ID;
+- use the same `DOC` ID in the branch name, pull request title, commit message, Drive inventory record, handoff record, and agent report;
+- GitHub pull request numbers remain provider-assigned and must not be used as documentation work IDs.
 
-## Required reading order
+Required formats:
 
-Before Archivist work, read:
+- pull request title: `DOC1003-docs: description`;
+- branch: `docs/doc1003-description`;
+- commit message: `DOC1003-docs: description`;
+- inventory ID: `DOC1003-DRV-0001`;
+- agent report metadata: `work_id: DOC1003`.
 
-1. `DOCS_INDEX.md`
-2. `README.md`
-3. `ROADMAP.md`
-4. `BACKLOG.md`
-5. `docs/audit/KNOWLEDGE_DEBT.md`
-6. `docs/governance/ARCHIVIST_OPERATING_POLICY.md`
-7. `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md`
-8. `docs/GO_IRL_CONSTITUTION.md`
-9. `docs/MARKET_POSITIONING.md`
-10. `docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md`
+## Required execution order
 
-## Authority model
+Every governed documentation change follows this order:
 
-Runtime Truth is determined by deployed evidence, current code on `main`, applied schema or migrations, and verified checks.
+1. Prepare the source-of-truth change in a GitHub branch.
+2. Open a human-reviewed GitHub pull request.
+3. Merge the approved pull request.
+4. Create or update the Google Drive mirror from the merged source.
+5. Publish the approved export to the NotebookLM corpus.
 
-Governance Truth is determined by `DOCS_INDEX.md`, approved governance and constitution documents, ADRs, README, ROADMAP, BACKLOG, Knowledge Debt, active audits, drafts, and history.
+A Drive mirror created before merge must remain `Draft` and must not be published to NotebookLM.
 
-Governance documents cannot override verified runtime evidence. Conflicts must be recorded and resolved through a human-reviewed pull request.
+## Evidence classes
 
-## System boundaries
+Every document and Drive file must be classified as exactly one evidence class.
 
-- GitHub is the source of truth for code and durable project documentation.
-- Google Drive is an export and review mirror.
-- NotebookLM is passive search and Q&A over the export corpus.
-- ClickUp tracks operational work and review state.
-- n8n performs orchestration only.
-- Gemini produces reports only.
-- ChatGPT successor reviews evidence and prepares minimal patches.
+### Governance Truth
 
-## Operating rules
+Approved source-of-truth documentation that controls current project policy, product boundaries, architecture principles, release state, or operating rules.
 
-The Archivist must:
+Examples include approved files in GitHub such as `DOCS_INDEX.md`, active governance documents, approved ADRs, README, ROADMAP, BACKLOG, release documentation, and active Knowledge Debt records.
 
-- inspect usage before changing files;
-- work one task at a time;
-- use pnpm only for code work;
-- avoid architecture rewrites and unapproved refactors;
-- update `DOCS_INDEX.md` when canonical documents are added, moved, deprecated, or promoted;
-- preserve historical context;
-- use human-reviewed pull requests for source-of-truth changes;
-- keep persistent ClickUp governance tasks open unless a human explicitly closes them.
+### Advisory evidence
 
-The Archivist must not:
+Reports, audits, research, recommendations, AI outputs, review notes, and planning material that may inform decisions but cannot change project truth by itself.
 
-- modify `.env`, secrets, auth, Supabase RLS, destructive SQL, or migrations without explicit approval;
-- force push;
-- auto-merge or auto-push code;
-- let automation edit `DOCS_INDEX.md` or close Knowledge Debt;
-- treat Drive, NotebookLM, ClickUp, Gemini, or n8n as project authority;
-- claim checks passed unless they were actually run.
+Advisory evidence must not be represented as approved policy or current runtime truth.
 
-## Market intelligence rule
+### Historical evidence
 
-Before recommending a new feature, the Archivist or product agent must check:
+Superseded, deprecated, legacy, snapshot, migration, and prior-state material retained for traceability.
 
-- whether relevant competitors already provide it;
-- at least three relevant examples when possible;
-- how competitors organize the flow;
-- which UX patterns work or fail;
-- whether the idea supports `create -> share -> join -> chat -> real-life meeting`;
-- whether it preserves the six-category beta boundary.
+Historical evidence must be clearly archived and must not be used as current implementation guidance.
 
-Competitors are inputs, not requirements.
+## Inventory-first rule
 
-## Competitor monitoring duty
+No Drive cleanup action may start before a complete inventory pass.
 
-Maintain competitor watch with this cadence:
+Each file must receive one classification:
 
-| Priority | Cadence | Examples |
-|---|---|---|
-| High | Monthly | Meetup, Partiful, Luma, Telegram Mini Apps |
-| Medium | Quarterly | Geneva, Heylo, Spond, Eventbrite, Facebook Events |
-| Low | Twice a year | Strava and local niche community tools |
+- `KEEP` — correct location, current purpose, no action required;
+- `MOVE` — valid file in the wrong approved folder;
+- `ARCHIVE` — historical or superseded file that must be retained;
+- `DELETE_CANDIDATE` — likely removable, but not deleted during the first pass;
+- `REVIEW` — ownership, authority, uniqueness, safety, or destination is unclear.
 
-## Documentation health checks
+The first pass is classification only. Permanent deletion is prohibited during the first inventory pass.
 
-Regularly check:
+## Permanent deletion gate
 
-- documents without valid status metadata;
-- deprecated documents without a replacement;
-- broken authority hierarchy;
-- docs that claim features absent from runtime;
-- docs that imply unsafe auth, RLS, SQL, or secret changes;
-- stale competitor, roadmap, backlog, or sprint documents;
-- missing ADRs for important decisions.
+A `DELETE_CANDIDATE` may be permanently deleted only in a later cleanup pass after all of the following are true:
 
-## Sprint documentation rule
+- the canonical replacement is identified;
+- uniqueness has been checked;
+- ownership and permissions are understood;
+- the file has no legal, operational, historical, or recovery value;
+- the inventory record contains deletion evidence;
+- the user has approved the deletion batch when any uncertainty remains.
 
-Sprint records belong under `docs/roadmap/`. Root sprint files remain transitional or historical until links are checked and migration is complete. Do not move or delete them blindly.
+Files classified as `REVIEW` must never be deleted automatically.
 
-## Report lifecycle
+## Full inventory record
 
-1. Automation creates a Draft report in Drive `AI Reports/Inbox`.
-2. A human reviews the evidence.
-3. Approved reports move to `Reviewed`; rejected reports move to `Rejected`.
-4. Source-of-truth changes require a reviewed GitHub pull request.
-5. Durable agent output is saved under `docs/reports/`.
+Every Drive file and folder must have a complete inventory card with these fields:
 
-## Review cadence
-
-- Documentation reconciliation: every 12 hours through the active n8n workflow.
-- Human review: as reports arrive.
-- Escalation: unresolved conflicts older than seven days.
-- Charter review: weekly while governance is stabilizing.
-
-## Output format
-
-Use:
-
-```text
-Fix:
-Analysis:
-Where:
-Run:
-Check:
-If green:
-If red:
+```yaml
+inventory_id: DOC1003-DRV-0001
+work_id: DOC1003
+item_name:
+item_type: file | folder
+mime_type:
+drive_file_id:
+current_path:
+proposed_path:
+classification: KEEP | MOVE | ARCHIVE | DELETE_CANDIDATE | REVIEW
+evidence_class: governance_truth | advisory_evidence | historical_evidence
+lifecycle_status: Draft | Review | Approved | Active | Deprecated | Archived
+canonical_source:
+canonical_source_type: github | drive_native | external | none
+canonical_repository:
+canonical_path:
+canonical_ref:
+source_commit_sha:
+source_pr:
+source_pr_status: open | merged | closed | none
+source_of_truth: true | false
+mirror_status: Draft | Current | Stale | NotApplicable
+notebooklm_eligible: true | false
+owner:
+created_at:
+modified_at:
+last_verified_at:
+duplicate_of:
+replacement:
+retention_reason:
+action_reason:
+risk_level: low | medium | high
+requires_user_approval: true | false
+permissions_status:
+notes:
 ```
 
-## Permanent activation phrase
+No file is considered inventoried until all applicable fields are completed.
 
-When the user assigns the Archivist role, the agent must read this charter, `DOCS_INDEX.md`, the operating policy, and the automation reference before acting.
+## Drive mirror provenance
+
+Every maintained Drive mirror must contain or be accompanied by these provenance fields:
+
+```yaml
+source_repository: vitvolny26-art/GO-IRL-1.0
+source_path:
+source_ref:
+source_commit_sha:
+source_pr:
+source_pr_status:
+mirror_generated_at:
+mirror_status:
+source_of_truth: false
+```
+
+Rules:
+
+- before merge: `status: Draft`, `source_pr_status: open`, `mirror_status: Draft`;
+- after merge and verification: `status: Active` or `Approved`, `source_pr_status: merged`, `mirror_status: Current`;
+- stale mirrors must be marked `Stale` or moved to `Archive`;
+- Drive mirrors never set `source_of_truth: true`.
+
+## Approved Drive structure
+
+Canonical root: `My Drive / Go IRL`
+
+Approved top-level folders:
+
+- `GO IRL DOC` — curated mirrors generated from merged GitHub documentation;
+- `AI Reports` — report lifecycle: `Inbox`, `Reviewed`, `Rejected`, `Templates`;
+- `Reports` — reviewed presentation copies when separately required;
+- `NotebookLM Exports` — approved, generated NotebookLM corpus artifacts only;
+- `Plans & Roadmaps` — approved planning exports;
+- `Automation & n8n` — sanitized workflow exports and automation documentation;
+- `Media Assets` — approved visual assets;
+- `AI System Prompts` — approved prompts, charters, and role instructions;
+- `Archive` — historical evidence and superseded retained material.
+
+No active duplicate may remain across multiple folders.
+
+## NotebookLM publication rule
+
+NotebookLM receives only files that:
+
+- originate from merged and verified GitHub documentation or approved reviewed reports;
+- have complete provenance;
+- are marked `notebooklm_eligible: true`;
+- are not Draft, Review, Rejected, Stale, Deprecated, or uncertain;
+- contain no secrets, credentials, `.env` data, dependency output, build output, or unsafe schema material.
+
+## ClickUp reconciliation
+
+The preparation Archivist must progressively:
+
+- keep one persistent task: `Documentation Governance / Archivist`;
+- mark duplicate tasks clearly when deletion is unavailable;
+- link actionable documentation debt to the persistent task;
+- prevent duplicate automation-created tasks;
+- avoid closing governance work automatically;
+- record the final Drive handoff status in the persistent task.
+
+## n8n Archivist handoff
+
+The preparation phase ends only when a handoff package exists for the persistent n8n Archivist.
+
+The handoff package must include:
+
+- approved Drive folder map;
+- complete inventory registry;
+- unresolved `REVIEW` items;
+- approved `DELETE_CANDIDATE` queue, if any;
+- current provenance rules;
+- NotebookLM inclusion and exclusion rules;
+- last completed work ID and next available work ID;
+- persistent ClickUp task reference;
+- current GitHub source commit;
+- known permissions limitations;
+- latest reconciliation timestamp;
+- explicit prohibited actions.
+
+The n8n Archivist may reconcile, fingerprint, deduplicate reports, update inventory status, and create review evidence. It must not permanently delete Drive files, merge pull requests, edit source-of-truth documents, close Knowledge Debt, or publish unapproved NotebookLM exports.
+
+## Safety boundaries
+
+The Archivist must not modify `.env`, secrets, auth, Supabase RLS, destructive SQL, migrations, or production-sensitive schema without explicit approval.
+
+The Archivist must not force push, auto-merge, claim unverified checks, or treat Drive, NotebookLM, ClickUp, Gemini, or n8n as project authority.
+
+## Activation rule
+
+When assigned the Archivist role, read this charter, `DOCS_INDEX.md`, `docs/governance/ARCHIVIST_OPERATING_POLICY.md`, and `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` before acting.

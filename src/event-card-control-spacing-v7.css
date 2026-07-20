@@ -1,0 +1,86 @@
+/* Shared upper-right event-card control refinement v7. */
+.glass-event-card .card-share-forward-icon {
+  display: block !important;
+  width: 65px !important;
+  height: 65px !important;
+  fill: currentColor !important;
+}
+
+.glass-event-card .sport-card-top-actions {
+  top: 12px !important;
+  right: 12px !important;
+}
+
+.glass-event-card .sport-card-top-actions .sport-card-icon-action {
+  width: 70px !important;
+  height: 70px !important;
+  min-width: 70px !important;
+  min-height: 70px !important;
+}
+
+.glass-event-card .sport-chip-row {
+  top: 84px !important;
+  right: 6px !important;
+  grid-template-columns: 84px !important;
+  gap: 2px !important;
+  row-gap: 2px !important;
+}
+
+.glass-event-card .sport-card-participants-chip,
+.glass-event-card .sport-duration-chip {
+  width: 84px !important;
+  min-width: 84px !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 0 4px !important;
+  justify-content: flex-end !important;
+  gap: 2px !important;
+}
+
+.glass-event-card .sport-card-participants-chip > span {
+  white-space: nowrap !important;
+}
+
+.glass-event-card .sport-duration-chip > span {
+  display: block !important;
+  width: 26px !important;
+  max-width: 26px !important;
+  white-space: normal !important;
+  text-align: left !important;
+  line-height: .92 !important;
+}
+
+.glass-event-card .sport-duration-chip svg {
+  margin-right: 0 !important;
+}
+
+@media (max-width: 430px) {
+  .glass-event-card .sport-card-top-actions {
+    top: 10px !important;
+    right: 10px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    top: 82px !important;
+    right: 4px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .glass-event-card .sport-card-top-actions {
+    top: 8px !important;
+    right: 8px !important;
+  }
+
+  .glass-event-card .sport-chip-row {
+    top: 80px !important;
+    right: 2px !important;
+    grid-template-columns: 78px !important;
+  }
+
+  .glass-event-card .sport-card-participants-chip,
+  .glass-event-card .sport-duration-chip {
+    width: 78px !important;
+    min-width: 78px !important;
+  }
+}

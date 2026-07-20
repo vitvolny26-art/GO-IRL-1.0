@@ -3,8 +3,8 @@ title: GO IRL Telegram Mini App
 owner: Tech Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-20
+next_review: 2026-08-20
 ---
 
 # GO IRL Telegram Mini App
@@ -14,12 +14,13 @@ next_review: 2026-07-18
 Before contributing or implementing new features, read:
 
 0. [DOCS_INDEX.md](DOCS_INDEX.md)
-1. [docs/PRODUCT_PHILOSOPHY.md](docs/PRODUCT_PHILOSOPHY.md)
-2. [docs/GO_IRL_CONSTITUTION.md](docs/GO_IRL_CONSTITUTION.md)
-3. [docs/MARKET_POSITIONING.md](docs/MARKET_POSITIONING.md)
-4. [docs/COMPETITOR_WATCH.md](docs/COMPETITOR_WATCH.md)
-5. [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md)
-6. [docs/COACH_CHAT_TRUST_LAYER.md](docs/COACH_CHAT_TRUST_LAYER.md)
+1. [docs/release/CURRENT_PHASE.md](docs/release/CURRENT_PHASE.md)
+2. [docs/PRODUCT_PHILOSOPHY.md](docs/PRODUCT_PHILOSOPHY.md)
+3. [docs/GO_IRL_CONSTITUTION.md](docs/GO_IRL_CONSTITUTION.md)
+4. [docs/MARKET_POSITIONING.md](docs/MARKET_POSITIONING.md)
+5. [docs/COMPETITOR_WATCH.md](docs/COMPETITOR_WATCH.md)
+6. [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md)
+7. [docs/COACH_CHAT_TRUST_LAYER.md](docs/COACH_CHAT_TRUST_LAYER.md)
 
 Every major product or architecture decision must support the mission:
 
@@ -33,9 +34,13 @@ All major product and architecture decisions must follow the [GO IRL Constitutio
 
 ## Current Product Focus
 
-Closed beta focuses on Olomouc and the real-life event loop:
+Current phase: **Release Preparation and focused post-beta stabilization**.
+
+Closed Beta was completed on 2026-07-20. The proven Olomouc real-life event loop remains the release baseline:
 
 create event -> share -> participants join -> event chat -> people show up in real life.
+
+The former six-category beta taxonomy is historical acceptance evidence, not an active release-phase restriction. Any category or vertical expansion still requires an explicit reviewed product decision and must preserve release stability.
 
 For version 1.1, **Coach means Sport Coach only**. Coach is not a universal helper for all events. Guides, language buddies, game masters, hosts, referees, and paid role marketplaces are future Event Roles work after the Sport Coach MVP proves value.
 
@@ -155,11 +160,12 @@ The build command runs `tsc -b` and then creates the production Vite bundle.
 - Supabase Edge Function `verifyTelegramInitData` for Telegram HMAC verification and trusted session issuing
 - Supabase setup guide in `supabase/README.md`
 - ESLint and Vitest quality gates
-- Netlify build configuration in `netlify.toml` is historical/secondary; Vercel is the current beta deployment target.
+- Netlify build configuration in `netlify.toml` is historical/secondary; Vercel is the current deployment target.
 - Vercel fallback deployment configuration in `vercel.json`
 
 ## Project Documents
 
+- `docs/release/CURRENT_PHASE.md` - current project phase and release decision source of truth
 - `DOCS_INDEX.md` - documentation status registry and source-of-truth map
 - `docs/MVP_DOC_AUDIT.md` - MVP documentation conflict registry
 - `docs/MISSING_SECTIONS.md` - missing documentation boundary registry
@@ -209,39 +215,13 @@ node scripts/go-irl-health-audit.cjs
 
 ## Current stabilization status
 
-Date: 2026-07-08
+Date: 2026-07-20
 
-Current closed/patched areas:
+Current phase:
 
-- Browser Mock Mode
-  - Browser without Telegram `initData` uses local demo state.
-  - Demo writes are local-only and must not touch production Supabase.
-- Restore Coach + Chat
-  - Coach and Event Chat panels are mounted in sport event details.
-  - Coach/Role + Chat is now documented as a trust layer; any generic usage is a temporary bridge until Event Roles exist.
-- Event Card Time Fix
-  - Sport cards show event start time consistently.
-  - Empty time badge is not rendered.
-- Profile Fix
-  - Profile edit uses Save and local persistence.
-  - Demo avatar upload stores a local data URL.
-  - Production Supabase Storage avatar upload is still pending a separate Storage/RLS-safe task.
-- Bug Report Fix
-  - Bug report opens Telegram support link and does not copy share text.
-- Weather Widget
-  - Sport event details use Open-Meteo weather without API keys.
-- Share Fix
-  - Share links use Telegram Mini App `startapp` deep links.
-  - Browser `/join/:id` opens the target activity.
-  - Open Graph metadata is present with an absolute image URL.
-- Beta UI Cleanup
-  - Static `BETA` dev marker and debug panel were removed from `index.html`.
+- Closed Beta: completed and archived.
+- Release Preparation: active.
+- Focused post-beta stabilization: active.
+- Broad public launch: not yet claimed.
 
-Verification status:
-
-- Vercel: latest checked commits are deploying/building through Vercel status checks.
-- Local `pnpm run lint`: pending after latest commits.
-- Local `pnpm run build`: pending after latest commits.
-- Local `pnpm run test`: pending after latest commits.
-
-Do not claim beta-ready until local quality gates pass on the latest `main`.
+Release preparation requires reviewed changes, current quality gates, Telegram/Vercel smoke verification, and operational readiness. Historical beta checklists remain evidence, not current phase instructions.
