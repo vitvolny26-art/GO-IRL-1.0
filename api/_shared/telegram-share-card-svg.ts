@@ -24,14 +24,15 @@ const wrap = (value: string, maxChars: number, maxLines = 2) => {
   const words = clean(value).split(" ").filter(Boolean);
   const lines: string[] = [];
   for (const word of words) {
-    const current = lines.at(-1) || "";
+    const current = lines.length > 0 ? lines[lines.length - 1] : "";
     if (!current || `${current} ${word}`.length <= maxChars) {
       if (current) lines[lines.length - 1] = `${current} ${word}`;
       else lines.push(word);
     } else if (lines.length < maxLines) {
       lines.push(word);
     } else {
-      lines[lines.length - 1] = `${lines.at(-1) || ""}…`.slice(0, maxChars);
+      const lastLine = lines.length > 0 ? lines[lines.length - 1] : "";
+      lines[lines.length - 1] = `${lastLine}…`.slice(0, maxChars);
       break;
     }
   }
