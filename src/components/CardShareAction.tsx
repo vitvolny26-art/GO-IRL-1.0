@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildCardShareTarget, buildCardShareText } from "../cardShare";
+import { buildCardShareTarget, buildCardShareText, buildMessengerPreviewUrl } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
@@ -42,9 +42,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     };
   }, [open]);
 
-  const copyShareText = async () => {
+  const copyShareText = async (shareUrl = url) => {
     try {
-      await navigator.clipboard.writeText(buildCardShareText(content));
+      await navigator.clipboard.writeText(buildCardShareText({ ...content, url: shareUrl }));
     } catch {
       // Clipboard access may be unavailable inside some embedded browsers.
     }
@@ -62,24 +62,38 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       return;
     }
 
-    if (channel === "native") {
+    if (channel === "messenger") {
+      const previewUrl = buildMessengerPreviewUrl(content);
       if (navigator.share) {
         try {
           await navigator.share({
             title: `GO IRL: ${title}`,
             text: [date, address].filter(Boolean).join("\n"),
-            url,
+            url: previewUrl,
           });
           return;
         } catch (error) {
           if (error instanceof DOMException && error.name === "AbortError") return;
         }
       }
-      await copyShareText();
+      await copyShareText(previewUrl);
+      window.open("https://www.messenger.com/", "_blank", "noopener,noreferrer");
       return;
     }
 
-    window.open(buildCardShareTarget(channel, content), "_blank", "noopener,noreferrer");
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `GO IRL: ${title}`,
+          text: [date, address].filter(Boolean).join("\n"),
+          url,
+        });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+    await copyShareText();
   };
 
   return (
