@@ -37,6 +37,7 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
   return dialogUrl.toString();
 };
 
+// Android cannot display Meta's Send Dialog, so route the text directly to Messenger.
 export const buildAndroidMessengerIntent = (content: CardShareContent) => {
   const shareText = buildCardShareText({ ...content, url: buildMessengerPreviewUrl(content) });
   return `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};package=com.facebook.orca;end`;
