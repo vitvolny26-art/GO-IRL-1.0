@@ -3,8 +3,8 @@ title: Roadmap
 owner: Product Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-20
+next_review: 2026-08-03
 ---
 
 # Roadmap
@@ -19,29 +19,28 @@ Competitor-driven product signals are tracked in [docs/COMPETITOR_WATCH.md](docs
 
 For the Sport Coach MVP 1.1 scope, see [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md).
 
-## Current beta gate
+## Current release state
 
-Current stabilization state:
+The Olomouc closed beta phase was closed on 2026-07-20. The canonical decision and evidence are recorded in [docs/release/CLOSED_BETA_CLOSURE.md](docs/release/CLOSED_BETA_CLOSURE.md).
 
-- Browser Mock Mode is patched for non-Telegram browser usage.
-- Browser demo writes are local-only and must not touch production Supabase.
-- Coach and Event Chat are mounted in sport event details.
-- Sport card time rendering is patched.
-- Bug report opens support instead of copying share text.
-- Weather uses Open-Meteo in sport details.
-- Share links use Telegram Mini App `startapp` deep links.
-- Static beta/dev marker was removed from `index.html`.
+Validated beta evidence:
 
-Current release gate:
+- The two-account Telegram flow passed: create -> share -> join/request -> participant count -> event chat -> organizer visibility.
+- The six-category create taxonomy is enforced.
+- GitHub CI passed test, typecheck, lint, and build on the latest validated beta code.
+- Production Supabase security hardening and the four-identity RLS matrix passed.
+- Vercel production deployment and the Messenger preview endpoint were green at beta closure.
+- Automatic Vercel Git deployments are disabled to preserve build quota; deployment actions must be intentional.
 
-- `pnpm run lint`: pending after latest commits.
-- `pnpm run build`: pending after latest commits.
-- `pnpm run test`: pending after latest commits.
-- Real Telegram smoke test: pending.
-- Supabase production table/RLS verification: pending/manual.
-- Vercel may fail because of build-rate-limit; this is operational, not automatically a code failure.
+Current post-beta work:
 
-Do not claim beta-ready until the latest `main` passes local quality gates and manual smoke tests.
+- physical Messenger cache smoke on a fresh event when needed;
+- Sport Coach MVP 1.1 completion;
+- performance and bundle work;
+- notification automation;
+- broader public-launch hardening beyond the closed-beta gate.
+
+Do not reopen the closed-beta gate for unrelated future work. Classify new work as a post-beta release blocker, post-beta product increment, operational follow-up, or future backlog item.
 
 ## Market guardrail for beta
 
@@ -96,18 +95,17 @@ These may be revisited after Olomouc proves event creation, join rate, chat acti
 
 ## Strategic Development Order
 
-The current product priority is foundation and infrastructure. Friends, Travel, Dating, ticketing, and broad social features are intentionally deferred until the Olomouc beta loop is stable.
+The current product priority is post-beta release preparation and measured iteration. Friends, Travel, Dating, ticketing, and broad social features remain deferred until the validated Olomouc loop and production foundation are stable under real use.
 
-Before new vertical expansion, Closed Beta must validate the Sport Coach hypothesis in Olomouc:
+Before new vertical expansion, GO IRL must validate the Sport Coach hypothesis in Olomouc:
 
 > Sport events with a confirmed coach should have a higher show-up rate and higher beginner comfort than sport events without a coach.
 
-1. Closed Beta Loop Stability
-   - Browser demo/mock mode works without Telegram.
-   - Event cards are stable and readable.
-   - Join state, participant count, event chat, and share flow work reliably.
-   - Profile basics create enough trust to join an event.
-   - The six beta categories stay focused and visible.
+1. Post-beta Release Preparation
+   - Preserve the validated create, share, join/request, participant count, event chat, and organizer visibility loop.
+   - Keep profile basics sufficient for organizer/host trust.
+   - Keep the six canonical categories focused and visible.
+   - Complete only the operational follow-ups and public-launch hardening explicitly classified after beta closure.
 2. Infrastructure Hardening
    - Supabase production readiness.
    - Safe, repeatable migrations.
