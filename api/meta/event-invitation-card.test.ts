@@ -36,7 +36,7 @@ describe("Meta invitation card endpoint", () => {
     delete runtimeEnv.META_APP_SECRET;
   });
 
-  it("returns only a valid signed JPEG card", async () => {
+  it("returns a valid signed JPEG in Facebook-safe landscape dimensions", async () => {
     runtimeEnv.META_APP_SECRET = "meta-secret";
     const token = createMetaInvitationCardToken(card, "meta-secret");
     const headers = new Map<string, string>();
@@ -53,7 +53,7 @@ describe("Meta invitation card endpoint", () => {
     expect(status).toBe(200);
     expect(headers.get("Content-Type")).toBe("image/jpeg");
     const metadata = await sharp(body as Uint8Array).metadata();
-    expect(metadata.width).toBe(1080);
-    expect(metadata.height).toBe(900);
+    expect(metadata.width).toBe(1200);
+    expect(metadata.height).toBe(630);
   });
 });
