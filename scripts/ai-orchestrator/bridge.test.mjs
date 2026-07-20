@@ -66,6 +66,7 @@ function expectEnvelope(response, status, nextAction) {
     status,
     next_action: nextAction,
     artifacts: expect.any(Array),
+    qa: expect.any(Object),
   });
   const serialized = JSON.stringify(response);
   expect(serialized).not.toContain('.runtime-state');
@@ -119,9 +120,24 @@ describe('Orchestrator bridge v0.1', () => {
     expectEnvelope(run(sandbox, 'review run', {
       mission_id: 'MISSION-BRIDGE-E2E', execution_id: 'review-external', result: result('Independent Reviewer'),
     }), 'checking', 'qa run');
-    expectEnvelope(run(sandbox, 'qa run', { mission_id: 'MISSION-BRIDGE-E2E' }, {
-      qaRunner: () => ({ status: 1, stdout: '', stderr: 'first red block' }),
-    }), 'checks_failed', 'qa run');
+    const failedQa = run(sandbox, 'qa run', { mission_id: 'MISSION-BRIDGE-E2E' }, {
+      qaRunner: () => ({
+        status: 1,
+        stdout: '',
+        stderr: 'private runner output',
+      }),
+    });
+
+    expectEnvelope(failedQa, 'checks_failed', 'qa run');
+    expect(failedQa.qa.reviewed_diff).toMatchObject({
+      green: false,
+      commands: [{
+        command: 'pnpm run typecheck',
+        status: 'FAIL',
+      }],
+      first_failed_command: 'pnpm run typecheck',
+    });
+    expect(JSON.stringify(failedQa)).not.toContain('private runner output');
     expectEnvelope(run(sandbox, 'qa run', {
       mission_id: 'MISSION-BRIDGE-E2E', retry_actor: 'human-owner',
     }, {
@@ -248,6 +264,7 @@ describe('Orchestrator bridge v0.1', () => {
       status: 'error',
       next_action: 'fix request',
       artifacts: [],
+      qa: { reviewed_diff: null, final: null },
       error: { code: 'BRIDGE_INPUT_INVALID_JSON', message: 'Bridge input must be one valid JSON object.' },
     });
     expect(chunks[0]).not.toContain(sandbox.stateDir);

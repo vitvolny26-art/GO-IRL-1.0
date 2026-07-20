@@ -88,6 +88,33 @@ function publicArtifacts(record, extra = []) {
   return [...new Set(names)].sort();
 }
 
+function publicQaPhase(phase) {
+  if (!phase) return null;
+
+  return {
+    green: phase.green === true,
+    completed_at: typeof phase.completed_at === 'string'
+      ? phase.completed_at
+      : null,
+    commands: Array.isArray(phase.results)
+      ? phase.results.map((result) => ({
+          command: String(result.command || ''),
+          status: Number(result.status) === 0 ? 'PASS' : 'FAIL',
+        }))
+      : [],
+    first_failed_command: phase.first_error
+      ? String(phase.first_error.command || '')
+      : null,
+  };
+}
+
+function publicQa(record) {
+  return {
+    reviewed_diff: publicQaPhase(record?.checks?.reviewed_diff),
+    final: publicQaPhase(record?.checks?.final),
+  };
+}
+
 function successEnvelope(record, extraArtifacts = []) {
   return {
     success: true,
@@ -95,6 +122,7 @@ function successEnvelope(record, extraArtifacts = []) {
     status: record.state,
     next_action: nextActionForRecord(record),
     artifacts: publicArtifacts(record, extraArtifacts),
+    qa: publicQa(record),
   };
 }
 
@@ -125,6 +153,7 @@ function failureEnvelope(error, missionId, stateDir) {
     status: record?.state || 'error',
     next_action: record ? nextActionForRecord(record) : 'fix request',
     artifacts: publicArtifacts(record),
+    qa: publicQa(record),
     error: publicError(error),
   };
 }
@@ -328,6 +357,7 @@ module.exports = {
   nextActionForRecord,
   parseInput,
   publicArtifacts,
+  publicQa,
   runBridgeCli,
   successEnvelope,
 };
