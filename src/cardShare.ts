@@ -13,7 +13,7 @@ const fallbackOrigin = "https://go-irl-1-0.vercel.app";
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
   [url, [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n")].filter(Boolean).join("\n\n");
 
-const buildMessengerPreviewUrl = (content: CardShareContent) => {
+export const buildMessengerPreviewUrl = (content: CardShareContent) => {
   try {
     const inviteUrl = new URL(content.url);
     const eventId = inviteUrl.searchParams.get("startapp")?.trim() || "";
