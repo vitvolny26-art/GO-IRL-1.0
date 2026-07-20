@@ -134,8 +134,8 @@ describe("Telegram event share-card image", () => {
 
     const jpeg = await renderMetaInvitationCardJpeg(metaCard);
     const metadata = await sharp(jpeg).metadata();
-    expect(metadata.width).toBe(1080);
-    expect(metadata.height).toBe(900);
+    expect(metadata.width).toBe(1200);
+    expect(metadata.height).toBe(630);
     expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
   });
 });
