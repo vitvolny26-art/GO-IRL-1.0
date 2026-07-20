@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildCardShareTarget, buildCardShareText, type CardShareChannel } from "../cardShare";
+import { buildCardShareTarget, buildCardShareText } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
@@ -13,7 +13,7 @@ type CardShareActionProps = {
   onTelegramShare?: () => Promise<PreparedTelegramShareResult>;
 };
 
-type ShareChannel = CardShareChannel | "native";
+type ShareChannel = "telegram" | "messenger" | "native";
 
 const channels = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
