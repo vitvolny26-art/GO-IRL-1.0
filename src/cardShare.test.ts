@@ -13,8 +13,11 @@ describe("card share", () => {
     expect(buildCardShareText(content)).toBe(`${content.url}\n\nGO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc`);
   });
 
-  it("builds direct Telegram and WhatsApp targets", () => {
+  it("builds direct Telegram, WhatsApp, and Facebook targets", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", content))).toContain(content.url);
     expect(decodeURIComponent(buildCardShareTarget("whatsapp", content))).toContain(content.url);
+    const facebookTarget = decodeURIComponent(buildCardShareTarget("messenger", content));
+    expect(facebookTarget).toContain(`u=${content.url}`);
+    expect(facebookTarget).toContain("quote=GO IRL: Ролики в парке");
   });
 });

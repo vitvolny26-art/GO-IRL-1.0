@@ -18,5 +18,6 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     return `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(textWithoutUrl)}`;
   }
   if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
-  return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+  const textWithoutUrl = buildCardShareText({ ...content, url: "" });
+  return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodeURIComponent(textWithoutUrl)}`;
 };
