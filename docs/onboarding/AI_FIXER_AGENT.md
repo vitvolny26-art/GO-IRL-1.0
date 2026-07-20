@@ -3,8 +3,8 @@ title: AI Fixer Agent
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-12
-next_review: 2026-08-12
+last_review: 2026-07-20
+next_review: 2026-08-20
 ---
 
 # AI Fixer Agent
@@ -116,6 +116,17 @@ For code or configuration changes:
 - allow GitHub Actions and Vercel to run normally;
 - never classify `.github/workflows/**`, `vercel.json`, package files, scripts, Supabase files, or runtime configuration as docs-only;
 - never force-push or rewrite history only to reduce build count.
+
+## Self-hosted runner wait rule
+
+After a code or configuration commit is pushed and a pull request is opened or updated:
+
+- GitHub Actions starts automatically on the configured self-hosted runner;
+- the workflow run may not appear immediately in the API or pull request UI;
+- wait briefly and check the same commit SHA again before concluding that GitHub or the runner is not responding;
+- do not create another commit, push, or workflow retry only because the first status check returned no runs;
+- treat the runner result as authoritative only after the workflow reaches a terminal state;
+- merge only after `test`, `typecheck`, `lint`, and `build` report PASS.
 
 ## Required verification
 
