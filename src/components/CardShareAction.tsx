@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildAndroidMessengerIntent, buildCardShareTarget, buildCardShareText, buildMessengerPreviewUrl } from "../cardShare";
+import { buildCardShareTarget, buildCardShareText, buildMessengerPreviewUrl } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
+import { getTelegramWebApp } from "../telegram";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
@@ -64,23 +65,42 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
 
     if (channel === "messenger") {
       const previewUrl = buildMessengerPreviewUrl(content);
-      if (/Android/i.test(navigator.userAgent)) {
-        window.location.href = buildAndroidMessengerIntent(content);
-        return;
-      }
-      if (navigator.share && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      const sharePayload = {
+        title: `GO IRL: ${title}`,
+        text: [date, address].filter(Boolean).join("\n"),
+        url: previewUrl,
+      };
+
+      if (/Android/i.test(navigator.userAgent) && navigator.share) {
         try {
-          await navigator.share({ title: `GO IRL: ${title}`, text: [date, address].filter(Boolean).join("\n"), url: previewUrl });
+          await navigator.share(sharePayload);
           return;
         } catch (error) {
           if (error instanceof DOMException && error.name === "AbortError") return;
         }
       }
-      if (/Mobi/i.test(navigator.userAgent)) {
-        await copyShareText(previewUrl);
+
+      if (navigator.share && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        try {
+          await navigator.share(sharePayload);
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+        }
+      }
+
+      const messengerTarget = buildCardShareTarget(channel, content);
+      const webApp = getTelegramWebApp();
+      if (webApp?.openLink) {
+        webApp.openLink(messengerTarget);
         return;
       }
-      window.open(buildCardShareTarget(channel, content), "_blank", "noopener,noreferrer");
+      if (/Mobi/i.test(navigator.userAgent)) {
+        await copyShareText(previewUrl);
+        window.open(messengerTarget, "_blank", "noopener,noreferrer");
+        return;
+      }
+      window.open(messengerTarget, "_blank", "noopener,noreferrer");
       return;
     }
 
