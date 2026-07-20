@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
 import { buildCardShareTarget, buildCardShareText, buildMessengerPreviewUrl } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
-import { getTelegramWebApp } from "../telegram";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
@@ -71,36 +70,20 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         url: previewUrl,
       };
 
-      if (/Android/i.test(navigator.userAgent) && navigator.share) {
-        try {
-          await navigator.share(sharePayload);
-          return;
-        } catch (error) {
-          if (error instanceof DOMException && error.name === "AbortError") return;
+      if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        if (navigator.share) {
+          try {
+            await navigator.share(sharePayload);
+            return;
+          } catch (error) {
+            if (error instanceof DOMException && error.name === "AbortError") return;
+          }
         }
-      }
-
-      if (navigator.share && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        try {
-          await navigator.share(sharePayload);
-          return;
-        } catch (error) {
-          if (error instanceof DOMException && error.name === "AbortError") return;
-        }
-      }
-
-      const messengerTarget = buildCardShareTarget(channel, content);
-      const webApp = getTelegramWebApp();
-      if (webApp?.openLink) {
-        webApp.openLink(messengerTarget);
-        return;
-      }
-      if (/Mobi/i.test(navigator.userAgent)) {
         await copyShareText(previewUrl);
-        window.open(messengerTarget, "_blank", "noopener,noreferrer");
         return;
       }
-      window.open(messengerTarget, "_blank", "noopener,noreferrer");
+
+      window.open(buildCardShareTarget(channel, content), "_blank", "noopener,noreferrer");
       return;
     }
 
