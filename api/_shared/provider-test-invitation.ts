@@ -94,4 +94,3 @@ export const createProviderTestInvitationHandler = ({ tokenEnv, dependencies }: 
     }
     return jsonResponse({ accepted: true }, 202);
   };
-
