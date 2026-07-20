@@ -44,6 +44,17 @@ describe("Instagram test invitation trigger", () => {
     await expect(response.json()).resolves.toEqual({ error: "test_trigger_disabled" });
   });
 
+  it("allows Hoppscotch preflight without exposing the trigger", async () => {
+    const response = await handleInstagramTestInvitation(new Request(
+      "https://example.test/api/instagram/test-invitation",
+      { method: "OPTIONS" },
+    ));
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe("https://hoppscotch.io");
+    expect(response.headers.get("access-control-allow-methods")).toBe("POST, OPTIONS");
+  });
+
   it("rejects requests without the configured bearer token before dependencies run", async () => {
     const getEventSummary = vi.fn();
     const response = await handleInstagramTestInvitation(request({}, "wrong-token"), {
@@ -99,6 +110,7 @@ describe("Instagram test invitation trigger", () => {
   });
 
   it("does not expose provider failures", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const response = await handleInstagramTestInvitation(request({
       recipientId: "1234567890123456",
       eventId: event.eventId,
@@ -109,5 +121,9 @@ describe("Instagram test invitation trigger", () => {
 
     expect(response.status).toBe(502);
     await expect(response.json()).resolves.toEqual({ error: "invitation_send_failed" });
+    expect(consoleError).toHaveBeenCalledWith(
+      "provider_test_invitation_send_failed",
+      "provider secret detail",
+    );
   });
 });
