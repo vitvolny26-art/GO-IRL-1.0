@@ -15,6 +15,14 @@ type CardShareActionProps = {
 
 type ShareChannel = "telegram" | "messenger" | "native";
 
+type TelegramWindow = Window & {
+  Telegram?: {
+    WebApp?: {
+      openLink?: (url: string) => void;
+    };
+  };
+};
+
 const channels = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
@@ -79,7 +87,13 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
             if (error instanceof DOMException && error.name === "AbortError") return;
           }
         }
-        await copyShareText(previewUrl);
+        const messengerTarget = buildCardShareTarget(channel, content);
+        const telegramWebApp = (window as TelegramWindow).Telegram?.WebApp;
+        if (telegramWebApp?.openLink) {
+          telegramWebApp.openLink(messengerTarget);
+          return;
+        }
+        window.open(messengerTarget, "_blank", "noopener,noreferrer");
         return;
       }
 
