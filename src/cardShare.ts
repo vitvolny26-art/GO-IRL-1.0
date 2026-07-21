@@ -9,7 +9,7 @@ export type CardShareContent = {
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const fallbackOrigin = "https://go-irl-1-0.vercel.app";
-const metaAppId = "1348703396728256";
+export const metaAppId = "1348703396728256";
 
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
   [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n\n");
@@ -35,6 +35,16 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
   dialogUrl.searchParams.set("link", buildMessengerPreviewUrl(content));
   dialogUrl.searchParams.set("redirect_uri", fallbackOrigin);
   return dialogUrl.toString();
+};
+
+export const buildMessengerAppTarget = (content: CardShareContent) => {
+  const link = encodeURIComponent(buildMessengerPreviewUrl(content));
+  return `fb-messenger://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}`;
+};
+
+export const buildMessengerAndroidIntentTarget = (content: CardShareContent) => {
+  const link = encodeURIComponent(buildMessengerPreviewUrl(content));
+  return `intent://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}#Intent;scheme=fb-messenger;package=com.facebook.orca;end`;
 };
 
 export const buildMessengerShareBridgeTarget = (content: CardShareContent, origin = fallbackOrigin) => {

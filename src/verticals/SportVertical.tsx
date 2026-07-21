@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { BellDot, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
@@ -16,6 +16,7 @@ import { getCity } from "../config/cities";
 import { buildGoogleCalendarUrl } from "../calendar/googleCalendar";
 import { getTelegramWebApp } from "../telegram";
 import { CardShareAction } from "../components/CardShareAction";
+import { CardReminderAction } from "../components/CardReminderAction";
 import { EventCardArtwork } from "../components/EventCardArtwork";
 import { stripLeadingEmoji } from "../cardText";
 import { activityIconFromText } from "../activityIcon";
@@ -283,10 +284,11 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
             aria-label={`${t.requests}: ${pendingRequestCount}`}
             onClick={() => onOpen(activity, { focusRequests: true })}
           >
-            <Bell aria-hidden="true" />
+            <BellDot aria-hidden="true" />
             <span>{pendingRequestCount}</span>
           </button>
         ) : null}
+        <CardReminderAction activityId={activity.id} date={activity.date} time={activity.time} />
         <CardShareAction
           title={shareTitle}
           date={shareDate}

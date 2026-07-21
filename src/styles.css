@@ -401,6 +401,30 @@ button, input, textarea, select { letter-spacing: 0; }
 .event-request-alert { position: relative; display: inline-grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 1px solid rgba(201,255,61,.42); border-radius: 13px; background: rgba(24,32,18,.92); color: var(--lime); }
 .event-request-alert svg { width: 21px; height: 21px; }
 .event-request-alert span { position: absolute; top: -6px; right: -6px; display: grid; min-width: 20px; height: 20px; padding: 0 5px; place-items: center; border: 2px solid #0b0e10; border-radius: 999px; background: #ff675c; color: #fff; font-size: 11px; font-weight: 900; }
+.card-reminder-action { position: relative; display: inline-flex; }
+.sport-card-icon-action.is-reminder-active { border-color: rgba(201,255,61,.62); background: rgba(33,47,18,.96); color: var(--lime); }
+.card-reminder-panel { position: absolute; z-index: 24; top: 50px; right: -52px; display: grid; width: min(310px, calc(100vw - 42px)); gap: 12px; padding: 16px; border: 1px solid rgba(201,255,61,.34); border-radius: 18px; background: rgba(13,17,19,.98); box-shadow: 0 18px 50px rgba(0,0,0,.55); color: #f6f7f8; }
+.card-reminder-panel > strong { font-size: 16px; }
+.card-reminder-leads { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.card-reminder-leads button, .card-reminder-channels button { min-height: 40px; border: 1px solid rgba(255,255,255,.12); border-radius: 11px; background: rgba(255,255,255,.035); color: #d8dce2; font: inherit; font-size: 12px; font-weight: 750; }
+.card-reminder-leads button.is-selected, .card-reminder-channels button.is-selected { border-color: rgba(201,255,61,.55); background: rgba(201,255,61,.1); color: var(--lime); }
+.card-reminder-channels { display: grid; gap: 7px; }
+.card-reminder-channels button { display: grid; grid-template-columns: 28px 1fr 18px; align-items: center; padding: 6px 10px; text-align: left; }
+.card-reminder-channels img { width: 25px; height: 25px; }
+.card-reminder-channels svg { width: 17px; height: 17px; }
+.card-reminder-save { min-height: 44px; border: 0; border-radius: 12px; background: var(--lime); color: #11150d; font: inherit; font-weight: 900; }
+.card-reminder-remove { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; border: 0; background: transparent; color: #aeb4bd; font: inherit; font-size: 12px; font-weight: 750; }
+.card-reminder-remove svg { width: 15px; height: 15px; }
+@media (max-width: 720px) {
+  .card-reminder-panel {
+    position: fixed;
+    inset: auto 12px calc(76px + env(safe-area-inset-bottom)) 12px;
+    width: auto;
+    max-height: min(620px, calc(100dvh - 110px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
 .status-banner { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 12px; border: 1px solid #37431e; border-radius: 7px; background: rgba(201,255,61,.08); color: var(--lime); font-size: 13px; font-weight: 800; }
 .status-banner.neutral { border-color: rgba(87,217,232,.3); background: rgba(87,217,232,.08); color: var(--cyan); }
 .status-banner.danger { border-color: rgba(255,111,97,.36); background: rgba(255,111,97,.09); color: var(--coral); }

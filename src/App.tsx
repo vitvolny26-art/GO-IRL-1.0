@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
 import {
   ArrowLeft,
-  Bell,
+  BellDot,
   CalendarDays,
   CalendarPlus,
   Check,
@@ -70,6 +70,7 @@ import { ActivityChatPanel } from "./components/ActivityChatPanel";
 import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction } from "./components/EventCardPrimitives";
 import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
+import { CardReminderAction } from "./components/CardReminderAction";
 import { EventCardArtwork } from "./components/EventCardArtwork";
 import { stripLeadingEmoji } from "./cardText";
 import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation } from "./eventLocations";
@@ -1381,10 +1382,11 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
             aria-label={`${t.requests}: ${pendingRequestCount}`}
             onClick={() => onOpen(activity, { focusRequests: true })}
           >
-            <Bell aria-hidden="true" />
+            <BellDot aria-hidden="true" />
             <span>{pendingRequestCount}</span>
           </button>
         ) : null}
+        <CardReminderAction activityId={activity.id} date={activity.date} time={activity.time} />
         <CardShareAction
           title={shareTitle}
           date={shareDate}
