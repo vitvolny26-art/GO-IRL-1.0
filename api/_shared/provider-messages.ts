@@ -11,7 +11,7 @@ import {
   buildWhatsAppJoinResultPayload,
 } from "../../src/whatsapp/payload-builders.js";
 import { readEnv, requireEnv } from "./env.js";
-import type { TelegramEventCardInput } from "./telegram-event-card.js";
+import { buildTelegramCalendarUrl, type TelegramEventCardInput } from "./telegram-event-card.js";
 import { createMetaInvitationCardToken } from "./telegram-share-card-token.js";
 
 export type MessagingProvider = "whatsapp" | MetaMessagingProvider;
@@ -82,10 +82,8 @@ const withInvitationPresentation = (provider: MessagingProvider, event: MetaEven
   const openUrl = event.openUrl || (origin
     ? `${origin}/api/meta/event-preview?${eventQuery}`
     : event.inviteUrl);
-  const calendarUrl = event.calendarUrl || (origin
-    ? `${origin}/api/meta/event-preview?${eventQuery}&format=ics`
-    : undefined);
   const cardInput = invitationCardInput({ ...event, inviteUrl: openUrl || event.inviteUrl });
+  const calendarUrl = event.calendarUrl || buildTelegramCalendarUrl(cardInput);
   const secret = provider === "instagram"
     ? readEnv("INSTAGRAM_APP_SECRET") || readEnv("META_APP_SECRET")
     : readEnv("META_APP_SECRET");
