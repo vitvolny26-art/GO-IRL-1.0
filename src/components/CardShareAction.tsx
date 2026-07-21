@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildCardShareTarget, buildCardShareText, buildMessengerShareBridgeTarget } from "../cardShare";
+import {
+  buildCardShareTarget,
+  buildCardShareText,
+  buildMessengerPreviewUrl,
+  buildMessengerShareBridgeTarget,
+} from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
@@ -83,7 +88,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       const sharePayload = {
         title: `GO IRL: ${title}`,
         text: [date, address].filter(Boolean).join("\n"),
-        url,
+        url: buildMessengerPreviewUrl(content),
       };
 
       if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
