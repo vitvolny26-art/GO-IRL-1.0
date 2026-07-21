@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildCardShareTarget, buildCardShareText, buildMessengerWebTarget } from "../cardShare";
+import { buildCardShareTarget, buildCardShareText, buildMessengerShareBridgeTarget } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
@@ -95,8 +95,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
             if (error instanceof DOMException && error.name === "AbortError") return;
           }
         }
-        await copyShareText();
-        const messengerTarget = buildMessengerWebTarget();
+        const messengerTarget = buildMessengerShareBridgeTarget(content, window.location.origin);
         const telegramWebApp = (window as TelegramWindow).Telegram?.WebApp;
         if (telegramWebApp?.openLink) {
           telegramWebApp.openLink(messengerTarget);

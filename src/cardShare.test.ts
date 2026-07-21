@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCardShareTarget, buildCardShareText, buildMessengerWebTarget } from "./cardShare";
+import { buildCardShareTarget, buildCardShareText, buildMessengerShareBridgeTarget } from "./cardShare";
 
 const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
 const content = {
@@ -27,9 +27,13 @@ describe("card share", () => {
     expect(target.searchParams.get("link")).toBe(content.url);
   });
 
-  it("uses an HTTPS-only mobile Messenger fallback that embedded browsers can open", () => {
-    const target = new URL(buildMessengerWebTarget());
+  it("uses an HTTPS share bridge with the exact event data for mobile Messenger fallback", () => {
+    const target = new URL(buildMessengerShareBridgeTarget(content));
     expect(target.protocol).toBe("https:");
-    expect(target.hostname).toBe("www.messenger.com");
+    expect(target.pathname).toBe("/messenger-share.html");
+    expect(target.searchParams.get("title")).toBe(content.title);
+    expect(target.searchParams.get("date")).toBe(content.date);
+    expect(target.searchParams.get("address")).toBe(content.address);
+    expect(target.searchParams.get("url")).toBe(content.url);
   });
 });
