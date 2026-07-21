@@ -66,7 +66,10 @@ describe("Meta messaging payload builders", () => {
       imageUrl: "https://goirl.example/api/meta/event-invitation-card?token=signed",
       inviteUrl: "https://t.me/GOirl_bot?startapp=event-meta-1",
     });
-    const element = payload.message.attachment?.payload.elements[0];
+    const template = payload.message.attachment?.payload;
+    expect(template?.template_type).toBe("generic");
+    if (!template || template.template_type !== "generic") throw new Error("expected_generic_template");
+    const element = template.elements[0];
     expect(element?.image_url).toContain("event-invitation-card");
     expect(element?.default_action?.url).toContain("t.me/GOirl_bot");
     expect(element?.buttons).toEqual([
