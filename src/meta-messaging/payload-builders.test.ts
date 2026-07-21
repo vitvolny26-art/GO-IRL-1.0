@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildInstagramInvitationPayload,
   buildMessengerInvitationPayload,
+  buildMessengerWelcomePayload,
   buildMetaJoinResultPayload,
 } from "./payload-builders";
 import type { MetaEventSummary } from "./types";
@@ -38,6 +39,25 @@ describe("Meta messaging payload builders", () => {
       { content_type: "text", title: "Присоединиться", payload: "join:event-meta-1" },
       { content_type: "text", title: "Подробнее", payload: "details:event-meta-1" },
     ]);
+  });
+
+  it("builds a Messenger welcome screen with a GO IRL web action", () => {
+    const payload = buildMessengerWelcomePayload("psid-1", "https://go-irl.example");
+
+    expect(payload).toEqual({
+      messaging_type: "RESPONSE",
+      recipient: { id: "psid-1" },
+      message: {
+        attachment: {
+          type: "template",
+          payload: {
+            template_type: "button",
+            text: expect.stringContaining("GO IRL"),
+            buttons: [{ type: "web_url", title: "Открыть GO IRL", url: "https://go-irl.example" }],
+          },
+        },
+      },
+    });
   });
 
   it("builds a branded generic card with native Join and Open actions", () => {

@@ -43,7 +43,7 @@ export function parseMetaMessagingTestPayload(
         : typeof event.timestamp === "number"
           ? `${provider}:${senderId}:${event.timestamp}`
           : "";
-      if (!senderId || !id) return [];
+      if (!senderId || !id || message?.is_echo === true) return [];
       return [{
         provider,
         id,

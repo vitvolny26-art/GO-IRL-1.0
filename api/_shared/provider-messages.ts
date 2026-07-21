@@ -2,6 +2,7 @@ import type { JoinResult } from "../../src/join/types.js";
 import {
   buildInstagramInvitationPayload,
   buildMessengerInvitationPayload,
+  buildMessengerWelcomePayload,
   buildMetaJoinResultPayload,
 } from "../../src/meta-messaging/payload-builders.js";
 import type { MetaEventSummary, MetaMessagingProvider } from "../../src/meta-messaging/types.js";
@@ -134,5 +135,15 @@ export async function sendProviderJoinResult(
     provider === "instagram" ? instagramMessagesUrl() : graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
     provider === "instagram" ? requireEnv("INSTAGRAM_ACCESS_TOKEN") : requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
     payload,
+  );
+}
+
+export async function sendMessengerWelcome(recipientId: string) {
+  const origin = publicOrigin();
+  if (!origin) throw new Error("messenger_public_origin_missing");
+  return sendGraphPayload(
+    graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
+    requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
+    buildMessengerWelcomePayload(recipientId, origin),
   );
 }

@@ -93,6 +93,26 @@ export function buildMessengerInvitationPayload(
   };
 }
 
+export function buildMessengerWelcomePayload(
+  recipientId: string,
+  appUrl: string,
+): MessengerMessagePayload {
+  return {
+    messaging_type: "RESPONSE",
+    recipient: { id: recipientId },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "button",
+          text: "Привет! GO IRL помогает находить события рядом и встречаться вживую. Откройте приложение, чтобы посмотреть события.",
+          buttons: [{ type: "web_url", title: "Открыть GO IRL", url: appUrl }],
+        },
+      },
+    },
+  };
+}
+
 const resultHeading = (result: JoinResult) => {
   if (result.status === "joined") return "Вы присоединились к событию.";
   if (result.status === "already_joined") return "Вы уже участвуете в этом событии.";
