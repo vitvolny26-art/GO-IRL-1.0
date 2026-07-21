@@ -23,44 +23,84 @@ const isPreference = (value: unknown): value is EventReminderPreference => {
     && typeof item.updatedAt === "string";
 };
 
-export function readEventReminder(activityId: string) {
-  if (typeof localStorage === "undefined") return null;
+const readCookieStorage = () => {
+  if (typeof document === "undefined") return null;
+  const prefix = `${encodeURIComponent(storageKey)}=`;
+  const entry = document.cookie.split("; ").find((item) => item.startsWith(prefix));
+  if (!entry) return null;
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    if (!Array.isArray(parsed)) return null;
-    return parsed.find((item) => isPreference(item) && item.activityId === activityId) || null;
+    return decodeURIComponent(entry.slice(prefix.length));
   } catch {
     return null;
   }
+};
+
+const readStoredValue = () => {
+  try {
+    if (typeof localStorage !== "undefined") {
+      const value = localStorage.getItem(storageKey);
+      if (value) return value;
+    }
+  } catch {
+    // Telegram WebViews can deny localStorage; fall back to a first-party cookie.
+  }
+  return readCookieStorage();
+};
+
+const writeStoredValue = (value: string) => {
+  let persisted = false;
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(storageKey, value);
+      persisted = true;
+    }
+  } catch {
+    // Keep the cookie fallback below.
+  }
+  if (typeof document !== "undefined") {
+    try {
+      document.cookie = `${encodeURIComponent(storageKey)}=${encodeURIComponent(value)}; Path=/; Max-Age=31536000; SameSite=Lax`;
+      persisted = true;
+    } catch {
+      // The caller can still keep the in-memory UI state for this session.
+    }
+  }
+  return persisted;
+};
+
+const readAllPreferences = () => {
+  try {
+    const parsed: unknown = JSON.parse(readStoredValue() || "[]");
+    return Array.isArray(parsed) ? parsed.filter(isPreference) : [];
+  } catch {
+    return [];
+  }
+};
+
+export function readEventReminder(activityId: string) {
+  return readAllPreferences().find((item) => item.activityId === activityId) || null;
 }
 
 export function saveEventReminder(preference: EventReminderPreference) {
-  if (typeof localStorage === "undefined") return;
-  let existing: EventReminderPreference[] = [];
-  try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    if (Array.isArray(parsed)) existing = parsed.filter(isPreference);
-  } catch {
-    existing = [];
-  }
-  localStorage.setItem(storageKey, JSON.stringify([
+  const existing = readAllPreferences();
+  const value = JSON.stringify([
     preference,
     ...existing.filter((item) => item.activityId !== preference.activityId),
-  ]));
-  window.dispatchEvent(new CustomEvent(eventReminderChangedEvent, { detail: preference }));
+  ]);
+  const persisted = writeStoredValue(value);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(eventReminderChangedEvent, { detail: preference }));
+  }
+  return persisted;
 }
 
 export function removeEventReminder(activityId: string) {
-  if (typeof localStorage === "undefined") return;
-  let existing: EventReminderPreference[] = [];
-  try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    if (Array.isArray(parsed)) existing = parsed.filter(isPreference);
-  } catch {
-    return;
+  const value = JSON.stringify(readAllPreferences().filter((item) => item.activityId !== activityId));
+  const persisted = writeStoredValue(value);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(eventReminderChangedEvent, { detail: { activityId } }));
   }
-  localStorage.setItem(storageKey, JSON.stringify(existing.filter((item) => item.activityId !== activityId)));
-  window.dispatchEvent(new CustomEvent(eventReminderChangedEvent, { detail: { activityId } }));
+  return persisted;
 }
 
-export const eventStartsAt = (date: string, time: string) => `${date}T${time || "00:00"}:00`;
+export const eventStartsAt = (date: string, time: string) => `${date}T${time || "00:00"}${time?.split(":").length === 2 ? ":00" : ""}`;
