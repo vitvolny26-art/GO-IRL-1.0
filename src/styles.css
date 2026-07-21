@@ -394,10 +394,13 @@ button, input, textarea, select { letter-spacing: 0; }
 .pending-heading { margin: 9px 0 3px; color: var(--violet); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .member-row.pending-member { grid-template-columns: 34px 1fr auto; }
 .request-actions { display: flex; gap: 6px; }
-.request-actions button { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); color: var(--muted); }
+.request-actions button { display: inline-flex; min-height: 36px; padding: 0 10px; align-items: center; justify-content: center; gap: 5px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 800; }
 .request-actions button:first-child { border-color: rgba(201,255,61,.35); color: var(--lime); }
 .request-actions button:last-child { border-color: rgba(255,111,97,.35); color: var(--coral); }
 .request-actions svg { width: 17px; height: 17px; }
+.event-request-alert { position: relative; display: inline-grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 1px solid rgba(201,255,61,.42); border-radius: 13px; background: rgba(24,32,18,.92); color: var(--lime); }
+.event-request-alert svg { width: 21px; height: 21px; }
+.event-request-alert span { position: absolute; top: -6px; right: -6px; display: grid; min-width: 20px; height: 20px; padding: 0 5px; place-items: center; border: 2px solid #0b0e10; border-radius: 999px; background: #ff675c; color: #fff; font-size: 11px; font-weight: 900; }
 .status-banner { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 12px; border: 1px solid #37431e; border-radius: 7px; background: rgba(201,255,61,.08); color: var(--lime); font-size: 13px; font-weight: 800; }
 .status-banner.neutral { border-color: rgba(87,217,232,.3); background: rgba(87,217,232,.08); color: var(--cyan); }
 .status-banner.danger { border-color: rgba(255,111,97,.36); background: rgba(255,111,97,.09); color: var(--coral); }
