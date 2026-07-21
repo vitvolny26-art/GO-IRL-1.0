@@ -42,24 +42,17 @@ describe("openExternalShareTarget", () => {
 });
 
 describe("openMessengerShareTarget", () => {
-  it("opens the HTTPS share bridge on Android instead of an unsupported intent URL", () => {
+  it("opens the Messenger Send Dialog directly from the Telegram Mini App", () => {
     const openLink = vi.fn();
     vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
-    openMessengerShareTarget(content, "Mozilla/5.0 (Linux; Android 14)");
-    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("/messenger-share.html?"));
+    openMessengerShareTarget(content);
+    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("https://www.facebook.com/dialog/send"));
   });
 
-  it("opens the HTTPS share bridge on iOS instead of a custom URL scheme", () => {
-    const openLink = vi.fn();
-    vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
-    openMessengerShareTarget(content, "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)");
-    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("/messenger-share.html?"));
-  });
-
-  it("keeps the web Send Dialog for desktop browsers", () => {
+  it("opens the Messenger Send Dialog directly in a browser window", () => {
     const open = vi.fn();
     vi.stubGlobal("window", { open });
-    openMessengerShareTarget(content, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+    openMessengerShareTarget(content);
     expect(open).toHaveBeenCalledWith(expect.stringContaining("https://www.facebook.com/dialog/send"), "_blank", "noopener,noreferrer");
   });
 });
