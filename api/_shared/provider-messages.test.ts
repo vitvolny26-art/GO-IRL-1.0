@@ -25,10 +25,32 @@ describe("provider message endpoints", () => {
     delete runtimeEnv.META_GRAPH_VERSION;
     delete runtimeEnv.META_APP_SECRET;
     delete runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL;
+    delete runtimeEnv.VERCEL_URL;
+    delete runtimeEnv.VERCEL_ENV;
     vi.unstubAllGlobals();
   });
 
-  it("attaches a signed public GO IRL card when the deployment origin is available", async () => {
+  it("keeps preview invitation actions on the current preview deployment", async () => {
+    runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
+    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
+    runtimeEnv.META_APP_SECRET = "meta-app-secret";
+    runtimeEnv.META_GRAPH_VERSION = "v23.0";
+    runtimeEnv.VERCEL_ENV = "preview";
+    runtimeEnv.VERCEL_URL = "go-irl-preview.vercel.app";
+    runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL = "go-irl-1-0.vercel.app";
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendProviderInvitation("instagram", "1234567890123456", event);
+
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      message?: { attachment?: { payload?: { elements?: Array<{ default_action?: { url?: string } }> } } };
+    };
+    expect(request.message?.attachment?.payload?.elements?.[0]?.default_action?.url)
+      .toContain("https://go-irl-preview.vercel.app/api/meta/event-preview");
+  });
+
+  it("attaches public event and portable calendar actions to the signed GO IRL card", async () => {
     runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
     runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
     runtimeEnv.META_APP_SECRET = "meta-app-secret";
@@ -52,21 +74,20 @@ describe("provider message endpoints", () => {
     const element = request.message?.attachment?.payload?.elements?.[0];
     expect(element?.image_url)
       .toMatch(/^https:\/\/go-irl-1-0\.vercel\.app\/api\/meta\/event-invitation-card\?token=/);
-    expect(element?.image_url).toContain("&v=4");
-    expect(element?.default_action?.url)
-      .toBe(`https://go-irl-1-0.vercel.app/join/${event.eventId}`);
+    expect(element?.image_url).toContain("&v=6");
+    const previewUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=${event.eventId}&language=ru`;
+    const calendarUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=${event.eventId}&language=ru&format=ics`;
+    expect(element?.default_action?.url).toBe(previewUrl);
     expect(element?.buttons?.[0]).toEqual({
       type: "web_url",
       title: "Открыть событие",
-      url: `https://go-irl-1-0.vercel.app/join/${event.eventId}`,
+      url: previewUrl,
     });
-    expect(element?.buttons?.[1]?.title).toBe("В календарь");
-    const calendar = new URL(element?.buttons?.[1]?.url || "https://invalid.example");
-    expect(calendar.searchParams.get("text")).toBe(event.title);
-    expect(calendar.searchParams.get("dates")).toBe("20260714T180000/20260714T193000");
-    expect(calendar.searchParams.get("location")).toContain(event.location);
-    expect(calendar.searchParams.get("details"))
-      .toContain(`https://go-irl-1-0.vercel.app/join/${event.eventId}`);
+    expect(element?.buttons?.[1]).toEqual({
+      type: "web_url",
+      title: "В календарь",
+      url: calendarUrl,
+    });
   });
 
   it("uses the current Instagram Login Send API endpoint", async () => {

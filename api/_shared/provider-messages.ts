@@ -11,7 +11,7 @@ import {
   buildWhatsAppJoinResultPayload,
 } from "../../src/whatsapp/payload-builders.js";
 import { readEnv, requireEnv } from "./env.js";
-import { buildTelegramCalendarUrl, type TelegramEventCardInput } from "./telegram-event-card.js";
+import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { createMetaInvitationCardToken } from "./telegram-share-card-token.js";
 
 export type MessagingProvider = "whatsapp" | MetaMessagingProvider;
@@ -39,7 +39,9 @@ async function sendGraphPayload(url: string, token: string, payload: unknown) {
 }
 
 const publicOrigin = () => {
-  const host = readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
+  const host = readEnv("VERCEL_ENV") === "preview"
+    ? readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL")
+    : readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
   if (!host) return "";
   try {
     const url = new URL(host.startsWith("http") ? host : `https://${host}`);
@@ -75,11 +77,15 @@ const invitationCardInput = (event: MetaEventSummary): TelegramEventCardInput =>
 
 const withInvitationPresentation = (provider: MessagingProvider, event: MetaEventSummary): MetaEventSummary => {
   const origin = publicOrigin();
+  const language = event.language || "ru";
+  const eventQuery = `event=${encodeURIComponent(event.eventId)}&language=${encodeURIComponent(language)}`;
   const openUrl = event.openUrl || (origin
-    ? `${origin}/join/${encodeURIComponent(event.eventId)}`
+    ? `${origin}/api/meta/event-preview?${eventQuery}`
     : event.inviteUrl);
+  const calendarUrl = event.calendarUrl || (origin
+    ? `${origin}/api/meta/event-preview?${eventQuery}&format=ics`
+    : undefined);
   const cardInput = invitationCardInput({ ...event, inviteUrl: openUrl || event.inviteUrl });
-  const calendarUrl = event.calendarUrl || buildTelegramCalendarUrl(cardInput);
   const secret = provider === "instagram"
     ? readEnv("INSTAGRAM_APP_SECRET") || readEnv("META_APP_SECRET")
     : readEnv("META_APP_SECRET");
@@ -89,7 +95,7 @@ const withInvitationPresentation = (provider: MessagingProvider, event: MetaEven
     ...event,
     openUrl,
     calendarUrl,
-    imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=4`,
+    imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=6`,
   };
 };
 

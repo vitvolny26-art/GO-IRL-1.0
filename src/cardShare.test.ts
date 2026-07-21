@@ -18,7 +18,7 @@ const previewUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=$
 
 describe("card share", () => {
   it("keeps the exact event deep link in the share text", () => {
-    expect(buildCardShareText(content)).toBe(`${content.url}\n\nGO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc`);
+    expect(buildCardShareText(content)).toBe(`GO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc\n\n${content.url}`);
   });
 
   it("keeps Telegram and WhatsApp on the exact event deep link", () => {

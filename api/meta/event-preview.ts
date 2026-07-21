@@ -1,4 +1,5 @@
 import { readEnv } from "../_shared/env.js";
+import { buildMetaEventCalendar } from "../_shared/meta-event-calendar.js";
 import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from "../_shared/telegram-share-event.js";
 import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
 
@@ -14,9 +15,18 @@ type VercelResponse = {
 };
 
 const publicOrigin = () => {
-  const host = readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
+  const host = readEnv("VERCEL_ENV") === "preview"
+    ? readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL")
+    : readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
   return host ? `https://${host.replace(/^https?:\/\//, "")}` : "https://go-irl-1-0.vercel.app";
 };
+
+export const metaEventPreviewCopy = {
+  ru: { calendar: "Добавить в календарь", details: "Подробнее", telegram: "Присоединиться в Telegram" },
+  uk: { calendar: "Додати до календаря", details: "Докладніше", telegram: "Приєднатися в Telegram" },
+  cs: { calendar: "Přidat do kalendáře", details: "Podrobnosti", telegram: "Připojit se v Telegramu" },
+  en: { calendar: "Add to calendar", details: "Details", telegram: "Join in Telegram" },
+} as const;
 
 const escapeHtml = (value: string) => value
   .replaceAll("&", "&amp;")
@@ -26,22 +36,6 @@ const escapeHtml = (value: string) => value
   .replaceAll("'", "&#39;");
 
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
-const pad = (value: number) => String(value).padStart(2, "0");
-
-const calendarUrl = (card: Awaited<ReturnType<typeof loadTrustedTelegramEventCard>>, detailsUrl: string) => {
-  if (!card) return detailsUrl;
-  const start = new Date(`${card.eventDate}T${card.time}:00+02:00`);
-  const end = new Date(start.getTime() + (card.durationMinutes || 90) * 60_000);
-  const stamp = (value: Date) => `${value.getUTCFullYear()}${pad(value.getUTCMonth() + 1)}${pad(value.getUTCDate())}T${pad(value.getUTCHours())}${pad(value.getUTCMinutes())}00Z`;
-  const params = new URLSearchParams({
-    action: "TEMPLATE",
-    text: card.title || card.activity || "GO IRL",
-    dates: `${stamp(start)}/${stamp(end)}`,
-    details: detailsUrl,
-    location: card.address || card.city,
-  });
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-};
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "GET") {
@@ -58,16 +52,24 @@ export default async function handler(request: VercelRequest, response: VercelRe
     if (!card) return response.status(404).end("not_found");
 
     const origin = publicOrigin();
-    const canonicalUrl = `${origin}/api/meta/event-preview?event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
+    const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
+    const canonicalUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
     const detailsUrl = `${origin}/join/${encodeURIComponent(card.eventId)}`;
+    const addToCalendarUrl = `${canonicalUrl}&format=ics`;
+    if (first(request.query?.format) === "ics") {
+      response.setHeader("Content-Type", "text/calendar; charset=utf-8");
+      response.setHeader("Content-Disposition", `attachment; filename="go-irl-${card.eventId}.ics"`);
+      response.setHeader("Cache-Control", "private, max-age=300");
+      return response.status(200).end(buildMetaEventCalendar(card, origin));
+    }
     const telegramUrl = card.inviteUrl;
-    const addToCalendarUrl = calendarUrl(card, detailsUrl);
     const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
     const imageUrl = secret
-      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=5`
+      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=6`
       : `${origin}/brand/logo-wide.png`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
+    const labels = metaEventPreviewCopy[card.language];
 
     response.setHeader("Content-Type", "text/html; charset=utf-8");
     response.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
@@ -94,9 +96,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
 <img class="hero" src="${escapeHtml(imageUrl)}" alt="" />
 <div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div>
 <div class="actions">
-<a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}" target="_blank" rel="noopener noreferrer">Добавить в календарь</a>
-<a class="btn outline" href="${escapeHtml(detailsUrl)}">Подробнее</a>
-<a class="btn primary" href="${escapeHtml(telegramUrl)}">Открыть в Telegram</a>
+<a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">${escapeHtml(labels.calendar)}</a>
+<a class="btn outline" href="${escapeHtml(detailsUrl)}">${escapeHtml(labels.details)}</a>
+<a class="btn primary" href="${escapeHtml(telegramUrl)}">${escapeHtml(labels.telegram)}</a>
 </div></div></article></main></body></html>`);
   } catch {
     return response.status(503).end("preview_unavailable");

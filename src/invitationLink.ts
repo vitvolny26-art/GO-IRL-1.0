@@ -27,7 +27,7 @@ export const buildBrowserActivityInviteUrl = (eventId: string, origin: string) =
   new URL(`/join/${encodeURIComponent(eventId.trim())}`, origin).toString();
 
 export const buildSeparatedInvitationText = (url: string, text: string) =>
-  [url.trim(), text.trim()].filter(Boolean).join("\n\n");
+  [text.trim(), url.trim()].filter(Boolean).join("\n\n");
 
 export const buildTelegramShareUrl = (url: string, text: string) =>
   `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text.trim())}`;

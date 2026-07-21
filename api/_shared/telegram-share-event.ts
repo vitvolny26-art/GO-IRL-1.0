@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { requireEnv } from "./env.js";
+import { readEnv } from "./env.js";
 import { loadTelegramShareWeather } from "./telegram-share-weather.js";
 
 export type ShareLanguage = "ru" | "uk" | "cs" | "en";
@@ -34,13 +34,28 @@ type ActivityRow = {
   capacity: number;
   organizer: string;
   organizer_key: string;
+  visibility: "public" | "invite" | "private";
 };
 
-const client = () => createClient(
-  requireEnv("SUPABASE_URL"),
-  requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+export const isShareableEventVisibility = (visibility: ActivityRow["visibility"]) =>
+  visibility === "public" || visibility === "invite";
+
+export const resolveShareEventDatabaseConfig = (env = readEnv) => {
+  const url = env("SUPABASE_URL") || env("VITE_SUPABASE_URL");
+  const key = env("SUPABASE_SERVICE_ROLE_KEY") || env("VITE_SUPABASE_PUBLISHABLE_KEY");
+  if (!url) throw new Error("missing_environment:SUPABASE_URL");
+  if (!key) throw new Error("missing_environment:SUPABASE_SERVICE_ROLE_KEY");
+  return { url, key };
+};
+
+const client = () => {
+  const config = resolveShareEventDatabaseConfig();
+  return createClient(
+  config.url,
+  config.key,
   { auth: { persistSession: false, autoRefreshToken: false } },
-);
+  );
+};
 
 const localized = (row: ActivityRow, language: ShareLanguage, field: "activity" | "title") => {
   const ru = field === "activity" ? row.activity_ru : row.title_ru;
@@ -133,13 +148,14 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
   const db = client();
   const { data, error } = await db
     .from("activities")
-    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity,organizer,organizer_key")
+    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity,organizer,organizer_key,visibility")
     .eq("id", eventId)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
 
   const row = data as ActivityRow;
+  if (!isShareableEventVisibility(row.visibility)) return null;
   const activity = localized(row, language, "activity");
   const sport = sportMetadata(row.metadata);
   const weatherPromise = loadTelegramShareWeather({

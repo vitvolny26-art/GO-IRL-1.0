@@ -12,7 +12,7 @@ const fallbackOrigin = "https://go-irl-1-0.vercel.app";
 const metaAppId = "2315026155981238";
 
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
-  [url, [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n")].filter(Boolean).join("\n\n");
+  [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n\n");
 
 export const buildMessengerPreviewUrl = (content: CardShareContent) => {
   try {

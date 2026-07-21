@@ -27,10 +27,10 @@ describe("invitation links", () => {
     expect(buildTelegramActivityInviteUrl("demo-event", "GOirl_bot")).toBeNull();
   });
 
-  it("keeps the URL and invitation copy separated", () => {
+  it("keeps the URL below the invitation copy", () => {
     const invitationUrl = `https://t.me/GOirl_bot?startapp=${eventId}`;
     const text = "GO IRL: Волейбол\n19 июл. · 16:30\nZŠ Demlova";
-    expect(buildSeparatedInvitationText(invitationUrl, text)).toBe(`${invitationUrl}\n\n${text}`);
+    expect(buildSeparatedInvitationText(invitationUrl, text)).toBe(`${text}\n\n${invitationUrl}`);
 
     const shareUrl = new URL(buildTelegramShareUrl(invitationUrl, text));
     expect(shareUrl.searchParams.get("url")).toBe(invitationUrl);
