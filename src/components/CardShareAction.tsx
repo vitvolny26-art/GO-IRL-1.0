@@ -3,10 +3,8 @@ import { Share2 } from "lucide-react";
 import {
   buildCardShareTarget,
   buildCardShareText,
-  buildMessengerPreviewUrl,
-  buildMessengerShareBridgeTarget,
 } from "../cardShare";
-import { openTelegramShareTarget } from "../cardShareNavigation";
+import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
@@ -19,14 +17,6 @@ type CardShareActionProps = {
 };
 
 type ShareChannel = "telegram" | "messenger" | "native";
-
-type TelegramWindow = Window & {
-  Telegram?: {
-    WebApp?: {
-      openLink?: (url: string) => void;
-    };
-  };
-};
 
 const channels = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
@@ -85,32 +75,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
 
     if (channel === "messenger") {
-      const sharePayload = {
-        title: `GO IRL: ${title}`,
-        text: [date, address].filter(Boolean).join("\n"),
-        url: buildMessengerPreviewUrl(content),
-      };
-
-      if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        if (navigator.share) {
-          try {
-            await navigator.share(sharePayload);
-            return;
-          } catch (error) {
-            if (error instanceof DOMException && error.name === "AbortError") return;
-          }
-        }
-        const messengerTarget = buildMessengerShareBridgeTarget(content, window.location.origin);
-        const telegramWebApp = (window as TelegramWindow).Telegram?.WebApp;
-        if (telegramWebApp?.openLink) {
-          telegramWebApp.openLink(messengerTarget);
-          return;
-        }
-        window.open(messengerTarget, "_blank", "noopener,noreferrer");
-        return;
-      }
-
-      window.open(buildCardShareTarget(channel, content), "_blank", "noopener,noreferrer");
+      openExternalShareTarget(buildCardShareTarget(channel, content));
       return;
     }
 
