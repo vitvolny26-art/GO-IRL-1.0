@@ -42,7 +42,7 @@ const activity: Activity = {
 const queryParams = (url: string) => new URL(url).searchParams;
 
 describe("Google Calendar helper", () => {
-  it("builds a Google Calendar template URL", () => {
+  it("builds the same local-time calendar template shape used by Telegram sharing", () => {
     const url = buildGoogleCalendarUrl(activity, {
       language: "ru",
       eventUrl: "https://t.me/GOirl_bot?startapp=calendar-1",
@@ -52,14 +52,15 @@ describe("Google Calendar helper", () => {
     expect(url.startsWith("https://calendar.google.com/calendar/render?")).toBe(true);
     expect(params.get("action")).toBe("TEMPLATE");
     expect(params.get("text")).toBe("Волейбол после работы");
-    expect(params.get("dates")).toMatch(/^\d{8}T\d{6}Z\/\d{8}T\d{6}Z$/);
+    expect(params.get("dates")).toBe("20260710T180000/20260710T193000");
+    expect(params.get("ctz")).toBe("Europe/Prague");
   });
 
   it("encodes title and location through URLSearchParams", () => {
     const params = queryParams(buildGoogleCalendarUrl(activity, { language: "ru" }));
 
     expect(params.get("text")).toBe("Волейбол после работы");
-    expect(params.get("location")).toBe("Прага, парк Летна");
+    expect(params.get("location")).toBe("парк Летна, Прага");
   });
 
   it("uses the default 90 minute duration when no vertical duration exists", () => {
