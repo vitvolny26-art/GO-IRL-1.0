@@ -75,6 +75,7 @@ import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation }
 import { openAvatarCropper } from "./avatarCropper";
 import { activityIconFor } from "./activityIcon";
 import {
+  activityIdFromJoinPath,
   buildBrowserActivityInviteUrl,
   buildSeparatedInvitationText,
   buildTelegramActivityInviteUrl,
@@ -139,12 +140,6 @@ const eventHelperCardCopy: Record<Language, { needed: string; requested: string;
   uk: { needed: "Потрібен помічник", requested: "Помічника запитано", confirmed: "Є помічник" },
   cs: { needed: "Potřebujeme pomocníka", requested: "Pomocník vyžádán", confirmed: "Pomocník potvrzen" },
   en: { needed: "Helper needed", requested: "Helper requested", confirmed: "Helper confirmed" },
-};
-
-const activityIdFromJoinPath = () => {
-  if (typeof window === "undefined") return "";
-  const match = window.location.pathname.match(/^\/join\/([^/?#]+)/);
-  return match ? decodeURIComponent(match[1]) : "";
 };
 
 const LazySportActivityCard = lazy(() => import("./verticals/SportVertical").then((module) => ({ default: module.SportActivityCard })));
@@ -301,7 +296,7 @@ function App() {
   useEffect(() => {
     if (invitationHandled.current) return;
     const startParam = getCurrentStartParam();
-    const pathId = activityIdFromJoinPath();
+    const pathId = activityIdFromJoinPath(window.location.pathname);
     const parsedStartParam = startParam ? parseInvitationStartParam(startParam) : null;
     if (parsedStartParam && !parsedStartParam.valid) {
       invitationHandled.current = true;

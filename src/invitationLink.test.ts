@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  activityIdFromJoinPath,
   buildSeparatedInvitationText,
   buildTelegramActivityInviteUrl,
   buildTelegramShareUrl,
@@ -25,6 +26,11 @@ describe("invitation links", () => {
   it("rejects invitation text glued to the UUID", () => {
     expect(parseInvitationStartParam(`${eventId}GO IRL: Волейбол`).valid).toBe(false);
     expect(buildTelegramActivityInviteUrl("demo-event", "GOirl_bot")).toBeNull();
+  });
+
+  it("reads a valid event id from the web join path", () => {
+    expect(activityIdFromJoinPath(`/join/${eventId}`)).toBe(eventId);
+    expect(activityIdFromJoinPath("/join/not-an-event")).toBe("");
   });
 
   it("keeps the URL below the invitation copy", () => {

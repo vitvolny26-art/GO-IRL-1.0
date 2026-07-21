@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { buildMetaEventCalendar } from "./meta-event-calendar.js";
+import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "./meta-event-calendar.js";
 
 const card: TelegramEventCardInput = {
   eventId: "123e4567-e89b-42d3-a456-426614174000",
@@ -43,5 +43,16 @@ describe("Meta event calendar", () => {
   it("clamps unsafe durations", () => {
     const result = buildMetaEventCalendar({ ...card, durationMinutes: 9999 }, "https://goirl.example");
     expect(result).toContain("DTEND;TZID=Europe/Prague:20260722T073000");
+  });
+
+  it("opens a prefilled Google Calendar event instead of downloading a file", () => {
+    const result = buildMetaEventGoogleCalendarUrl(card, "https://goirl.example");
+    const url = new URL(result!);
+
+    expect(url.origin + url.pathname).toBe("https://calendar.google.com/calendar/render");
+    expect(url.searchParams.get("text")).toBe("Волейбол, финал");
+    expect(url.searchParams.get("dates")).toBe("20260721T233000/20260722T013000");
+    expect(url.searchParams.get("ctz")).toBe("Europe/Prague");
+    expect(url.searchParams.get("details")).toContain("https://goirl.example/api/meta/event-preview?event=123e4567-e89b-42d3-a456-426614174000&language=ru");
   });
 });
