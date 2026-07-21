@@ -22,14 +22,14 @@ describe("openTelegramShareTarget", () => {
 });
 
 describe("openExternalShareTarget", () => {
-  it("opens the Messenger Send Dialog directly from the Telegram Mini App", () => {
+  it("uses Telegram openLink for HTTPS targets inside the Mini App", () => {
     const openLink = vi.fn();
     vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
     openExternalShareTarget("https://www.facebook.com/dialog/send?app_id=1");
     expect(openLink).toHaveBeenCalledWith("https://www.facebook.com/dialog/send?app_id=1");
   });
 
-  it("opens the Messenger Send Dialog directly in a browser window", () => {
+  it("opens HTTPS targets in a browser window outside Telegram", () => {
     const open = vi.fn();
     vi.stubGlobal("window", { open });
     openExternalShareTarget("https://www.facebook.com/dialog/send?app_id=1");
@@ -42,23 +42,23 @@ describe("openExternalShareTarget", () => {
 });
 
 describe("openMessengerShareTarget", () => {
-  it("launches the Messenger Android app through its package intent", () => {
-    const assign = vi.fn();
-    vi.stubGlobal("window", { location: { assign }, open: vi.fn() });
+  it("opens the HTTPS share bridge on Android instead of an unsupported intent URL", () => {
+    const openLink = vi.fn();
+    vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
     openMessengerShareTarget(content, "Mozilla/5.0 (Linux; Android 14)");
-    expect(assign).toHaveBeenCalledWith(expect.stringContaining("package=com.facebook.orca"));
+    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("/messenger-share.html?"));
   });
 
-  it("launches the Messenger URL scheme on iOS", () => {
-    const assign = vi.fn();
-    vi.stubGlobal("window", { location: { assign }, open: vi.fn() });
+  it("opens the HTTPS share bridge on iOS instead of a custom URL scheme", () => {
+    const openLink = vi.fn();
+    vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
     openMessengerShareTarget(content, "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)");
-    expect(assign).toHaveBeenCalledWith(expect.stringContaining("fb-messenger://share/"));
+    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("/messenger-share.html?"));
   });
 
   it("keeps the web Send Dialog for desktop browsers", () => {
     const open = vi.fn();
-    vi.stubGlobal("window", { location: { assign: vi.fn() }, open });
+    vi.stubGlobal("window", { open });
     openMessengerShareTarget(content, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
     expect(open).toHaveBeenCalledWith(expect.stringContaining("https://www.facebook.com/dialog/send"), "_blank", "noopener,noreferrer");
   });
