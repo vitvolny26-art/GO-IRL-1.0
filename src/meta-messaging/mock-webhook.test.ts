@@ -62,6 +62,25 @@ describe("disabled Meta messaging mock webhooks", () => {
       },
     });
   });
+
+  it("turns an m.me event referral into the existing details action", () => {
+    const messages = parseMetaMessagingTestPayload("messenger", {
+      object: "page",
+      entry: [{ messaging: [{
+        sender: { id: "psid-2" },
+        timestamp: 1780000000001,
+        referral: { ref: "event:39e31319-a4fc-4d41-bf1e-d713178290d1", source: "SHORTLINK", type: "OPEN_THREAD" },
+      }] }],
+    });
+
+    expect(messages).toEqual([{
+      provider: "messenger",
+      id: "messenger:psid-2:1780000000001",
+      senderId: "psid-2",
+      actionPayload: "details:39e31319-a4fc-4d41-bf1e-d713178290d1",
+    }]);
+  });
+
   it("ignores Messenger echo messages to prevent reply loops", () => {
     const messages = parseMetaMessagingTestPayload("messenger", {
       object: "page",
