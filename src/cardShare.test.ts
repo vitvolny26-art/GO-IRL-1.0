@@ -33,5 +33,7 @@ describe("card share", () => {
     expect(target).toContain("package=com.facebook.orca");
     expect(target).toContain("GO IRL: Ролики в парке");
     expect(target).toContain(content.url);
+    expect(target).toContain("S.browser_fallback_url=https://www.messenger.com/");
   });
 });
+

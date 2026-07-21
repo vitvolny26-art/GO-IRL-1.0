@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildCardShareTarget, buildCardShareText } from "../cardShare";
+import { buildAndroidMessengerIntent, buildCardShareTarget, buildCardShareText } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
@@ -86,7 +86,13 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
             if (error instanceof DOMException && error.name === "AbortError") return;
           }
         }
-        const messengerTarget = buildCardShareTarget(channel, content);
+        if (/Android/i.test(navigator.userAgent)) {
+          window.location.assign(buildAndroidMessengerIntent(content));
+          return;
+        }
+
+        await copyShareText();
+        const messengerTarget = "https://www.messenger.com/";
         const telegramWebApp = (window as TelegramWindow).Telegram?.WebApp;
         if (telegramWebApp?.openLink) {
           telegramWebApp.openLink(messengerTarget);
@@ -159,3 +165,4 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     </span>
   );
 }
+

@@ -39,7 +39,8 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
 
 export const buildAndroidMessengerIntent = (content: CardShareContent) => {
   const shareText = buildCardShareText(content);
-  return `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};package=com.facebook.orca;end`;
+  const fallbackUrl = encodeURIComponent("https://www.messenger.com/");
+  return `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};S.browser_fallback_url=${fallbackUrl};package=com.facebook.orca;end`;
 };
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
@@ -52,3 +53,4 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
   if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
   return buildMessengerSendTarget(content);
 };
+
