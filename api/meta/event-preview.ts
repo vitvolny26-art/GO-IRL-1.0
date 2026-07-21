@@ -26,22 +26,6 @@ const escapeHtml = (value: string) => value
   .replaceAll("'", "&#39;");
 
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
-const pad = (value: number) => String(value).padStart(2, "0");
-
-const calendarUrl = (card: Awaited<ReturnType<typeof loadTrustedTelegramEventCard>>, detailsUrl: string) => {
-  if (!card) return detailsUrl;
-  const start = new Date(`${card.eventDate}T${card.time}:00+02:00`);
-  const end = new Date(start.getTime() + (card.durationMinutes || 90) * 60_000);
-  const stamp = (value: Date) => `${value.getUTCFullYear()}${pad(value.getUTCMonth() + 1)}${pad(value.getUTCDate())}T${pad(value.getUTCHours())}${pad(value.getUTCMinutes())}00Z`;
-  const params = new URLSearchParams({
-    action: "TEMPLATE",
-    text: card.title || card.activity || "GO IRL",
-    dates: `${stamp(start)}/${stamp(end)}`,
-    details: detailsUrl,
-    location: card.address || card.city,
-  });
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-};
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "GET") {
@@ -58,13 +42,13 @@ export default async function handler(request: VercelRequest, response: VercelRe
     if (!card) return response.status(404).end("not_found");
 
     const origin = publicOrigin();
-    const canonicalUrl = `${origin}/api/meta/event-preview?event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
-    const detailsUrl = `${origin}/join/${encodeURIComponent(card.eventId)}`;
+    const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
+    const canonicalUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
+    const addToCalendarUrl = `${origin}/api/meta/event-calendar?${eventQuery}`;
     const telegramUrl = card.inviteUrl;
-    const addToCalendarUrl = calendarUrl(card, detailsUrl);
     const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
     const imageUrl = secret
-      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=5`
+      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=6`
       : `${origin}/brand/logo-wide.png`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
@@ -87,16 +71,15 @@ export default async function handler(request: VercelRequest, response: VercelRe
 <meta property="og:image:height" content="630" />
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
 <style>
-:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#f7f8f9}*{box-sizing:border-box}body{margin:0;padding:24px;background:linear-gradient(180deg,#11171b,#080b0d);min-height:100vh}.wrap{max-width:680px;margin:0 auto}.card{background:#12181c;border:1px solid #2d383e;border-radius:24px;overflow:hidden;box-shadow:0 20px 70px #0008}.hero{width:100%;display:block;aspect-ratio:1200/630;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px;font-size:30px;line-height:1.15}.meta{color:#c8d0d5;font-size:17px;line-height:1.5;margin-bottom:20px}.actions{display:grid;gap:12px}.btn{display:block;text-align:center;text-decoration:none;border-radius:14px;padding:15px 18px;font-weight:800;font-size:17px}.primary{background:#c9ff3d;color:#101410}.secondary{background:#263038;color:#fff}.outline{border:1px solid #52616a;color:#fff}
+:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#f7f8f9}*{box-sizing:border-box}body{margin:0;padding:24px;background:linear-gradient(180deg,#11171b,#080b0d);min-height:100vh}.wrap{max-width:680px;margin:0 auto}.card{background:#12181c;border:1px solid #2d383e;border-radius:24px;overflow:hidden;box-shadow:0 20px 70px #0008}.hero{width:100%;display:block;aspect-ratio:1200/630;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px;font-size:30px;line-height:1.15}.meta{color:#c8d0d5;font-size:17px;line-height:1.5;margin-bottom:20px}.actions{display:grid;gap:12px}.btn{display:block;text-align:center;text-decoration:none;border-radius:14px;padding:15px 18px;font-weight:800;font-size:17px}.primary{background:#c9ff3d;color:#101410}.secondary{background:#263038;color:#fff}
 </style>
 </head>
 <body><main class="wrap"><article class="card">
 <img class="hero" src="${escapeHtml(imageUrl)}" alt="" />
 <div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div>
 <div class="actions">
-<a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}" target="_blank" rel="noopener noreferrer">Добавить в календарь</a>
-<a class="btn outline" href="${escapeHtml(detailsUrl)}">Подробнее</a>
-<a class="btn primary" href="${escapeHtml(telegramUrl)}">Открыть в Telegram</a>
+<a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">Добавить в календарь</a>
+<a class="btn primary" href="${escapeHtml(telegramUrl)}">Присоединиться в Telegram</a>
 </div></div></article></main></body></html>`);
   } catch {
     return response.status(503).end("preview_unavailable");
