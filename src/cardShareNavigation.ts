@@ -1,5 +1,5 @@
 import { getTelegramWebApp } from "./telegram";
-import { buildMessengerAndroidIntentTarget, buildMessengerAppTarget, buildMessengerSendTarget, type CardShareContent } from "./cardShare";
+import { buildMessengerSendTarget, buildMessengerShareBridgeTarget, type CardShareContent } from "./cardShare";
 
 export const openTelegramShareTarget = (url: string) => {
   const webApp = getTelegramWebApp();
@@ -20,12 +20,8 @@ export const openExternalShareTarget = (url: string) => {
 };
 
 export const openMessengerShareTarget = (content: CardShareContent, userAgent = navigator.userAgent) => {
-  if (/android/i.test(userAgent)) {
-    window.location.assign(buildMessengerAndroidIntentTarget(content));
-    return;
-  }
-  if (/iphone|ipad|ipod/i.test(userAgent)) {
-    window.location.assign(buildMessengerAppTarget(content));
+  if (/android|iphone|ipad|ipod/i.test(userAgent)) {
+    openExternalShareTarget(buildMessengerShareBridgeTarget(content));
     return;
   }
   openExternalShareTarget(buildMessengerSendTarget(content));
