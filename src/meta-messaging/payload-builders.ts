@@ -20,6 +20,13 @@ const eventQuickReplies = (eventId: string): MetaQuickReply[] => [
   { content_type: "text", title: "Подробнее", payload: `details:${eventId}` },
 ];
 
+const invitationButtonCopy = {
+  ru: { open: "Открыть событие", calendar: "В календарь" },
+  uk: { open: "Відкрити подію", calendar: "У календар" },
+  cs: { open: "Otevřít událost", calendar: "Do kalendáře" },
+  en: { open: "Open event", calendar: "Add to calendar" },
+} as const;
+
 const invitationMessage = (event: MetaEventSummary) => {
   if (!event.imageUrl) {
     return {
@@ -28,10 +35,13 @@ const invitationMessage = (event: MetaEventSummary) => {
     };
   }
 
-  const buttons = event.inviteUrl
+  const labels = invitationButtonCopy[event.language || "ru"];
+  const buttons = event.openUrl
     ? [
-        { type: "postback" as const, title: "Присоединиться", payload: `join:${event.eventId}` },
-        { type: "web_url" as const, title: "Открыть", url: event.inviteUrl },
+        { type: "web_url" as const, title: labels.open, url: event.openUrl },
+        ...(event.calendarUrl
+          ? [{ type: "web_url" as const, title: labels.calendar, url: event.calendarUrl }]
+          : []),
       ]
     : [
         { type: "postback" as const, title: "Присоединиться", payload: `join:${event.eventId}` },
@@ -47,7 +57,7 @@ const invitationMessage = (event: MetaEventSummary) => {
           title: event.title.slice(0, 80),
           subtitle: [event.dateTime, event.location].filter(Boolean).join(" · ").slice(0, 80),
           image_url: event.imageUrl,
-          ...(event.inviteUrl ? { default_action: { type: "web_url" as const, url: event.inviteUrl } } : {}),
+          ...(event.openUrl ? { default_action: { type: "web_url" as const, url: event.openUrl } } : {}),
           buttons,
         }],
       },
