@@ -32,7 +32,7 @@ export const buildMessengerPreviewUrl = (content: CardShareContent) => {
 export const buildMessengerSendTarget = (content: CardShareContent) => {
   const dialogUrl = new URL("https://www.facebook.com/dialog/send");
   dialogUrl.searchParams.set("app_id", metaAppId);
-  dialogUrl.searchParams.set("link", content.url);
+  dialogUrl.searchParams.set("link", buildMessengerPreviewUrl(content));
   dialogUrl.searchParams.set("redirect_uri", fallbackOrigin);
   return dialogUrl.toString();
 };
@@ -42,7 +42,7 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
   target.searchParams.set("title", content.title);
   target.searchParams.set("date", content.date);
   target.searchParams.set("address", content.address);
-  target.searchParams.set("url", content.url);
+  target.searchParams.set("url", buildMessengerPreviewUrl(content));
   return target.toString();
 };
 
