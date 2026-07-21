@@ -34,7 +34,11 @@ type ActivityRow = {
   capacity: number;
   organizer: string;
   organizer_key: string;
+  visibility: "public" | "invite" | "private";
 };
+
+export const isShareableEventVisibility = (visibility: ActivityRow["visibility"]) =>
+  visibility === "public" || visibility === "invite";
 
 const client = () => createClient(
   requireEnv("SUPABASE_URL"),
@@ -133,13 +137,14 @@ export async function loadTrustedTelegramEventCard(eventId: string, language: Sh
   const db = client();
   const { data, error } = await db
     .from("activities")
-    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity,organizer,organizer_key")
+    .select("id,activity_ru,activity_cs,title_ru,title_cs,event_date,event_time,city_id,address,location_url,activity_type,metadata,price,capacity,organizer,organizer_key,visibility")
     .eq("id", eventId)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
 
   const row = data as ActivityRow;
+  if (!isShareableEventVisibility(row.visibility)) return null;
   const activity = localized(row, language, "activity");
   const sport = sportMetadata(row.metadata);
   const weatherPromise = loadTelegramShareWeather({

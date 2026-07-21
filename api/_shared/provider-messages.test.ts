@@ -25,7 +25,29 @@ describe("provider message endpoints", () => {
     delete runtimeEnv.META_GRAPH_VERSION;
     delete runtimeEnv.META_APP_SECRET;
     delete runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL;
+    delete runtimeEnv.VERCEL_URL;
+    delete runtimeEnv.VERCEL_ENV;
     vi.unstubAllGlobals();
+  });
+
+  it("keeps preview invitation actions on the current preview deployment", async () => {
+    runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
+    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
+    runtimeEnv.META_APP_SECRET = "meta-app-secret";
+    runtimeEnv.META_GRAPH_VERSION = "v23.0";
+    runtimeEnv.VERCEL_ENV = "preview";
+    runtimeEnv.VERCEL_URL = "go-irl-preview.vercel.app";
+    runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL = "go-irl-1-0.vercel.app";
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await sendProviderInvitation("instagram", "1234567890123456", event);
+
+    const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      message?: { attachment?: { payload?: { elements?: Array<{ default_action?: { url?: string } }> } } };
+    };
+    expect(request.message?.attachment?.payload?.elements?.[0]?.default_action?.url)
+      .toContain("https://go-irl-preview.vercel.app/api/meta/event-preview");
   });
 
   it("attaches public event and portable calendar actions to the signed GO IRL card", async () => {

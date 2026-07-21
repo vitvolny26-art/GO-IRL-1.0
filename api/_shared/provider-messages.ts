@@ -39,7 +39,9 @@ async function sendGraphPayload(url: string, token: string, payload: unknown) {
 }
 
 const publicOrigin = () => {
-  const host = readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
+  const host = readEnv("VERCEL_ENV") === "preview"
+    ? readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL")
+    : readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
   if (!host) return "";
   try {
     const url = new URL(host.startsWith("http") ? host : `https://${host}`);

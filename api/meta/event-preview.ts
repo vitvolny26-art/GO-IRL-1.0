@@ -14,9 +14,18 @@ type VercelResponse = {
 };
 
 const publicOrigin = () => {
-  const host = readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
+  const host = readEnv("VERCEL_ENV") === "preview"
+    ? readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL")
+    : readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
   return host ? `https://${host.replace(/^https?:\/\//, "")}` : "https://go-irl-1-0.vercel.app";
 };
+
+export const metaEventPreviewCopy = {
+  ru: { calendar: "Добавить в календарь", telegram: "Присоединиться в Telegram" },
+  uk: { calendar: "Додати до календаря", telegram: "Приєднатися в Telegram" },
+  cs: { calendar: "Přidat do kalendáře", telegram: "Připojit se v Telegramu" },
+  en: { calendar: "Add to calendar", telegram: "Join in Telegram" },
+} as const;
 
 const escapeHtml = (value: string) => value
   .replaceAll("&", "&amp;")
@@ -52,6 +61,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       : `${origin}/brand/logo-wide.png`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
+    const labels = metaEventPreviewCopy[card.language];
 
     response.setHeader("Content-Type", "text/html; charset=utf-8");
     response.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
@@ -78,8 +88,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
 <img class="hero" src="${escapeHtml(imageUrl)}" alt="" />
 <div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div>
 <div class="actions">
-<a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">Добавить в календарь</a>
-<a class="btn primary" href="${escapeHtml(telegramUrl)}">Присоединиться в Telegram</a>
+<a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">${escapeHtml(labels.calendar)}</a>
+<a class="btn primary" href="${escapeHtml(telegramUrl)}">${escapeHtml(labels.telegram)}</a>
 </div></div></article></main></body></html>`);
   } catch {
     return response.status(503).end("preview_unavailable");
