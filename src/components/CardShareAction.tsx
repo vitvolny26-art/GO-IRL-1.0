@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildAndroidMessengerIntent, buildCardShareTarget, buildCardShareText } from "../cardShare";
+import { buildCardShareTarget, buildCardShareText, buildMessengerWebTarget } from "../cardShare";
 import { openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
@@ -51,10 +51,19 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   }, [open]);
 
   const copyShareText = async (shareUrl = url) => {
+    const shareText = buildCardShareText({ ...content, url: shareUrl });
     try {
-      await navigator.clipboard.writeText(buildCardShareText({ ...content, url: shareUrl }));
+      await navigator.clipboard.writeText(shareText);
     } catch {
-      // Clipboard access may be unavailable inside some embedded browsers.
+      const textarea = document.createElement("textarea");
+      textarea.value = shareText;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
     }
   };
 
@@ -86,13 +95,8 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
             if (error instanceof DOMException && error.name === "AbortError") return;
           }
         }
-        if (/Android/i.test(navigator.userAgent)) {
-          window.location.assign(buildAndroidMessengerIntent(content));
-          return;
-        }
-
         await copyShareText();
-        const messengerTarget = "https://www.messenger.com/";
+        const messengerTarget = buildMessengerWebTarget();
         const telegramWebApp = (window as TelegramWindow).Telegram?.WebApp;
         if (telegramWebApp?.openLink) {
           telegramWebApp.openLink(messengerTarget);
@@ -165,4 +169,3 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     </span>
   );
 }
-

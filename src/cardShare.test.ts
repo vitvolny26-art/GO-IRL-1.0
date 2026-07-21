@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAndroidMessengerIntent, buildCardShareTarget, buildCardShareText } from "./cardShare";
+import { buildCardShareTarget, buildCardShareText, buildMessengerWebTarget } from "./cardShare";
 
 const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
 const content = {
@@ -27,13 +27,9 @@ describe("card share", () => {
     expect(target.searchParams.get("link")).toBe(content.url);
   });
 
-  it("builds an Android ACTION_SEND intent targeted at Messenger", () => {
-    const target = decodeURIComponent(buildAndroidMessengerIntent(content));
-    expect(target).toContain("action=android.intent.action.SEND");
-    expect(target).toContain("package=com.facebook.orca");
-    expect(target).toContain("GO IRL: Ролики в парке");
-    expect(target).toContain(content.url);
-    expect(target).toContain("S.browser_fallback_url=https://www.messenger.com/");
+  it("uses an HTTPS-only mobile Messenger fallback that embedded browsers can open", () => {
+    const target = new URL(buildMessengerWebTarget());
+    expect(target.protocol).toBe("https:");
+    expect(target.hostname).toBe("www.messenger.com");
   });
 });
-
