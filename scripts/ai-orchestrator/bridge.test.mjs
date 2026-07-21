@@ -103,6 +103,39 @@ describe('Orchestrator bridge v0.1', () => {
     expect(planned.artifacts).toEqual(['codex_handoff', 'context_pack', 'plan']);
   });
 
+  it('rejects an active Mission, releases its slot, and keeps repeated rejection idempotent', () => {
+    const sandbox = createSandbox();
+    sandboxPathForAssertion = sandbox.repoRoot;
+    run(sandbox, 'mission create', { mission: mission() });
+    run(sandbox, 'mission approve', { mission_id: 'MISSION-BRIDGE-E2E', actor: 'human-owner' });
+
+    const rejected = run(sandbox, 'mission reject', {
+      mission_id: 'MISSION-BRIDGE-E2E',
+      actor: 'telegram:509799028',
+      reason: 'Rejected through the Telegram owner gate.',
+    });
+
+    expectEnvelope(rejected, 'rejected', 'none');
+    const state = core.loadState(sandbox.stateDir);
+    expect(state.active_mission_id).toBeNull();
+    expect(state.missions['MISSION-BRIDGE-E2E'].closed_by).toEqual(expect.objectContaining({
+      actor: 'telegram:509799028',
+      action: 'reject',
+      reason: 'Rejected through the Telegram owner gate.',
+    }));
+    expect(state.missions['MISSION-BRIDGE-E2E'].history.at(-1)).toEqual(expect.objectContaining({
+      state: 'rejected',
+      actor: 'telegram:509799028',
+      action: 'reject',
+      reason: 'Rejected through the Telegram owner gate.',
+    }));
+
+    expectEnvelope(run(sandbox, 'mission reject', {
+      mission_id: 'MISSION-BRIDGE-E2E',
+      actor: 'telegram:509799028',
+    }), 'rejected', 'none');
+  });
+
   it('runs external implementer, reviewer, QA, approval, report, and publication preview', () => {
     const sandbox = createSandbox();
     sandboxPathForAssertion = sandbox.repoRoot;

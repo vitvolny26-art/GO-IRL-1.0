@@ -21,6 +21,7 @@ const COMMANDS = new Set([
   'mission create',
   'mission status',
   'mission approve',
+  'mission reject',
   'context build',
   'planner run',
   'implementer run',
@@ -191,6 +192,20 @@ function executeBridgeCommand({ command, request, stateDir, repoRoot, dependenci
     output = approvalType === 'change'
       ? approveChange({ missionId, actor: requireString(request.actor, 'actor'), stateDir })
       : approveMission({ missionId, actor: requireString(request.actor, 'actor'), stateDir });
+  } else if (command === 'mission reject') {
+    const reason = request.reason === undefined ? 'Rejected by owner.' : requireString(request.reason, 'reason');
+    if (reason.length > 500) {
+      const error = new Error('reason must be at most 500 characters.');
+      error.code = 'INVALID_BRIDGE_REQUEST';
+      throw error;
+    }
+    output = closeMission({
+      missionId,
+      actor: requireString(request.actor, 'actor'),
+      stateDir,
+      action: 'reject',
+      reason,
+    });
   } else if (command === 'context build') {
     output = buildMissionContext({
       missionId,
