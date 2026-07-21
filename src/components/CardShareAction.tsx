@@ -4,7 +4,7 @@ import {
   buildCardShareTarget,
   buildCardShareText,
 } from "../cardShare";
-import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
+import { openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
@@ -75,7 +75,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
 
     if (channel === "messenger") {
-      openExternalShareTarget(buildCardShareTarget(channel, content));
+      openMessengerShareTarget(content);
       return;
     }
 

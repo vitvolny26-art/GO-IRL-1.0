@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildCardShareTarget,
   buildCardShareText,
+  buildMessengerAndroidIntentTarget,
+  buildMessengerAppTarget,
   buildMessengerPreviewUrl,
   buildMessengerShareBridgeTarget,
 } from "./cardShare";
@@ -35,6 +37,13 @@ describe("card share", () => {
     expect(target.origin + target.pathname).toBe("https://www.facebook.com/dialog/send");
     expect(target.searchParams.get("app_id")).toBe("1348703396728256");
     expect(target.searchParams.get("link")).toBe(previewUrl);
+  });
+
+  it("builds native Messenger targets for mobile devices", () => {
+    expect(buildMessengerAppTarget(content)).toContain("fb-messenger://share/");
+    const android = buildMessengerAndroidIntentTarget(content);
+    expect(android).toContain("intent://share/");
+    expect(android).toContain("package=com.facebook.orca");
   });
 
   it("uses an HTTPS share bridge with the dynamic preview and exact event data", () => {
