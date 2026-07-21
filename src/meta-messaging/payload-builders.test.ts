@@ -9,4 +9,4 @@ import type { MetaEventSummary } from "./types";
 
 const event: MetaEventSummary = {
   eventId: "event-meta-1",
-  title: "Board games in
+  title: "Board games in Olomouc",
