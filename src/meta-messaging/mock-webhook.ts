@@ -26,6 +26,12 @@ const asRecord = (value: unknown): UnknownRecord | null =>
 
 const asRecords = (value: unknown) => Array.isArray(value) ? value.map(asRecord).filter(Boolean) as UnknownRecord[] : [];
 
+const referralActionPayload = (event: UnknownRecord, postback: UnknownRecord | null) => {
+  const referral = asRecord(event.referral) || asRecord(postback?.referral);
+  const ref = typeof referral?.ref === "string" ? referral.ref : "";
+  return ref.startsWith("event:") ? `details:${ref.slice("event:".length)}` : undefined;
+};
+
 export function parseMetaMessagingTestPayload(
   provider: MetaMessagingProvider,
   payload: unknown,
@@ -44,6 +50,7 @@ export function parseMetaMessagingTestPayload(
           ? `${provider}:${senderId}:${event.timestamp}`
           : "";
       if (!senderId || !id || message?.is_echo === true) return [];
+      const referralPayload = referralActionPayload(event, postback);
       return [{
         provider,
         id,
@@ -53,7 +60,9 @@ export function parseMetaMessagingTestPayload(
           ? { actionPayload: quickReply.payload }
           : typeof postback?.payload === "string"
             ? { actionPayload: postback.payload }
-            : {}),
+            : referralPayload
+              ? { actionPayload: referralPayload }
+              : {}),
       }];
     }),
   );
@@ -78,7 +87,7 @@ export function handleMetaMockWebhook(
 
   if (request.method === "POST") {
     const messages = parseMetaMessagingTestPayload(provider, request.body);
-    return { status: 200, body: { received: messages.length, messages } };
+    return { status: 200, body: { received: messages.length, messages };
   }
 
   return { status: 405, body: { error: "method_not_allowed" } };
