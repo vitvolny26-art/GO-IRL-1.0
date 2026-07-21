@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { requireEnv } from "./env.js";
+import { readEnv } from "./env.js";
 import { loadTelegramShareWeather } from "./telegram-share-weather.js";
 
 export type ShareLanguage = "ru" | "uk" | "cs" | "en";
@@ -40,11 +40,22 @@ type ActivityRow = {
 export const isShareableEventVisibility = (visibility: ActivityRow["visibility"]) =>
   visibility === "public" || visibility === "invite";
 
-const client = () => createClient(
-  requireEnv("SUPABASE_URL"),
-  requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+export const resolveShareEventDatabaseConfig = (env = readEnv) => {
+  const url = env("SUPABASE_URL") || env("VITE_SUPABASE_URL");
+  const key = env("SUPABASE_SERVICE_ROLE_KEY") || env("VITE_SUPABASE_PUBLISHABLE_KEY");
+  if (!url) throw new Error("missing_environment:SUPABASE_URL");
+  if (!key) throw new Error("missing_environment:SUPABASE_SERVICE_ROLE_KEY");
+  return { url, key };
+};
+
+const client = () => {
+  const config = resolveShareEventDatabaseConfig();
+  return createClient(
+  config.url,
+  config.key,
   { auth: { persistSession: false, autoRefreshToken: false } },
-);
+  );
+};
 
 const localized = (row: ActivityRow, language: ShareLanguage, field: "activity" | "title") => {
   const ru = field === "activity" ? row.activity_ru : row.title_ru;
