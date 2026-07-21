@@ -6,6 +6,7 @@ export type EventInvitationSummary = {
   availableSpots: number;
   activity?: string;
   date?: string;
+  eventDate?: string;
   time?: string;
   participants?: number;
   capacity?: number;
@@ -27,4 +28,6 @@ export type EventInvitationSummary = {
   };
   language?: "ru" | "uk" | "cs" | "en";
   imageUrl?: string;
+  openUrl?: string;
+  calendarUrl?: string;
 };

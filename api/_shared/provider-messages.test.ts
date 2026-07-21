@@ -11,6 +11,10 @@ const event = {
   dateTime: "2026-07-14 18:00",
   location: "Оломоуц",
   availableSpots: 4,
+  eventDate: "2026-07-14",
+  date: "14 июл.",
+  time: "18:00",
+  durationMinutes: 90,
 };
 
 describe("provider message endpoints", () => {
@@ -39,11 +43,30 @@ describe("provider message endpoints", () => {
     });
 
     const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
-      message?: { attachment?: { payload?: { elements?: Array<{ image_url?: string }> } } };
+      message?: { attachment?: { payload?: { elements?: Array<{
+        image_url?: string;
+        default_action?: { url?: string };
+        buttons?: Array<{ title?: string; url?: string }>;
+      }> } } };
     };
-    expect(request.message?.attachment?.payload?.elements?.[0]?.image_url)
+    const element = request.message?.attachment?.payload?.elements?.[0];
+    expect(element?.image_url)
       .toMatch(/^https:\/\/go-irl-1-0\.vercel\.app\/api\/meta\/event-invitation-card\?token=/);
-    expect(request.message?.attachment?.payload?.elements?.[0]?.image_url).toContain("&v=3");
+    expect(element?.image_url).toContain("&v=4");
+    expect(element?.default_action?.url)
+      .toBe(`https://go-irl-1-0.vercel.app/join/${event.eventId}`);
+    expect(element?.buttons?.[0]).toEqual({
+      type: "web_url",
+      title: "Открыть событие",
+      url: `https://go-irl-1-0.vercel.app/join/${event.eventId}`,
+    });
+    expect(element?.buttons?.[1]?.title).toBe("В календарь");
+    const calendar = new URL(element?.buttons?.[1]?.url || "https://invalid.example");
+    expect(calendar.searchParams.get("text")).toBe(event.title);
+    expect(calendar.searchParams.get("dates")).toBe("20260714T180000/20260714T193000");
+    expect(calendar.searchParams.get("location")).toContain(event.location);
+    expect(calendar.searchParams.get("details"))
+      .toContain(`https://go-irl-1-0.vercel.app/join/${event.eventId}`);
   });
 
   it("uses the current Instagram Login Send API endpoint", async () => {

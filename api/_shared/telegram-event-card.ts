@@ -43,7 +43,7 @@ const pad = (value: number) => String(value).padStart(2, "0");
 const compactGoogleDateTime = (date: Date) =>
   `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}00`;
 
-const buildCalendarUrl = (input: TelegramEventCardInput) => {
+export const buildTelegramCalendarUrl = (input: TelegramEventCardInput) => {
   if (!input.eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(input.eventDate) || !/^\d{2}:\d{2}$/.test(input.time)) {
     return undefined;
   }
@@ -79,7 +79,7 @@ export function buildTelegramEventCard(input: TelegramEventCardInput, imageUrl: 
   const title = clean(input.title, 120) || activity || "GO IRL";
   const dateTime = [clean(input.date, 40), clean(input.time, 12)].filter(Boolean).join(" · ");
   const address = clean(input.address, 180);
-  const calendarUrl = buildCalendarUrl(input);
+  const calendarUrl = buildTelegramCalendarUrl(input);
   const buttons: Array<{ text: string; url: string }> = [{ text: labels.open, url: input.inviteUrl }];
   if (calendarUrl) buttons.push({ text: labels.calendar, url: calendarUrl });
 
