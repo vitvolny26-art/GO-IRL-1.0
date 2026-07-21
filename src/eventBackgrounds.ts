@@ -35,7 +35,7 @@ const files: Readonly<Record<string,string>> = {
   "FI": "29-fishing.webp",
   "KY": "30-kayaking.webp",
   "CT": "31-city-walk.webp",
-  "DR": "32-dinner-v2.png",
+  "DR": "32-dinner.webp",
   "LX": "33-language-exchange.webp",
   "CW": "34-coworking.webp",
   "MT": "35-new-connections.webp",
