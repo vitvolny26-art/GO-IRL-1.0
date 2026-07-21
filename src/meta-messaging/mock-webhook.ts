@@ -26,12 +26,6 @@ const asRecord = (value: unknown): UnknownRecord | null =>
 
 const asRecords = (value: unknown) => Array.isArray(value) ? value.map(asRecord).filter(Boolean) as UnknownRecord[] : [];
 
-const referralActionPayload = (event: UnknownRecord, postback: UnknownRecord | null) => {
-  const referral = asRecord(event.referral) || asRecord(postback?.referral);
-  const ref = typeof referral?.ref === "string" ? referral.ref : "";
-  return ref.startsWith("event:") ? `details:${ref.slice("event:".length)}` : undefined;
-};
-
 export function parseMetaMessagingTestPayload(
   provider: MetaMessagingProvider,
   payload: unknown,
@@ -43,6 +37,7 @@ export function parseMetaMessagingTestPayload(
       const message = asRecord(event.message);
       const quickReply = asRecord(message?.quick_reply);
       const postback = asRecord(event.postback);
+      const referral = asRecord(event.referral);
       const senderId = typeof sender?.id === "string" ? sender.id : "";
       const id = typeof message?.mid === "string"
         ? message.mid
@@ -50,7 +45,9 @@ export function parseMetaMessagingTestPayload(
           ? `${provider}:${senderId}:${event.timestamp}`
           : "";
       if (!senderId || !id || message?.is_echo === true) return [];
-      const referralPayload = referralActionPayload(event, postback);
+      const referralPayload = typeof referral?.ref === "string" && referral.ref.startsWith("event:")
+        ? `details:${referral.ref.slice("event:".length)}`
+        : undefined;
       return [{
         provider,
         id,
@@ -87,7 +84,7 @@ export function handleMetaMockWebhook(
 
   if (request.method === "POST") {
     const messages = parseMetaMessagingTestPayload(provider, request.body);
-    return { status: 200, body: { received: messages.length, messages };
+    return { status: 200, body: { received: messages.length, messages } };
   }
 
   return { status: 405, body: { error: "method_not_allowed" } };
