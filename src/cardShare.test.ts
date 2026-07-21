@@ -33,7 +33,7 @@ describe("card share", () => {
   it("uses the dynamic event preview in the Messenger Send Dialog", () => {
     const target = new URL(buildCardShareTarget("messenger", content));
     expect(target.origin + target.pathname).toBe("https://www.facebook.com/dialog/send");
-    expect(target.searchParams.get("app_id")).toBe("2315026155981238");
+    expect(target.searchParams.get("app_id")).toBe("1348703396728256");
     expect(target.searchParams.get("link")).toBe(previewUrl);
   });
 
