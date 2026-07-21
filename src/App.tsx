@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
 import {
   ArrowLeft,
+  Bell,
   CalendarDays,
   CalendarPlus,
   Check,
@@ -101,7 +102,7 @@ import type { UserProfile, UserProfileDraft } from "./profile/profileTypes";
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
-type ActivityOpenOptions = { focusChat?: boolean };
+type ActivityOpenOptions = { focusChat?: boolean; focusRequests?: boolean };
 type OpenActivity = (activity: Activity, options?: ActivityOpenOptions) => void;
 
 const activityInviteUrl = (activity: Activity) => {
@@ -244,6 +245,7 @@ function App() {
   const t = getTranslation(store.language);
   const openActivity: OpenActivity = (activity, options) => {
     setSelected(activity);
+    setSelectedMembersOpen(Boolean(options?.focusRequests));
     setSelectedChatRequest(options?.focusChat ? (request) => request + 1 : 0);
   };
 
@@ -1309,6 +1311,9 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [helperState, setHelperState] = useState<"none" | "requested" | "confirmed">("none");
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
+  const pendingRequestCount = isOrganizer
+    ? activity.members.filter((member) => member.status === "pending").length
+    : 0;
   const shareTitle = stripLeadingEmoji(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
   const avatar = genericActivityAvatar(activity, language, category.icon);
@@ -1369,6 +1374,17 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
     <article className="activity-card sport-card compact-sport-card unified-event-card glass-event-card">
       <EventCardArtwork icon={avatar} activity={activity.activity[language]} title={activity.title[language]} />
       <div className="sport-card-top-actions">
+        {pendingRequestCount > 0 ? (
+          <button
+            className="event-request-alert"
+            type="button"
+            aria-label={`${t.requests}: ${pendingRequestCount}`}
+            onClick={() => onOpen(activity, { focusRequests: true })}
+          >
+            <Bell aria-hidden="true" />
+            <span>{pendingRequestCount}</span>
+          </button>
+        ) : null}
         <CardShareAction
           title={shareTitle}
           date={shareDate}
@@ -1593,8 +1609,8 @@ function GenericActivitySheet({
                   <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
                   <strong>{member.name}</strong>
                   <span className="request-actions">
-                    <button onClick={() => void handleReview(member.userKey, true)} type="button" aria-label={t.approve} title={t.approve}><Check /></button>
-                    <button onClick={() => void handleReview(member.userKey, false)} type="button" aria-label={t.reject} title={t.reject}><X /></button>
+                    <button onClick={() => void handleReview(member.userKey, true)} type="button" aria-label={t.approve} title={t.approve}><Check /><span>{t.approve}</span></button>
+                    <button onClick={() => void handleReview(member.userKey, false)} type="button" aria-label={t.reject} title={t.reject}><X /><span>{t.reject}</span></button>
                   </span>
                 </div>
               ))}
