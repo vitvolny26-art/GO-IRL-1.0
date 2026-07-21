@@ -46,6 +46,8 @@ Bring Instagram Direct and Messenger invitations closer to the Telegram card sta
 - Vitest passed: 57 test files, 296 tests.
 - TypeScript project build passed.
 - Targeted Meta/provider tests passed: 10 tests.
+- GitHub `verify` and Vercel Preview checks passed for PR #279.
+- Chrome smoke test confirmed `/join/demo-volleyball` opens the matching Volleyball event with `ZS Demlova, Olomouc` and `3 / 8` participants.
 
 ## Platform boundary
 
@@ -59,4 +61,4 @@ Bring Instagram Direct and Messenger invitations closer to the Telegram card sta
 
 ## Next step
 
-Publish a preview and send one real event invitation through each connected Meta channel. Compare the received card facts with the source event and verify both web and calendar actions on a physical phone.
+Send one real event invitation through each connected Meta channel. Compare the received card facts with the source event and verify both web and calendar actions on a physical phone.
