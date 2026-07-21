@@ -37,7 +37,14 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
   return dialogUrl.toString();
 };
 
-export const buildMessengerWebTarget = () => "https://www.messenger.com/";
+export const buildMessengerShareBridgeTarget = (content: CardShareContent, origin = fallbackOrigin) => {
+  const target = new URL("/messenger-share.html", origin);
+  target.searchParams.set("title", content.title);
+  target.searchParams.set("date", content.date);
+  target.searchParams.set("address", content.address);
+  target.searchParams.set("url", content.url);
+  return target.toString();
+};
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
   const message = buildCardShareText(content);
