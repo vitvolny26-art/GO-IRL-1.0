@@ -1,5 +1,5 @@
 import { readEnv } from "../_shared/env.js";
-import { buildMetaEventCalendar } from "../_shared/meta-event-calendar.js";
+import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "../_shared/meta-event-calendar.js";
 import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from "../_shared/telegram-share-event.js";
 import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
 
@@ -55,7 +55,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
     const canonicalUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
     const detailsUrl = `${origin}/join/${encodeURIComponent(card.eventId)}`;
-    const addToCalendarUrl = `${canonicalUrl}&format=ics`;
+    const addToCalendarUrl = buildMetaEventGoogleCalendarUrl(card, origin) || `${canonicalUrl}&format=ics`;
     if (first(request.query?.format) === "ics") {
       response.setHeader("Content-Type", "text/calendar; charset=utf-8");
       response.setHeader("Content-Disposition", `attachment; filename="go-irl-${card.eventId}.ics"`);

@@ -1,4 +1,5 @@
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
+import { buildTelegramCalendarUrl } from "./telegram-event-card.js";
 
 const pad = (value: number) => String(value).padStart(2, "0");
 const compactLocal = (date: string, time: string) => `${date.replaceAll("-", "")}T${time.replace(":", "")}00`;
@@ -15,6 +16,14 @@ const addMinutes = (date: string, time: string, minutes: number) => {
   value.setUTCMinutes(value.getUTCMinutes() + minutes);
   return `${value.getUTCFullYear()}${pad(value.getUTCMonth() + 1)}${pad(value.getUTCDate())}T${pad(value.getUTCHours())}${pad(value.getUTCMinutes())}00`;
 };
+
+export const buildMetaEventGoogleCalendarUrl = (
+  card: TelegramEventCardInput,
+  origin: string,
+) => buildTelegramCalendarUrl({
+  ...card,
+  inviteUrl: `${origin}/api/meta/event-preview?event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`,
+});
 
 export const buildMetaEventCalendar = (
   card: TelegramEventCardInput,

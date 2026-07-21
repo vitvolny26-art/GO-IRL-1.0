@@ -11,6 +11,7 @@ import { getCurrentUserRole, isCurrentUserAdmin } from "./config/admin";
 import { cities, defaultCityId } from "./config/cities";
 import { getTranslation } from "./i18n";
 import type { Activity, ActivityMetadata, ActivityType, AppView, Language, NewActivity, UserRole } from "./types";
+import { activityIdFromJoinPath } from "./invitationLink";
 
 type JoinResult = "joined" | "pending" | "left" | "full" | "private";
 
@@ -447,7 +448,8 @@ export const useAppStore = create<AppState>((set, get) => {
 
     const rows = ((activitiesResult.data || []) as DbActivity[]).filter((row) => !isDeletedActivityRow(row));
     const members = (membersResult.data || []) as DbMember[];
-    const invitedActivityId = getCurrentStartParam();
+    const invitedActivityId = getCurrentStartParam()
+      || (typeof window !== "undefined" ? activityIdFromJoinPath(window.location.pathname) : "");
     const visibleRows = rows.filter(isActivityStillVisible).filter((row) => row.visibility === "public" || row.organizer_key === userKey || row.id === invitedActivityId);
     const visibleMembers = members;
 

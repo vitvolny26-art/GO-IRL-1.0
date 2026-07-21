@@ -9,6 +9,13 @@ export const parseInvitationStartParam = (value: string | null | undefined) => {
     : { valid: false as const, eventId: "" };
 };
 
+export const activityIdFromJoinPath = (pathname: string) => {
+  const match = pathname.match(/^\/join\/([^/?#]+)/);
+  if (!match) return "";
+  const parsed = parseInvitationStartParam(decodeURIComponent(match[1]));
+  return parsed.valid ? parsed.eventId : "";
+};
+
 export const buildTelegramActivityInviteUrl = (
   eventId: string,
   botUsername: string,
