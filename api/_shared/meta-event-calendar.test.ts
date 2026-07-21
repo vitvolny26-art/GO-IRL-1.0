@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { TelegramEventCardInput } from "../_shared/telegram-event-card.js";
-import { buildMetaEventCalendar } from "./event-calendar.js";
+import type { TelegramEventCardInput } from "./telegram-event-card.js";
+import { buildMetaEventCalendar } from "./meta-event-calendar.js";
 
 const card: TelegramEventCardInput = {
   eventId: "123e4567-e89b-42d3-a456-426614174000",

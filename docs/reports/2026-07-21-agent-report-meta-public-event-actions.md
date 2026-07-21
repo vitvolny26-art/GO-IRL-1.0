@@ -18,7 +18,7 @@ Review and harden Draft PR #282 without changing auth, RLS, SQL, migrations, sec
 - `api/_shared/provider-messages.ts`
 - `api/_shared/telegram-share-event.ts`
 - `api/meta/event-preview.ts`
-- `api/meta/event-calendar.ts`
+- `api/_shared/meta-event-calendar.ts`
 - Meta and WhatsApp payload builders and tests
 
 ## Findings
@@ -35,6 +35,7 @@ Review and harden Draft PR #282 without changing auth, RLS, SQL, migrations, sec
 - Keep action URLs on the current Vercel Preview deployment while retaining the production domain in production.
 - Localize calendar and Telegram action labels for Russian, Ukrainian, Czech, and English.
 - Extract the pure ICS builder and cover event facts, escaping, midnight rollover, and duration clamping.
+- Serve ICS from the existing Meta preview function to stay within the Vercel Hobby limit of 12 Serverless Functions.
 - Add focused visibility and Preview-origin regression tests.
 
 ## Checks
@@ -47,6 +48,7 @@ Review and harden Draft PR #282 without changing auth, RLS, SQL, migrations, sec
 ## Risks
 
 - Android Messenger still requires physical verification that the `.ics` response opens in an installed calendar application.
+- The first Preview attempt was rejected after a successful build because a separate calendar endpoint exceeded the Hobby function-count limit; the route was consolidated before the retry.
 - WhatsApp invitation actions remain provider-specific and are not identical to Messenger/Instagram generic-template buttons.
 
 ## Not touched

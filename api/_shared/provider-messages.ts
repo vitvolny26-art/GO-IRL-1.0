@@ -83,7 +83,7 @@ const withInvitationPresentation = (provider: MessagingProvider, event: MetaEven
     ? `${origin}/api/meta/event-preview?${eventQuery}`
     : event.inviteUrl);
   const calendarUrl = event.calendarUrl || (origin
-    ? `${origin}/api/meta/event-calendar?${eventQuery}`
+    ? `${origin}/api/meta/event-preview?${eventQuery}&format=ics`
     : undefined);
   const cardInput = invitationCardInput({ ...event, inviteUrl: openUrl || event.inviteUrl });
   const secret = provider === "instagram"

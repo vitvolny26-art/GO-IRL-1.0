@@ -76,7 +76,7 @@ describe("provider message endpoints", () => {
       .toMatch(/^https:\/\/go-irl-1-0\.vercel\.app\/api\/meta\/event-invitation-card\?token=/);
     expect(element?.image_url).toContain("&v=6");
     const previewUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=${event.eventId}&language=ru`;
-    const calendarUrl = `https://go-irl-1-0.vercel.app/api/meta/event-calendar?event=${event.eventId}&language=ru`;
+    const calendarUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=${event.eventId}&language=ru&format=ics`;
     expect(element?.default_action?.url).toBe(previewUrl);
     expect(element?.buttons?.[0]).toEqual({
       type: "web_url",
