@@ -40,12 +40,13 @@ describe("deriveParticipantJoinNotifications", () => {
       memberKey: "telegram:guest",
       memberName: "Anna",
       activityTitle: { ru: "Языковой обмен", uk: "Мовний обмін", cs: "Jazyková výměna", en: "Language exchange" },
+      kind: "joined",
       createdAt: 123,
       read: false,
     }]);
   });
 
-  it("ignores the organizer, pending requests, and existing notifications", () => {
+  it("creates a separate notification for a pending join request", () => {
     const result = deriveParticipantJoinNotifications(
       [activity([
         { userKey: "telegram:organizer", name: "Organizer", status: "joined" },
@@ -57,7 +58,16 @@ describe("deriveParticipantJoinNotifications", () => {
       123,
     );
 
-    expect(result).toEqual([]);
+    expect(result).toEqual([{
+      id: "participant-request:event-1:telegram:pending",
+      activityId: "event-1",
+      memberKey: "telegram:pending",
+      memberName: "Maks",
+      activityTitle: { ru: "Языковой обмен", uk: "Мовний обмін", cs: "Jazyková výměna", en: "Language exchange" },
+      kind: "request",
+      createdAt: 123,
+      read: false,
+    }]);
   });
 
   it("does not create notifications for events owned by another user", () => {
