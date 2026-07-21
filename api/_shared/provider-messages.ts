@@ -11,7 +11,7 @@ import {
   buildWhatsAppJoinResultPayload,
 } from "../../src/whatsapp/payload-builders.js";
 import { readEnv, requireEnv } from "./env.js";
-import type { TelegramEventCardInput } from "./telegram-event-card.js";
+import { buildTelegramCalendarUrl, type TelegramEventCardInput } from "./telegram-event-card.js";
 import { createMetaInvitationCardToken } from "./telegram-share-card-token.js";
 
 export type MessagingProvider = "whatsapp" | MetaMessagingProvider;
@@ -54,7 +54,7 @@ const invitationCardInput = (event: MetaEventSummary): TelegramEventCardInput =>
   title: event.title,
   activity: event.activity || event.title,
   date: event.date || event.dateTime,
-  eventDate: event.date || "",
+  eventDate: event.eventDate || event.date || "",
   time: event.time || "",
   address: event.location,
   participants: event.participants ?? Math.max((event.capacity || 0) - event.availableSpots, 0),
@@ -73,15 +73,24 @@ const invitationCardInput = (event: MetaEventSummary): TelegramEventCardInput =>
   language: event.language || "ru",
 });
 
-const withInvitationImage = (provider: MessagingProvider, event: MetaEventSummary): MetaEventSummary => {
-  if (event.imageUrl) return event;
+const withInvitationPresentation = (provider: MessagingProvider, event: MetaEventSummary): MetaEventSummary => {
   const origin = publicOrigin();
+  const openUrl = event.openUrl || (origin
+    ? `${origin}/join/${encodeURIComponent(event.eventId)}`
+    : event.inviteUrl);
+  const cardInput = invitationCardInput({ ...event, inviteUrl: openUrl || event.inviteUrl });
+  const calendarUrl = event.calendarUrl || buildTelegramCalendarUrl(cardInput);
   const secret = provider === "instagram"
     ? readEnv("INSTAGRAM_APP_SECRET") || readEnv("META_APP_SECRET")
     : readEnv("META_APP_SECRET");
-  if (!origin || !secret) return event;
-  const token = createMetaInvitationCardToken(invitationCardInput(event), secret);
-  return { ...event, imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=3` };
+  if (event.imageUrl || !origin || !secret) return { ...event, openUrl, calendarUrl };
+  const token = createMetaInvitationCardToken(cardInput, secret);
+  return {
+    ...event,
+    openUrl,
+    calendarUrl,
+    imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=4`,
+  };
 };
 
 export async function sendProviderInvitation(
@@ -89,7 +98,7 @@ export async function sendProviderInvitation(
   recipientId: string,
   event: MetaEventSummary,
 ) {
-  const invitation = withInvitationImage(provider, event);
+  const invitation = withInvitationPresentation(provider, event);
   if (provider === "whatsapp") {
     return sendGraphPayload(
       graphUrl(`${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`),
