@@ -91,19 +91,16 @@
           location.href = `fb-messenger://share/?link=${link}&app_id=${appId}`;
           return true;
         }
-        return false;
+        const dialog = new URL("https://www.facebook.com/dialog/send");
+        dialog.searchParams.set("app_id", appId);
+        dialog.searchParams.set("link", content.url);
+        dialog.searchParams.set("redirect_uri", location.origin);
+        location.href = dialog.toString();
+        return true;
       };
 
       document.querySelector("#share").addEventListener("click", async () => {
         if (openMessenger()) return;
-        if (navigator.share) {
-          try {
-            await navigator.share({ title: `GO IRL: ${content.title}`, text, url: content.url });
-            return;
-          } catch (error) {
-            if (error && error.name === "AbortError") return;
-          }
-        }
         status.textContent = t.unavailable;
       });
 
