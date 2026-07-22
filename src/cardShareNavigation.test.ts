@@ -42,27 +42,18 @@ describe("openExternalShareTarget", () => {
 });
 
 describe("openMessengerShareTarget", () => {
-  it("opens Messenger directly with an Android intent", () => {
-    const location = { href: "" };
-    vi.stubGlobal("window", { location, open: vi.fn() });
-    openMessengerShareTarget(content, "Mozilla/5.0 (Linux; Android 14)");
-    expect(location.href).toContain("intent://share/");
-    expect(location.href).toContain("package=com.facebook.orca");
-    expect(location.href).toContain("app_id=1332867179009910");
+  it("uses the HTTPS Messenger Send Dialog inside Telegram", () => {
+    const openLink = vi.fn();
+    vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
+    openMessengerShareTarget(content);
+    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("https://www.facebook.com/dialog/send"));
+    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("app_id=1332867179009910"));
   });
 
-  it("opens Messenger directly with the iOS app scheme", () => {
-    const location = { href: "" };
-    vi.stubGlobal("window", { location, open: vi.fn() });
-    openMessengerShareTarget(content, "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)");
-    expect(location.href).toContain("fb-messenger://share/");
-    expect(location.href).toContain("app_id=1332867179009910");
-  });
-
-  it("keeps the web Send Dialog for desktop browsers", () => {
+  it("uses the HTTPS Messenger Send Dialog outside Telegram", () => {
     const open = vi.fn();
     vi.stubGlobal("window", { open });
-    openMessengerShareTarget(content, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+    openMessengerShareTarget(content);
     expect(open).toHaveBeenCalledWith(expect.stringContaining("https://www.facebook.com/dialog/send"), "_blank", "noopener,noreferrer");
   });
 });
