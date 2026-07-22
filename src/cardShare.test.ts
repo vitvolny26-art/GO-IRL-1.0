@@ -32,11 +32,14 @@ describe("card share", () => {
     expect(buildMessengerPreviewUrl(content)).toBe(previewUrl);
   });
 
-  it("uses the current GO IRL Meta app in the Messenger Send Dialog", () => {
+  it("uses a clean Messenger Send Dialog payload with only the preview link", () => {
     const target = new URL(buildCardShareTarget("messenger", content));
     expect(target.origin + target.pathname).toBe("https://www.facebook.com/dialog/send");
     expect(target.searchParams.get("app_id")).toBe("1332867179009910");
     expect(target.searchParams.get("link")).toBe(previewUrl);
+    expect(target.searchParams.has("text")).toBe(false);
+    expect(target.searchParams.has("quote")).toBe(false);
+    expect(target.searchParams.has("description")).toBe(false);
   });
 
   it("builds native Messenger targets for mobile devices", () => {
