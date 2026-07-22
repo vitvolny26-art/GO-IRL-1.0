@@ -58,7 +58,7 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain('x="76" y="208"');
   });
 
-  it("shows weather only when weather data is present", () => {
+  it("shows weather with stable vector icons instead of emoji glyphs", () => {
     const withoutWeather = buildTelegramShareCardSvg(card);
     expect(withoutWeather).not.toContain("19°C");
     expect(withoutWeather).not.toContain("60%");
@@ -71,6 +71,12 @@ describe("Telegram event share-card image", () => {
     expect(withWeather).toContain("19°C");
     expect(withWeather).toContain("60%");
     expect(withWeather).toContain("6 km/h");
+    expect(withWeather).toContain('data-weather-icon="condition"');
+    expect(withWeather).toContain('data-weather-icon="rain"');
+    expect(withWeather).toContain('data-weather-icon="wind"');
+    expect(withWeather).not.toContain("☔");
+    expect(withWeather).not.toContain("💨");
+    expect(withWeather).not.toContain("🌧️");
   });
 
   it("resolves approved category artwork as the full-card JPEG background", () => {
@@ -104,15 +110,9 @@ describe("Telegram event share-card image", () => {
   });
 
   it("uses leading emoji for background detection but removes it from visible text", () => {
-    const languageCard = {
-      ...card,
-      icon: "",
-      activity: "🗣️ Языковой обмен",
-      title: "🗣️ Английский",
-    };
+    const languageCard = { ...card, icon: "", activity: "🗣️ Языковой обмен", title: "🗣️ Английский" };
     const telegramSvg = buildTelegramShareCardSvg(languageCard);
     const metaSvg = buildMetaInvitationCardSvg(languageCard);
-
     expect(hasEventShareBackground(languageCard)).toBe(true);
     expect(telegramSvg).toContain("Языковой обмен");
     expect(telegramSvg).toContain("Английский");
@@ -121,14 +121,12 @@ describe("Telegram event share-card image", () => {
   });
 
   it("renders the same transparent composition for Meta", async () => {
-    const metaCard = {
-      ...card,
-      weather: { icon: "🌤️", temperature: 23, rain: 12, wind: 19 },
-    };
+    const metaCard = { ...card, weather: { icon: "🌤️", temperature: 23, rain: 12, wind: 19 } };
     const svg = buildMetaInvitationCardSvg(metaCard);
     expect(svg).toContain("23°C");
     expect(svg).toContain("12%");
     expect(svg).toContain("19 km/h");
+    expect(svg).toContain('data-weather-icon="condition"');
     expect(svg).not.toContain("data-event-artwork");
     expect(svg).toBe(buildTelegramShareCardSvg(metaCard));
 

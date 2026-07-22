@@ -28,22 +28,22 @@
   <body>
     <main>
       <span class="logo"><img src="/icons/messenger.svg" alt="" /></span>
-      <h1 id="heading">Share invitation</h1>
-      <p id="hint">Tap the button and choose Messenger in the system share menu.</p>
+      <h1 id="heading">Opening Messenger</h1>
+      <p id="hint">If Messenger does not open automatically, tap the button below.</p>
       <section class="event" aria-label="Event">
         <strong id="event-title">GO IRL</strong>
         <span id="event-details"></span>
       </section>
-      <button id="share" type="button">Open share menu</button>
+      <button id="share" type="button">Open Messenger</button>
       <button id="copy" type="button">Copy invitation</button>
       <div id="status" role="status" aria-live="polite"></div>
     </main>
     <script>
       const translations = {
-        ru: { heading: "Поделиться приглашением", hint: "Нажмите кнопку и выберите Messenger в системном меню.", share: "Открыть меню «Поделиться»", copy: "Скопировать приглашение", copied: "Приглашение скопировано", unavailable: "Приглашение скопировано — вставьте его в Messenger" },
-        uk: { heading: "Поділитися запрошенням", hint: "Натисніть кнопку та виберіть Messenger у системному меню.", share: "Відкрити меню «Поділитися»", copy: "Скопіювати запрошення", copied: "Запрошення скопійовано", unavailable: "Запрошення скопійовано — вставте його в Messenger" },
-        cs: { heading: "Sdílet pozvánku", hint: "Klepněte na tlačítko a v systémové nabídce vyberte Messenger.", share: "Otevřít nabídku sdílení", copy: "Kopírovat pozvánku", copied: "Pozvánka byla zkopírována", unavailable: "Pozvánka byla zkopírována — vložte ji do Messengeru" },
-        en: { heading: "Share invitation", hint: "Tap the button and choose Messenger in the system share menu.", share: "Open share menu", copy: "Copy invitation", copied: "Invitation copied", unavailable: "Invitation copied — paste it into Messenger" }
+        ru: { heading: "Открываем Messenger", hint: "Если Messenger не открылся автоматически, нажмите кнопку ниже.", share: "Открыть Messenger", copy: "Скопировать приглашение", copied: "Приглашение скопировано", unavailable: "Не удалось открыть Messenger — приглашение можно скопировать" },
+        uk: { heading: "Відкриваємо Messenger", hint: "Якщо Messenger не відкрився автоматично, натисніть кнопку нижче.", share: "Відкрити Messenger", copy: "Скопіювати запрошення", copied: "Запрошення скопійовано", unavailable: "Не вдалося відкрити Messenger — запрошення можна скопіювати" },
+        cs: { heading: "Otevíráme Messenger", hint: "Pokud se Messenger neotevřel automaticky, klepněte na tlačítko níže.", share: "Otevřít Messenger", copy: "Kopírovat pozvánku", copied: "Pozvánka byla zkopírována", unavailable: "Messenger se nepodařilo otevřít — pozvánku lze zkopírovat" },
+        en: { heading: "Opening Messenger", hint: "If Messenger does not open automatically, tap the button below.", share: "Open Messenger", copy: "Copy invitation", copied: "Invitation copied", unavailable: "Could not open Messenger — you can copy the invitation" }
       };
       const language = (navigator.language || "en").slice(0, 2).toLowerCase();
       const t = translations[language] || translations.en;
@@ -54,7 +54,7 @@
         address: params.get("address") || "",
         url: params.get("url") || ""
       };
-      const text = [content.url, [`GO IRL: ${content.title}`, content.date, content.address].filter(Boolean).join("\n")].filter(Boolean).join("\n\n");
+      const text = [`GO IRL: ${content.title}`, content.date, content.address].filter(Boolean).join("\n");
       const status = document.querySelector("#status");
       document.documentElement.lang = language;
       document.querySelector("#heading").textContent = t.heading;
@@ -79,16 +79,28 @@
         }
       };
 
-      document.querySelector("#share").addEventListener("click", async () => {
-        if (navigator.share) {
-          try {
-            await navigator.share({ title: `GO IRL: ${content.title}`, text: [content.date, content.address].filter(Boolean).join("\n"), url: content.url });
-            return;
-          } catch (error) {
-            if (error && error.name === "AbortError") return;
-          }
+      const openMessenger = () => {
+        if (!content.url) return false;
+        const link = encodeURIComponent(content.url);
+        const appId = "1348703396728256";
+        if (/android/i.test(navigator.userAgent)) {
+          location.href = `intent://share/?link=${link}&app_id=${appId}#Intent;scheme=fb-messenger;package=com.facebook.orca;end`;
+          return true;
         }
-        await copy();
+        if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+          location.href = `fb-messenger://share/?link=${link}&app_id=${appId}`;
+          return true;
+        }
+        const dialog = new URL("https://www.facebook.com/dialog/send");
+        dialog.searchParams.set("app_id", appId);
+        dialog.searchParams.set("link", content.url);
+        dialog.searchParams.set("redirect_uri", location.origin);
+        location.href = dialog.toString();
+        return true;
+      };
+
+      document.querySelector("#share").addEventListener("click", async () => {
+        if (openMessenger()) return;
         status.textContent = t.unavailable;
       });
 
@@ -96,6 +108,10 @@
         await copy();
         status.textContent = t.copied;
       });
+
+      if (/android|iphone|ipad|ipod/i.test(navigator.userAgent)) {
+        window.setTimeout(() => openMessenger(), 120);
+      }
     </script>
   </body>
 </html>

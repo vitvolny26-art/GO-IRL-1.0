@@ -37,6 +37,7 @@ export function parseMetaMessagingTestPayload(
       const message = asRecord(event.message);
       const quickReply = asRecord(message?.quick_reply);
       const postback = asRecord(event.postback);
+      const referral = asRecord(event.referral);
       const senderId = typeof sender?.id === "string" ? sender.id : "";
       const id = typeof message?.mid === "string"
         ? message.mid
@@ -44,6 +45,9 @@ export function parseMetaMessagingTestPayload(
           ? `${provider}:${senderId}:${event.timestamp}`
           : "";
       if (!senderId || !id || message?.is_echo === true) return [];
+      const referralPayload = typeof referral?.ref === "string" && referral.ref.startsWith("event:")
+        ? `details:${referral.ref.slice("event:".length)}`
+        : undefined;
       return [{
         provider,
         id,
@@ -53,7 +57,9 @@ export function parseMetaMessagingTestPayload(
           ? { actionPayload: quickReply.payload }
           : typeof postback?.payload === "string"
             ? { actionPayload: postback.payload }
-            : {}),
+            : referralPayload
+              ? { actionPayload: referralPayload }
+              : {}),
       }];
     }),
   );
