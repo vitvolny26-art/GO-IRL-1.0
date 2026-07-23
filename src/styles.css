@@ -412,7 +412,10 @@ button, input, textarea, select { letter-spacing: 0; }
 .card-reminder-channels button { display: grid; grid-template-columns: 28px 1fr 18px; align-items: center; padding: 6px 10px; text-align: left; }
 .card-reminder-channels img { width: 25px; height: 25px; }
 .card-reminder-channels svg { width: 17px; height: 17px; }
+.card-reminder-channels button:disabled { cursor: not-allowed; opacity: .42; }
+.card-reminder-error { color: #ff9b9b; font-size: 12px; font-weight: 700; line-height: 1.35; }
 .card-reminder-save { min-height: 44px; border: 0; border-radius: 12px; background: var(--lime); color: #11150d; font: inherit; font-weight: 900; }
+.card-reminder-save:disabled, .card-reminder-remove:disabled { cursor: wait; opacity: .65; }
 .card-reminder-remove { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; border: 0; background: transparent; color: #aeb4bd; font: inherit; font-size: 12px; font-weight: 750; }
 .card-reminder-remove svg { width: 15px; height: 15px; }
 @media (max-width: 720px) {
