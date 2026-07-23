@@ -1,12 +1,50 @@
 import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { handleProviderWebhook } from "./provider-webhook.js";
+import {
+  classifyProviderConsentCommand,
+  handleProviderWebhook,
+  summarizeMetaWebhookPayload,
+} from "./provider-webhook.js";
 
 const runtimeEnv = (globalThis as typeof globalThis & {
   process: { env: Record<string, string | undefined> };
 }).process.env;
 
 describe("production provider webhook boundary", () => {
+  it("summarizes Meta payload structure without user or message data", () => {
+    expect(summarizeMetaWebhookPayload({
+      object: "page",
+      entry: [{
+        messaging: [{
+          sender: { id: "sensitive-user-id" },
+          message: { text: "sensitive message" },
+        }],
+        changes: [
+          { field: "feed", value: {} },
+          { field: "messages", value: { messaging: [{ sender: { id: "another-id" } }] } },
+        ],
+      }],
+    })).toEqual({
+      object: "page",
+      entries: 1,
+      directMessagingEvents: 1,
+      changedValueMessagingEvents: 1,
+      changeFields: ["feed", "messages"],
+    });
+  });
+
+  it.each([
+    ["STOP", "revoke"],
+    [" стоп ", "revoke"],
+    ["Отписаться", "revoke"],
+    ["START", "consent"],
+    ["старт", "consent"],
+    ["Подписаться", "consent"],
+    ["Привет", null],
+  ])("classifies explicit notification command %s", (text, expected) => {
+    expect(classifyProviderConsentCommand(text)).toBe(expected);
+  });
+
   beforeEach(() => {
     runtimeEnv.META_VERIFY_TOKEN = "test-verify-token";
     runtimeEnv.META_APP_SECRET = "test-app-secret";
