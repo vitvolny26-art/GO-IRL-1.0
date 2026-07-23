@@ -45,12 +45,20 @@ async function reminderHealth() {
     requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
-  const counts = await Promise.all(reminderStatuses.map(async (status) => {
+  const reminderCounts = await Promise.all(reminderStatuses.map(async (status) => {
     const { count, error } = await client
       .from("event_reminders")
       .select("id", { count: "exact", head: true })
       .eq("status", status);
     if (error) throw new Error(`reminder_health_count_failed:${error.code || status}`);
+    return [status, count || 0] as const;
+  }));
+  const notificationCounts = await Promise.all(reminderStatuses.map(async (status) => {
+    const { count, error } = await client
+      .from("event_notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("status", status);
+    if (error) throw new Error(`notification_health_count_failed:${error.code || status}`);
     return [status, count || 0] as const;
   }));
   const now = new Date();
@@ -65,7 +73,23 @@ async function reminderHealth() {
   if (overdueError) {
     throw new Error(`reminder_health_overdue_failed:${overdueError.code || "unknown"}`);
   }
-  const oldestDueAt = overdue ? String(overdue.next_attempt_at || overdue.scheduled_for) : null;
+  const { data: overdueNotification, error: notificationOverdueError } = await client
+    .from("event_notifications")
+    .select("created_at,next_attempt_at")
+    .in("status", ["scheduled", "failed"])
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (notificationOverdueError) {
+    throw new Error(`notification_health_overdue_failed:${notificationOverdueError.code || "unknown"}`);
+  }
+  const dueCandidates = [
+    overdue ? String(overdue.next_attempt_at || overdue.scheduled_for) : null,
+    overdueNotification
+      ? String(overdueNotification.next_attempt_at || overdueNotification.created_at)
+      : null,
+  ].filter((value): value is string => Boolean(value));
+  const oldestDueAt = dueCandidates.sort()[0] || null;
   const oldestDueAgeSeconds = oldestDueAt
     ? Math.max(0, Math.floor((now.getTime() - new Date(oldestDueAt).getTime()) / 1000))
     : 0;
@@ -73,7 +97,8 @@ async function reminderHealth() {
     ok: oldestDueAgeSeconds < 300,
     workerEnabled: readEnv("REMINDER_WORKER_ENABLED") === "true",
     providers: enabledProviders(),
-    counts: Object.fromEntries(counts),
+    reminders: Object.fromEntries(reminderCounts),
+    notifications: Object.fromEntries(notificationCounts),
     oldestDueAgeSeconds,
     checkedAt: now.toISOString(),
   };
