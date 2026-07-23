@@ -77,19 +77,21 @@ const postViaNodeHttps = (
 
 async function sendGraphPayload(url: string, token: string, payload: unknown) {
   const body = JSON.stringify(payload);
+  const accessToken = token.trim();
+  if (!accessToken) throw new Error("meta_access_token_invalid");
   let response: GraphResponse;
   try {
     response = await fetch(url, {
       method: "POST",
       headers: {
-        authorization: `Bearer ${token}`,
+        authorization: `Bearer ${accessToken}`,
         "content-type": "application/json",
       },
       body,
     });
   } catch {
     try {
-      response = await postViaNodeHttps(url, token, body);
+      response = await postViaNodeHttps(url, accessToken, body);
     } catch (error) {
       throw new Error(`meta_transport_failed:${safeTransportCode(error)}`, { cause: error });
     }

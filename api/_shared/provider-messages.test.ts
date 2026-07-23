@@ -131,7 +131,7 @@ describe("provider message endpoints", () => {
 
   it("uses the current Instagram Login Send API endpoint", async () => {
     runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
-    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
+    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = " \r\nsecret-token\n ";
     runtimeEnv.META_GRAPH_VERSION = "v23.0";
     const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
@@ -140,6 +140,9 @@ describe("provider message endpoints", () => {
 
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock.mock.calls[0]?.[0]).toBe("https://graph.instagram.com/v23.0/me/messages");
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
+      authorization: "Bearer secret-token",
+    });
   });
 
   it("keeps the page-linked Instagram endpoint available for legacy apps", async () => {
