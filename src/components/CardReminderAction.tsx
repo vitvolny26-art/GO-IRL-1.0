@@ -34,7 +34,8 @@ const leadOptions: Array<{ value: ReminderLeadMinutes; label: string }> = [
 
 export function CardReminderAction({ activityId, date, time, label = "Настроить напоминание" }: Props) {
   const [open, setOpen] = useState(false);
-  const [saved, setSaved] = useState(() => readEventReminder(activityId));
+  const [saved, setSaved] = useState(() =>
+    usesServerReminderPersistence() ? null : readEventReminder(activityId));
   const [channel, setChannel] = useState<ReminderChannel>(saved?.channel || "telegram");
   const [leadMinutes, setLeadMinutes] = useState<ReminderLeadMinutes>(saved?.leadMinutes || 60);
   const [linkedChannels, setLinkedChannels] = useState<Set<ReminderChannel> | null>(null);
@@ -56,6 +57,9 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
         setSaved(serverReminder);
         setChannel(serverReminder.channel);
         setLeadMinutes(serverReminder.leadMinutes);
+      } else {
+        removeEventReminder(activityId);
+        setSaved(null);
       }
     }).catch(() => {
       if (active) setError("Не удалось загрузить настройки напоминания.");

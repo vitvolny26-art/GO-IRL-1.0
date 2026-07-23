@@ -66,4 +66,22 @@ If the selected provider is not linked, GO IRL asks the user to connect it. It m
 
 ## Current implementation boundary
 
-The event-card control and provider-neutral preference are implemented in the Mini App. The selection is stored locally so the UI is usable without exposing credentials. Production bot delivery requires a protected server table, linked provider identities, a due-reminder worker, and the provider policy checks above. Until that backend is deployed, the client must not claim that a bot message has already been scheduled by the server.
+The production implementation now includes:
+
+- the event-card reminder control;
+- Supabase-backed preferences with owner-scoped RLS;
+- linked provider identities and explicit reminder consent;
+- an atomic due-reminder worker with retries and idempotency;
+- Telegram, WhatsApp, Instagram, and Messenger delivery adapters;
+- a transactional event-notification outbox;
+- provider opt-in/opt-out handling;
+- protected health monitoring and rate-limited operator alerts.
+
+For a trusted authenticated session, Supabase is authoritative. Local storage is only
+an unauthenticated fallback and optimistic cache; it must not keep the bell active
+when the server has no reminder.
+
+Telegram is enabled in production. WhatsApp activation is gated on approved Meta
+templates and a real-number smoke test. Instagram Direct and Messenger activation
+is gated on an inbound message window and a live outbound smoke test. The UI must
+not promise delivery through a provider that is not linked and enabled.
