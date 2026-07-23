@@ -6,8 +6,13 @@ import { verifyMetaSignature } from "./meta-signature.js";
 import {
   getProviderEventSummary,
   joinProviderEvent,
+  recordProviderInbound,
   setProviderNotificationConsent,
 } from "./provider-join-service.js";
+import {
+  claimProviderInboundEvent,
+  completeProviderInboundEvent,
+} from "./provider-inbound-service.js";
 import {
   sendMessengerWelcome,
   sendProviderInvitation,
@@ -112,50 +117,74 @@ const providerSecret = (
   : requireEnv(sharedName);
 
 async function processAction(provider: MessagingProvider, action: InboundAction) {
-  const consentCommand = classifyProviderConsentCommand(action.text);
-  if (consentCommand) {
-    const consented = consentCommand === "consent";
-    await setProviderNotificationConsent({
+  const claim = await claimProviderInboundEvent(provider, action.id);
+  if (!claim.claimed) return "duplicate" as const;
+
+  try {
+    await recordProviderInbound({
       provider,
       providerUserId: action.providerUserId,
       displayName: action.displayName,
-      consented,
     });
-    await sendProviderText(
-      provider,
-      action.providerUserId,
-      consented
-        ? "Уведомления GO IRL включены. Чтобы отключить их, отправьте СТОП."
-        : "Уведомления GO IRL отключены. Чтобы включить их снова, отправьте СТАРТ.",
-    );
-    return;
-  }
-  if (!action.actionPayload) {
-    if (provider === "messenger" && action.text?.trim()) {
-      await sendMessengerWelcome(action.providerUserId);
-    }
-    return;
-  }
-  const separator = action.actionPayload.indexOf(":");
-  if (separator < 1) return;
-  const command = action.actionPayload.slice(0, separator);
-  const eventId = action.actionPayload.slice(separator + 1);
-  if (!uuidPattern.test(eventId)) return;
 
-  if (command === "details") {
-    const event = await getProviderEventSummary(eventId);
-    if (event) await sendProviderInvitation(provider, action.providerUserId, event);
-    return;
-  }
-  if (command !== "join") return;
-  const result = await joinProviderEvent({
-    provider,
-    providerUserId: action.providerUserId,
-    displayName: action.displayName,
-    eventId,
-  });
-  if (result.status === "already_joined" || result.status === "rejected") {
-    await sendProviderJoinResult(provider, action.providerUserId, result);
+    const consentCommand = classifyProviderConsentCommand(action.text);
+    if (consentCommand) {
+      const consented = consentCommand === "consent";
+      await setProviderNotificationConsent({
+        provider,
+        providerUserId: action.providerUserId,
+        displayName: action.displayName,
+        consented,
+      });
+      await sendProviderText(
+        provider,
+        action.providerUserId,
+        consented
+          ? "Уведомления GO IRL включены. Чтобы отключить их, отправьте СТОП."
+          : "Уведомления GO IRL отключены. Чтобы включить их снова, отправьте СТАРТ.",
+      );
+    } else if (!action.actionPayload) {
+      if (provider === "messenger" && action.text?.trim()) {
+        await sendMessengerWelcome(action.providerUserId);
+      }
+    } else {
+      const separator = action.actionPayload.indexOf(":");
+      if (separator >= 1) {
+        const command = action.actionPayload.slice(0, separator);
+        const eventId = action.actionPayload.slice(separator + 1);
+        if (uuidPattern.test(eventId)) {
+          if (command === "details") {
+            const event = await getProviderEventSummary(eventId);
+            if (event) await sendProviderInvitation(provider, action.providerUserId, event);
+          } else if (command === "join") {
+            const result = await joinProviderEvent({
+              provider,
+              providerUserId: action.providerUserId,
+              displayName: action.displayName,
+              eventId,
+            });
+            if (result.status === "already_joined" || result.status === "rejected") {
+              await sendProviderJoinResult(provider, action.providerUserId, result);
+            }
+          }
+        }
+      }
+    }
+
+    await completeProviderInboundEvent({
+      provider,
+      eventKey: claim.eventKey,
+      success: true,
+    });
+    return "processed" as const;
+  } catch (error) {
+    await completeProviderInboundEvent({
+      provider,
+      eventKey: claim.eventKey,
+      success: false,
+      errorCode: error instanceof Error ? error.name : "unknown_error",
+    });
+    throw error;
   }
 }
 
@@ -196,12 +225,16 @@ export async function handleProviderWebhook(provider: MessagingProvider, request
     : parseMetaActions(provider, payload);
   const results = await Promise.allSettled(actions.map((action) => processAction(provider, action)));
   const failures = results.filter((result) => result.status === "rejected");
+  const duplicates = results.filter((result) =>
+    result.status === "fulfilled" && result.value === "duplicate"
+  ).length;
   console.warn("provider_webhook_processed", {
     provider,
     ...summarizeMetaWebhookPayload(payload),
     actions: actions.length,
+    duplicates,
     failures: failures.length,
   });
   if (failures.length) return jsonResponse({ error: "processing_failed", failed: failures.length }, 500);
-  return jsonResponse({ received: actions.length });
+  return jsonResponse({ received: actions.length, duplicates });
 }

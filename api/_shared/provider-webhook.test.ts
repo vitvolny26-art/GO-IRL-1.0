@@ -1,10 +1,27 @@
 import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  claimProviderInboundEvent,
+  completeProviderInboundEvent,
+} from "./provider-inbound-service.js";
+import { recordProviderInbound } from "./provider-join-service.js";
+import {
   classifyProviderConsentCommand,
   handleProviderWebhook,
   summarizeMetaWebhookPayload,
 } from "./provider-webhook.js";
+
+vi.mock("./provider-inbound-service.js", () => ({
+  claimProviderInboundEvent: vi.fn(),
+  completeProviderInboundEvent: vi.fn(),
+}));
+
+vi.mock("./provider-join-service.js", () => ({
+  getProviderEventSummary: vi.fn(),
+  joinProviderEvent: vi.fn(),
+  recordProviderInbound: vi.fn(),
+  setProviderNotificationConsent: vi.fn(),
+}));
 
 const runtimeEnv = (globalThis as typeof globalThis & {
   process: { env: Record<string, string | undefined> };
@@ -48,6 +65,12 @@ describe("production provider webhook boundary", () => {
   beforeEach(() => {
     runtimeEnv.META_VERIFY_TOKEN = "test-verify-token";
     runtimeEnv.META_APP_SECRET = "test-app-secret";
+    vi.mocked(claimProviderInboundEvent).mockReset().mockResolvedValue({
+      claimed: true,
+      eventKey: "a".repeat(64),
+    });
+    vi.mocked(completeProviderInboundEvent).mockReset().mockResolvedValue(undefined);
+    vi.mocked(recordProviderInbound).mockReset().mockResolvedValue({ userKey: "user:test" });
   });
 
   afterEach(() => {
@@ -106,7 +129,7 @@ describe("production provider webhook boundary", () => {
     ));
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ received: 0 });
+    await expect(response.json()).resolves.toEqual({ received: 0, duplicates: 0 });
   });
 
   it("rejects unsigned POST payloads before parsing or persistence", async () => {
@@ -140,7 +163,17 @@ describe("production provider webhook boundary", () => {
     ));
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ received: 1 });
+    await expect(response.json()).resolves.toEqual({ received: 1, duplicates: 0 });
+    expect(recordProviderInbound).toHaveBeenCalledWith({
+      provider: "messenger",
+      providerUserId: "psid-1",
+      displayName: "Messenger User",
+    });
+    expect(completeProviderInboundEvent).toHaveBeenCalledWith({
+      provider: "messenger",
+      eventKey: "a".repeat(64),
+      success: true,
+    });
     expect(fetchMock.mock.calls[0]?.[0]).toBe("https://graph.facebook.com/v23.0/page-id/messages");
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
       messaging_type: "RESPONSE",
@@ -154,5 +187,35 @@ describe("production provider webhook boundary", () => {
         },
       },
     });
+  });
+
+  it("does not process or answer a duplicate Messenger event", async () => {
+    runtimeEnv.MESSENGER_PAGE_ACCESS_TOKEN = "page-token";
+    runtimeEnv.MESSENGER_PAGE_ID = "page-id";
+    vi.mocked(claimProviderInboundEvent).mockResolvedValue({
+      claimed: false,
+      eventKey: "b".repeat(64),
+    });
+    const rawBody = JSON.stringify({
+      object: "page",
+      entry: [{ messaging: [{
+        sender: { id: "psid-1" },
+        message: { mid: "mid-duplicate", text: "Привет" },
+      }] }],
+    });
+    const signature = `sha256=${createHmac("sha256", "test-app-secret").update(rawBody).digest("hex")}`;
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await handleProviderWebhook("messenger", new Request(
+      "https://example.test/api/messenger/webhook",
+      { method: "POST", body: rawBody, headers: { "x-hub-signature-256": signature } },
+    ));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ received: 1, duplicates: 1 });
+    expect(recordProviderInbound).not.toHaveBeenCalled();
+    expect(completeProviderInboundEvent).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
