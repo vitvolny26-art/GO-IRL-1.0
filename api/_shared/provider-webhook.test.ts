@@ -79,6 +79,17 @@ describe("production provider webhook boundary", () => {
     );
   });
 
+  it("classifies fetch failures created by another runtime realm", () => {
+    const error = Object.assign(new Error("fetch failed"), {
+      name: "TypeError",
+      cause: { code: "ENETUNREACH" },
+    });
+
+    expect(providerProcessingErrorCode(error)).toBe(
+      "meta_transport_ENETUNREACH",
+    );
+  });
+
   beforeEach(() => {
     runtimeEnv.META_VERIFY_TOKEN = "test-verify-token";
     runtimeEnv.META_APP_SECRET = "test-app-secret";

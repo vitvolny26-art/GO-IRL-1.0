@@ -126,7 +126,7 @@ export function providerProcessingErrorCode(error: unknown) {
 
   const cause = (error as Error & { cause?: { code?: unknown } }).cause;
   const transportCode = typeof cause?.code === "string" ? safeErrorToken(cause.code) : "";
-  if (error instanceof TypeError && error.message === "fetch failed") {
+  if (error.name === "TypeError" && error.message === "fetch failed") {
     return transportCode ? `meta_transport_${transportCode}` : "meta_transport_failed";
   }
 
