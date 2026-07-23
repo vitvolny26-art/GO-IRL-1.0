@@ -75,7 +75,6 @@ async function resolveProviderUserKey(provider: Exclude<JoinProvider, "telegram"
       user_key: userKey,
       provider,
       provider_user_id: providerUserId,
-      status: "active",
       last_inbound_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }, { onConflict: "provider,provider_user_id" });
@@ -109,6 +108,19 @@ async function resolveProviderUserKey(provider: Exclude<JoinProvider, "telegram"
     .single();
   if (raced.error) throw raced.error;
   return ensureIdentity(raced.data.user_key as string);
+}
+
+export async function recordProviderInbound(input: {
+  provider: Exclude<JoinProvider, "telegram">;
+  providerUserId: string;
+  displayName: string;
+}) {
+  const userKey = await resolveProviderUserKey(
+    input.provider,
+    input.providerUserId,
+    input.displayName,
+  );
+  return { userKey };
 }
 
 export async function setProviderNotificationConsent(input: {
