@@ -131,7 +131,7 @@ describe("provider message endpoints", () => {
 
   it("uses the current Instagram Login Send API endpoint", async () => {
     runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
-    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = " \r\nsecret-token\n ";
+    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = " \\r\\nsecret-\\n token\\u200B \\n ";
     runtimeEnv.META_GRAPH_VERSION = "v23.0";
     const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
