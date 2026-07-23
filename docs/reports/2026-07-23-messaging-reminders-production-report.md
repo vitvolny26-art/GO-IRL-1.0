@@ -116,21 +116,31 @@ Production remains safe while external approvals are incomplete: disabled channe
 
 ### Instagram Direct
 
+- Production callback is verified at
+  `https://go-irl-1-0.vercel.app/api/instagram/webhook`.
+- App-level subscriptions for `messages` and `messaging_postbacks` are enabled.
 - Inbound webhook and outbound adapter exist.
 - Production enablement still needs:
   - confirmation of the connected professional account;
   - a real inbound DM to open the allowed messaging window;
   - one controlled outbound lifecycle smoke test;
   - verification that retries do not duplicate a message.
+- The Meta legacy Page-permission dialog currently requests the invalid
+  `instagram_manage_messages` and `instagram_basic` scopes. The live gate stays
+  closed until the professional Instagram identity is connected through the
+  current permission flow.
 
 ### Facebook Messenger
 
-- Inbound webhook and outbound adapter exist.
-- Production enablement still needs:
-  - confirmation of the connected Facebook Page;
-  - a real inbound message to open the allowed messaging window;
-  - one controlled outbound lifecycle smoke test;
-  - verification that retries do not duplicate a message.
+- Production callback is verified at
+  `https://go-irl-1-0.vercel.app/api/messenger/webhook`.
+- The connected Page is `GO IRL` (`1140926245780489`).
+- `messages` and `messaging_postbacks` subscriptions are active.
+- A real inbound Messenger message reached the production webhook with HTTP
+  `200`, and the user received one reply in the same conversation.
+- The immediate inbound/outbound smoke gate is green. Lifecycle outbox,
+  retry-idempotency, and opt-out still require the controlled release fixture
+  before Messenger can be added to scheduled reminders.
 
 ## Release gates
 
@@ -152,7 +162,10 @@ A channel can be added to `REMINDER_ENABLED_PROVIDERS` only after all of these a
 - Wait for both WhatsApp templates to become Active.
 - Verify the production WhatsApp phone number and permanent system-user token match.
 - Run one controlled WhatsApp invitation, join, lifecycle, reminder, and opt-out test.
-- Run equivalent session-window tests for Instagram Direct and Messenger.
+- Run a session-window test for Instagram Direct after the professional account
+  is connected through valid permissions.
+- Run the controlled lifecycle/outbox, retry-idempotency, and opt-out fixture
+  for Messenger; its basic production webhook and reply smoke test is green.
 - Enable channels one at a time only after their individual release gate passes.
 
 ### P1 — physical-device QA
@@ -180,3 +193,16 @@ A channel can be added to `REMINDER_ENABLED_PROVIDERS` only after all of these a
 ## Current decision
 
 Telegram remains the only fully enabled scheduled-reminder channel. The code and data model for all four channels are in production, but WhatsApp, Instagram Direct, and Messenger are held behind explicit external release gates. This avoids sending invalid templates, violating Meta messaging windows, or using mismatched production identities.
+
+## Meta webhook release evidence
+
+- Messenger callback verification and live inbound/outbound smoke test passed on
+  production deployment `dpl_9bXJaYnhPaaJEtTMZwTXCKFJKry4`.
+- Instagram callback verification and subscriptions passed on production
+  deployment `dpl_6nB7Su2r6rF9NYiSmYNMnCEVt2Mk`.
+- The provider-specific Instagram verification value was removed after it was
+  found to conflict with the already verified shared Meta webhook value.
+  Instagram now uses the existing server-side fallback without exposing a
+  secret to the client, repository, report, or logs.
+- Meta App publication remains intentionally blocked until each channel's
+  identity, permission, app-review, and live-delivery gate is green.
