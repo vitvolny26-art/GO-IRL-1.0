@@ -48,6 +48,21 @@ describe("organizer identity resolver", () => {
     expect(two).toMatchObject({ displayName: "Snapshot Two", bio: "", cityId: "", avatar: "ST" });
   });
 
+  it("deduplicates participant and chat keys while preserving request fallbacks", async () => {
+    const loadPublicProfiles = vi.fn(async () => new Map());
+    setOrganizerIdentityRepositoryForTests(createRepository({ loadPublicProfiles }));
+
+    const [participant, chat] = await Promise.all([
+      resolveOrganizerIdentity("telegram:7", "Participant Snapshot"),
+      resolveOrganizerIdentity("telegram:7", "Chat Snapshot"),
+    ]);
+
+    expect(loadPublicProfiles).toHaveBeenCalledTimes(1);
+    expect(loadPublicProfiles).toHaveBeenCalledWith(["telegram:7"]);
+    expect(participant).toMatchObject({ displayName: "Participant Snapshot", avatar: "PS" });
+    expect(chat).toMatchObject({ displayName: "Chat Snapshot", avatar: "CS" });
+  });
+
   it("falls back to initials when signed avatar resolution fails", async () => {
     const repository = createRepository({
       loadPublicProfiles: vi.fn(async () => new Map([["telegram:1", {

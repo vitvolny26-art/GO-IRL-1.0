@@ -5,6 +5,7 @@ import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
+import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -25,6 +26,7 @@ import "./avatar-cropper.css";
 import "./participant-notifications.css";
 import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
+import "./participant-identity.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
@@ -46,6 +48,7 @@ createRoot(document.getElementById("root")!).render(
       </Suspense>
       <OrganizerProfilePortal />
       <OrganizerEventDetailsPortal />
+      <ParticipantIdentityPortal />
     </QueryClientProvider>
   </StrictMode>,
 );
