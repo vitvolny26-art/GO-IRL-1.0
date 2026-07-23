@@ -31,6 +31,31 @@ const asRecord = (value: unknown): UnknownRecord | null =>
 
 const asRecords = (value: unknown) => Array.isArray(value) ? value.map(asRecord).filter(Boolean) as UnknownRecord[] : [];
 
+export function summarizeMetaWebhookPayload(payload: unknown) {
+  const root = asRecord(payload);
+  const entries = asRecords(root?.entry);
+  const changeFields = new Set<string>();
+  let directMessagingEvents = 0;
+  let changedValueMessagingEvents = 0;
+
+  for (const entry of entries) {
+    directMessagingEvents += asRecords(entry.messaging).length;
+    for (const change of asRecords(entry.changes)) {
+      if (typeof change.field === "string") changeFields.add(change.field);
+      const value = asRecord(change.value);
+      changedValueMessagingEvents += asRecords(value?.messaging).length;
+    }
+  }
+
+  return {
+    object: typeof root?.object === "string" ? root.object : "unknown",
+    entries: entries.length,
+    directMessagingEvents,
+    changedValueMessagingEvents,
+    changeFields: [...changeFields].sort(),
+  };
+}
+
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const stopCommands = new Set(["stop", "стоп", "отписаться", "отписка", "unsubscribe"]);
 const startCommands = new Set(["start", "старт", "подписаться", "подписка", "subscribe"]);
@@ -171,6 +196,12 @@ export async function handleProviderWebhook(provider: MessagingProvider, request
     : parseMetaActions(provider, payload);
   const results = await Promise.allSettled(actions.map((action) => processAction(provider, action)));
   const failures = results.filter((result) => result.status === "rejected");
+  console.warn("provider_webhook_processed", {
+    provider,
+    ...summarizeMetaWebhookPayload(payload),
+    actions: actions.length,
+    failures: failures.length,
+  });
   if (failures.length) return jsonResponse({ error: "processing_failed", failed: failures.length }, 500);
   return jsonResponse({ received: actions.length });
 }

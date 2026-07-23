@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   classifyProviderConsentCommand,
   handleProviderWebhook,
+  summarizeMetaWebhookPayload,
 } from "./provider-webhook.js";
 
 const runtimeEnv = (globalThis as typeof globalThis & {
@@ -10,6 +11,28 @@ const runtimeEnv = (globalThis as typeof globalThis & {
 }).process.env;
 
 describe("production provider webhook boundary", () => {
+  it("summarizes Meta payload structure without user or message data", () => {
+    expect(summarizeMetaWebhookPayload({
+      object: "page",
+      entry: [{
+        messaging: [{
+          sender: { id: "sensitive-user-id" },
+          message: { text: "sensitive message" },
+        }],
+        changes: [
+          { field: "feed", value: {} },
+          { field: "messages", value: { messaging: [{ sender: { id: "another-id" } }] } },
+        ],
+      }],
+    })).toEqual({
+      object: "page",
+      entries: 1,
+      directMessagingEvents: 1,
+      changedValueMessagingEvents: 1,
+      changeFields: ["feed", "messages"],
+    });
+  });
+
   it.each([
     ["STOP", "revoke"],
     [" стоп ", "revoke"],
