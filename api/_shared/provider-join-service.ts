@@ -111,6 +111,50 @@ async function resolveProviderUserKey(provider: Exclude<JoinProvider, "telegram"
   return ensureIdentity(raced.data.user_key as string);
 }
 
+export async function setProviderNotificationConsent(input: {
+  provider: Exclude<JoinProvider, "telegram">;
+  providerUserId: string;
+  displayName: string;
+  consented: boolean;
+}) {
+  const userKey = await resolveProviderUserKey(
+    input.provider,
+    input.providerUserId,
+    input.displayName,
+  );
+  const client = getAdminClient();
+  const now = new Date().toISOString();
+  const { error: identityError } = await client
+    .from("user_provider_identities")
+    .update({
+      status: input.consented ? "active" : "revoked",
+      consented_at: input.consented ? now : null,
+      last_inbound_at: now,
+      updated_at: now,
+    })
+    .eq("user_key", userKey)
+    .eq("provider", input.provider);
+  if (identityError) throw identityError;
+
+  if (!input.consented) {
+    const { error: reminderError } = await client
+      .from("event_reminders")
+      .update({
+        status: "cancelled",
+        next_attempt_at: null,
+        leased_at: null,
+        last_error: "provider_opted_out",
+        updated_at: now,
+      })
+      .eq("user_key", userKey)
+      .eq("provider", input.provider)
+      .in("status", ["scheduled", "failed", "sending"]);
+    if (reminderError) throw reminderError;
+  }
+
+  return { userKey, consented: input.consented };
+}
+
 export async function joinProviderEvent(input: {
   provider: "whatsapp" | "instagram" | "messenger";
   providerUserId: string;

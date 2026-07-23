@@ -1,6 +1,6 @@
-import { timingSafeEqual } from "node:crypto";
 import { readEnv, requireEnv } from "../_shared/env.js";
 import { createVercelHandler } from "../_shared/vercel-handler.js";
+import { isReminderWorkerAuthorized } from "../_shared/worker-authorization.js";
 import { SupabaseReminderRepository } from "../../src/reminders/supabase-repository.js";
 import {
   MetaReminderDispatcher,
@@ -17,16 +17,6 @@ const json = (status: number, payload: unknown) => new Response(JSON.stringify(p
     "Cache-Control": "no-store",
   },
 });
-
-const authorized = (request: Request) => {
-  const expected = readEnv("REMINDER_WORKER_SECRET");
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
-  const expectedBytes = new TextEncoder().encode(expected);
-  const suppliedBytes = new TextEncoder().encode(supplied);
-  return expected.length >= 32
-    && expectedBytes.length === suppliedBytes.length
-    && timingSafeEqual(expectedBytes, suppliedBytes);
-};
 
 const publicOrigin = () => {
   const host = readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
@@ -48,7 +38,7 @@ export async function handleReminderRun(request: Request) {
   if (request.method !== "POST") {
     return new Response(null, { status: 405, headers: { Allow: "POST" } });
   }
-  if (!authorized(request)) return json(401, { error: "unauthorized" });
+  if (!isReminderWorkerAuthorized(request)) return json(401, { error: "unauthorized" });
   if (readEnv("REMINDER_WORKER_ENABLED") !== "true") {
     return json(503, { error: "reminder_worker_disabled" });
   }

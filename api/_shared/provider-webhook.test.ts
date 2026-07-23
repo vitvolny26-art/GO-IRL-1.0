@@ -1,12 +1,27 @@
 import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { handleProviderWebhook } from "./provider-webhook.js";
+import {
+  classifyProviderConsentCommand,
+  handleProviderWebhook,
+} from "./provider-webhook.js";
 
 const runtimeEnv = (globalThis as typeof globalThis & {
   process: { env: Record<string, string | undefined> };
 }).process.env;
 
 describe("production provider webhook boundary", () => {
+  it.each([
+    ["STOP", "revoke"],
+    [" стоп ", "revoke"],
+    ["Отписаться", "revoke"],
+    ["START", "consent"],
+    ["старт", "consent"],
+    ["Подписаться", "consent"],
+    ["Привет", null],
+  ])("classifies explicit notification command %s", (text, expected) => {
+    expect(classifyProviderConsentCommand(text)).toBe(expected);
+  });
+
   beforeEach(() => {
     runtimeEnv.META_VERIFY_TOKEN = "test-verify-token";
     runtimeEnv.META_APP_SECRET = "test-app-secret";
