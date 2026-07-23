@@ -156,8 +156,15 @@ Production remains safe while external approvals are incomplete: disabled channe
 - The table has RLS enabled; `anon` and `authenticated` have no table access or
   RPC execution, while `service_role` can claim and complete events.
 - The basic inbound/outbound, identity, idempotency, and opt-in/opt-out gates
-  are green. A controlled transactional lifecycle/outbox fixture still remains
-  before Messenger can be added to scheduled reminders.
+  are green.
+- The controlled transactional lifecycle/outbox fixture is also green:
+  two attempts to enqueue the same `delivery_key` produced one outbox row;
+  the production cron claimed it once, sent it through Messenger on attempt
+  `1`, stored a provider message ID, and left no error.
+- Messenger showed exactly one user-visible message bubble for the fixture.
+  `REMINDER_ENABLED_PROVIDERS` is now scoped to Production and contains
+  Telegram plus Messenger; Preview was deliberately excluded because its
+  deployment does not receive production Messenger credentials.
 
 ## Release gates
 
@@ -181,9 +188,6 @@ A channel can be added to `REMINDER_ENABLED_PROVIDERS` only after all of these a
 - Run one controlled WhatsApp invitation, join, lifecycle, reminder, and opt-out test.
 - Run a session-window test for Instagram Direct after the professional account
   is connected through valid permissions.
-- Run the controlled lifecycle/outbox fixture for Messenger. Its production
-  webhook, reply, durable idempotency, identity refresh, and explicit
-  opt-in/opt-out gates are green.
 - Enable channels one at a time only after their individual release gate passes.
 
 ### P1 — physical-device QA
@@ -210,7 +214,10 @@ A channel can be added to `REMINDER_ENABLED_PROVIDERS` only after all of these a
 
 ## Current decision
 
-Telegram remains the only fully enabled scheduled-reminder channel. The code and data model for all four channels are in production, but WhatsApp, Instagram Direct, and Messenger are held behind explicit external release gates. This avoids sending invalid templates, violating Meta messaging windows, or using mismatched production identities.
+Telegram and Messenger are enabled production delivery channels. WhatsApp and
+Instagram Direct remain held behind explicit external release gates. This
+avoids sending invalid templates, violating Meta messaging windows, or using
+mismatched production identities.
 
 ## Meta webhook release evidence
 
@@ -232,3 +239,15 @@ Telegram remains the only fully enabled scheduled-reminder channel. The code and
   advisor reported no new exposed-function warning for its service-only RPCs;
   its no-policy notice is expected because the table is intentionally
   inaccessible to client roles.
+- Messenger transactional delivery was released on production deployment
+  `dpl_4P43hLg2GgCgmPM1QRVmnCaufb3g`. Before the fixture, production had zero
+  pending lifecycle notifications and zero pending Messenger reminders.
+- The fixture used the single consented Messenger identity from the controlled
+  live test window. It did not expose or record the recipient identifier in
+  this report.
+- Database evidence: duplicate enqueue attempts inserted one row; final status
+  `sent`, provider `messenger`, attempt count `1`, `sent_at` present, provider
+  message ID present, and `last_error_code` null.
+- Browser evidence: exactly one Messenger article contained the release-fixture
+  message. The worker therefore proved the production path
+  `outbox → claim → dispatch → finish → visible message` without a duplicate.
