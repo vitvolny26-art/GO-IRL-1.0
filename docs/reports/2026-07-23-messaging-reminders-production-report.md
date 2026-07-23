@@ -273,3 +273,30 @@ mismatched production identities.
 - Browser evidence: exactly one Messenger article contained the release-fixture
   message. The worker therefore proved the production path
   `outbox → claim → dispatch → finish → visible message` without a duplicate.
+
+## Meta transport checkpoint
+
+- WhatsApp Manager still reports `go_irl_event_reminder` and
+  `go_irl_event_update` as pending review. No WhatsApp live message was sent
+  and the channel was not enabled.
+- Instagram inbound processing and signature verification remain green, but
+  the outbound confirmation is still held behind its release gate.
+- PR #326 added a server-only native Node HTTPS fallback for the narrow case
+  where the standard Vercel `fetch` fails before receiving an HTTP response.
+- The following production smoke isolated the transport failure to
+  `ERR_INVALID_CHAR`, proving that the copied Instagram access token contained
+  an invalid header character, normally a trailing line break.
+- PR #327 now trims only leading and trailing token whitespace before building
+  the Authorization header and rejects an empty normalized token. It does not
+  expose, persist, or rewrite the credential.
+- Both changes passed lint, typecheck, build, Vercel Preview, and the complete
+  suite of `72` files and `366` tests. PR #327 is deployed from `main` and the
+  production deployment is Ready.
+- A fresh visible Instagram outbound reply after PR #327 is still required
+  before the lifecycle, opt-out, retry, and idempotency gates can be marked
+  green.
+- Previously exposed Instagram password, Instagram App Secret, and webhook
+  verification value must be rotated before the Instagram channel can be
+  considered secure for final enablement.
+- No access token, provider user ID, message body, or raw Meta payload is
+  included in this report.
