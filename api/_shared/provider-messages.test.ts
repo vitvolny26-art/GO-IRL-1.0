@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sendProviderInvitation } from "./provider-messages.js";
 
+const httpsRequestMock = vi.hoisted(() => vi.fn());
+
+vi.mock("node:https", () => ({
+  request: httpsRequestMock,
+}));
+
 const runtimeEnv = (globalThis as typeof globalThis & {
   process: { env: Record<string, string | undefined> };
 }).process.env;
@@ -27,8 +33,41 @@ describe("provider message endpoints", () => {
     delete runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL;
     delete runtimeEnv.VERCEL_URL;
     delete runtimeEnv.VERCEL_ENV;
+    httpsRequestMock.mockReset();
     vi.unstubAllGlobals();
   });
+
+  const mockHttpsResponse = (statusCode: number, body = "{}") => {
+    httpsRequestMock.mockImplementation((
+      _url: string,
+      _options: unknown,
+      onResponse: (response: {
+        statusCode: number;
+        setEncoding: (encoding: string) => void;
+        on: (event: string, callback: (chunk?: string) => void) => void;
+      }) => void,
+    ) => {
+      const responseListeners = new Map<string, (chunk?: string) => void>();
+      const response = {
+        statusCode,
+        setEncoding: vi.fn(),
+        on: vi.fn((event: string, callback: (chunk?: string) => void) => {
+          responseListeners.set(event, callback);
+        }),
+      };
+      const requestListeners = new Map<string, (error: Error) => void>();
+      return {
+        on: vi.fn((event: string, callback: (error: Error) => void) => {
+          requestListeners.set(event, callback);
+        }),
+        end: vi.fn(() => {
+          onResponse(response);
+          responseListeners.get("data")?.(body);
+          responseListeners.get("end")?.();
+        }),
+      };
+    });
+  };
 
   it("keeps preview invitation actions on the current preview deployment", async () => {
     runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
@@ -115,7 +154,7 @@ describe("provider message endpoints", () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe("https://graph.facebook.com/v23.0/987654321/messages");
   });
 
-  it("wraps nested fetch failures with only a safe transport code", async () => {
+  it("retries a failed fetch through the native HTTPS transport", async () => {
     runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
     runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
     runtimeEnv.META_GRAPH_VERSION = "v23.0";
@@ -123,11 +162,45 @@ describe("provider message endpoints", () => {
       cause: { errors: [{ code: "ENETUNREACH", address: "sensitive-address" }] },
     }));
     vi.stubGlobal("fetch", fetchMock);
+    mockHttpsResponse(200);
 
     await expect(sendProviderInvitation(
       "instagram",
       "sensitive-recipient-id",
       event,
-    )).rejects.toThrow("meta_transport_failed:ENETUNREACH");
+    )).resolves.toBeUndefined();
+    expect(httpsRequestMock).toHaveBeenCalledOnce();
+    expect(httpsRequestMock.mock.calls[0]?.[0]).toBe("https://graph.instagram.com/v23.0/me/messages");
+    expect(httpsRequestMock.mock.calls[0]?.[1]).toMatchObject({
+      method: "POST",
+      headers: {
+        authorization: "Bearer secret-token",
+        "content-type": "application/json",
+      },
+    });
+  });
+
+  it("wraps native HTTPS failures with only a safe transport code", async () => {
+    runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
+    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
+    runtimeEnv.META_GRAPH_VERSION = "v23.0";
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("fetch failed")));
+    httpsRequestMock.mockImplementation(() => ({
+      on: vi.fn((event: string, callback: (error: Error) => void) => {
+        if (event === "error") {
+          callback(Object.assign(new Error("connect failed"), {
+            code: "ECONNRESET",
+            address: "sensitive-address",
+          }));
+        }
+      }),
+      end: vi.fn(),
+    }));
+
+    await expect(sendProviderInvitation(
+      "instagram",
+      "sensitive-recipient-id",
+      event,
+    )).rejects.toThrow("meta_transport_failed:ECONNRESET");
   });
 });

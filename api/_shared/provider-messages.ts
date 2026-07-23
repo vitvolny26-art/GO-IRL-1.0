@@ -1,3 +1,4 @@
+import { request as nodeHttpsRequest } from "node:https";
 import type { JoinResult } from "../../src/join/types.js";
 import {
   buildInstagramInvitationPayload,
@@ -41,8 +42,42 @@ const safeTransportCode = (error: unknown) => {
   return "unknown";
 };
 
+type GraphResponse = Pick<Response, "ok" | "status" | "text">;
+
+const postViaNodeHttps = (
+  url: string,
+  token: string,
+  body: string,
+): Promise<GraphResponse> => new Promise((resolve, reject) => {
+  const request = nodeHttpsRequest(url, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+      "content-length": Buffer.byteLength(body),
+    },
+  }, (response) => {
+    let responseBody = "";
+    response.setEncoding("utf8");
+    response.on("data", (chunk: string) => {
+      responseBody += chunk;
+    });
+    response.on("end", () => {
+      const status = response.statusCode ?? 0;
+      resolve({
+        ok: status >= 200 && status < 300,
+        status,
+        text: async () => responseBody,
+      });
+    });
+  });
+  request.on("error", reject);
+  request.end(body);
+});
+
 async function sendGraphPayload(url: string, token: string, payload: unknown) {
-  let response: Response;
+  const body = JSON.stringify(payload);
+  let response: GraphResponse;
   try {
     response = await fetch(url, {
       method: "POST",
@@ -50,10 +85,14 @@ async function sendGraphPayload(url: string, token: string, payload: unknown) {
         authorization: `Bearer ${token}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body,
     });
-  } catch (error) {
-    throw new Error(`meta_transport_failed:${safeTransportCode(error)}`, { cause: error });
+  } catch {
+    try {
+      response = await postViaNodeHttps(url, token, body);
+    } catch (error) {
+      throw new Error(`meta_transport_failed:${safeTransportCode(error)}`, { cause: error });
+    }
   }
   if (!response.ok) {
     const errorText = await response.text();
