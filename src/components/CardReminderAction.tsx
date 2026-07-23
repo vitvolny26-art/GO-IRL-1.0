@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Bell, BellRing, Check, Trash2 } from "lucide-react";
 import {
   eventStartsAt,
-  readEventReminder,
   removeEventReminder,
   saveEventReminder,
+  type EventReminderPreference,
   type ReminderChannel,
   type ReminderLeadMinutes,
 } from "../reminderPreferences";
@@ -33,9 +33,9 @@ const leadOptions: Array<{ value: ReminderLeadMinutes; label: string }> = [
 ];
 
 export function CardReminderAction({ activityId, date, time, label = "Настроить напоминание" }: Props) {
+  const serverBacked = usesServerReminderPersistence();
   const [open, setOpen] = useState(false);
-  const [saved, setSaved] = useState(() =>
-    usesServerReminderPersistence() ? null : readEventReminder(activityId));
+  const [saved, setSaved] = useState<EventReminderPreference | null>(null);
   const [channel, setChannel] = useState<ReminderChannel>(saved?.channel || "telegram");
   const [leadMinutes, setLeadMinutes] = useState<ReminderLeadMinutes>(saved?.leadMinutes || 60);
   const [linkedChannels, setLinkedChannels] = useState<Set<ReminderChannel> | null>(null);
@@ -44,7 +44,7 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
   const rootRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (!usesServerReminderPersistence()) return;
+    if (!serverBacked) return;
     let active = true;
     Promise.all([
       readServerEventReminder(activityId),
@@ -65,7 +65,7 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
       if (active) setError("Не удалось загрузить настройки напоминания.");
     });
     return () => { active = false; };
-  }, [activityId]);
+  }, [activityId, serverBacked]);
 
   useEffect(() => {
     if (!open) return;
@@ -92,9 +92,8 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
     setSaving(true);
     setError("");
     try {
-      if (usesServerReminderPersistence()) {
-        await saveServerEventReminder(activityId, channel, leadMinutes);
-      }
+      if (!serverBacked) throw new Error("trusted_auth_required");
+      await saveServerEventReminder(activityId, channel, leadMinutes);
       saveEventReminder(preference);
       setSaved(preference);
       setOpen(false);
@@ -114,9 +113,8 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
     setSaving(true);
     setError("");
     try {
-      if (usesServerReminderPersistence()) {
-        await removeServerEventReminder(activityId);
-      }
+      if (!serverBacked) throw new Error("trusted_auth_required");
+      await removeServerEventReminder(activityId);
       removeEventReminder(activityId);
       setSaved(null);
       setOpen(false);
@@ -154,14 +152,19 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
           </span>
           <span className="card-reminder-channels">
             {channels.map((option) => {
-              const unavailable = linkedChannels !== null && !linkedChannels.has(option.id);
+              const unavailable = !serverBacked ||
+                (linkedChannels !== null && !linkedChannels.has(option.id));
               return (
               <button
                 className={channel === option.id ? "is-selected" : ""}
                 type="button"
                 key={option.id}
                 disabled={unavailable || saving}
-                title={unavailable ? "Сначала откройте чат с ботом GO IRL в этом мессенджере" : undefined}
+                title={unavailable
+                  ? serverBacked
+                    ? "Сначала откройте чат с ботом GO IRL в этом мессенджере"
+                    : "Сначала войдите в GO IRL через поддерживаемый мессенджер"
+                  : undefined}
                 onClick={() => { setChannel(option.id); setError(""); }}
               >
                 <img src={option.icon} alt="" /><span>{option.label}</span>{channel === option.id ? <Check aria-hidden="true" /> : null}
@@ -169,8 +172,13 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
               );
             })}
           </span>
+          {!serverBacked ? (
+            <span className="card-reminder-info">
+              Войдите в GO IRL через поддерживаемый мессенджер, чтобы получать напоминания.
+            </span>
+          ) : null}
           {error ? <span className="card-reminder-error" role="alert">{error}</span> : null}
-          <button className="card-reminder-save" type="button" disabled={saving} onClick={save}>
+          <button className="card-reminder-save" type="button" disabled={saving || !serverBacked} onClick={save}>
             {saving ? "Сохраняем…" : "Сохранить напоминание"}
           </button>
           {saved ? (
