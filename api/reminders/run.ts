@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { readEnv, requireEnv } from "../_shared/env.js";
 import { createVercelHandler } from "../_shared/vercel-handler.js";
 import { isReminderWorkerAuthorized } from "../_shared/worker-authorization.js";
@@ -24,6 +25,7 @@ const publicOrigin = () => {
 };
 
 const supportedProviders: ReminderChannel[] = ["telegram", "whatsapp", "instagram", "messenger"];
+const reminderStatuses = ["scheduled", "sending", "sent", "failed", "cancelled"] as const;
 const enabledProviders = (): ReminderChannel[] => {
   const configured = readEnv("REMINDER_ENABLED_PROVIDERS") || "telegram";
   const selected = configured
@@ -34,11 +36,61 @@ const enabledProviders = (): ReminderChannel[] => {
   return [...new Set<ReminderChannel>(selected.length ? selected : ["telegram"])];
 };
 
+async function reminderHealth() {
+  const client = createClient(
+    requireEnv("SUPABASE_URL"),
+    requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    { auth: { persistSession: false, autoRefreshToken: false } },
+  );
+  const counts = await Promise.all(reminderStatuses.map(async (status) => {
+    const { count, error } = await client
+      .from("event_reminders")
+      .select("id", { count: "exact", head: true })
+      .eq("status", status);
+    if (error) throw new Error(`reminder_health_count_failed:${error.code || status}`);
+    return [status, count || 0] as const;
+  }));
+  const now = new Date();
+  const { data: overdue, error: overdueError } = await client
+    .from("event_reminders")
+    .select("scheduled_for,next_attempt_at")
+    .in("status", ["scheduled", "failed"])
+    .lte("scheduled_for", now.toISOString())
+    .order("scheduled_for", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (overdueError) {
+    throw new Error(`reminder_health_overdue_failed:${overdueError.code || "unknown"}`);
+  }
+  const oldestDueAt = overdue ? String(overdue.next_attempt_at || overdue.scheduled_for) : null;
+  const oldestDueAgeSeconds = oldestDueAt
+    ? Math.max(0, Math.floor((now.getTime() - new Date(oldestDueAt).getTime()) / 1000))
+    : 0;
+  return {
+    ok: oldestDueAgeSeconds < 300,
+    workerEnabled: readEnv("REMINDER_WORKER_ENABLED") === "true",
+    providers: enabledProviders(),
+    counts: Object.fromEntries(counts),
+    oldestDueAgeSeconds,
+    checkedAt: now.toISOString(),
+  };
+}
+
 export async function handleReminderRun(request: Request) {
-  if (request.method !== "POST") {
-    return new Response(null, { status: 405, headers: { Allow: "POST" } });
+  if (request.method !== "POST" && request.method !== "GET") {
+    return new Response(null, { status: 405, headers: { Allow: "GET, POST" } });
   }
   if (!isReminderWorkerAuthorized(request)) return json(401, { error: "unauthorized" });
+  if (request.method === "GET") {
+    try {
+      return json(200, await reminderHealth());
+    } catch (error) {
+      console.error("reminder_health_failed", {
+        code: error instanceof Error ? error.message.slice(0, 100) : "unknown",
+      });
+      return json(503, { error: "reminder_health_failed" });
+    }
+  }
   if (readEnv("REMINDER_WORKER_ENABLED") !== "true") {
     return json(503, { error: "reminder_worker_disabled" });
   }
