@@ -300,3 +300,28 @@ mismatched production identities.
   considered secure for final enablement.
 - No access token, provider user ID, message body, or raw Meta payload is
   included in this report.
+
+## Instagram credential checkpoint — production
+
+- PR #329 normalized embedded whitespace and common zero-width formatting in the
+  server-only Meta access token before the Authorization header is constructed.
+- PR #330 restricts that header value to printable ASCII only. Both patches
+  passed GitHub CI and Vercel checks, were merged, and are deployed to
+  production.
+- A fresh production `START` changed the backend outcome from
+  `meta_transport_ERR_INVALID_CHAR` to `meta_send_failed_401`. The HTTP
+  transport/header defect is therefore fixed; Meta is now rejecting the stored
+  Instagram access token as invalid or expired.
+- Meta API Setup confirms that the intended professional account is
+  `vits.olo`, its webhook subscription is enabled, and token generation is
+  available.
+- Meta requires a forced interactive login to `vits.olo` before it can issue a
+  fresh app-scoped token. This is the only current manual Instagram action.
+- Instagram remains excluded from `REMINDER_ENABLED_PROVIDERS` until the fresh
+  token is stored server-side and the live outbound, opt-out, retry, and
+  idempotency gates pass.
+- WhatsApp templates `go_irl_event_reminder` and `go_irl_event_update` still
+  show pending review. No WhatsApp smoke test was sent and the channel was not
+  enabled.
+- No secret, provider identifier, message body, or raw Meta payload is included
+  in this checkpoint.
