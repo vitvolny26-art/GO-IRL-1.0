@@ -70,6 +70,18 @@ export async function getProviderEventSummary(eventId: string): Promise<MetaEven
 
 async function resolveProviderUserKey(provider: Exclude<JoinProvider, "telegram">, providerUserId: string, displayName: string) {
   const client = getAdminClient();
+  const ensureIdentity = async (userKey: string) => {
+    const { error } = await client.from("user_provider_identities").upsert({
+      user_key: userKey,
+      provider,
+      provider_user_id: providerUserId,
+      status: "active",
+      last_inbound_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "provider,provider_user_id" });
+    if (error) throw error;
+    return userKey;
+  };
   const existing = await client
     .from("app_users")
     .select("user_key,status")
@@ -78,7 +90,7 @@ async function resolveProviderUserKey(provider: Exclude<JoinProvider, "telegram"
     .maybeSingle();
   if (existing.error) throw existing.error;
   if (existing.data?.status === "blocked" || existing.data?.status === "deleted") throw new Error("provider_user_blocked");
-  if (existing.data?.user_key) return existing.data.user_key as string;
+  if (existing.data?.user_key) return ensureIdentity(existing.data.user_key as string);
 
   const userKey = `user:${crypto.randomUUID()}`;
   const { error } = await client.from("app_users").insert({
@@ -88,7 +100,7 @@ async function resolveProviderUserKey(provider: Exclude<JoinProvider, "telegram"
     first_name: displayName.slice(0, 120) || "GO IRL User",
     last_login_at: new Date().toISOString(),
   });
-  if (!error) return userKey;
+  if (!error) return ensureIdentity(userKey);
   const raced = await client
     .from("app_users")
     .select("user_key")
@@ -96,7 +108,7 @@ async function resolveProviderUserKey(provider: Exclude<JoinProvider, "telegram"
     .eq("provider_user_id", providerUserId)
     .single();
   if (raced.error) throw raced.error;
-  return raced.data.user_key as string;
+  return ensureIdentity(raced.data.user_key as string);
 }
 
 export async function joinProviderEvent(input: {
