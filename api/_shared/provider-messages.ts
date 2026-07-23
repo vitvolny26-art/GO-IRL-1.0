@@ -23,15 +23,38 @@ const instagramMessagesUrl = () => readEnv("INSTAGRAM_API_MODE") === "instagram_
   ? `https://graph.instagram.com/${requireEnv("META_GRAPH_VERSION")}/me/messages`
   : graphUrl(`${requireEnv("INSTAGRAM_ACCOUNT_ID")}/messages`);
 
+const safeTransportCode = (error: unknown) => {
+  const seen = new Set<unknown>();
+  const queue: unknown[] = [error];
+  while (queue.length) {
+    const candidate = queue.shift();
+    if (!candidate || typeof candidate !== "object" || seen.has(candidate)) continue;
+    seen.add(candidate);
+    const record = candidate as { cause?: unknown; code?: unknown; errors?: unknown };
+    if (typeof record.code === "string") {
+      const code = record.code.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 60);
+      if (code) return code;
+    }
+    if (record.cause) queue.push(record.cause);
+    if (Array.isArray(record.errors)) queue.push(...record.errors.slice(0, 5));
+  }
+  return "unknown";
+};
+
 async function sendGraphPayload(url: string, token: string, payload: unknown) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${token}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    throw new Error(`meta_transport_failed:${safeTransportCode(error)}`, { cause: error });
+  }
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`meta_send_failed:${response.status}:${errorText.slice(0, 300)}`);

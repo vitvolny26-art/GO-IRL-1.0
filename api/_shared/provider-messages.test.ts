@@ -114,4 +114,20 @@ describe("provider message endpoints", () => {
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe("https://graph.facebook.com/v23.0/987654321/messages");
   });
+
+  it("wraps nested fetch failures with only a safe transport code", async () => {
+    runtimeEnv.INSTAGRAM_API_MODE = "instagram_login";
+    runtimeEnv.INSTAGRAM_ACCESS_TOKEN = "secret-token";
+    runtimeEnv.META_GRAPH_VERSION = "v23.0";
+    const fetchMock = vi.fn().mockRejectedValue(Object.assign(new TypeError("fetch failed"), {
+      cause: { errors: [{ code: "ENETUNREACH", address: "sensitive-address" }] },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(sendProviderInvitation(
+      "instagram",
+      "sensitive-recipient-id",
+      event,
+    )).rejects.toThrow("meta_transport_failed:ENETUNREACH");
+  });
 });

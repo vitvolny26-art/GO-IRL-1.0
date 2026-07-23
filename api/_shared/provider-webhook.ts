@@ -124,6 +124,13 @@ export function providerProcessingErrorCode(error: unknown) {
   const metaStatus = /^meta_send_failed:(\d{3}):/.exec(error.message)?.[1];
   if (metaStatus) return `meta_send_failed_${metaStatus}`;
 
+  const wrappedTransportCode = /^meta_transport_failed:([A-Za-z0-9_-]{1,60})$/.exec(error.message)?.[1];
+  if (wrappedTransportCode) {
+    return wrappedTransportCode === "unknown"
+      ? "meta_transport_failed"
+      : `meta_transport_${wrappedTransportCode}`;
+  }
+
   const cause = (error as Error & { cause?: { code?: unknown } }).cause;
   const transportCode = typeof cause?.code === "string" ? safeErrorToken(cause.code) : "";
   if (error.name === "TypeError" && error.message === "fetch failed") {
