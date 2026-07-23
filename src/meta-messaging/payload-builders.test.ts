@@ -41,6 +41,29 @@ describe("Meta messaging payload builders", () => {
     ]);
   });
 
+  it("builds the real Messenger Business API rich card for a known PSID", () => {
+    const payload = buildMessengerInvitationPayload("psid-rich-card", {
+      ...event,
+      language: "ru",
+      imageUrl: "https://goirl.example/api/meta/event-invitation-card?token=signed",
+      openUrl: "https://goirl.example/join/event-meta-1",
+      calendarUrl: "https://calendar.google.com/calendar/render?event=event-meta-1",
+    });
+
+    expect(payload.messaging_type).toBe("RESPONSE");
+    expect(payload.recipient).toEqual({ id: "psid-rich-card" });
+    const template = payload.message.attachment?.payload;
+    expect(template?.template_type).toBe("generic");
+    if (!template || template.template_type !== "generic") throw new Error("expected_generic_template");
+    const element = template.elements[0];
+    expect(element?.image_url).toContain("event-invitation-card");
+    expect(element?.default_action?.url).toBe("https://goirl.example/join/event-meta-1");
+    expect(element?.buttons).toEqual([
+      { type: "web_url", title: "Открыть событие", url: "https://goirl.example/join/event-meta-1" },
+      { type: "web_url", title: "В календарь", url: "https://calendar.google.com/calendar/render?event=event-meta-1" },
+    ]);
+  });
+
   it("builds a Messenger welcome screen with a GO IRL web action", () => {
     const payload = buildMessengerWelcomePayload("psid-1", "https://go-irl.example");
 
