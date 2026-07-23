@@ -90,6 +90,12 @@ describe("production provider webhook boundary", () => {
     );
   });
 
+  it("classifies wrapped transport failures without storing provider data", () => {
+    expect(providerProcessingErrorCode(
+      new Error("meta_transport_failed:UND_ERR_CONNECT_TIMEOUT"),
+    )).toBe("meta_transport_UND_ERR_CONNECT_TIMEOUT");
+  });
+
   beforeEach(() => {
     runtimeEnv.META_VERIFY_TOKEN = "test-verify-token";
     runtimeEnv.META_APP_SECRET = "test-app-secret";
