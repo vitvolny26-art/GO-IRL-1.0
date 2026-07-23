@@ -740,9 +740,6 @@ export const useAppStore = create<AppState>((set, get) => {
         throw new Error("Only organizer or admin can delete activity");
       }
 
-      const membersResult = await supabase.from("activity_members").delete().eq("activity_id", id);
-      if (membersResult.error) throw membersResult.error;
-
       const { error, count } = await supabase.from("activities").delete({ count: "exact" }).eq("id", id);
       if (error) throw error;
       if (count === 0) {
@@ -791,18 +788,12 @@ export const useAppStore = create<AppState>((set, get) => {
       const activity = get().activities.find((item) => item.id === activityId);
       if (!activity || activity.organizerKey !== getUserKey()) throw new Error("Only organizer can review requests");
 
-      if (!approved) {
-        const { error } = await supabase.from("activity_members").delete().eq("activity_id", activityId).eq("user_key", memberKey);
-        if (error) throw error;
-      } else {
-        const status: DbMember["status"] = activity.participants >= activity.capacity ? "waiting" : "joined";
-        const { error } = await supabase
-          .from("activity_members")
-          .update({ status })
-          .eq("activity_id", activityId)
-          .eq("user_key", memberKey);
-        if (error) throw error;
-      }
+      const { error } = await supabase.rpc("go_irl_review_join_request", {
+        p_activity_id: activityId,
+        p_member_user_key: memberKey,
+        p_approved: approved,
+      });
+      if (error) throw error;
       await reload();
     } };
 });

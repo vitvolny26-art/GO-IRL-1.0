@@ -162,3 +162,35 @@ export async function sendMessengerWelcome(recipientId: string) {
     buildMessengerWelcomePayload(recipientId, origin),
   );
 }
+
+export async function sendProviderText(
+  provider: MessagingProvider,
+  recipientId: string,
+  text: string,
+) {
+  if (provider === "whatsapp") {
+    return sendGraphPayload(
+      graphUrl(`${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`),
+      requireEnv("WHATSAPP_ACCESS_TOKEN"),
+      {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: recipientId,
+        type: "text",
+        text: { body: text },
+      },
+    );
+  }
+  const payload = provider === "messenger"
+    ? { messaging_type: "RESPONSE", recipient: { id: recipientId }, message: { text } }
+    : { recipient: { id: recipientId }, message: { text } };
+  return sendGraphPayload(
+    provider === "instagram"
+      ? instagramMessagesUrl()
+      : graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
+    provider === "instagram"
+      ? requireEnv("INSTAGRAM_ACCESS_TOKEN")
+      : requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
+    payload,
+  );
+}
