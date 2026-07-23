@@ -62,6 +62,41 @@ describe("disabled Meta messaging mock webhooks", () => {
       },
     });
   });
+
+  it("maps an m.me event referral to the existing rich-card details action for the sender PSID", () => {
+    const eventId = "39e31319-a4fc-4d41-bf1e-d713178290d1";
+    const messages = parseMetaMessagingTestPayload("messenger", {
+      object: "page",
+      entry: [{ messaging: [{
+        sender: { id: "psid-referral-1" },
+        timestamp: 1780000001000,
+        referral: { ref: `event:${eventId}`, source: "SHORTLINK", type: "OPEN_THREAD" },
+      }] }],
+    });
+
+    expect(messages).toEqual([{
+      provider: "messenger",
+      id: "messenger:psid-referral-1:1780000001000",
+      senderId: "psid-referral-1",
+      actionPayload: `details:${eventId}`,
+    }]);
+  });
+
+  it("maps a Messenger postback referral to the same rich-card details action", () => {
+    const eventId = "39e31319-a4fc-4d41-bf1e-d713178290d1";
+    const messages = parseMetaMessagingTestPayload("messenger", {
+      object: "page",
+      entry: [{ messaging: [{
+        sender: { id: "psid-postback-referral" },
+        timestamp: 1780000002000,
+        postback: { referral: { ref: `event:${eventId}` } },
+      }] }],
+    });
+
+    expect(messages[0]?.actionPayload).toBe(`details:${eventId}`);
+    expect(messages[0]?.senderId).toBe("psid-postback-referral");
+  });
+
   it("ignores Messenger echo messages to prevent reply loops", () => {
     const messages = parseMetaMessagingTestPayload("messenger", {
       object: "page",
