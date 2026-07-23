@@ -15,6 +15,11 @@ Production remains safe while external approvals are incomplete: disabled channe
 ### Reminder product
 
 - Event-card reminder control and reminder settings UI.
+- Public and otherwise untrusted sessions cannot create a misleading local-only
+  reminder: provider controls and Save remain disabled until trusted
+  authentication is present.
+- For trusted sessions, the server record is authoritative; stale local reminder
+  state is cleared when no matching server reminder exists.
 - Secure reminder persistence with RLS.
 - Provider selection and provider-specific opt-in/opt-out state.
 - Scheduled worker on the protected `/api/reminders/run` route.
@@ -60,9 +65,9 @@ Production remains safe while external approvals are incomplete: disabled channe
 
 ## Production verification
 
-- Production deployment after operator monitoring:
-  `go-irl-1-0-jv5nct3lq-vitvolny26-5251s-projects.vercel.app`
-  (`dpl_5nAnVfPVxnirHqmXEKcMNLr2aEzF`)
+- Latest production deployment after the reminder authentication gate:
+  `go-irl-1-0-e4y17j0qx-vitvolny26-5251s-projects.vercel.app`
+  (`dpl_DouoTRv5yh6jiaN8Rm6MqTqMjz8t`)
 - Deployment status: Ready.
 - Production scheduler calls `/api/reminders/run` successfully.
 - Unauthenticated health access returns `401`.
@@ -76,6 +81,10 @@ Production remains safe while external approvals are incomplete: disabled channe
   claim `false`, and rolled back test data.
 - Operator alert state has RLS enabled; `anon` and `authenticated` have neither
   table read access nor RPC execution access.
+- Automated mobile-width verification at `390×844` proved that the reminder
+  panel fits without horizontal overflow. In a public unauthenticated session,
+  all four providers and Save are disabled and the sign-in explanation is
+  visible.
 
 ## Merged work
 
@@ -91,6 +100,9 @@ Production remains safe while external approvals are incomplete: disabled channe
 - PR #308 — transactional event-notification outbox.
 - PR #309 — cancellation-recipient preservation and outbox monitoring.
 - PR #311 — operator alerts and protected cooldown.
+- PR #312 — production monitoring verification report.
+- PR #313 — server-authoritative reminder state.
+- PR #314 — trusted-authentication gate and mobile reminder release check.
 
 ## Meta configuration status
 
