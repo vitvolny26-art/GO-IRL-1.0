@@ -103,6 +103,8 @@ Production remains safe while external approvals are incomplete: disabled channe
 - PR #312 — production monitoring verification report.
 - PR #313 — server-authoritative reminder state.
 - PR #314 — trusted-authentication gate and mobile reminder release check.
+- PR #317 — privacy-safe Meta webhook diagnostics.
+- PR #318 — durable inbound identity lifecycle and webhook idempotency.
 
 ## Meta configuration status
 
@@ -136,10 +138,25 @@ Production remains safe while external approvals are incomplete: disabled channe
   `https://go-irl-1-0.vercel.app/api/messenger/webhook`.
 - The connected Page is `GO IRL` (`1140926245780489`).
 - `messages` and `messaging_postbacks` subscriptions are active.
-- A real inbound Messenger message reached the production webhook with HTTP
-  `200`, and the user received one reply in the same conversation.
-- The immediate inbound/outbound smoke gate is green. Lifecycle outbox,
-  retry-idempotency, and opt-out still require the controlled release fixture
+- A fresh real inbound Messenger message reached production deployment
+  `dpl_5wjHfSkoB1ogVdLYSckVVe7VFzgV`. The privacy-safe log proved
+  `entries=1`, `directMessagingEvents=1`, `actions=1`, `duplicates=0`, and
+  `failures=0`; one backend welcome response was visible in the same
+  conversation.
+- `last_inbound_at` now updates for ordinary messages. An already revoked
+  identity remains revoked when another ordinary message arrives.
+- `СТОП` produced the expected confirmation and set the provider identity to
+  `revoked`. A later ordinary inbound updated the 24-hour-window timestamp
+  without silently re-enabling notifications. `СТАРТ` then restored `active`
+  status with explicit consent.
+- Durable webhook idempotency is active. Only a provider-scoped SHA-256 event
+  key is stored; raw provider event IDs and payloads are not persisted.
+  Production SQL verification proved first claim `true`, concurrent duplicate
+  claim `false`, and post-completion claim `false`.
+- The table has RLS enabled; `anon` and `authenticated` have no table access or
+  RPC execution, while `service_role` can claim and complete events.
+- The basic inbound/outbound, identity, idempotency, and opt-in/opt-out gates
+  are green. A controlled transactional lifecycle/outbox fixture still remains
   before Messenger can be added to scheduled reminders.
 
 ## Release gates
@@ -164,8 +181,9 @@ A channel can be added to `REMINDER_ENABLED_PROVIDERS` only after all of these a
 - Run one controlled WhatsApp invitation, join, lifecycle, reminder, and opt-out test.
 - Run a session-window test for Instagram Direct after the professional account
   is connected through valid permissions.
-- Run the controlled lifecycle/outbox, retry-idempotency, and opt-out fixture
-  for Messenger; its basic production webhook and reply smoke test is green.
+- Run the controlled lifecycle/outbox fixture for Messenger. Its production
+  webhook, reply, durable idempotency, identity refresh, and explicit
+  opt-in/opt-out gates are green.
 - Enable channels one at a time only after their individual release gate passes.
 
 ### P1 — physical-device QA
@@ -206,3 +224,11 @@ Telegram remains the only fully enabled scheduled-reminder channel. The code and
   secret to the client, repository, report, or logs.
 - Meta App publication remains intentionally blocked until each channel's
   identity, permission, app-review, and live-delivery gate is green.
+- Messenger lifecycle hardening was released through PR #318 on production
+  deployment `dpl_5wjHfSkoB1ogVdLYSckVVe7VFzgV`.
+- Validation for PR #318: lint, typecheck, build, GitHub CI, Vercel Preview,
+  and the full test suite were green (`72` files, `360` tests).
+- Supabase migration `provider_inbound_idempotency` is applied. The security
+  advisor reported no new exposed-function warning for its service-only RPCs;
+  its no-policy notice is expected because the table is intentionally
+  inaccessible to client roles.
