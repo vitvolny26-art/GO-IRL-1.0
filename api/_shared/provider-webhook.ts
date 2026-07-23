@@ -129,7 +129,9 @@ async function processAction(provider: MessagingProvider, action: InboundAction)
     displayName: action.displayName,
     eventId,
   });
-  await sendProviderJoinResult(provider, action.providerUserId, result);
+  if (result.status === "already_joined" || result.status === "rejected") {
+    await sendProviderJoinResult(provider, action.providerUserId, result);
+  }
 }
 
 export async function handleProviderWebhook(provider: MessagingProvider, request: Request) {
