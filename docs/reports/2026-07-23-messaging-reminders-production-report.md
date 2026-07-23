@@ -6,7 +6,12 @@ Repository: `vitvolny26-art/GO-IRL-1.0`
 
 ## Executive status
 
-The provider-neutral messaging foundation is implemented and deployed. Telegram is the only channel intentionally enabled for scheduled reminders in production. WhatsApp lifecycle and reminder templates are submitted to Meta and remain pending review. Instagram Direct and Messenger delivery adapters are implemented, but production enablement still requires live policy-window smoke tests with the connected accounts.
+The provider-neutral messaging foundation is implemented and deployed.
+Telegram and Messenger are intentionally enabled for scheduled and lifecycle
+delivery in Production. WhatsApp lifecycle and reminder templates are submitted
+to Meta and remain pending review. Instagram Direct has a connected professional
+test account, but production enablement still requires a fresh app-scoped token,
+published webhook access, and a complete live lifecycle smoke test.
 
 Production remains safe while external approvals are incomplete: disabled channels do not receive scheduled outbound traffic, secrets remain server-side, and lifecycle delivery is handled through an idempotent database outbox with retry state.
 
@@ -105,13 +110,17 @@ Production remains safe while external approvals are incomplete: disabled channe
 - PR #314 — trusted-authentication gate and mobile reminder release check.
 - PR #317 — privacy-safe Meta webhook diagnostics.
 - PR #318 — durable inbound identity lifecycle and webhook idempotency.
+- PR #319 — canonical production-status reconciliation.
+- PR #320 — Messenger transactional delivery release evidence.
 
 ## Meta configuration status
 
 ### WhatsApp
 
-- Template `go_irl_event_reminder`: submitted, pending Meta review.
-- Template `go_irl_event_update`: submitted, pending Meta review.
+- Template `go_irl_event_reminder`: submitted, still pending Meta review on
+  2026-07-23.
+- Template `go_irl_event_update`: submitted, still pending Meta review on
+  2026-07-23.
 - `WHATSAPP_LIFECYCLE_TEMPLATE_NAME=go_irl_event_update` added to Production and Preview as a non-secret configuration value.
 - Production redeployed after the environment update.
 - WhatsApp must remain disabled in `REMINDER_ENABLED_PROVIDERS` until both the relevant template and live credentials pass a real-number smoke test.
@@ -122,15 +131,27 @@ Production remains safe while external approvals are incomplete: disabled channe
   `https://go-irl-1-0.vercel.app/api/instagram/webhook`.
 - App-level subscriptions for `messages` and `messaging_postbacks` are enabled.
 - Inbound webhook and outbound adapter exist.
+- A controlled DM from the secondary test account was visible in the
+  professional account inbox, but the protected database audit recorded zero
+  new Instagram inbound events and zero updated Instagram identities. This is
+  a failed release gate, not evidence of a working production webhook.
+- Root-cause reconciliation found that the current Instagram Login app
+  `Go IRL-IG` had no connected account and the `yuzhaniin` Instagram Tester
+  invitation was pending. The tester role has now been assigned and accepted,
+  and API Setup lists `yuzhaniin` as the connected professional account.
+- The app-scoped token has not yet been regenerated. Meta requires forced
+  reauthentication for this security-sensitive step, and the account-level
+  webhook subscription remains off while the app is unpublished.
+- Any previously configured Instagram token must be treated as belonging to an
+  older app until the new `Go IRL-IG` token is generated and verified. Instagram
+  remains excluded from `REMINDER_ENABLED_PROVIDERS`.
 - Production enablement still needs:
-  - confirmation of the connected professional account;
-  - a real inbound DM to open the allowed messaging window;
+  - generation and server-side storage of a fresh `Go IRL-IG` token;
+  - publication/app-review access for live webhook data;
+  - a repeated real inbound DM after the current app is subscribed;
   - one controlled outbound lifecycle smoke test;
   - verification that retries do not duplicate a message.
-- The Meta legacy Page-permission dialog currently requests the invalid
-  `instagram_manage_messages` and `instagram_basic` scopes. The live gate stays
-  closed until the professional Instagram identity is connected through the
-  current permission flow.
+- The obsolete legacy Page-permission path is no longer used for this gate.
 
 ### Facebook Messenger
 
@@ -186,8 +207,9 @@ A channel can be added to `REMINDER_ENABLED_PROVIDERS` only after all of these a
 - Wait for both WhatsApp templates to become Active.
 - Verify the production WhatsApp phone number and permanent system-user token match.
 - Run one controlled WhatsApp invitation, join, lifecycle, reminder, and opt-out test.
-- Run a session-window test for Instagram Direct after the professional account
-  is connected through valid permissions.
+- Complete forced reauthentication, generate the current `Go IRL-IG` token,
+  publish/approve the required webhook access, and repeat the Instagram Direct
+  session-window test.
 - Enable channels one at a time only after their individual release gate passes.
 
 ### P1 — physical-device QA
