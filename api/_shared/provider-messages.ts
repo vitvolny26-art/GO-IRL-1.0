@@ -77,7 +77,7 @@ const postViaNodeHttps = (
 
 async function sendGraphPayload(url: string, token: string, payload: unknown) {
   const body = JSON.stringify(payload);
-  const accessToken = token.replace(/[\s\u200B\uFEFF]+/g, "");
+  const accessToken = token.replace(/[^\x21-\x7E]/g, "");
   if (!accessToken) throw new Error("meta_access_token_invalid");
   let response: GraphResponse;
   try {
