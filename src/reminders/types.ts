@@ -30,6 +30,7 @@ export type ReminderDelivery = {
   deliveryKey: string;
   provider: ReminderChannel;
   recipientId: string;
+  recipientLastInboundAt?: string;
   cancelReason?: string;
   leadMinutes: ReminderLeadMinutes;
   language: Language;

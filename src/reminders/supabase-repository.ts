@@ -21,6 +21,7 @@ type IdentityRow = {
   provider_user_id: string;
   status: "active" | "revoked";
   consented_at: string | null;
+  last_inbound_at: string | null;
 };
 
 type ActivityRow = {
@@ -104,6 +105,7 @@ export function hydrateReminderDelivery(input: {
     deliveryKey: reminder.delivery_key,
     provider: reminder.provider,
     recipientId: identity?.provider_user_id || "",
+    ...(identity?.last_inbound_at ? { recipientLastInboundAt: identity.last_inbound_at } : {}),
     ...(cancelReason ? { cancelReason } : {}),
     leadMinutes: reminder.lead_minutes,
     language,
@@ -158,7 +160,7 @@ export class SupabaseReminderRepository implements ReminderWorkerRepository {
       const [identityResult, eventResult] = await Promise.all([
         this.client
           .from("user_provider_identities")
-          .select("provider_user_id,status,consented_at")
+          .select("provider_user_id,status,consented_at,last_inbound_at")
           .eq("user_key", reminder.user_key)
           .eq("provider", reminder.provider)
           .maybeSingle(),
