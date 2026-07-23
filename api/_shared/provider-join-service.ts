@@ -143,13 +143,26 @@ export async function setProviderNotificationConsent(input: {
         status: "cancelled",
         next_attempt_at: null,
         leased_at: null,
-        last_error: "provider_opted_out",
+        last_error_code: "provider_opted_out",
         updated_at: now,
       })
       .eq("user_key", userKey)
       .eq("provider", input.provider)
       .in("status", ["scheduled", "failed", "sending"]);
     if (reminderError) throw reminderError;
+    const { error: notificationError } = await client
+      .from("event_notifications")
+      .update({
+        status: "cancelled",
+        next_attempt_at: null,
+        leased_at: null,
+        last_error_code: "provider_opted_out",
+        updated_at: now,
+      })
+      .eq("user_key", userKey)
+      .eq("provider", input.provider)
+      .in("status", ["scheduled", "failed", "sending"]);
+    if (notificationError) throw notificationError;
   }
 
   return { userKey, consented: input.consented };
