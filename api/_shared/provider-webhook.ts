@@ -3,8 +3,18 @@ import type { MetaMessagingProvider } from "../../src/meta-messaging/types.js";
 import { parseWhatsAppTestPayload } from "../../src/whatsapp/mock-webhook.js";
 import { readEnv, requireEnv } from "./env.js";
 import { verifyMetaSignature } from "./meta-signature.js";
-import { getProviderEventSummary, joinProviderEvent } from "./provider-join-service.js";
-import { sendMessengerWelcome, sendProviderInvitation, sendProviderJoinResult, type MessagingProvider } from "./provider-messages.js";
+import {
+  getProviderEventSummary,
+  joinProviderEvent,
+  setProviderNotificationConsent,
+} from "./provider-join-service.js";
+import {
+  sendMessengerWelcome,
+  sendProviderInvitation,
+  sendProviderJoinResult,
+  sendProviderText,
+  type MessagingProvider,
+} from "./provider-messages.js";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -22,6 +32,15 @@ const asRecord = (value: unknown): UnknownRecord | null =>
 const asRecords = (value: unknown) => Array.isArray(value) ? value.map(asRecord).filter(Boolean) as UnknownRecord[] : [];
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const stopCommands = new Set(["stop", "стоп", "отписаться", "отписка", "unsubscribe"]);
+const startCommands = new Set(["start", "старт", "подписаться", "подписка", "subscribe"]);
+
+export function classifyProviderConsentCommand(text?: string) {
+  const normalized = text?.trim().toLocaleLowerCase("ru-RU") || "";
+  if (stopCommands.has(normalized)) return "revoke" as const;
+  if (startCommands.has(normalized)) return "consent" as const;
+  return null;
+}
 
 function parseWhatsAppActions(payload: unknown): InboundAction[] {
   const root = asRecord(payload);
@@ -39,6 +58,7 @@ function parseWhatsAppActions(payload: unknown): InboundAction[] {
     id: message.id,
     providerUserId: message.from,
     displayName: names.get(message.from) || "WhatsApp User",
+    text: message.text,
     actionPayload: message.replyId,
   }));
 }
@@ -67,6 +87,24 @@ const providerSecret = (
   : requireEnv(sharedName);
 
 async function processAction(provider: MessagingProvider, action: InboundAction) {
+  const consentCommand = classifyProviderConsentCommand(action.text);
+  if (consentCommand) {
+    const consented = consentCommand === "consent";
+    await setProviderNotificationConsent({
+      provider,
+      providerUserId: action.providerUserId,
+      displayName: action.displayName,
+      consented,
+    });
+    await sendProviderText(
+      provider,
+      action.providerUserId,
+      consented
+        ? "Уведомления GO IRL включены. Чтобы отключить их, отправьте СТОП."
+        : "Уведомления GO IRL отключены. Чтобы включить их снова, отправьте СТАРТ.",
+    );
+    return;
+  }
   if (!action.actionPayload) {
     if (provider === "messenger" && action.text?.trim()) {
       await sendMessengerWelcome(action.providerUserId);
