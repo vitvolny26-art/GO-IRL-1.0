@@ -77,9 +77,11 @@ The production implementation now includes:
 - provider opt-in/opt-out handling;
 - protected health monitoring and rate-limited operator alerts.
 
-For a trusted authenticated session, Supabase is authoritative. Local storage is only
-an unauthenticated fallback and optimistic cache; it must not keep the bell active
-when the server has no reminder.
+For a trusted authenticated session, Supabase is authoritative. Local storage is
+only an optimistic cache after a successful server write; it must not keep the
+bell active when the server has no reminder. An unauthenticated public web session
+may inspect reminder options but cannot save a reminder or select a delivery
+provider, because there is no verified recipient identity.
 
 Telegram is enabled in production. WhatsApp activation is gated on approved Meta
 templates and a real-number smoke test. Instagram Direct and Messenger activation
