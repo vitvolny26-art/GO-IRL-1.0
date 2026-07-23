@@ -26,6 +26,14 @@ const asRecord = (value: unknown): UnknownRecord | null =>
 
 const asRecords = (value: unknown) => Array.isArray(value) ? value.map(asRecord).filter(Boolean) as UnknownRecord[] : [];
 
+const referralActionPayload = (event: UnknownRecord, postback: UnknownRecord | null) => {
+  const referral = asRecord(event.referral) || asRecord(postback?.referral);
+  const ref = typeof referral?.ref === "string" ? referral.ref.trim() : "";
+  return ref.startsWith("event:") && ref.length > "event:".length
+    ? `details:${ref.slice("event:".length)}`
+    : undefined;
+};
+
 export function parseMetaMessagingTestPayload(
   provider: MetaMessagingProvider,
   payload: unknown,
@@ -44,6 +52,7 @@ export function parseMetaMessagingTestPayload(
           ? `${provider}:${senderId}:${event.timestamp}`
           : "";
       if (!senderId || !id || message?.is_echo === true) return [];
+      const referralPayload = provider === "messenger" ? referralActionPayload(event, postback) : undefined;
       return [{
         provider,
         id,
@@ -53,7 +62,9 @@ export function parseMetaMessagingTestPayload(
           ? { actionPayload: quickReply.payload }
           : typeof postback?.payload === "string"
             ? { actionPayload: postback.payload }
-            : {}),
+            : referralPayload
+              ? { actionPayload: referralPayload }
+              : {}),
       }];
     }),
   );
