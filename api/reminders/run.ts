@@ -13,6 +13,11 @@ import type { ReminderChannel } from "../../src/reminderPreferences.js";
 import { EventNotificationDispatcher } from "../../src/notifications/dispatcher.js";
 import { EventNotificationRepository } from "../../src/notifications/repository.js";
 import { runEventNotificationWorker } from "../../src/notifications/worker.js";
+import {
+  buildMessagingHealthAlert,
+  sendClaimedTelegramAlert,
+  type MessagingHealthSnapshot,
+} from "../../src/monitoring/operator-alert.js";
 
 const json = (status: number, payload: unknown) => new Response(JSON.stringify(payload), {
   status,
@@ -39,7 +44,7 @@ const enabledProviders = (): ReminderChannel[] => {
   return [...new Set<ReminderChannel>(selected.length ? selected : ["telegram"])];
 };
 
-async function reminderHealth() {
+async function reminderHealth(): Promise<MessagingHealthSnapshot> {
   const client = createClient(
     requireEnv("SUPABASE_URL"),
     requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
@@ -94,7 +99,7 @@ async function reminderHealth() {
     ? Math.max(0, Math.floor((now.getTime() - new Date(oldestDueAt).getTime()) / 1000))
     : 0;
   return {
-    ok: oldestDueAgeSeconds < 300,
+    ok: readEnv("REMINDER_WORKER_ENABLED") === "true" && oldestDueAgeSeconds < 300,
     workerEnabled: readEnv("REMINDER_WORKER_ENABLED") === "true",
     providers: enabledProviders(),
     reminders: Object.fromEntries(reminderCounts),
@@ -102,6 +107,35 @@ async function reminderHealth() {
     oldestDueAgeSeconds,
     checkedAt: now.toISOString(),
   };
+}
+
+async function maybeAlertOperator(
+  client: ReturnType<typeof createClient>,
+  alertKey: string,
+  message: string | null,
+) {
+  const chatId = readEnv("REMINDER_ALERT_TELEGRAM_CHAT_ID");
+  if (!chatId || !message) return;
+  try {
+    const result = await sendClaimedTelegramAlert(alertKey, message, {
+      botToken: requireEnv("TELEGRAM_BOT_TOKEN"),
+      chatId,
+      claim: async (key, cooldownSeconds) => {
+        const { data, error } = await client.rpc(
+          "go_irl_claim_messaging_operator_alert",
+          { p_alert_key: key, p_cooldown_seconds: cooldownSeconds },
+        );
+        if (error) throw new Error(`operator_alert_claim_failed:${error.code || "unknown"}`);
+        return data === true;
+      },
+    });
+    console.warn("messaging_operator_alert", { alertKey, ...result });
+  } catch (error) {
+    console.error("messaging_operator_alert_failed", {
+      alertKey,
+      code: error instanceof Error ? error.message.slice(0, 100) : "unknown",
+    });
+  }
 }
 
 export async function handleReminderRun(request: Request) {
@@ -125,6 +159,11 @@ export async function handleReminderRun(request: Request) {
 
   try {
     const providers = enabledProviders();
+    const serviceClient = createClient(
+      requireEnv("SUPABASE_URL"),
+      requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
     const repository = new SupabaseReminderRepository({
       supabaseUrl: requireEnv("SUPABASE_URL"),
       serviceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
@@ -205,11 +244,28 @@ export async function handleReminderRun(request: Request) {
       events: summary.events,
       notifications,
     });
+    const health = await reminderHealth();
+    await maybeAlertOperator(
+      serviceClient,
+      "messaging_delivery_health",
+      buildMessagingHealthAlert(health),
+    );
     return json(200, { reminders: summary, notifications });
   } catch (error) {
+    const code = error instanceof Error ? error.message.slice(0, 100) : "unknown";
     console.error("reminder_worker_failed", {
-      code: error instanceof Error ? error.message.slice(0, 100) : "unknown",
+      code,
     });
+    const alertClient = createClient(
+      requireEnv("SUPABASE_URL"),
+      requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+    await maybeAlertOperator(
+      alertClient,
+      `messaging_worker_failure:${code}`,
+      `🚨 GO IRL: worker сообщений завершился ошибкой\nКод: ${code}`,
+    );
     return json(503, { error: "reminder_worker_failed" });
   }
 }
