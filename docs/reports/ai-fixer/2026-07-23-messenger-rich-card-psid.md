@@ -47,7 +47,7 @@ AI Fixer
 - GitHub CI run #877 on functional head `79c9648636fd0e0577ecb045858f5d169853378a`: PASS for test, typecheck, lint, and build.
 - Final contract-test commit `c2c9f29d7e60bd027e1b8e1dbfe42fa7cdb341ca` changes only test coverage on top of that green functional head.
 - Vercel check for `c2c9f29d7e60bd027e1b8e1dbfe42fa7cdb341ca`: SUCCESS.
-- Final exact-head CI is required before marking the PR review-ready.
+- This report-only commit is used to trigger exact-head CI for the complete PR state; runtime code is unchanged.
 
 ## GitHub
 - Branch: `feat/messenger-rich-card-psid`
@@ -67,4 +67,4 @@ AI Fixer
 - Production delivery smoke requires the existing production Meta credentials/webhook configuration and a real Messenger conversation/PSID. No secrets or production configuration were changed.
 
 ## Next step
-Wait for exact-head CI on this report commit. If green, mark PR #294 ready for review. Production merge/deploy and live Meta smoke remain approval-gated.
+Require exact-head CI on this report commit. If green, mark PR #294 ready for review. Production merge/deploy and live Meta smoke remain approval-gated.
