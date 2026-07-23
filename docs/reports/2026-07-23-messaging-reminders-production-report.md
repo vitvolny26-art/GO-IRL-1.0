@@ -22,6 +22,8 @@ Production remains safe while external approvals are incomplete: disabled channe
 - Telegram outbound reminder delivery.
 - `STOP`/`СТОП` and `START`/`СТАРТ` controls for supported Meta channels.
 - Protected health response covering overdue reminders and lifecycle notifications.
+- Best-effort Telegram operator alerts for worker failures and overdue queues.
+- Atomic Supabase cooldown that prevents repeated alerts from spamming the operator.
 
 ### Transactional lifecycle messages
 
@@ -58,15 +60,22 @@ Production remains safe while external approvals are incomplete: disabled channe
 
 ## Production verification
 
-- Production deployment after the latest environment update:
-  `go-irl-1-0-2qpildhr7-vitvolny26-5251s-projects.vercel.app`
+- Production deployment after operator monitoring:
+  `go-irl-1-0-jv5nct3lq-vitvolny26-5251s-projects.vercel.app`
+  (`dpl_5nAnVfPVxnirHqmXEKcMNLr2aEzF`)
 - Deployment status: Ready.
 - Production scheduler calls `/api/reminders/run` successfully.
 - Unauthenticated health access returns `401`.
 - Worker logs showed empty successful batches with zero retries and failures when no work was due.
 - Database transaction smoke test queued a `join_confirmed` notification and rolled back test data.
 - Lint, typecheck, build, and the full test suite passed for the runtime patches.
-- Final observed suite: 70 test files, 353 tests.
+- Final observed suite: 71 test files, 357 tests.
+- Production cron at 13:06, 13:07, and 13:08 returned `200` with zero
+  retries and failures.
+- Production cooldown smoke test proved first claim `true`, immediate repeated
+  claim `false`, and rolled back test data.
+- Operator alert state has RLS enabled; `anon` and `authenticated` have neither
+  table read access nor RPC execution access.
 
 ## Merged work
 
@@ -81,6 +90,7 @@ Production remains safe while external approvals are incomplete: disabled channe
 - PR #307 — reminder opt-out and health monitoring.
 - PR #308 — transactional event-notification outbox.
 - PR #309 — cancellation-recipient preservation and outbox monitoring.
+- PR #311 — operator alerts and protected cooldown.
 
 ## Meta configuration status
 
@@ -142,7 +152,8 @@ A channel can be added to `REMINDER_ENABLED_PROVIDERS` only after all of these a
 
 ### P1 — operations
 
-- Add an operator view or alert for overdue queued/retry/failed notifications.
+- Configure `REMINDER_ALERT_TELEGRAM_CHAT_ID` after a single operator identity is
+  explicitly selected; alert delivery remains safely disabled until then.
 - Define daily checks for outbox age and failure count.
 - Add a documented credential-rotation procedure for every Meta channel.
 - Record Meta App Review permissions and expiry/renewal owners.
