@@ -8,6 +8,7 @@ import { recordProviderInbound } from "./provider-join-service.js";
 import {
   classifyProviderConsentCommand,
   handleProviderWebhook,
+  providerProcessingErrorCode,
   summarizeMetaWebhookPayload,
 } from "./provider-webhook.js";
 
@@ -60,6 +61,22 @@ describe("production provider webhook boundary", () => {
     ["Привет", null],
   ])("classifies explicit notification command %s", (text, expected) => {
     expect(classifyProviderConsentCommand(text)).toBe(expected);
+  });
+
+  it("records only safe Meta delivery status codes", () => {
+    expect(providerProcessingErrorCode(
+      new Error("meta_send_failed:403:sensitive provider response"),
+    )).toBe("meta_send_failed_403");
+  });
+
+  it("records a safe transport cause without request or user data", () => {
+    const error = Object.assign(new TypeError("fetch failed"), {
+      cause: { code: "UND_ERR_CONNECT_TIMEOUT" },
+    });
+
+    expect(providerProcessingErrorCode(error)).toBe(
+      "meta_transport_UND_ERR_CONNECT_TIMEOUT",
+    );
   });
 
   beforeEach(() => {

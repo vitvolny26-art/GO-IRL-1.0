@@ -116,6 +116,23 @@ const providerSecret = (
   ? readEnv(instagramName) || requireEnv(sharedName)
   : requireEnv(sharedName);
 
+const safeErrorToken = (value: string) => value.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 60);
+
+export function providerProcessingErrorCode(error: unknown) {
+  if (!(error instanceof Error)) return "unknown_error";
+
+  const metaStatus = /^meta_send_failed:(\d{3}):/.exec(error.message)?.[1];
+  if (metaStatus) return `meta_send_failed_${metaStatus}`;
+
+  const cause = (error as Error & { cause?: { code?: unknown } }).cause;
+  const transportCode = typeof cause?.code === "string" ? safeErrorToken(cause.code) : "";
+  if (error instanceof TypeError && error.message === "fetch failed") {
+    return transportCode ? `meta_transport_${transportCode}` : "meta_transport_failed";
+  }
+
+  return safeErrorToken(error.name) || "unknown_error";
+}
+
 async function processAction(provider: MessagingProvider, action: InboundAction) {
   const claim = await claimProviderInboundEvent(provider, action.id);
   if (!claim.claimed) return "duplicate" as const;
@@ -178,11 +195,13 @@ async function processAction(provider: MessagingProvider, action: InboundAction)
     });
     return "processed" as const;
   } catch (error) {
+    const errorCode = providerProcessingErrorCode(error);
+    console.warn("provider_action_failed", { provider, errorCode });
     await completeProviderInboundEvent({
       provider,
       eventKey: claim.eventKey,
       success: false,
-      errorCode: error instanceof Error ? error.name : "unknown_error",
+      errorCode,
     });
     throw error;
   }
