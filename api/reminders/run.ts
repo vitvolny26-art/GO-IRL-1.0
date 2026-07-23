@@ -24,14 +24,14 @@ const publicOrigin = () => {
 };
 
 const supportedProviders: ReminderChannel[] = ["telegram", "whatsapp", "instagram", "messenger"];
-const enabledProviders = () => {
+const enabledProviders = (): ReminderChannel[] => {
   const configured = readEnv("REMINDER_ENABLED_PROVIDERS") || "telegram";
   const selected = configured
     .split(",")
     .map((value) => value.trim())
     .filter((value): value is ReminderChannel =>
       supportedProviders.includes(value as ReminderChannel));
-  return [...new Set(selected.length ? selected : ["telegram"])];
+  return [...new Set<ReminderChannel>(selected.length ? selected : ["telegram"])];
 };
 
 export async function handleReminderRun(request: Request) {
