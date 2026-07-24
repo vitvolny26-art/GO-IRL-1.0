@@ -1,3 +1,4 @@
+import { buildTelegramActivityInviteUrl } from "../invitationLink.js";
 import { buildReminderMessage, validateReminderMessage } from "./message-builder.js";
 import type { ReminderDispatcher } from "./worker.js";
 import type {
@@ -13,6 +14,8 @@ type TelegramApiResponse = {
 
 export type TelegramReminderDispatcherOptions = {
   botToken: string;
+  botUsername?: string;
+  appName?: string;
   fetchImpl?: typeof fetch;
 };
 
@@ -39,6 +42,16 @@ export class TelegramReminderDispatcher implements ReminderDispatcher {
       return { status: "failed", errorCode: "invalid_reminder_message" };
     }
 
+    const miniAppUrl = buildTelegramActivityInviteUrl(
+      delivery.event.eventId,
+      this.options.botUsername || "GOirl_bot",
+      this.options.appName || "",
+    );
+    const actions = message.actions.map((action) => ({
+      text: action.label,
+      url: action.kind === "open" && miniAppUrl ? miniAppUrl : action.url,
+    }));
+
     const response = await this.fetchImpl(
       `https://api.telegram.org/bot${this.options.botToken}/sendMessage`,
       {
@@ -49,10 +62,7 @@ export class TelegramReminderDispatcher implements ReminderDispatcher {
           text: `${message.heading}\n\n${message.body}`,
           disable_web_page_preview: false,
           reply_markup: {
-            inline_keyboard: message.actions.map((action) => [{
-              text: action.label,
-              url: action.url,
-            }]),
+            inline_keyboard: actions.map((action) => [action]),
           },
         }),
       },
