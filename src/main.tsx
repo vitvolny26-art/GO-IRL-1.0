@@ -29,6 +29,7 @@ import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
 import "./event-location-picker.css";
 import "./event-details-v2.css";
+import "./event-details-v2-polish.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
