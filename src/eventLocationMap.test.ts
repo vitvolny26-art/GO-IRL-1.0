@@ -3,6 +3,7 @@ import {
   buildOpenStreetMapLocationUrl,
   mapPointToWorld,
   parseMapPointFromUrl,
+  resolvePinchZoom,
   worldToMapPoint,
 } from "./eventLocationMap";
 
@@ -23,6 +24,13 @@ describe("event location map", () => {
     expect(restored).not.toBeNull();
     expect(restored?.latitude).toBeCloseTo(point.latitude, 6);
     expect(restored?.longitude).toBeCloseTo(point.longitude, 6);
+  });
+
+  it("resolves pinch zoom and clamps it to supported bounds", () => {
+    expect(resolvePinchZoom(15, 100, 200, 12, 19)).toBe(16);
+    expect(resolvePinchZoom(15, 100, 50, 12, 19)).toBe(14);
+    expect(resolvePinchZoom(19, 100, 400, 12, 19)).toBe(19);
+    expect(resolvePinchZoom(12, 100, 10, 12, 19)).toBe(12);
   });
 
   it("rejects unrelated invalid URLs", () => {
