@@ -29,7 +29,7 @@ export const buildEventMapProviderUrl = (
   }
 
   if (provider === "google") {
-    const target = point ? `${point.lat},${point.lng}` : query;
+    const target = point ? `${point.latitude},${point.longitude}` : query;
     const google = new URL("https://www.google.com/maps/search/");
     google.searchParams.set("api", "1");
     google.searchParams.set("query", target);
@@ -39,7 +39,7 @@ export const buildEventMapProviderUrl = (
 
   const apple = new URL("https://maps.apple.com/");
   apple.searchParams.set("q", query || "GO IRL event");
-  if (point) apple.searchParams.set("ll", `${point.lat},${point.lng}`);
+  if (point) apple.searchParams.set("ll", `${point.latitude},${point.longitude}`);
   apple.searchParams.set("go_irl_provider", "apple");
   return apple.toString();
 };
@@ -50,15 +50,15 @@ export const buildEventMapEmbedUrl = (activity: Activity) => {
   const latitudeDelta = 0.0045;
   const longitudeDelta = 0.0075;
   const bbox = [
-    point.lng - longitudeDelta,
-    point.lat - latitudeDelta,
-    point.lng + longitudeDelta,
-    point.lat + latitudeDelta,
+    point.longitude - longitudeDelta,
+    point.latitude - latitudeDelta,
+    point.longitude + longitudeDelta,
+    point.latitude + latitudeDelta,
   ].join(",");
   const url = new URL("https://www.openstreetmap.org/export/embed.html");
   url.searchParams.set("bbox", bbox);
   url.searchParams.set("layer", "mapnik");
-  url.searchParams.set("marker", `${point.lat},${point.lng}`);
+  url.searchParams.set("marker", `${point.latitude},${point.longitude}`);
   return url.toString();
 };
 
