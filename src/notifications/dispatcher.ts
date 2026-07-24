@@ -52,7 +52,7 @@ export class EventNotificationDispatcher {
       const eventId = delivery.payload.eventId || delivery.activityId || "";
       const telegramOpenUrl = buildTelegramActivityInviteUrl(
         eventId,
-        this.options.telegramBotUsername || "",
+        this.options.telegramBotUsername || "GOirl_bot",
         this.options.telegramAppName || "",
       ) || delivery.openUrl;
       url = `https://api.telegram.org/bot${this.options.telegramBotToken}/sendMessage`;
