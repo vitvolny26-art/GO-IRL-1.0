@@ -19,8 +19,12 @@ const maxZoom = 19;
 
 type PortalTarget = { target: HTMLElement; form: HTMLFormElement };
 type DragState = { pointerId: number; x: number; y: number; worldX: number; worldY: number };
-
 type Tile = { key: string; src: string; left: number; top: number };
+type ReverseGeocodePayload = {
+  display_name?: string;
+  name?: string;
+  address?: Record<string, string | undefined>;
+};
 
 const nativeInputValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
 
@@ -40,6 +44,40 @@ const selectedCityPoint = (form: HTMLFormElement): MapPoint => {
   const cityId = cityField instanceof HTMLSelectElement ? cityField.value : "olomouc";
   const city = getCity(cityId);
   return { latitude: city.coordinates.latitude, longitude: city.coordinates.longitude };
+};
+
+const compactAddress = (payload: ReverseGeocodePayload) => {
+  const address = payload.address || {};
+  const place = payload.name
+    || address.amenity
+    || address.building
+    || address.leisure
+    || address.shop
+    || address.road
+    || address.pedestrian
+    || address.footway;
+  const house = address.house_number;
+  const city = address.city || address.town || address.village || address.municipality;
+  const parts = [place && house ? `${place} ${house}` : place || house, city]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  return parts.length ? [...new Set(parts)].join(", ") : String(payload.display_name || "").trim();
+};
+
+const reverseGeocode = async (point: MapPoint, language: string) => {
+  const endpoint = new URL("https://nominatim.openstreetmap.org/reverse");
+  endpoint.searchParams.set("format", "jsonv2");
+  endpoint.searchParams.set("lat", point.latitude.toFixed(6));
+  endpoint.searchParams.set("lon", point.longitude.toFixed(6));
+  endpoint.searchParams.set("zoom", "18");
+  endpoint.searchParams.set("addressdetails", "1");
+  endpoint.searchParams.set("accept-language", language);
+  const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`reverse_geocode_${response.status}`);
+  const payload = await response.json() as ReverseGeocodePayload;
+  const address = compactAddress(payload);
+  if (!address) throw new Error("address_not_found");
+  return address;
 };
 
 const tilesFor = (center: MapPoint, zoom: number): Tile[] => {
@@ -94,7 +132,9 @@ function LocationMap({ point, zoom, onPointChange, onZoomChange }: {
       }}
       onPointerUp={(event) => {
         if (drag.current?.pointerId === event.pointerId) drag.current = null;
-        event.currentTarget.releasePointerCapture(event.pointerId);
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
       }}
       onPointerCancel={() => { drag.current = null; }}
     >
@@ -161,8 +201,9 @@ export function EventLocationPickerPortal() {
   const beginSelection = () => {
     if (!portal) return;
     const locationUrl = findInput(portal.form, "locationUrl")?.value || "";
-    setPoint(parseMapPointFromUrl(locationUrl) || selectedCityPoint(portal.form));
-    setZoom(parseMapPointFromUrl(locationUrl) ? 17 : 14);
+    const savedPoint = parseMapPointFromUrl(locationUrl);
+    setPoint(savedPoint || selectedCityPoint(portal.form));
+    setZoom(savedPoint ? 17 : 14);
     setError("");
     setOpen(true);
   };
@@ -193,18 +234,11 @@ export function EventLocationPickerPortal() {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams({
-        lat: point.latitude.toFixed(6),
-        lon: point.longitude.toFixed(6),
-        language,
-      });
-      const response = await fetch(`/api/location/reverse?${params.toString()}`);
-      const payload = await response.json() as { address?: string; error?: string };
-      if (!response.ok || !payload.address) throw new Error(payload.error || "reverse_geocode_failed");
+      const address = await reverseGeocode(point, language);
       const addressInput = findInput(portal.form, "address");
       const locationInput = findInput(portal.form, "locationUrl");
       if (!addressInput || !locationInput) throw new Error("location_fields_missing");
-      setReactInputValue(addressInput, payload.address);
+      setReactInputValue(addressInput, address);
       setReactInputValue(locationInput, buildOpenStreetMapLocationUrl(point, zoom));
       setOpen(false);
     } catch {
