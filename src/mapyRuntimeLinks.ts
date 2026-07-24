@@ -13,10 +13,17 @@ const mapHosts = new Set([
 ]);
 
 const readZoom = (url: URL) => {
-  const queryZoom = Number(url.searchParams.get("zoom"));
-  if (Number.isFinite(queryZoom)) return queryZoom;
-  const hashZoom = Number(url.hash.match(/#map=(\d+)/)?.[1]);
-  return Number.isFinite(hashZoom) ? hashZoom : 17;
+  const queryZoomValue = url.searchParams.get("zoom");
+  if (queryZoomValue !== null) {
+    const queryZoom = Number(queryZoomValue);
+    if (Number.isFinite(queryZoom)) return queryZoom;
+  }
+  const hashZoomValue = url.hash.match(/#map=(\d+)/)?.[1];
+  if (hashZoomValue !== undefined) {
+    const hashZoom = Number(hashZoomValue);
+    if (Number.isFinite(hashZoom)) return hashZoom;
+  }
+  return 17;
 };
 
 export const normalizeMapyUrl = (value: string) => {
