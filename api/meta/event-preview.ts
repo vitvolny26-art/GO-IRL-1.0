@@ -22,10 +22,10 @@ const publicOrigin = () => {
 };
 
 export const metaEventPreviewCopy = {
-  ru: { calendar: "Добавить в календарь", details: "Подробнее", telegram: "Присоединиться в Telegram" },
-  uk: { calendar: "Додати до календаря", details: "Докладніше", telegram: "Приєднатися в Telegram" },
-  cs: { calendar: "Přidat do kalendáře", details: "Podrobnosti", telegram: "Připojit se v Telegramu" },
-  en: { calendar: "Add to calendar", details: "Details", telegram: "Join in Telegram" },
+  ru: { calendar: "Добавить в календарь", map: "Открыть карту", telegram: "Присоединиться в Telegram" },
+  uk: { calendar: "Додати до календаря", map: "Відкрити мапу", telegram: "Приєднатися в Telegram" },
+  cs: { calendar: "Přidat do kalendáře", map: "Otevřít mapu", telegram: "Připojit se v Telegramu" },
+  en: { calendar: "Add to calendar", map: "Open map", telegram: "Join in Telegram" },
 } as const;
 
 const escapeHtml = (value: string) => value
@@ -54,7 +54,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const origin = publicOrigin();
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
     const canonicalUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
-    const detailsUrl = `${origin}/join/${encodeURIComponent(card.eventId)}`;
     const addToCalendarUrl = buildMetaEventGoogleCalendarUrl(card, origin) || `${canonicalUrl}&format=ics`;
     if (first(request.query?.format) === "ics") {
       response.setHeader("Content-Type", "text/calendar; charset=utf-8");
@@ -97,7 +96,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 <div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div>
 <div class="actions">
 <a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">${escapeHtml(labels.calendar)}</a>
-<a class="btn outline" href="${escapeHtml(detailsUrl)}">${escapeHtml(labels.details)}</a>
+${card.mapUrl ? `<a class="btn outline" href="${escapeHtml(card.mapUrl)}">${escapeHtml(labels.map)}</a>` : ""}
 <a class="btn primary" href="${escapeHtml(telegramUrl)}">${escapeHtml(labels.telegram)}</a>
 </div></div></article></main></body></html>`);
   } catch {

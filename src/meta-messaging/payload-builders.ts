@@ -21,10 +21,10 @@ const eventQuickReplies = (eventId: string): MetaQuickReply[] => [
 ];
 
 const invitationButtonCopy = {
-  ru: { open: "Открыть событие", calendar: "В календарь" },
-  uk: { open: "Відкрити подію", calendar: "У календар" },
-  cs: { open: "Otevřít událost", calendar: "Do kalendáře" },
-  en: { open: "Open event", calendar: "Add to calendar" },
+  ru: { join: "Присоединиться", open: "Открыть событие", calendar: "В календарь" },
+  uk: { join: "Приєднатися", open: "Відкрити подію", calendar: "У календар" },
+  cs: { join: "Připojit se", open: "Otevřít událost", calendar: "Do kalendáře" },
+  en: { join: "Join", open: "Open event", calendar: "Add to calendar" },
 } as const;
 
 const invitationMessage = (event: MetaEventSummary) => {
@@ -36,17 +36,15 @@ const invitationMessage = (event: MetaEventSummary) => {
   }
 
   const labels = invitationButtonCopy[event.language || "ru"];
-  const buttons = event.openUrl
-    ? [
-        { type: "web_url" as const, title: labels.open, url: event.openUrl },
-        ...(event.calendarUrl
-          ? [{ type: "web_url" as const, title: labels.calendar, url: event.calendarUrl }]
-          : []),
-      ]
-    : [
-        { type: "postback" as const, title: "Присоединиться", payload: `join:${event.eventId}` },
-        { type: "postback" as const, title: "Подробнее", payload: `details:${event.eventId}` },
-      ];
+  const buttons = [
+    { type: "postback" as const, title: labels.join, payload: `join:${event.eventId}` },
+    ...(event.openUrl
+      ? [{ type: "web_url" as const, title: labels.open, url: event.openUrl }]
+      : [{ type: "postback" as const, title: "Подробнее", payload: `details:${event.eventId}` }]),
+    ...(event.calendarUrl
+      ? [{ type: "web_url" as const, title: labels.calendar, url: event.calendarUrl }]
+      : []),
+  ];
 
   return {
     attachment: {
