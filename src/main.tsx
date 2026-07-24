@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
-import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -45,7 +44,7 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </Suspense>
       <OrganizerProfilePortal />
-      <OrganizerEventDetailsPortal />
     </QueryClientProvider>
   </StrictMode>,
 );
+

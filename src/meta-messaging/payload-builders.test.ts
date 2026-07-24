@@ -58,8 +58,9 @@ describe("Meta messaging payload builders", () => {
     const element = template.elements[0];
     expect(element?.image_url).toContain("event-invitation-card");
     expect(element?.default_action?.url).toBe("https://goirl.example/join/event-meta-1");
-    expect(element?.buttons).toHaveLength(2);
+    expect(element?.buttons).toHaveLength(3);
     expect(element?.buttons).toEqual([
+      { type: "postback", title: "Присоединиться", payload: "join:event-meta-1" },
       { type: "web_url", title: "Открыть событие", url: "https://goirl.example/join/event-meta-1" },
       { type: "web_url", title: "В календарь", url: "https://calendar.google.com/calendar/render?event=event-meta-1" },
     ]);
@@ -98,6 +99,7 @@ describe("Meta messaging payload builders", () => {
     expect(element?.image_url).toContain("event-invitation-card");
     expect(element?.default_action?.url).toBe("https://goirl.example/join/event-meta-1");
     expect(element?.buttons).toEqual([
+      { type: "postback", title: "Присоединиться", payload: "join:event-meta-1" },
       { type: "web_url", title: "Открыть событие", url: "https://goirl.example/join/event-meta-1" },
       { type: "web_url", title: "В календарь", url: "https://calendar.google.com/calendar/render?event=event-meta-1" },
     ]);
@@ -146,3 +148,4 @@ describe("Meta messaging payload builders", () => {
     ].join("\n"));
   });
 });
+

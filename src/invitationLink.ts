@@ -1,4 +1,5 @@
 const eventUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const demoEventIdPattern = /^demo-[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
 export const isValidInvitationEventId = (value: string) => eventUuidPattern.test(value.trim());
 
@@ -12,8 +13,10 @@ export const parseInvitationStartParam = (value: string | null | undefined) => {
 export const activityIdFromJoinPath = (pathname: string) => {
   const match = pathname.match(/^\/join\/([^/?#]+)/);
   if (!match) return "";
-  const parsed = parseInvitationStartParam(decodeURIComponent(match[1]));
-  return parsed.valid ? parsed.eventId : "";
+  const eventId = decodeURIComponent(match[1]).trim();
+  return isValidInvitationEventId(eventId) || demoEventIdPattern.test(eventId)
+    ? eventId
+    : "";
 };
 
 export const buildTelegramActivityInviteUrl = (
@@ -33,8 +36,21 @@ export const buildTelegramActivityInviteUrl = (
 export const buildBrowserActivityInviteUrl = (eventId: string, origin: string) =>
   new URL(`/join/${encodeURIComponent(eventId.trim())}`, origin).toString();
 
+export const buildMetaEventPreviewUrl = (
+  eventId: string,
+  origin: string,
+  language: string,
+) => {
+  if (!isValidInvitationEventId(eventId)) return null;
+  const url = new URL("/api/meta/event-preview", origin);
+  url.searchParams.set("event", eventId.trim());
+  url.searchParams.set("language", ["ru", "uk", "cs", "en"].includes(language) ? language : "ru");
+  return url.toString();
+};
+
 export const buildSeparatedInvitationText = (url: string, text: string) =>
   [text.trim(), url.trim()].filter(Boolean).join("\n\n");
 
 export const buildTelegramShareUrl = (url: string, text: string) =>
   `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text.trim())}`;
+

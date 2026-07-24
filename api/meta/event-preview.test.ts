@@ -5,15 +5,16 @@ describe("Meta event preview copy", () => {
   it("localizes all public actions for every supported language", () => {
     expect(metaEventPreviewCopy.ru).toEqual({
       calendar: "Добавить в календарь",
-      details: "Подробнее",
+      map: "Открыть карту",
       telegram: "Присоединиться в Telegram",
     });
     expect(metaEventPreviewCopy.uk.calendar).toBe("Додати до календаря");
     expect(metaEventPreviewCopy.cs.telegram).toBe("Připojit se v Telegramu");
     expect(metaEventPreviewCopy.en).toEqual({
       calendar: "Add to calendar",
-      details: "Details",
+      map: "Open map",
       telegram: "Join in Telegram",
     });
   });
 });
+
