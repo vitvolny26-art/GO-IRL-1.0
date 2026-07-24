@@ -47,13 +47,6 @@ export const resolvePinchZoom = (
   ));
 };
 
-export const buildOpenStreetMapLocationUrl = (point: MapPoint, zoom = 17) => {
-  const normalized = normalizeMapPoint(point);
-  const latitude = normalized.latitude.toFixed(6);
-  const longitude = normalized.longitude.toFixed(6);
-  return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=${zoom}/${latitude}/${longitude}`;
-};
-
 export const buildMapyLocationUrl = (point: MapPoint, zoom = 17) => {
   const normalized = normalizeMapPoint(point);
   const latitude = normalized.latitude.toFixed(6);
@@ -61,6 +54,9 @@ export const buildMapyLocationUrl = (point: MapPoint, zoom = 17) => {
   const safeZoom = Math.round(clamp(zoom, 1, 20));
   return `https://mapy.com/fnc/v1/showmap?mapset=basic&center=${longitude},${latitude}&zoom=${safeZoom}&marker=true`;
 };
+
+// Kept for compatibility with the existing picker import. Selected points now open in Mapy.com.
+export const buildOpenStreetMapLocationUrl = buildMapyLocationUrl;
 
 export const parseMapPointFromUrl = (value: string): MapPoint | null => {
   if (!value.trim()) return null;
