@@ -7,10 +7,10 @@ import type { Language } from "../types";
 import { isOrganizerAvatarImage, organizerProfileEventName, type OrganizerProfileDetail } from "./EventCardPrimitives";
 
 const copy: Record<Language, { title: string; events: string; close: string }> = {
-  ru: { title: "Профиль организатора", events: "События", close: "Закрыть" },
-  uk: { title: "Профіль організатора", events: "Події", close: "Закрити" },
-  cs: { title: "Profil organizátora", events: "Události", close: "Zavřít" },
-  en: { title: "Organizer profile", events: "Events", close: "Close" },
+  ru: { title: "Профиль", events: "Организованные события", close: "Закрыть" },
+  uk: { title: "Профіль", events: "Організовані події", close: "Закрити" },
+  cs: { title: "Profil", events: "Organizované události", close: "Zavřít" },
+  en: { title: "Profile", events: "Organized events", close: "Close" },
 };
 
 export function OrganizerProfilePortal() {
