@@ -1,7 +1,7 @@
 ---
 title: Invitation Route and Mobile Event Details Fix
 owner: GO IRL Technical Archivist
-status: Draft
+status: Automated QA passed; physical-device QA pending
 source_of_truth: false
 last_review: 2026-07-24
 next_review: 2026-07-31
@@ -49,7 +49,13 @@ Test the production application and repair the invitation route, stale visual-de
 - `pnpm run typecheck` — PASS
 - `pnpm run test` — PASS (73 files / 370 tests)
 - `pnpm run build` — PASS
-- Local mobile browser smoke — PARTIAL PASS: the application loads without console errors; final invitation UI verification requires a Vercel Preview because local Vite does not execute the server-rendered preview function.
+- GitHub CI — PASS
+- Vercel Preview — READY (`5a936aa`)
+- Mobile browser smoke at 390×844 — PASS: the home screen and cards load without application console errors or warnings.
+- `/join/demo-volleyball` opens the concrete event detail with weather, map, organizer actions, and current demo data.
+- UUID `/join/:eventId` redirects to the safe `/api/meta/event-preview` route instead of the empty home screen.
+- Share actions and the four-provider reminder panel render correctly; an unauthenticated browser session cannot save a reminder.
+- The Preview environment intentionally lacks production server-only data access, so a current production UUID returns `not_found` there. Production reads the same public event, and the updated preview actions are covered by unit and integration tests.
 
 ## Risks
 
@@ -66,4 +72,4 @@ Test the production application and repair the invitation route, stale visual-de
 
 ## Next step
 
-Publish a clean draft PR from the current `main`, verify GitHub CI and Vercel Preview, then run the invitation, map, calendar, and mobile organizer physical-device release gate.
+Run the invitation, map, calendar, and mobile organizer physical-device release gate, then mark PR #337 ready only if that matrix is green.
