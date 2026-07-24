@@ -12,6 +12,7 @@ import { cities, defaultCityId } from "./config/cities";
 import { getTranslation } from "./i18n";
 import type { Activity, ActivityMetadata, ActivityType, AppView, Language, NewActivity, UserRole } from "./types";
 import { activityIdFromJoinPath } from "./invitationLink";
+import { localDateKey, reconcileVisualDemoSnapshot } from "./visualDemoState";
 
 type JoinResult = "joined" | "pending" | "left" | "full" | "private";
 
@@ -76,7 +77,7 @@ type AppState = {
 let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 
 // go-irl-visual-demo-mode-v1
-const visualDemoStorageKey = "go-irl-visual-demo-activities-v2";
+const visualDemoStorageKey = "go-irl-visual-demo-activities-v3";
 const visualDemoUserKey = "telegram:999999";
 const visualDemoUserName = "Vit_Test";
 const visualDemoNotice = "\u0418\u0437\u043c\u0435\u043d\u0435\u043d\u0438\u044f \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u044b (\u0414\u0435\u043c\u043e-\u0440\u0435\u0436\u0438\u043c)";
@@ -91,7 +92,7 @@ const createSeedDemoActivities = (): Activity[] => {
   const dateKey = (days: number) => {
     const value = new Date(today);
     value.setDate(today.getDate() + days);
-    return value.toISOString().slice(0, 10);
+    return localDateKey(value);
   };
 
   const base = {
@@ -225,30 +226,34 @@ const createSeedDemoActivities = (): Activity[] => {
 };
 
 const readDemoActivities = () => {
-  try {
-    const stored = localStorage.getItem(visualDemoStorageKey);
-    if (stored) return JSON.parse(stored) as Activity[];
-  } catch {
-    // noop
-  }
   const seeded = createSeedDemoActivities();
-  localStorage.setItem(visualDemoStorageKey, JSON.stringify(seeded));
-  return seeded;
+  const snapshot = reconcileVisualDemoSnapshot(
+    localStorage.getItem(visualDemoStorageKey),
+    seeded,
+    new Date(),
+    isActivityStillVisible,
+  );
+  localStorage.setItem(visualDemoStorageKey, JSON.stringify(snapshot));
+  return snapshot.activities;
 };
 
 const writeDemoActivities = (activities: Activity[]) => {
-  localStorage.setItem(visualDemoStorageKey, JSON.stringify(activities));
+  localStorage.setItem(visualDemoStorageKey, JSON.stringify({
+    seededOn: localDateKey(),
+    activities,
+  }));
 };
 
 const syncDemoState = (setState: (state: Partial<AppState>) => void, activities: Activity[]) => {
+  const visibleActivities = activities.filter(isActivityStillVisible);
   setState({
-    activities: activities.map((activity) => ({
+    activities: visibleActivities.map((activity) => ({
       ...activity,
       participants: activity.members.filter((member) => member.status === "joined").length,
     })),
-    joinedIds: activities.filter((activity) => activity.members.some((member) => member.userKey === visualDemoUserKey && member.status === "joined")).map((activity) => activity.id),
-    waitingIds: activities.filter((activity) => activity.members.some((member) => member.userKey === visualDemoUserKey && member.status === "waiting")).map((activity) => activity.id),
-    pendingIds: activities.filter((activity) => activity.members.some((member) => member.userKey === visualDemoUserKey && member.status === "pending")).map((activity) => activity.id),
+    joinedIds: visibleActivities.filter((activity) => activity.members.some((member) => member.userKey === visualDemoUserKey && member.status === "joined")).map((activity) => activity.id),
+    waitingIds: visibleActivities.filter((activity) => activity.members.some((member) => member.userKey === visualDemoUserKey && member.status === "waiting")).map((activity) => activity.id),
+    pendingIds: visibleActivities.filter((activity) => activity.members.some((member) => member.userKey === visualDemoUserKey && member.status === "pending")).map((activity) => activity.id),
     syncError: null,
   });
 };
@@ -800,8 +805,10 @@ export const useAppStore = create<AppState>((set, get) => {
 
 
 
-function isActivityStillVisible(row: DbActivity) {
-  const start = new Date(`${row.event_date}T${String(row.event_time || "00:00").slice(0, 5)}:00`).getTime();
+function isActivityStillVisible(row: DbActivity | Activity) {
+  const date = "event_date" in row ? row.event_date : row.date;
+  const time = "event_time" in row ? row.event_time : row.time;
+  const start = new Date(`${date}T${String(time || "00:00").slice(0, 5)}:00`).getTime();
   const meta = (row.metadata || {}) as { durationMinutes?: number; duration?: number };
   const duration = typeof meta.durationMinutes === "number" ? meta.durationMinutes : typeof meta.duration === "number" ? meta.duration : 120;
   return Number.isNaN(start) || Date.now() <= start + (duration + 60) * 60000;

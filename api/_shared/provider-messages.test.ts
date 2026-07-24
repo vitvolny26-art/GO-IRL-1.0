@@ -107,7 +107,7 @@ describe("provider message endpoints", () => {
       message?: { attachment?: { payload?: { elements?: Array<{
         image_url?: string;
         default_action?: { url?: string };
-        buttons?: Array<{ title?: string; url?: string }>;
+        buttons?: Array<{ type?: string; title?: string; url?: string; payload?: string }>;
       }> } } };
     };
     const element = request.message?.attachment?.payload?.elements?.[0];
@@ -118,11 +118,16 @@ describe("provider message endpoints", () => {
     const calendarUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=${event.eventId}&language=ru&format=ics`;
     expect(element?.default_action?.url).toBe(previewUrl);
     expect(element?.buttons?.[0]).toEqual({
+      type: "postback",
+      title: "Присоединиться",
+      payload: `join:${event.eventId}`,
+    });
+    expect(element?.buttons?.[1]).toEqual({
       type: "web_url",
       title: "Открыть событие",
       url: previewUrl,
     });
-    expect(element?.buttons?.[1]).toEqual({
+    expect(element?.buttons?.[2]).toEqual({
       type: "web_url",
       title: "В календарь",
       url: calendarUrl,
