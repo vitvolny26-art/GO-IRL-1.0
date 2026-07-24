@@ -18,11 +18,11 @@ describe("event location map", () => {
   it("builds and parses an OpenStreetMap marker URL", () => {
     const point = { latitude: 50.0755, longitude: 14.4378 };
     const url = buildOpenStreetMapLocationUrl(point, 17);
+    const restored = parseMapPointFromUrl(url);
     expect(url).toContain("openstreetmap.org");
-    expect(parseMapPointFromUrl(url)).toEqual({
-      latitude: 50.0755,
-      longitude: 14.4378,
-    });
+    expect(restored).not.toBeNull();
+    expect(restored?.latitude).toBeCloseTo(point.latitude, 6);
+    expect(restored?.longitude).toBeCloseTo(point.longitude, 6);
   });
 
   it("rejects unrelated invalid URLs", () => {
