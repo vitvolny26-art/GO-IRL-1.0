@@ -31,6 +31,7 @@ import "./organizer-event-details.css";
 import "./event-location-picker.css";
 import "./event-details-v2.css";
 import "./event-details-v2-polish.css";
+import "./event-details-share-v2.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
