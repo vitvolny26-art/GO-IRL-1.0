@@ -24,7 +24,7 @@ export const normalizeMapyUrl = (value: string) => {
   if (!trimmed) return trimmed;
 
   try {
-    const url = new URL(trimmed, window.location.origin);
+    const url = new URL(trimmed, "https://go-irl.invalid");
     if (!mapHosts.has(url.hostname.toLowerCase())) return trimmed;
 
     const point = parseMapPointFromUrl(url.toString());
