@@ -13,14 +13,22 @@ const readQuery = (sourceUrl: string) => {
   }
 };
 
+const markResolvedProvider = (value: string, provider: MapProvider) => {
+  const url = new URL(value);
+  url.searchParams.set("go_irl_provider", provider);
+  return url.toString();
+};
+
 export const buildMapProviderUrl = (sourceUrl: string, provider: MapProvider) => {
   const source = sourceUrl.trim();
   const point = parseMapPointFromUrl(source);
   const query = readQuery(source) || source;
 
   if (provider === "mapy") {
-    if (point) return buildMapyLocationUrl(point, 17);
-    return `https://mapy.com/zakladni?q=${encodeURIComponent(query)}`;
+    const target = point
+      ? buildMapyLocationUrl(point, 17)
+      : `https://mapy.com/zakladni?q=${encodeURIComponent(query)}`;
+    return markResolvedProvider(target, provider);
   }
 
   if (provider === "google") {
@@ -52,6 +60,14 @@ export const isMapUrl = (value: string) => {
       || hostname === "mapy.com"
       || hostname === "www.mapy.com"
       || hostname === "maps.apple.com";
+  } catch {
+    return false;
+  }
+};
+
+export const isResolvedMapProviderUrl = (value: string) => {
+  try {
+    return Boolean(new URL(value, "https://go-irl.invalid").searchParams.get("go_irl_provider"));
   } catch {
     return false;
   }
