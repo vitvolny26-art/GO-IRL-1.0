@@ -1,3 +1,4 @@
+import { buildTelegramActivityInviteUrl } from "../invitationLink.js";
 import { buildEventNotificationText } from "./message-builder.js";
 import type {
   EventNotificationDelivery,
@@ -6,6 +7,8 @@ import type {
 
 export type EventNotificationDispatcherOptions = {
   telegramBotToken: string;
+  telegramBotUsername?: string;
+  telegramAppName?: string;
   graphVersion: string;
   whatsapp?: { phoneNumberId: string; accessToken: string; templateName?: string };
   instagram?: { accountId: string; accessToken: string; apiMode: "instagram_login" | "facebook_login" };
@@ -46,12 +49,18 @@ export class EventNotificationDispatcher {
     let body: unknown;
 
     if (delivery.provider === "telegram") {
+      const eventId = delivery.payload.eventId || delivery.activityId || "";
+      const telegramOpenUrl = buildTelegramActivityInviteUrl(
+        eventId,
+        this.options.telegramBotUsername || "",
+        this.options.telegramAppName || "",
+      ) || delivery.openUrl;
       url = `https://api.telegram.org/bot${this.options.telegramBotToken}/sendMessage`;
       token = "";
       body = {
         chat_id: delivery.recipientId,
         text,
-        reply_markup: { inline_keyboard: [[{ text: "Открыть событие", url: delivery.openUrl }]] },
+        reply_markup: { inline_keyboard: [[{ text: "Открыть событие", url: telegramOpenUrl }]] },
       };
     } else {
       const canRespond = withinWindow(delivery, this.now());
@@ -129,4 +138,3 @@ export class EventNotificationDispatcher {
     return { status: "failed", errorCode: code };
   }
 }
-
