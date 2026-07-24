@@ -39,6 +39,24 @@ export const buildEventMapProviderUrl = (
   return apple.toString();
 };
 
+export const buildEventMapEmbedUrl = (activity: Activity) => {
+  const point = activity.locationUrl ? parseMapPointFromUrl(activity.locationUrl) : null;
+  if (!point) return null;
+  const latitudeDelta = 0.0045;
+  const longitudeDelta = 0.0075;
+  const bbox = [
+    point.lng - longitudeDelta,
+    point.lat - latitudeDelta,
+    point.lng + longitudeDelta,
+    point.lat + latitudeDelta,
+  ].join(",");
+  const url = new URL("https://www.openstreetmap.org/export/embed.html");
+  url.searchParams.set("bbox", bbox);
+  url.searchParams.set("layer", "mapnik");
+  url.searchParams.set("marker", `${point.lat},${point.lng}`);
+  return url.toString();
+};
+
 export const loadPreferredEventMapProvider = (
   storage: Pick<Storage, "getItem"> | null = typeof window === "undefined" ? null : window.localStorage,
 ): EventMapProvider => {
