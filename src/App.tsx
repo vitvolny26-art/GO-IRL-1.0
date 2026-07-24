@@ -34,7 +34,7 @@ import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
-import { getCurrentAuthIdentity, getCurrentStartParam, initializeTrustedAuth } from "./authSession";
+import { getCurrentAuthIdentity, getCurrentStartParam, initializeTrustedAuth, isTrustedAuthReady } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
@@ -67,7 +67,7 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
-import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction } from "./components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction, OrganizerDetailAction } from "./components/EventCardPrimitives";
 import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
 import { CardReminderAction } from "./components/CardReminderAction";
@@ -79,6 +79,7 @@ import { activityIconFor } from "./activityIcon";
 import {
   activityIdFromJoinPath,
   buildBrowserActivityInviteUrl,
+  buildMetaEventPreviewUrl,
   buildSeparatedInvitationText,
   buildTelegramActivityInviteUrl,
   buildTelegramShareUrl,
@@ -307,6 +308,14 @@ function App() {
       return;
     }
     const invitedId = parsedStartParam?.eventId || pathId;
+    const browserPreviewUrl = pathId && !isTrustedAuthReady()
+      ? buildMetaEventPreviewUrl(pathId, window.location.origin, store.language)
+      : null;
+    if (browserPreviewUrl) {
+      invitationHandled.current = true;
+      window.location.replace(browserPreviewUrl);
+      return;
+    }
     if (invitedId) {
       const invitedActivity = store.activities.find((item) => item.id === invitedId);
       if (invitedActivity) {
@@ -320,7 +329,7 @@ function App() {
         showNotice(t.invitationEventNotFound);
       }
     }
-  }, [store.activities, store.loading, t.invalidInvitationLink, t.invitationEventNotFound]);
+  }, [store.activities, store.language, store.loading, t.invalidInvitationLink, t.invitationEventNotFound]);
 
   const flash = (message: string) => {
     setNotice(message);
@@ -1577,7 +1586,7 @@ function GenericActivitySheet({
           <div><MapPin /><span>{t.address}</span>{activity.locationUrl ? <a href={activity.locationUrl} target="_blank" rel="noreferrer">{activity.address}</a> : <strong>{activity.address}</strong>}</div>
           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
           {activity.participantNote && <div><Sparkles /><span>{t.participantNote}</span><strong>{activity.participantNote}</strong></div>}
-          <div><CircleUserRound /><span>{t.organizer}</span><strong>{activity.organizer}</strong></div>
+          <OrganizerDetailAction organizerKey={activity.organizerKey} organizerName={activity.organizer} label={t.organizer} />
           <div><ShieldCheck /><span>{t.visibility}</span><strong>{accessLabel}</strong></div>
         </div>
         <button className="detail-members-toggle" onClick={() => setMembersOpen((open) => !open)} type="button">

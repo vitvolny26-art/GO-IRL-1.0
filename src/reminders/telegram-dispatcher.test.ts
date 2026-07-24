@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { ReminderDelivery } from "./types.js";
 import { TelegramReminderDispatcher } from "./telegram-dispatcher.js";
 
+const eventId = "39e31319-a4fc-4d41-bf1e-d713178290d1";
+
 const delivery: ReminderDelivery = {
   reminderId: "reminder-1",
   deliveryKey: "delivery-1",
@@ -11,11 +13,11 @@ const delivery: ReminderDelivery = {
   language: "ru",
   attemptCount: 1,
   event: {
-    eventId: "event-1",
+    eventId,
     title: "Волейбол",
     dateTime: "30 июл. 2026 г. · 18:00",
     location: "ZŠ Demlova",
-    openUrl: "https://go-irl.example/event",
+    openUrl: `https://go-irl.example/join/${eventId}`,
     calendarUrl: "https://calendar.google.com/calendar/render?action=TEMPLATE",
     mapUrl: "https://www.google.com/maps/search/?api=1&query=Olomouc",
   },
@@ -28,7 +30,7 @@ const response = (status: number, payload: unknown) =>
   });
 
 describe("TelegramReminderDispatcher", () => {
-  it("sends the localized reminder with three URL actions", async () => {
+  it("sends the localized reminder with Mini App, calendar, and map actions", async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => response(200, {
       ok: true,
       result: { message_id: 42 },
@@ -48,6 +50,11 @@ describe("TelegramReminderDispatcher", () => {
     expect(body.chat_id).toBe("123");
     expect(body.text).toContain("Событие начнётся через 1 ч");
     expect(body.reply_markup.inline_keyboard).toHaveLength(3);
+    expect(body.reply_markup.inline_keyboard[0][0].url).toBe(
+      `https://t.me/GOirl_bot?startapp=${eventId}`,
+    );
+    expect(body.reply_markup.inline_keyboard[0][0].url).not.toContain("/join/");
+    expect(body.reply_markup.inline_keyboard[1][0].url).toContain("calendar.google.com");
   });
 
   it("cancels without a network call when consent or identity is unavailable", async () => {

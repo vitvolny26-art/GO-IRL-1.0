@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { getTranslation } from "../i18n";
 import { stripLeadingEmoji } from "../cardText";
+import { getTranslation } from "../i18n";
 import { useAppStore } from "../store";
 import type { Activity, Language } from "../types";
 import { OrganizerDetailAction } from "./EventCardPrimitives";
 
 const normalizeText = (value: string) => stripLeadingEmoji(value).trim();
 
-export const findActivityForSheet = (
+export const findSportActivityForSheet = (
   activities: Activity[],
   language: Language,
   title: string,
@@ -25,15 +25,6 @@ export const findActivityForSheet = (
 type PortalState = {
   target: HTMLElement;
   activity: Activity;
-  legacyRow: HTMLElement | null;
-};
-
-const findLegacyOrganizerRow = (detailList: HTMLElement, organizerLabel: string) => {
-  return Array.from(detailList.children).find((child) => {
-    if (!(child instanceof HTMLElement)) return false;
-    const label = child.querySelector(":scope > span")?.textContent?.trim() || "";
-    return label === organizerLabel;
-  }) as HTMLElement | undefined;
 };
 
 export function OrganizerEventDetailsPortal() {
@@ -43,51 +34,61 @@ export function OrganizerEventDetailsPortal() {
 
   useEffect(() => {
     const refresh = () => {
-      const sheet = document.querySelector<HTMLElement>(".activity-sheet");
-      const detailList = sheet?.querySelector<HTMLElement>(".detail-list");
+      const sheet = document.querySelector<HTMLElement>(".activity-sheet.sport-sheet");
+      const detailList = sheet?.querySelector<HTMLElement>(".sport-detail-list");
       const title = sheet?.querySelector("h2")?.textContent || "";
-      const description = sheet?.querySelector(".sheet-description, .sport-sheet-hero p")?.textContent || "";
-      const activity = detailList ? findActivityForSheet(activities, language, title, description) : null;
+      const description = sheet?.querySelector(".sport-sheet-hero p")?.textContent || "";
+      const activity = detailList
+        ? findSportActivityForSheet(activities, language, title, description)
+        : null;
 
       if (!detailList || !activity) {
         setPortal((current) => {
           current?.target.remove();
-          current?.legacyRow?.classList.remove("organizer-detail-legacy-hidden");
           return null;
         });
         return;
       }
 
       setPortal((current) => {
-        if (current?.target.isConnected && current.activity.id === activity.id && current.target.parentElement === detailList) return current;
-        current?.target.remove();
-        current?.legacyRow?.classList.remove("organizer-detail-legacy-hidden");
+        if (
+          current?.target.isConnected
+          && current.activity.id === activity.id
+          && current.target.parentElement === detailList
+        ) {
+          return current;
+        }
 
-        const legacyRow = findLegacyOrganizerRow(detailList, labels.organizer) || null;
-        legacyRow?.classList.add("organizer-detail-legacy-hidden");
+        current?.target.remove();
         const target = document.createElement("div");
         target.className = "organizer-detail-portal-slot";
+        target.style.display = "contents";
         detailList.appendChild(target);
-        return { target, activity, legacyRow };
+        return { target, activity };
       });
     };
 
     refresh();
     const observer = new MutationObserver(refresh);
     observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       observer.disconnect();
       setPortal((current) => {
         current?.target.remove();
-        current?.legacyRow?.classList.remove("organizer-detail-legacy-hidden");
         return null;
       });
     };
-  }, [activities, language, labels.organizer]);
+  }, [activities, language]);
 
   if (!portal) return null;
+
   return createPortal(
-    <OrganizerDetailAction organizerKey={portal.activity.organizerKey} organizerName={portal.activity.organizer} label={labels.organizer} />,
+    <OrganizerDetailAction
+      organizerKey={portal.activity.organizerKey}
+      organizerName={portal.activity.organizer}
+      label={labels.organizer}
+    />,
     portal.target,
   );
 }
