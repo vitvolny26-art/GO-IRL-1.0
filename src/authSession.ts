@@ -25,13 +25,22 @@ export type TrustedAuthUser = {
   provider?: TrustedAuthProvider;
 };
 
-export type TrustedAuthSession = {
+type TrustedSessionBase = {
   accessToken: string;
   expiresAt: number;
   user: TrustedAuthUser;
-  startParam?: string;
-  source: "trusted-telegram" | "trusted-provider";
 };
+
+export type TrustedTelegramAuthSession = TrustedSessionBase & {
+  source: "trusted-telegram";
+  startParam?: string;
+};
+
+export type TrustedProviderAuthSession = TrustedSessionBase & {
+  source: "trusted-provider";
+};
+
+export type TrustedAuthSession = TrustedTelegramAuthSession | TrustedProviderAuthSession;
 
 export type AppAuthIdentity =
   | TrustedAuthSession
@@ -137,7 +146,7 @@ export async function initializeTrustedAuth() {
       return null;
     }
 
-    const session: TrustedAuthSession = {
+    const session: TrustedTelegramAuthSession = {
       accessToken: payload.session.access_token,
       expiresAt: payload.session.expires_at,
       user: { ...payload.user, provider: "telegram" },
@@ -189,7 +198,7 @@ export async function verifyWhatsAppAuth(phone: string, code: string) {
   if (!response.ok || !payload.accessToken || !payload.expiresAt || !payload.user) {
     throw new Error(payload.error || "whatsapp_auth_verify_failed");
   }
-  const session: TrustedAuthSession = {
+  const session: TrustedProviderAuthSession = {
     accessToken: payload.accessToken,
     expiresAt: payload.expiresAt,
     user: { ...payload.user, provider: "whatsapp" },
@@ -241,7 +250,9 @@ export function getCurrentUserRole() {
 }
 
 export function getCurrentStartParam() {
-  return trustedSession?.startParam || getTelegramWebApp()?.initDataUnsafe?.start_param;
+  return trustedSession?.source === "trusted-telegram"
+    ? trustedSession.startParam || getTelegramWebApp()?.initDataUnsafe?.start_param
+    : getTelegramWebApp()?.initDataUnsafe?.start_param;
 }
 
 export function getCurrentDisplayName(fallback: string) {
