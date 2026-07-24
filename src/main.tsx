@@ -5,7 +5,7 @@ import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
-import { UnifiedEventDetailsPortal } from "./components/UnifiedEventDetailsPortal";
+import { EventDetailsTemplatePortal } from "./components/EventDetailsTemplatePortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
@@ -28,7 +28,7 @@ import "./participant-notifications.css";
 import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
 import "./event-location-picker.css";
-import "./event-details-sheet-v2.css";
+import "./event-details-v2.css";
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
@@ -50,7 +50,7 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </Suspense>
       <OrganizerProfilePortal />
-      <UnifiedEventDetailsPortal />
+      <EventDetailsTemplatePortal />
       <EventLocationPickerPortal />
     </QueryClientProvider>
   </StrictMode>,
