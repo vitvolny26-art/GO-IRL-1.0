@@ -19,13 +19,19 @@ import {
 import { isOutdoorGenericActivity } from "../eventWeather";
 import { formatEventTime } from "../eventTime";
 import { localeByLanguage } from "../i18n";
+import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
 import { resolveOrganizerIdentity, organizerInitials, type OrganizerIdentity } from "../profile/organizerIdentityResolver";
 import { useAppStore } from "../store";
 import { getTelegramWebApp } from "../telegram";
+import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
 import type { Activity, Language } from "../types";
+import { CardShareAction } from "./CardShareAction";
 import { EventCardArtwork } from "./EventCardArtwork";
 import { isOrganizerAvatarImage, organizerProfileEventName } from "./EventCardPrimitives";
 import { EventWeatherStrip } from "./EventWeatherStrip";
+
+const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
+const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
 const copy: Record<Language, {
   public: string;
@@ -39,11 +45,12 @@ const copy: Record<Language, {
   noUnread: string;
   unread: string;
   mapProvider: string;
+  share: string;
 }> = {
-  ru: { public: "Публичное", private: "Приватное", invite: "По приглашению", route: "Построить маршрут", organizer: "Организатор", participants: "Участники", allParticipants: "Все участники", chat: "Чат события", noUnread: "Нет новых сообщений", unread: "Новых сообщений", mapProvider: "Открывать карту в" },
-  uk: { public: "Публічна", private: "Приватна", invite: "За запрошенням", route: "Побудувати маршрут", organizer: "Організатор", participants: "Учасники", allParticipants: "Усі учасники", chat: "Чат події", noUnread: "Немає нових повідомлень", unread: "Нових повідомлень", mapProvider: "Відкривати мапу в" },
-  cs: { public: "Veřejná", private: "Soukromá", invite: "Na pozvání", route: "Naplánovat trasu", organizer: "Organizátor", participants: "Účastníci", allParticipants: "Všichni účastníci", chat: "Chat události", noUnread: "Žádné nové zprávy", unread: "Nové zprávy", mapProvider: "Otevírat mapu v" },
-  en: { public: "Public", private: "Private", invite: "Invite only", route: "Build route", organizer: "Organizer", participants: "Participants", allParticipants: "All participants", chat: "Event chat", noUnread: "No new messages", unread: "New messages", mapProvider: "Open maps with" },
+  ru: { public: "Публичное", private: "Приватное", invite: "По приглашению", route: "Построить маршрут", organizer: "Организатор", participants: "Участники", allParticipants: "Все участники", chat: "Чат события", noUnread: "Нет новых сообщений", unread: "Новых сообщений", mapProvider: "Открывать карту в", share: "Поделиться" },
+  uk: { public: "Публічна", private: "Приватна", invite: "За запрошенням", route: "Побудувати маршрут", organizer: "Організатор", participants: "Учасники", allParticipants: "Усі учасники", chat: "Чат події", noUnread: "Немає нових повідомлень", unread: "Нових повідомлень", mapProvider: "Відкривати мапу в", share: "Поділитися" },
+  cs: { public: "Veřejná", private: "Soukromá", invite: "Na pozvání", route: "Naplánovat trasu", organizer: "Organizátor", participants: "Účastníci", allParticipants: "Všichni účastníci", chat: "Chat události", noUnread: "Žádné nové zprávy", unread: "Nové zprávy", mapProvider: "Otevírat mapu v", share: "Sdílet" },
+  en: { public: "Public", private: "Private", invite: "Invite only", route: "Build route", organizer: "Organizer", participants: "Participants", allParticipants: "All participants", chat: "Event chat", noUnread: "No new messages", unread: "New messages", mapProvider: "Open maps with", share: "Share" },
 };
 
 const providerLabels: Record<EventMapProvider, string> = {
@@ -73,6 +80,11 @@ type PortalState = {
   sheet: HTMLElement;
   activity: Activity;
 };
+
+const activityInviteUrl = (activity: Activity) => (
+  buildTelegramActivityInviteUrl(activity.id, telegramBotUsername, telegramAppName)
+  || buildBrowserActivityInviteUrl(activity.id, window.location.origin)
+);
 
 const fallbackIdentity = (userKey: string, name: string): OrganizerIdentity => ({
   organizerKey: userKey,
@@ -129,6 +141,8 @@ function EventDetailsTemplate({ portal }: { portal: PortalState }) {
     month: "long",
   }).format(new Date(`${activity.date}T12:00:00`)), [activity.date, language]);
   const time = formatEventTime(activity.time);
+  const shareDate = `${eventDate}${time ? ` · ${time}` : ""}`;
+  const shareUrl = activityInviteUrl(activity);
   const visibility = activity.visibility === "public" ? labels.public : activity.visibility === "private" ? labels.private : labels.invite;
 
   const refreshUnread = useCallback(async () => {
@@ -183,7 +197,7 @@ function EventDetailsTemplate({ portal }: { portal: PortalState }) {
     const section = portal.sheet.querySelector(".members-section");
     const toggle = portal.sheet.querySelector<HTMLButtonElement>(".detail-members-toggle");
     if (!section) toggle?.click();
-    window.requestAnimationFrame(() => portal.sheet.querySelector(".detail-members-toggle")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    window.requestAnimationFrame(() => portal.sheet.querySelector(".members-section")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
 
   return (
@@ -195,12 +209,22 @@ function EventDetailsTemplate({ portal }: { portal: PortalState }) {
           title={activity.title[language]}
         />
         <div className="event-details-v2-hero-shade" />
+        <div className="event-details-v2-share">
+          <CardShareAction
+            title={normalizeText(activity.title[language])}
+            date={shareDate}
+            address={activity.address || cityName}
+            url={shareUrl}
+            label={labels.share}
+            onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
+          />
+        </div>
         <div className="event-details-v2-hero-copy">
           <span className="event-details-v2-visibility">{visibility}</span>
           <h1>{normalizeText(activity.title[language])}</h1>
           <p>{normalizeText(activity.description[language])}</p>
           <div className="event-details-v2-hero-meta">
-            <span><CalendarDays aria-hidden="true" />{eventDate}{time ? ` · ${time}` : ""}</span>
+            <span><CalendarDays aria-hidden="true" />{shareDate}</span>
             <span><MapPin aria-hidden="true" />{activity.address || cityName}</span>
           </div>
           <EventWeatherStrip
@@ -217,7 +241,7 @@ function EventDetailsTemplate({ portal }: { portal: PortalState }) {
         <div className="event-details-v2-map-overlay">
           <strong>{activity.address || cityName}</strong>
           <small>{labels.mapProvider}</small>
-          <div className="event-details-v2-provider-row">
+          <div className="event-details-v2-provider-row" data-map-provider-choice>
             {(Object.keys(providerLabels) as EventMapProvider[]).map((item) => (
               <button className={provider === item ? "is-selected" : ""} key={item} type="button" onClick={() => selectProvider(item)}>{providerLabels[item]}</button>
             ))}
