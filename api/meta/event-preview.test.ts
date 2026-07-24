@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { metaEventPreviewCopy } from "./event-preview.js";
+import { buildMetaMessengerReferralUrl, metaEventPreviewCopy } from "./event-preview.js";
 
 describe("Meta event preview copy", () => {
   it("localizes all public actions for every supported language", () => {
@@ -15,5 +15,10 @@ describe("Meta event preview copy", () => {
       map: "Open map",
       telegram: "Join in Telegram",
     });
+  });
+
+  it("builds the Messenger event referral consumed by the rich-card webhook flow", () => {
+    expect(buildMetaMessengerReferralUrl("3b172dd9-d5e2-4328-86a4-d4107a6359fc", "123456789"))
+      .toBe("https://m.me/123456789?ref=event%3A3b172dd9-d5e2-4328-86a4-d4107a6359fc");
   });
 });

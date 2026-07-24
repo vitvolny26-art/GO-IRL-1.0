@@ -32,6 +32,11 @@ export const normalizeMapyUrl = (value: string) => {
 
   try {
     const url = new URL(trimmed, "https://go-irl.invalid");
+    const explicitProvider = url.searchParams.get("go_irl_provider");
+    if (explicitProvider === "google" || explicitProvider === "apple") {
+      url.searchParams.delete("go_irl_provider");
+      return url.toString();
+    }
     if (!mapHosts.has(url.hostname.toLowerCase())) return trimmed;
 
     const point = parseMapPointFromUrl(url.toString());
@@ -58,6 +63,7 @@ export const normalizeMapyUrl = (value: string) => {
 
 const replaceVisibleMapLabels = (root: ParentNode = document) => {
   root.querySelectorAll<HTMLElement>("a, button").forEach((element) => {
+    if (element.closest("[data-map-provider-choice]")) return;
     if (/google maps/i.test(element.textContent || "")) {
       element.textContent = (element.textContent || "").replace(/google maps/gi, "Mapy.com");
     }
@@ -85,7 +91,11 @@ export const enableMapyRuntimeLinks = () => {
       mutation.addedNodes.forEach((node) => {
         if (node instanceof Element) {
           replaceVisibleMapLabels(node);
-          if (node.matches("a, button") && /google maps/i.test(node.textContent || "")) {
+          if (
+            !node.closest("[data-map-provider-choice]")
+            && node.matches("a, button")
+            && /google maps/i.test(node.textContent || "")
+          ) {
             node.textContent = (node.textContent || "").replace(/google maps/gi, "Mapy.com");
           }
         }

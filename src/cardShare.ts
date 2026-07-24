@@ -1,4 +1,4 @@
-export type CardShareChannel = "telegram" | "whatsapp" | "messenger" | "instagram";
+export type CardShareChannel = "telegram" | "whatsapp" | "messenger" | "facebook" | "instagram";
 
 export type CardShareContent = {
   title: string;
@@ -14,19 +14,33 @@ export const metaAppId = "1348703396728256";
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
   [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n\n");
 
-export const buildMessengerPreviewUrl = (content: CardShareContent) => {
+export const readCardShareEventId = (content: CardShareContent) => {
   try {
     const inviteUrl = new URL(content.url);
     const eventId = inviteUrl.searchParams.get("startapp")?.trim() || "";
-    if (!eventIdPattern.test(eventId)) return content.url;
-
-    const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
-    previewUrl.searchParams.set("event", eventId);
-    previewUrl.searchParams.set("language", "ru");
-    return previewUrl.toString();
+    return eventIdPattern.test(eventId) ? eventId : null;
   } catch {
-    return content.url;
+    return null;
   }
+};
+
+export const buildMessengerPreviewUrl = (content: CardShareContent) => {
+  const eventId = readCardShareEventId(content);
+  if (!eventId) return content.url;
+  const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
+  previewUrl.searchParams.set("event", eventId);
+  previewUrl.searchParams.set("language", "ru");
+  return previewUrl.toString();
+};
+
+export const buildMessengerReferralTarget = (content: CardShareContent, origin = fallbackOrigin) => {
+  const eventId = readCardShareEventId(content);
+  if (!eventId) return buildMessengerSendTarget(content);
+  const target = new URL("/api/meta/event-preview", origin);
+  target.searchParams.set("event", eventId);
+  target.searchParams.set("language", "ru");
+  target.searchParams.set("messenger", "1");
+  return target.toString();
 };
 
 export const buildMessengerSendTarget = (content: CardShareContent) => {
@@ -34,6 +48,12 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
   dialogUrl.searchParams.set("app_id", metaAppId);
   dialogUrl.searchParams.set("link", buildMessengerPreviewUrl(content));
   dialogUrl.searchParams.set("redirect_uri", fallbackOrigin);
+  return dialogUrl.toString();
+};
+
+export const buildFacebookShareTarget = (content: CardShareContent) => {
+  const dialogUrl = new URL("https://www.facebook.com/sharer/sharer.php");
+  dialogUrl.searchParams.set("u", buildMessengerPreviewUrl(content));
   return dialogUrl.toString();
 };
 
@@ -64,5 +84,6 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     return `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(textWithoutUrl)}`;
   }
   if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  if (channel === "facebook") return buildFacebookShareTarget(content);
   return buildMessengerSendTarget(content);
 };

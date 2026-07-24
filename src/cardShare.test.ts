@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   buildCardShareTarget,
   buildCardShareText,
+  buildFacebookShareTarget,
   buildMessengerAndroidIntentTarget,
   buildMessengerAppTarget,
   buildMessengerPreviewUrl,
+  buildMessengerReferralTarget,
   buildMessengerShareBridgeTarget,
 } from "./cardShare";
 
@@ -39,6 +41,21 @@ describe("card share", () => {
     expect(target.searchParams.get("link")).toBe(previewUrl);
   });
 
+  it("routes Messenger event shares through the existing rich-card referral endpoint", () => {
+    const target = new URL(buildMessengerReferralTarget(content, "https://preview.example"));
+    expect(target.origin).toBe("https://preview.example");
+    expect(target.pathname).toBe("/api/meta/event-preview");
+    expect(target.searchParams.get("event")).toBe(eventId);
+    expect(target.searchParams.get("messenger")).toBe("1");
+  });
+
+  it("shares the dynamic preview through Facebook", () => {
+    const target = new URL(buildFacebookShareTarget(content));
+    expect(target.origin + target.pathname).toBe("https://www.facebook.com/sharer/sharer.php");
+    expect(target.searchParams.get("u")).toBe(previewUrl);
+    expect(buildCardShareTarget("facebook", content)).toBe(target.toString());
+  });
+
   it("builds native Messenger targets for mobile devices", () => {
     expect(buildMessengerAppTarget(content)).toContain("fb-messenger://share/");
     const android = buildMessengerAndroidIntentTarget(content);
@@ -59,5 +76,6 @@ describe("card share", () => {
   it("falls back to the original URL when no valid event id is present", () => {
     const fallback = { ...content, url: "https://example.com/event" };
     expect(buildMessengerPreviewUrl(fallback)).toBe(fallback.url);
+    expect(buildMessengerReferralTarget(fallback)).toContain("facebook.com/dialog/send");
   });
 });

@@ -1,5 +1,9 @@
 import { getTelegramWebApp } from "./telegram";
-import { buildMessengerSendTarget, buildMessengerShareBridgeTarget, type CardShareContent } from "./cardShare";
+import {
+  buildFacebookShareTarget,
+  buildMessengerReferralTarget,
+  type CardShareContent,
+} from "./cardShare";
 
 export const openTelegramShareTarget = (url: string) => {
   const webApp = getTelegramWebApp();
@@ -19,10 +23,15 @@ export const openExternalShareTarget = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
-export const openMessengerShareTarget = (content: CardShareContent, userAgent = navigator.userAgent) => {
-  if (/android|iphone|ipad|ipod/i.test(userAgent)) {
-    openExternalShareTarget(buildMessengerShareBridgeTarget(content));
-    return;
-  }
-  openExternalShareTarget(buildMessengerSendTarget(content));
+export const buildMessengerEventShareTarget = (content: CardShareContent) => {
+  const origin = typeof window === "undefined" ? undefined : window.location.origin;
+  return buildMessengerReferralTarget(content, origin);
+};
+
+export const openMessengerShareTarget = (content: CardShareContent) => {
+  openExternalShareTarget(buildMessengerEventShareTarget(content));
+};
+
+export const openFacebookShareTarget = (content: CardShareContent) => {
+  openExternalShareTarget(buildFacebookShareTarget(content));
 };

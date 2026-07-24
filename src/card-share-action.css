@@ -37,7 +37,23 @@
   border: 1px solid rgba(255, 255, 255, .16);
   border-radius: 999px;
   background: #fff;
+  color: #111;
   box-shadow: 0 12px 28px rgba(0, 0, 0, .32);
+}
+
+.card-share-icon-circle.is-facebook {
+  background: #1877f2;
+  color: #fff;
+}
+
+.card-share-brand-letter {
+  display: block;
+  transform: translateY(4px);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: lowercase;
 }
 
 .card-share-icon-circle img {
