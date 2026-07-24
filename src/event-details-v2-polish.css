@@ -1,0 +1,66 @@
+.event-details-v2-share {
+  position: absolute;
+  z-index: 12;
+  top: 14px;
+  right: 14px;
+}
+
+.event-details-v2-share .card-share-action {
+  width: 48px;
+  height: 48px;
+}
+
+.event-details-v2-share .sport-card-icon-action {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  border-radius: 999px !important;
+  background: rgba(8,11,13,.58) !important;
+  color: var(--lime) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.event-details-v2-share .card-share-channel-list {
+  z-index: 80;
+  top: 0;
+  right: 56px;
+}
+
+.event-details-v2-active .detail-list > .organizer-detail-action,
+.event-details-v2-active .organizer-detail-action {
+  display: none !important;
+}
+
+.event-details-v2-active .detail-members-toggle,
+.event-details-v2-active .activity-chat-toggle {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.event-details-v2-active .members-section,
+.event-details-v2-active .activity-chat-box {
+  margin-top: 10px;
+  border-radius: 18px !important;
+}
+
+.event-details-v2-active .activity-chat-panel {
+  margin-top: 12px;
+}
+
+.event-details-v2-provider-row[data-map-provider-choice] button {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
