@@ -4,7 +4,7 @@ import {
   buildCardShareTarget,
   buildCardShareText,
 } from "../cardShare";
-import { openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
+import { openExternalShareTarget, openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
@@ -16,12 +16,13 @@ type CardShareActionProps = {
   onTelegramShare?: () => Promise<PreparedTelegramShareResult>;
 };
 
-type ShareChannel = "telegram" | "messenger" | "native";
+type ShareChannel = "telegram" | "messenger" | "facebook" | "native";
 
 const channels = [
-  { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
-  { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
-  { id: "native", label: "Поделиться", icon: null },
+  { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg", brand: null },
+  { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg", brand: null },
+  { id: "facebook", label: "Facebook", icon: null, brand: "f" },
+  { id: "native", label: "Поделиться", icon: null, brand: null },
 ] as const;
 
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
@@ -79,6 +80,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       return;
     }
 
+    if (channel === "facebook") {
+      openExternalShareTarget(buildCardShareTarget(channel, content));
+      return;
+    }
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -126,10 +132,12 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
                 void share(channel.id);
               }}
             >
-              <span className="card-share-icon-circle">
+              <span className={`card-share-icon-circle${channel.brand ? " is-facebook" : ""}`}>
                 {channel.icon
                   ? <img src={channel.icon} alt="" decoding="async" />
-                  : <Share2 size={28} aria-hidden="true" />}
+                  : channel.brand
+                    ? <span className="card-share-brand-letter" aria-hidden="true">{channel.brand}</span>
+                    : <Share2 size={28} aria-hidden="true" />}
               </span>
             </button>
           ))}
