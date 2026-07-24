@@ -2,11 +2,11 @@ import { describe, expect, it } from "vitest";
 import { buildEventLocationUrl, parseSavedEventLocations } from "./eventLocations";
 
 describe("event locations", () => {
-  it("builds a Mapy.cz suggestion from address and city", () => {
+  it("builds a Mapy.com suggestion from address and city", () => {
     expect(buildEventLocationUrl("Smetanovy sady", "Olomouc"))
-      .toBe("https://mapy.cz/zakladni?q=Smetanovy%20sady%2C%20Olomouc");
+      .toBe("https://mapy.com/zakladni?q=Smetanovy%20sady%2C%20Olomouc");
     expect(buildEventLocationUrl("Olomouc", "Olomouc"))
-      .toBe("https://mapy.cz/zakladni?q=Olomouc");
+      .toBe("https://mapy.com/zakladni?q=Olomouc");
   });
 
   it("keeps the most useful valid saved locations first", () => {
