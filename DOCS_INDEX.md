@@ -106,6 +106,7 @@ next_review:
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, escalation, and Coordinator interaction. |
 | `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
 | `docs/governance/ARCHIVIST_OPERATING_POLICY.md` | Governance / Archivist Policy | Active | Да | Canonical authority, lifecycle, human-gate, and automation-boundary rules. |
+| `docs/governance/TOOL_OPERATING_MODEL.md` | Governance / Tool Operating Model | Review | Нет | Proposed responsibility boundaries and routing rules; must not be treated as Active before review and merge. |
 | `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` | Automation / Governance Workflow | Active | Да | Deployed n8n workflow IDs and operational boundaries; GitHub remains authority. |
 | `docs/roadmap/SPRINTS.md` | Roadmap / Sprint Overview | Draft | Нет | Roadmap-folder copy of sprint plan; not current MVP scope by itself. |
 | `docs/roadmap/SPRINT_0.md` | Roadmap / Sprint Record | Archived | Нет | Historical Sprint 0 record; Netlify references are historical only. |
@@ -225,7 +226,8 @@ GO IRL Documentation
 │   └── docs/governance/
 │       ├── AI_ORGANIZATION.md
 │       ├── KNOWLEDGE_PLATFORM.md
-│       └── ARCHIVIST_OPERATING_POLICY.md
+│       ├── ARCHIVIST_OPERATING_POLICY.md
+│       └── TOOL_OPERATING_MODEL.md
 ├── Automation
 │   └── docs/automation/
 │       └── DOCUMENTATION_GOVERNANCE_ARCHIVIST.md
