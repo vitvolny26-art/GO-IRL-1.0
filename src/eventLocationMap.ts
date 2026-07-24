@@ -47,17 +47,31 @@ export const resolvePinchZoom = (
   ));
 };
 
-export const buildOpenStreetMapLocationUrl = (point: MapPoint, zoom = 17) => {
+export const buildMapyLocationUrl = (point: MapPoint, zoom = 17) => {
   const normalized = normalizeMapPoint(point);
   const latitude = normalized.latitude.toFixed(6);
   const longitude = normalized.longitude.toFixed(6);
-  return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=${zoom}/${latitude}/${longitude}`;
+  const safeZoom = Math.round(clamp(zoom, 1, 20));
+  return `https://mapy.com/fnc/v1/showmap?mapset=basic&center=${longitude},${latitude}&zoom=${safeZoom}&marker=true`;
 };
+
+// Compatibility name retained for existing callers. New saved links open Mapy.com.
+export const buildOpenStreetMapLocationUrl = buildMapyLocationUrl;
 
 export const parseMapPointFromUrl = (value: string): MapPoint | null => {
   if (!value.trim()) return null;
   try {
     const url = new URL(value);
+    const center = url.searchParams.get("center");
+    if (center) {
+      const [longitudeValue, latitudeValue] = center.split(",");
+      const latitude = Number(latitudeValue);
+      const longitude = Number(longitudeValue);
+      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        return normalizeMapPoint({ latitude, longitude });
+      }
+    }
+
     const latitudeValue = url.searchParams.get("mlat");
     const longitudeValue = url.searchParams.get("mlon");
     if (latitudeValue !== null && longitudeValue !== null) {
