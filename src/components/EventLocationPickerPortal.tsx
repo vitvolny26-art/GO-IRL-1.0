@@ -7,6 +7,7 @@ import {
   mapPointToWorld,
   mapTileSize,
   parseMapPointFromUrl,
+  resolvePinchZoom,
   worldToMapPoint,
   type MapPoint,
 } from "../eventLocationMap";
@@ -19,6 +20,8 @@ const maxZoom = 19;
 
 type PortalTarget = { target: HTMLElement; form: HTMLFormElement };
 type DragState = { pointerId: number; x: number; y: number; worldX: number; worldY: number };
+type PointerPosition = { x: number; y: number };
+type PinchState = { startDistance: number; startZoom: number };
 type Tile = { key: string; src: string; left: number; top: number };
 type ReverseGeocodePayload = {
   display_name?: string;
@@ -104,6 +107,11 @@ const tilesFor = (center: MapPoint, zoom: number): Tile[] => {
   return tiles;
 };
 
+const pointerDistance = (positions: PointerPosition[]) => {
+  if (positions.length < 2) return 0;
+  return Math.hypot(positions[0].x - positions[1].x, positions[0].y - positions[1].y);
+};
+
 function LocationMap({ point, zoom, onPointChange, onZoomChange }: {
   point: MapPoint;
   zoom: number;
@@ -111,17 +119,61 @@ function LocationMap({ point, zoom, onPointChange, onZoomChange }: {
   onZoomChange: (zoom: number) => void;
 }) {
   const drag = useRef<DragState | null>(null);
+  const pointers = useRef(new Map<number, PointerPosition>());
+  const pinch = useRef<PinchState | null>(null);
   const tiles = useMemo(() => tilesFor(point, zoom), [point, zoom]);
+
+  const beginSinglePointerDrag = (pointerId: number, position: PointerPosition) => {
+    const world = mapPointToWorld(point, zoom);
+    drag.current = { pointerId, x: position.x, y: position.y, worldX: world.x, worldY: world.y };
+  };
+
+  const clearPointer = (pointerId: number) => {
+    pointers.current.delete(pointerId);
+    if (drag.current?.pointerId === pointerId) drag.current = null;
+    if (pointers.current.size < 2) pinch.current = null;
+    if (pointers.current.size === 1) {
+      const [remainingId, remainingPosition] = [...pointers.current.entries()][0];
+      beginSinglePointerDrag(remainingId, remainingPosition);
+    }
+  };
 
   return (
     <div
       className="event-location-map"
       onPointerDown={(event) => {
-        const world = mapPointToWorld(point, zoom);
-        drag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, worldX: world.x, worldY: world.y };
+        const position = { x: event.clientX, y: event.clientY };
+        pointers.current.set(event.pointerId, position);
         event.currentTarget.setPointerCapture(event.pointerId);
+
+        if (pointers.current.size === 1) {
+          beginSinglePointerDrag(event.pointerId, position);
+          return;
+        }
+
+        if (pointers.current.size === 2) {
+          const positions = [...pointers.current.values()];
+          pinch.current = { startDistance: pointerDistance(positions), startZoom: zoom };
+          drag.current = null;
+        }
       }}
       onPointerMove={(event) => {
+        if (!pointers.current.has(event.pointerId)) return;
+        pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+        if (pointers.current.size >= 2 && pinch.current) {
+          const positions = [...pointers.current.values()].slice(0, 2);
+          const nextZoom = resolvePinchZoom(
+            pinch.current.startZoom,
+            pinch.current.startDistance,
+            pointerDistance(positions),
+            minZoom,
+            maxZoom,
+          );
+          if (nextZoom !== zoom) onZoomChange(nextZoom);
+          return;
+        }
+
         const current = drag.current;
         if (!current || current.pointerId !== event.pointerId) return;
         onPointChange(worldToMapPoint(
@@ -131,12 +183,14 @@ function LocationMap({ point, zoom, onPointChange, onZoomChange }: {
         ));
       }}
       onPointerUp={(event) => {
-        if (drag.current?.pointerId === event.pointerId) drag.current = null;
+        clearPointer(event.pointerId);
         if (event.currentTarget.hasPointerCapture(event.pointerId)) {
           event.currentTarget.releasePointerCapture(event.pointerId);
         }
       }}
-      onPointerCancel={() => { drag.current = null; }}
+      onPointerCancel={(event) => {
+        clearPointer(event.pointerId);
+      }}
     >
       <div className="event-location-map-tiles" aria-hidden="true">
         {tiles.map((tile) => (
@@ -260,7 +314,7 @@ export function EventLocationPickerPortal() {
         <div className="event-location-picker-backdrop" role="dialog" aria-modal="true" aria-label="Выбор места события">
           <section className="event-location-picker-sheet">
             <header>
-              <div><strong>Точка события</strong><span>Передвигайте карту — маркер остаётся в центре</span></div>
+              <div><strong>Точка события</strong><span>Передвигайте карту и меняйте масштаб двумя пальцами</span></div>
               <button type="button" aria-label="Закрыть" onClick={() => setOpen(false)}><X /></button>
             </header>
             <LocationMap point={point} zoom={zoom} onPointChange={setPoint} onZoomChange={setZoom} />
