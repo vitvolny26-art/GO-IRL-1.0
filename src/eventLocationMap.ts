@@ -29,6 +29,24 @@ export const worldToMapPoint = (x: number, y: number, zoom: number): MapPoint =>
   return normalizeMapPoint({ latitude, longitude });
 };
 
+export const resolvePinchZoom = (
+  startZoom: number,
+  startDistance: number,
+  currentDistance: number,
+  minZoom: number,
+  maxZoom: number,
+) => {
+  const safeStartZoom = Number.isFinite(startZoom) ? startZoom : minZoom;
+  if (!(startDistance > 0) || !(currentDistance > 0)) {
+    return Math.round(clamp(safeStartZoom, minZoom, maxZoom));
+  }
+  return Math.round(clamp(
+    safeStartZoom + Math.log2(currentDistance / startDistance),
+    minZoom,
+    maxZoom,
+  ));
+};
+
 export const buildOpenStreetMapLocationUrl = (point: MapPoint, zoom = 17) => {
   const normalized = normalizeMapPoint(point);
   const latitude = normalized.latitude.toFixed(6);
