@@ -5,6 +5,7 @@ import { createVercelHandler } from "./_shared/vercel-handler.js";
 
 type AuthProvider = "facebook" | "instagram" | "whatsapp";
 type ProviderProfile = { provider: AuthProvider; id: string; displayName: string };
+type OAuthState = { provider: AuthProvider; returnTo: string; exp: number; linkUserKey?: string };
 
 const json = (status: number, payload: unknown) => new Response(JSON.stringify(payload), {
   status,
@@ -32,21 +33,31 @@ const safeReturnTo = (value: string | null) => {
   }
 };
 
-const signState = (provider: AuthProvider, returnTo: string) => {
-  const payload = base64url(JSON.stringify({ provider, returnTo, exp: Date.now() + 10 * 60_000 }));
+const signState = (provider: AuthProvider, returnTo: string, linkUserKey?: string | null) => {
+  const payload = base64url(JSON.stringify({
+    provider,
+    returnTo,
+    exp: Date.now() + 10 * 60_000,
+    ...(linkUserKey ? { linkUserKey } : {}),
+  } satisfies OAuthState));
   const signature = createHmac("sha256", appSecret()).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 };
 
-const verifyState = (state: string, expectedProvider: AuthProvider) => {
+const verifyState = (state: string, expectedProvider: AuthProvider): OAuthState => {
   const [payload, signature] = state.split(".");
   if (!payload || !signature) throw new Error("invalid_state");
   const expected = createHmac("sha256", appSecret()).update(payload).digest();
   const actual = Buffer.from(signature, "base64url");
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) throw new Error("invalid_state");
-  const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { provider?: string; returnTo?: string; exp?: number };
+  const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as Partial<OAuthState>;
   if (parsed.provider !== expectedProvider || !parsed.exp || parsed.exp < Date.now()) throw new Error("expired_state");
-  return safeReturnTo(parsed.returnTo || "/");
+  return {
+    provider: expectedProvider,
+    returnTo: safeReturnTo(parsed.returnTo || "/"),
+    exp: parsed.exp,
+    ...(parsed.linkUserKey ? { linkUserKey: parsed.linkUserKey } : {}),
+  };
 };
 
 const signJwt = (payload: Record<string, unknown>) => {
@@ -187,6 +198,7 @@ const normalizePhone = (value: string) => {
 };
 const codeHash = (phone: string, code: string) => createHash("sha256")
   .update(`${phone}:${code}:${requireEnv("GO_IRL_AUTH_CODE_PEPPER")}`).digest("hex");
+const maxOtpAttempts = 5;
 
 async function startWhatsApp(phoneInput: string) {
   const phone = normalizePhone(phoneInput);
@@ -234,12 +246,17 @@ async function verifyWhatsApp(phoneInput: string, code: string, linkUserKey?: st
     .eq("provider", "whatsapp").eq("provider_user_id", phone).maybeSingle();
   if (challenge.error) throw challenge.error;
   if (!challenge.data || challenge.data.consumed_at || new Date(challenge.data.expires_at).getTime() < Date.now()) throw new Error("auth_code_expired");
+  if (challenge.data.attempt_count >= maxOtpAttempts) throw new Error("auth_code_attempts_exceeded");
   const expected = Buffer.from(challenge.data.code_hash, "hex");
   const actual = Buffer.from(codeHash(phone, code), "hex");
   if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
-    await client.from("provider_auth_challenges").update({ attempt_count: challenge.data.attempt_count + 1, updated_at: new Date().toISOString() })
-      .eq("provider", "whatsapp").eq("provider_user_id", phone);
-    throw new Error("auth_code_invalid");
+    const nextAttemptCount = challenge.data.attempt_count + 1;
+    await client.from("provider_auth_challenges").update({
+      attempt_count: nextAttemptCount,
+      ...(nextAttemptCount >= maxOtpAttempts ? { consumed_at: new Date().toISOString() } : {}),
+      updated_at: new Date().toISOString(),
+    }).eq("provider", "whatsapp").eq("provider_user_id", phone);
+    throw new Error(nextAttemptCount >= maxOtpAttempts ? "auth_code_attempts_exceeded" : "auth_code_invalid");
   }
   await client.from("provider_auth_challenges").update({ consumed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("provider", "whatsapp").eq("provider_user_id", phone);
@@ -268,6 +285,20 @@ async function exchangeMetaCode(provider: "facebook" | "instagram", code: string
   return verifyInstagram(payload.access_token);
 }
 
+const buildOAuthAuthorizeUrl = (provider: "facebook" | "instagram", returnTo: string, linkUserKey?: string | null) => {
+  const redirectUri = `${publicOrigin()}/api/auth?action=callback&provider=${provider}`;
+  const state = signState(provider, returnTo, linkUserKey);
+  const authorize = provider === "facebook"
+    ? new URL(`https://www.facebook.com/${graphVersion()}/dialog/oauth`)
+    : new URL("https://www.instagram.com/oauth/authorize");
+  authorize.searchParams.set("client_id", provider === "facebook" ? requireEnv("FACEBOOK_APP_ID") : requireEnv("INSTAGRAM_APP_ID"));
+  authorize.searchParams.set("redirect_uri", redirectUri);
+  authorize.searchParams.set("response_type", "code");
+  authorize.searchParams.set("state", state);
+  authorize.searchParams.set("scope", provider === "facebook" ? "public_profile,email" : "instagram_business_basic");
+  return authorize.toString();
+};
+
 const callbackHtml = (session: Awaited<ReturnType<typeof resolveIdentity>>, returnTo: string) => {
   const stored = JSON.stringify({
     accessToken: session.accessToken, expiresAt: session.expiresAt, user: session.user,
@@ -284,18 +315,7 @@ export async function handleAuth(request: Request) {
     if (request.method === "GET" && url.searchParams.get("action") === "start") {
       const provider = url.searchParams.get("provider") as AuthProvider;
       if (provider !== "facebook" && provider !== "instagram") return json(400, { error: "provider_not_supported" });
-      const returnTo = safeReturnTo(url.searchParams.get("returnTo"));
-      const redirectUri = `${publicOrigin()}/api/auth?action=callback&provider=${provider}`;
-      const state = signState(provider, returnTo);
-      const authorize = provider === "facebook"
-        ? new URL(`https://www.facebook.com/${graphVersion()}/dialog/oauth`)
-        : new URL("https://www.instagram.com/oauth/authorize");
-      authorize.searchParams.set("client_id", provider === "facebook" ? requireEnv("FACEBOOK_APP_ID") : requireEnv("INSTAGRAM_APP_ID"));
-      authorize.searchParams.set("redirect_uri", redirectUri);
-      authorize.searchParams.set("response_type", "code");
-      authorize.searchParams.set("state", state);
-      authorize.searchParams.set("scope", provider === "facebook" ? "public_profile,email" : "instagram_business_basic");
-      return Response.redirect(authorize.toString(), 302);
+      return Response.redirect(buildOAuthAuthorizeUrl(provider, safeReturnTo(url.searchParams.get("returnTo"))), 302);
     }
     if (request.method === "GET" && url.searchParams.get("action") === "callback") {
       const provider = url.searchParams.get("provider") as AuthProvider;
@@ -303,14 +323,18 @@ export async function handleAuth(request: Request) {
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
       if (!code || !state) return json(400, { error: "oauth_callback_invalid" });
-      const returnTo = verifyState(state, provider);
+      const verifiedState = verifyState(state, provider);
       const redirectUri = `${publicOrigin()}/api/auth?action=callback&provider=${provider}`;
       const profile = await exchangeMetaCode(provider, code, redirectUri);
-      return callbackHtml(await resolveIdentity(profile), returnTo);
+      return callbackHtml(await resolveIdentity(profile, verifiedState.linkUserKey), verifiedState.returnTo);
     }
     if (request.method === "POST") {
-      const body = await request.json() as { action?: string; phone?: string; code?: string; accessToken?: string; provider?: AuthProvider };
+      const body = await request.json() as { action?: string; phone?: string; code?: string; accessToken?: string; provider?: AuthProvider; returnTo?: string };
       const linkUserKey = readLinkUserKey(request);
+      if (body.action === "oauth-start" && (body.provider === "facebook" || body.provider === "instagram")) {
+        if (!linkUserKey) return json(401, { error: "trusted_auth_required" });
+        return json(200, { authorizeUrl: buildOAuthAuthorizeUrl(body.provider, safeReturnTo(body.returnTo || null), linkUserKey) });
+      }
       if (body.action === "whatsapp-start" && body.phone) return json(200, await startWhatsApp(body.phone));
       if (body.action === "whatsapp-verify" && body.phone && body.code) return json(200, await verifyWhatsApp(body.phone, body.code, linkUserKey));
       if (body.action === "token-exchange" && body.accessToken && (body.provider === "facebook" || body.provider === "instagram")) {
@@ -322,7 +346,10 @@ export async function handleAuth(request: Request) {
     return new Response(null, { status: 405, headers: { Allow: "GET, POST" } });
   } catch (error) {
     const code = error instanceof Error ? error.message : "provider_auth_failed";
-    const status = code === "identity_already_linked" ? 409 : code.includes("rate_limited") ? 429 : code.includes("invalid") || code.includes("expired") ? 401 : 500;
+    const status = code === "identity_already_linked" ? 409
+      : code.includes("rate_limited") || code.includes("attempts_exceeded") ? 429
+      : code.includes("invalid") || code.includes("expired") || code === "trusted_auth_required" ? 401
+      : 500;
     console.error("provider_auth_failed", { code: code.slice(0, 100) });
     return json(status, { error: code });
   }
