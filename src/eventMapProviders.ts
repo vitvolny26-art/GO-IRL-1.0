@@ -30,12 +30,17 @@ export const buildEventMapProviderUrl = (
 
   if (provider === "google") {
     const target = point ? `${point.lat},${point.lng}` : query;
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(target)}`;
+    const google = new URL("https://www.google.com/maps/search/");
+    google.searchParams.set("api", "1");
+    google.searchParams.set("query", target);
+    google.searchParams.set("go_irl_provider", "google");
+    return google.toString();
   }
 
   const apple = new URL("https://maps.apple.com/");
   apple.searchParams.set("q", query || "GO IRL event");
   if (point) apple.searchParams.set("ll", `${point.lat},${point.lng}`);
+  apple.searchParams.set("go_irl_provider", "apple");
   return apple.toString();
 };
 
