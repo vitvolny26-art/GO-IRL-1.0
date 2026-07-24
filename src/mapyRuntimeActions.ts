@@ -11,7 +11,8 @@ export const normalizeMapUrl = (value: string) => {
   if (point) return buildMapyLocationUrl(point, 17);
 
   try {
-    const url = new URL(raw, window.location.origin);
+    const origin = typeof window === "undefined" ? "https://go-irl.app" : window.location.origin;
+    const url = new URL(raw, origin);
     const host = url.hostname.toLowerCase();
 
     if (host === "mapy.cz" || host === "www.mapy.cz") {
