@@ -44,6 +44,13 @@ const enabledProviders = (): ReminderChannel[] => {
   return [...new Set<ReminderChannel>(selected.length ? selected : ["telegram"])];
 };
 
+type OperatorAlertRpcClient = {
+  rpc: (
+    fn: string,
+    args?: Record<string, unknown>,
+  ) => PromiseLike<{ data: unknown; error: { code?: string } | null }>;
+};
+
 async function reminderHealth(): Promise<MessagingHealthSnapshot> {
   const client = createClient(
     requireEnv("SUPABASE_URL"),
@@ -110,7 +117,7 @@ async function reminderHealth(): Promise<MessagingHealthSnapshot> {
 }
 
 async function maybeAlertOperator(
-  client: ReturnType<typeof createClient>,
+  client: OperatorAlertRpcClient,
   alertKey: string,
   message: string | null,
 ) {
@@ -246,7 +253,7 @@ export async function handleReminderRun(request: Request) {
     });
     const health = await reminderHealth();
     await maybeAlertOperator(
-      serviceClient,
+      serviceClient as unknown as OperatorAlertRpcClient,
       "messaging_delivery_health",
       buildMessagingHealthAlert(health),
     );
@@ -262,7 +269,7 @@ export async function handleReminderRun(request: Request) {
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
     await maybeAlertOperator(
-      alertClient,
+      alertClient as unknown as OperatorAlertRpcClient,
       `messaging_worker_failure:${code}`,
       `🚨 GO IRL: worker сообщений завершился ошибкой\nКод: ${code}`,
     );
