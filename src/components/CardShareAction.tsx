@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Share2 } from "lucide-react";
 import {
   buildCardShareTarget,
-  buildCardShareText,
 } from "../cardShare";
-import { openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
+import { openExternalShareTarget, openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 
 type CardShareActionProps = {
@@ -16,12 +14,12 @@ type CardShareActionProps = {
   onTelegramShare?: () => Promise<PreparedTelegramShareResult>;
 };
 
-type ShareChannel = "telegram" | "messenger" | "native";
+type ShareChannel = "telegram" | "messenger" | "whatsapp";
 
 const channels = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
-  { id: "native", label: "Поделиться", icon: null },
+  { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
 ] as const;
 
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
@@ -45,23 +43,6 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     };
   }, [open]);
 
-  const copyShareText = async (shareUrl = url) => {
-    const shareText = buildCardShareText({ ...content, url: shareUrl });
-    try {
-      await navigator.clipboard.writeText(shareText);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = shareText;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      textarea.remove();
-    }
-  };
-
   const share = async (channel: ShareChannel) => {
     setOpen(false);
 
@@ -79,19 +60,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       return;
     }
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `GO IRL: ${title}`,
-          text: [date, address].filter(Boolean).join("\n"),
-          url,
-        });
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-      }
-    }
-    await copyShareText();
+    openExternalShareTarget(buildCardShareTarget("whatsapp", content));
   };
 
   return (
@@ -127,9 +96,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               }}
             >
               <span className="card-share-icon-circle">
-                {channel.icon
-                  ? <img src={channel.icon} alt="" decoding="async" />
-                  : <Share2 size={28} aria-hidden="true" />}
+                <img src={channel.icon} alt="" decoding="async" />
               </span>
             </button>
           ))}
