@@ -1,5 +1,9 @@
 import { getTelegramWebApp } from "./telegram";
-import { buildMessengerReferralTarget, type CardShareContent } from "./cardShare";
+import {
+  buildFacebookShareTarget,
+  buildMessengerReferralTarget,
+  type CardShareContent,
+} from "./cardShare";
 
 export const openTelegramShareTarget = (url: string) => {
   const webApp = getTelegramWebApp();
@@ -26,4 +30,8 @@ export const buildMessengerEventShareTarget = (content: CardShareContent) => {
 
 export const openMessengerShareTarget = (content: CardShareContent) => {
   openExternalShareTarget(buildMessengerEventShareTarget(content));
+};
+
+export const openFacebookShareTarget = (content: CardShareContent) => {
+  openExternalShareTarget(buildFacebookShareTarget(content));
 };
