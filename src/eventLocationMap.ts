@@ -40,10 +40,14 @@ export const parseMapPointFromUrl = (value: string): MapPoint | null => {
   if (!value.trim()) return null;
   try {
     const url = new URL(value);
-    const latitude = Number(url.searchParams.get("mlat"));
-    const longitude = Number(url.searchParams.get("mlon"));
-    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-      return normalizeMapPoint({ latitude, longitude });
+    const latitudeValue = url.searchParams.get("mlat");
+    const longitudeValue = url.searchParams.get("mlon");
+    if (latitudeValue !== null && longitudeValue !== null) {
+      const latitude = Number(latitudeValue);
+      const longitude = Number(longitudeValue);
+      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        return normalizeMapPoint({ latitude, longitude });
+      }
     }
     const match = url.hash.match(/#map=\d+\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)/);
     if (!match) return null;
