@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { openExternalShareTarget, openMessengerShareTarget, openTelegramShareTarget } from "./cardShareNavigation";
+import {
+  buildMessengerEventShareTarget,
+  openExternalShareTarget,
+  openMessengerShareTarget,
+  openTelegramShareTarget,
+} from "./cardShareNavigation";
 
-const content = { title: "Volleyball", date: "Tomorrow", address: "Olomouc", url: "https://go-irl-1-0.vercel.app/?startapp=39e31319-a4fc-4d41-bf1e-d713178290d1" };
+const eventId = "39e31319-a4fc-4d41-bf1e-d713178290d1";
+const content = { title: "Volleyball", date: "Tomorrow", address: "Olomouc", url: `https://go-irl-1-0.vercel.app/?startapp=${eventId}` };
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -42,24 +48,35 @@ describe("openExternalShareTarget", () => {
 });
 
 describe("openMessengerShareTarget", () => {
-  it("opens the HTTPS share bridge on Android instead of an unsupported intent URL", () => {
-    const openLink = vi.fn();
-    vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
-    openMessengerShareTarget(content, "Mozilla/5.0 (Linux; Android 14)");
-    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("/messenger-share.html?"));
+  it("builds the existing Meta preview endpoint as a Messenger referral entry", () => {
+    vi.stubGlobal("window", { location: { origin: "https://preview.example" } });
+    const target = new URL(buildMessengerEventShareTarget(content));
+    expect(target.origin).toBe("https://preview.example");
+    expect(target.pathname).toBe("/api/meta/event-preview");
+    expect(target.searchParams.get("event")).toBe(eventId);
+    expect(target.searchParams.get("messenger")).toBe("1");
   });
 
-  it("opens the HTTPS share bridge on iOS instead of a custom URL scheme", () => {
+  it("opens the referral entry through Telegram openLink inside the Mini App", () => {
     const openLink = vi.fn();
-    vi.stubGlobal("window", { Telegram: { WebApp: { openLink } }, open: vi.fn() });
-    openMessengerShareTarget(content, "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)");
-    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("/messenger-share.html?"));
+    vi.stubGlobal("window", {
+      location: { origin: "https://preview.example" },
+      Telegram: { WebApp: { openLink } },
+      open: vi.fn(),
+    });
+    openMessengerShareTarget(content);
+    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("/api/meta/event-preview?"));
+    expect(openLink).toHaveBeenCalledWith(expect.stringContaining("messenger=1"));
   });
 
-  it("keeps the web Send Dialog for desktop browsers", () => {
+  it("opens the referral entry in a browser outside Telegram", () => {
     const open = vi.fn();
-    vi.stubGlobal("window", { open });
-    openMessengerShareTarget(content, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-    expect(open).toHaveBeenCalledWith(expect.stringContaining("https://www.facebook.com/dialog/send"), "_blank", "noopener,noreferrer");
+    vi.stubGlobal("window", { location: { origin: "https://preview.example" }, open });
+    openMessengerShareTarget(content);
+    expect(open).toHaveBeenCalledWith(
+      expect.stringContaining("/api/meta/event-preview?"),
+      "_blank",
+      "noopener,noreferrer",
+    );
   });
 });
