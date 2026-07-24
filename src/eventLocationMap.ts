@@ -54,10 +54,28 @@ export const buildOpenStreetMapLocationUrl = (point: MapPoint, zoom = 17) => {
   return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=${zoom}/${latitude}/${longitude}`;
 };
 
+export const buildMapyLocationUrl = (point: MapPoint, zoom = 17) => {
+  const normalized = normalizeMapPoint(point);
+  const latitude = normalized.latitude.toFixed(6);
+  const longitude = normalized.longitude.toFixed(6);
+  const safeZoom = Math.round(clamp(zoom, 1, 20));
+  return `https://mapy.com/fnc/v1/showmap?mapset=basic&center=${longitude},${latitude}&zoom=${safeZoom}&marker=true`;
+};
+
 export const parseMapPointFromUrl = (value: string): MapPoint | null => {
   if (!value.trim()) return null;
   try {
     const url = new URL(value);
+    const centerValue = url.searchParams.get("center");
+    if (centerValue !== null) {
+      const [longitudeValue, latitudeValue] = centerValue.split(",");
+      const latitude = Number(latitudeValue);
+      const longitude = Number(longitudeValue);
+      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        return normalizeMapPoint({ latitude, longitude });
+      }
+    }
+
     const latitudeValue = url.searchParams.get("mlat");
     const longitudeValue = url.searchParams.get("mlon");
     if (latitudeValue !== null && longitudeValue !== null) {
