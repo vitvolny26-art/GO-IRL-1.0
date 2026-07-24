@@ -37,6 +37,10 @@ type StoredPreferences = {
   mapProvider?: "google" | "apple" | "mapy";
 };
 
+type TelegramUserWithLanguage = {
+  language_code?: string;
+};
+
 const supportedLanguages = new Set<SupportedLanguage>(["ru", "uk", "cs", "en"]);
 const preferencesStorageKey = "go-irl-user-preferences";
 const legacyLanguageStorageKey = "go-irl-language";
@@ -71,9 +75,8 @@ const initializeLanguagePreference = () => {
     return;
   }
 
-  const telegramLanguage = normalizeDeviceLanguage(
-    window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code,
-  );
+  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user as TelegramUserWithLanguage | undefined;
+  const telegramLanguage = normalizeDeviceLanguage(telegramUser?.language_code);
   const browserLanguage = navigator.languages
     .map((language) => normalizeDeviceLanguage(language))
     .find((language): language is SupportedLanguage => Boolean(language));
