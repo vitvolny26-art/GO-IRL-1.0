@@ -1,3 +1,7 @@
+.organizer-detail-portal-slot {
+  display: contents !important;
+}
+
 .organizer-detail-action {
   display: grid !important;
   grid-template-columns: 32px minmax(0, 1fr) !important;
