@@ -12,23 +12,35 @@ const isBrowserMockAuthEnabled = () => typeof window !== "undefined" && !getTele
 const isDemoAuthEnabled = () => configuredDemoAuthEnabled || isBrowserMockAuthEnabled();
 const sessionStorageKey = "go-irl-trusted-session-v2";
 
+export type TrustedAuthProvider = "telegram" | "facebook" | "instagram" | "whatsapp";
+
 export type TrustedAuthUser = {
   id: string;
   userKey: string;
-  telegramId: number;
+  telegramId: number | null;
   firstName?: string | null;
   lastName?: string | null;
   username?: string | null;
   role: UserRole;
+  provider?: TrustedAuthProvider;
 };
 
-export type TrustedAuthSession = {
+type TrustedSessionBase = {
   accessToken: string;
   expiresAt: number;
   user: TrustedAuthUser;
-  startParam?: string;
-  source: "trusted-telegram";
 };
+
+export type TrustedTelegramAuthSession = TrustedSessionBase & {
+  source: "trusted-telegram";
+  startParam?: string;
+};
+
+export type TrustedProviderAuthSession = TrustedSessionBase & {
+  source: "trusted-provider";
+};
+
+export type TrustedAuthSession = TrustedTelegramAuthSession | TrustedProviderAuthSession;
 
 export type AppAuthIdentity =
   | TrustedAuthSession
@@ -62,8 +74,9 @@ let authError: string | null = null;
 function readTrustedSession() {
   try {
     const parsed = JSON.parse(sessionStorage.getItem(sessionStorageKey) || "null") as TrustedAuthSession | null;
-    if (!parsed?.accessToken || !parsed.expiresAt) return null;
+    if (!parsed?.accessToken || !parsed.expiresAt || !parsed.user?.userKey) return null;
     if (parsed.expiresAt <= Math.floor(Date.now() / 1000) + 60) return null;
+    if (parsed.source !== "trusted-telegram" && parsed.source !== "trusted-provider") return null;
     return parsed;
   } catch {
     return null;
@@ -73,6 +86,7 @@ function readTrustedSession() {
 function writeTrustedSession(session: TrustedAuthSession) {
   trustedSession = session;
   sessionStorage.setItem(sessionStorageKey, JSON.stringify(session));
+  window.dispatchEvent(new CustomEvent("go-irl-auth-changed", { detail: { provider: session.user.provider || "telegram" } }));
 }
 
 function resolveLegacyDemoIdentity() {
@@ -94,9 +108,14 @@ export async function initializeTrustedAuth() {
 
   const initData = getTelegramInitData();
   if (!initData) {
+    const providerSession = readTrustedSession();
+    if (providerSession) {
+      trustedSession = providerSession;
+      return providerSession;
+    }
     const legacy = resolveLegacyDemoIdentity();
     if (legacy) return { ...legacy, legacy: true } as const;
-    authError = "telegram_init_data_missing";
+    authError = "trusted_identity_missing";
     return null;
   }
 
@@ -127,10 +146,10 @@ export async function initializeTrustedAuth() {
       return null;
     }
 
-    const session: TrustedAuthSession = {
+    const session: TrustedTelegramAuthSession = {
       accessToken: payload.session.access_token,
       expiresAt: payload.session.expires_at,
-      user: payload.user,
+      user: { ...payload.user, provider: "telegram" },
       startParam: payload.startParam,
       source: "trusted-telegram",
     };
@@ -143,17 +162,68 @@ export async function initializeTrustedAuth() {
   }
 }
 
+export function startMetaProviderAuth(provider: "facebook" | "instagram", returnTo = window.location.href) {
+  const url = new URL("/api/auth", window.location.origin);
+  url.searchParams.set("action", "start");
+  url.searchParams.set("provider", provider);
+  url.searchParams.set("returnTo", returnTo);
+  window.location.assign(url.toString());
+}
+
+export async function startWhatsAppAuth(phone: string) {
+  const response = await fetch("/api/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "whatsapp-start", phone }),
+  });
+  const payload = await response.json() as { error?: string };
+  if (!response.ok) throw new Error(payload.error || "whatsapp_auth_start_failed");
+}
+
+export async function verifyWhatsAppAuth(phone: string, code: string) {
+  const response = await fetch("/api/auth", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(trustedSession?.accessToken ? { Authorization: `Bearer ${trustedSession.accessToken}` } : {}),
+    },
+    body: JSON.stringify({ action: "whatsapp-verify", phone, code }),
+  });
+  const payload = await response.json() as {
+    error?: string;
+    accessToken?: string;
+    expiresAt?: number;
+    user?: TrustedAuthUser;
+  };
+  if (!response.ok || !payload.accessToken || !payload.expiresAt || !payload.user) {
+    throw new Error(payload.error || "whatsapp_auth_verify_failed");
+  }
+  const session: TrustedProviderAuthSession = {
+    accessToken: payload.accessToken,
+    expiresAt: payload.expiresAt,
+    user: { ...payload.user, provider: "whatsapp" },
+    source: "trusted-provider",
+  };
+  writeTrustedSession(session);
+  authError = null;
+  return session;
+}
+
+export function clearTrustedAuthSession() {
+  trustedSession = null;
+  sessionStorage.removeItem(sessionStorageKey);
+  window.dispatchEvent(new CustomEvent("go-irl-auth-changed", { detail: { provider: null } }));
+}
+
 export const getTrustedAccessToken = async () => {
   if (trustedSession && trustedSession.expiresAt > Math.floor(Date.now() / 1000) + 60) {
     return trustedSession.accessToken;
   }
 
   const session = await initializeTrustedAuth();
-
-  if (session && "source" in session && session.source === "trusted-telegram") {
+  if (session && "source" in session && (session.source === "trusted-telegram" || session.source === "trusted-provider")) {
     return session.accessToken;
   }
-
   return null;
 };
 
@@ -180,13 +250,15 @@ export function getCurrentUserRole() {
 }
 
 export function getCurrentStartParam() {
-  return trustedSession?.startParam || getTelegramWebApp()?.initDataUnsafe?.start_param;
+  return trustedSession?.source === "trusted-telegram"
+    ? trustedSession.startParam || getTelegramWebApp()?.initDataUnsafe?.start_param
+    : getTelegramWebApp()?.initDataUnsafe?.start_param;
 }
 
 export function getCurrentDisplayName(fallback: string) {
   const trustedUser = trustedSession?.user;
   if (trustedUser) {
-    return [trustedUser.firstName, trustedUser.lastName].filter(Boolean).join(" ") || fallback;
+    return [trustedUser.firstName, trustedUser.lastName].filter(Boolean).join(" ") || trustedUser.username || fallback;
   }
 
   if (isBrowserMockAuthEnabled()) return browserMockDisplayName;
