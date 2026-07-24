@@ -1,0 +1,115 @@
+.map-provider-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(6, 12, 24, 0.58);
+  backdrop-filter: blur(10px);
+}
+
+.map-provider-picker-sheet {
+  width: min(100%, 420px);
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 24px;
+  background: var(--surface, #111827);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
+}
+
+.map-provider-picker-sheet header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.map-provider-picker-sheet header div {
+  display: grid;
+  gap: 4px;
+}
+
+.map-provider-picker-sheet header strong {
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.map-provider-picker-sheet header span {
+  color: var(--text-secondary, #9ca3af);
+  font-size: 14px;
+}
+
+.map-provider-picker-sheet header button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+}
+
+.map-provider-picker-options {
+  display: grid;
+  gap: 10px;
+}
+
+.map-provider-picker-options button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.map-provider-picker-options button.is-selected {
+  border-color: var(--accent, #8b5cf6);
+  background: color-mix(in srgb, var(--accent, #8b5cf6) 18%, transparent);
+}
+
+.map-provider-picker-options svg {
+  width: 20px;
+  height: 20px;
+}
+
+.map-provider-picker-remember {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 2px;
+  color: var(--text-secondary, #d1d5db);
+  font-size: 14px;
+}
+
+.map-provider-picker-remember input {
+  width: 18px;
+  height: 18px;
+}
+
+.map-provider-picker-confirm {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--accent, #8b5cf6);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
+@media (min-width: 640px) {
+  .map-provider-picker-backdrop {
+    align-items: center;
+  }
+}

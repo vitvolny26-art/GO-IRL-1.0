@@ -7,6 +7,7 @@ import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
+import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -28,6 +29,7 @@ import "./participant-notifications.css";
 import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
 import "./event-location-picker.css";
+import "./map-provider-picker.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 
@@ -110,6 +112,7 @@ createRoot(document.getElementById("root")!).render(
       <OrganizerProfilePortal />
       <OrganizerEventDetailsPortal />
       <EventLocationPickerPortal />
+      <MapProviderPickerPortal />
     </QueryClientProvider>
   </StrictMode>,
 );
