@@ -2,14 +2,19 @@
   display: contents !important;
 }
 
+.activity-sheet.sport-sheet .detail-list > .organizer-detail-action,
 .organizer-detail-action {
   display: grid !important;
-  grid-template-columns: 32px minmax(0, 1fr) !important;
+  grid-column: 1 / -1 !important;
+  grid-template-columns: 40px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  column-gap: 12px !important;
+  align-items: center !important;
   align-content: center !important;
   width: 100% !important;
   min-width: 0 !important;
-  min-height: 64px !important;
-  padding: 10px !important;
+  min-height: 72px !important;
+  padding: 12px !important;
   border: 1px solid rgba(255, 255, 255, .08) !important;
   border-radius: 14px !important;
   background: rgba(255, 255, 255, .02) !important;
@@ -18,18 +23,19 @@
 }
 
 .organizer-detail-avatar {
-  grid-row: span 2;
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  align-self: center;
-  overflow: hidden;
-  border-radius: 50%;
-  background: rgba(201, 255, 61, .12);
-  color: var(--lime);
-  font-size: 11px;
-  font-weight: 900;
+  grid-column: 1 !important;
+  grid-row: 1 / span 2 !important;
+  display: grid !important;
+  width: 40px !important;
+  height: 40px !important;
+  place-items: center !important;
+  align-self: center !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  background: rgba(201, 255, 61, .12) !important;
+  color: var(--lime) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
 }
 
 .organizer-detail-avatar img {
@@ -39,13 +45,30 @@
 }
 
 .organizer-detail-action > span:nth-child(2) {
-  min-width: 0;
-  color: var(--muted);
-  font-size: 12px;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  writing-mode: horizontal-tb !important;
 }
 
 .organizer-detail-action strong {
-  min-width: 0;
-  overflow-wrap: break-word;
-  word-break: normal;
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  line-height: 1.25 !important;
 }
