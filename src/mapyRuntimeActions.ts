@@ -1,9 +1,7 @@
-import { buildMapyLocationUrl, parseMapPointFromUrl } from "./eventLocationMap";
+import { buildMapyLocationUrl, buildMapySearchUrl, parseMapPointFromUrl } from "./eventLocationMap";
+import { getTelegramWebApp } from "./telegram";
 
 const googleMapsHosts = new Set(["google.com", "www.google.com", "maps.google.com"]);
-
-const mapySearchUrl = (query: string) =>
-  query.trim() ? `https://mapy.com/zakladni?q=${encodeURIComponent(query.trim())}` : "https://mapy.com/zakladni";
 
 export const normalizeMapUrl = (value: string) => {
   const raw = String(value || "").trim();
@@ -23,7 +21,7 @@ export const normalizeMapUrl = (value: string) => {
 
     if (googleMapsHosts.has(host) && url.pathname.includes("/maps")) {
       const query = url.searchParams.get("query") || url.searchParams.get("q") || "";
-      return mapySearchUrl(query);
+      return buildMapySearchUrl(query) || "https://mapy.com/zakladni";
     }
   } catch {
     return raw;
@@ -48,6 +46,15 @@ export const enableMapyRuntimeActions = () => {
     const normalized = typeof url === "string" || url instanceof URL
       ? normalizeMapUrl(String(url))
       : url;
+
+    if (typeof normalized === "string" && normalized.includes("mapy.com")) {
+      const webApp = getTelegramWebApp();
+      if (webApp?.openLink) {
+        webApp.openLink(normalized, { try_instant_view: false });
+        return null;
+      }
+    }
+
     return nativeOpen(normalized, target, features);
   }) as typeof window.open;
 
@@ -61,6 +68,14 @@ export const enableMapyRuntimeActions = () => {
 
   document.addEventListener("click", (event) => {
     const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
-    if (anchor) updateMapAnchor(anchor);
+    if (!anchor) return;
+    updateMapAnchor(anchor);
+    if (!anchor.href.includes("mapy.com")) return;
+
+    const webApp = getTelegramWebApp();
+    if (!webApp?.openLink) return;
+    event.preventDefault();
+    event.stopPropagation();
+    webApp.openLink(anchor.href, { try_instant_view: false });
   }, true);
 };
