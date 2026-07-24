@@ -28,6 +28,9 @@ export const metaEventPreviewCopy = {
   en: { calendar: "Add to calendar", map: "Open map", telegram: "Join in Telegram" },
 } as const;
 
+export const buildMetaMessengerReferralUrl = (eventId: string, pageId: string) =>
+  `https://m.me/${encodeURIComponent(pageId)}?ref=${encodeURIComponent(`event:${eventId}`)}`;
+
 const escapeHtml = (value: string) => value
   .replaceAll("&", "&amp;")
   .replaceAll("<", "&lt;")
@@ -50,6 +53,14 @@ export default async function handler(request: VercelRequest, response: VercelRe
   try {
     const card = await loadTrustedTelegramEventCard(eventId, language);
     if (!card) return response.status(404).end("not_found");
+
+    if (first(request.query?.messenger) === "1") {
+      const pageId = readEnv("MESSENGER_PAGE_ID");
+      if (!pageId) return response.status(503).end("messenger_unavailable");
+      response.setHeader("Cache-Control", "private, no-store");
+      response.setHeader("Location", buildMetaMessengerReferralUrl(card.eventId, pageId));
+      return response.status(302).end();
+    }
 
     const origin = publicOrigin();
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
