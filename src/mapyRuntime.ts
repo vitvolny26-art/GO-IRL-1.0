@@ -5,7 +5,8 @@ const mapTextPattern = /Открыть в Google Maps|Open in Google Maps|Otevř
 
 const mapZoomFromUrl = (value: string) => {
   try {
-    const url = new URL(value, window.location.origin);
+    const base = typeof window === "undefined" ? "https://go-irl.app" : window.location.origin;
+    const url = new URL(value, base);
     const directZoom = Number(url.searchParams.get("zoom"));
     if (Number.isFinite(directZoom) && directZoom > 0) return directZoom;
     const hashZoom = Number(url.hash.match(/#map=(\d+)/)?.[1]);
