@@ -55,6 +55,11 @@ export const buildMapyLocationUrl = (point: MapPoint, zoom = 17) => {
   return `https://mapy.com/fnc/v1/showmap?mapset=basic&center=${longitude},${latitude}&zoom=${safeZoom}&marker=true`;
 };
 
+export const buildMapySearchUrl = (query: string) => {
+  const cleanQuery = query.trim();
+  return cleanQuery ? `https://mapy.com/zakladni?q=${encodeURIComponent(cleanQuery)}` : "";
+};
+
 // Kept for compatibility with the existing picker import. Selected points now open in Mapy.com.
 export const buildOpenStreetMapLocationUrl = buildMapyLocationUrl;
 
@@ -91,6 +96,31 @@ export const parseMapPointFromUrl = (value: string): MapPoint | null => {
   } catch {
     return null;
   }
+};
+
+export const normalizeMapUrlForMapy = (value: string) => {
+  const cleanValue = value.trim();
+  if (!cleanValue) return cleanValue;
+
+  const point = parseMapPointFromUrl(cleanValue);
+  if (point) return buildMapyLocationUrl(point);
+
+  try {
+    const url = new URL(cleanValue);
+    if (url.hostname === "mapy.com" || url.hostname.endsWith(".mapy.com")) return cleanValue;
+    if (url.hostname === "mapy.cz" || url.hostname.endsWith(".mapy.cz")) {
+      url.hostname = "mapy.com";
+      return url.toString();
+    }
+    if (url.hostname.includes("google.") && url.pathname.includes("/maps")) {
+      const query = url.searchParams.get("query") || url.searchParams.get("q") || "";
+      return buildMapySearchUrl(query) || cleanValue;
+    }
+  } catch {
+    return cleanValue;
+  }
+
+  return cleanValue;
 };
 
 export const mapTileSize = tileSize;
