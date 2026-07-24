@@ -5,6 +5,7 @@ import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
+import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import { EventDetailsTemplatePortal } from "./components/EventDetailsTemplatePortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
 import "./styles.css";
@@ -51,6 +52,7 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </Suspense>
       <OrganizerProfilePortal />
+      <OrganizerEventDetailsPortal />
       <EventDetailsTemplatePortal />
       <EventLocationPickerPortal />
     </QueryClientProvider>
