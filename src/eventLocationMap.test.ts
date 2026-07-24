@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildMapyLocationUrl,
   buildOpenStreetMapLocationUrl,
   mapPointToWorld,
   parseMapPointFromUrl,
@@ -16,14 +17,23 @@ describe("event location map", () => {
     expect(restored.longitude).toBeCloseTo(point.longitude, 5);
   });
 
-  it("builds and parses an OpenStreetMap marker URL", () => {
+  it("builds and parses a Mapy.com marker URL", () => {
     const point = { latitude: 50.0755, longitude: 14.4378 };
-    const url = buildOpenStreetMapLocationUrl(point, 17);
+    const url = buildMapyLocationUrl(point, 17);
     const restored = parseMapPointFromUrl(url);
-    expect(url).toContain("openstreetmap.org");
+    expect(url).toBe("https://mapy.com/fnc/v1/showmap?mapset=basic&center=14.437800,50.075500&zoom=17&marker=true");
+    expect(buildOpenStreetMapLocationUrl(point, 17)).toBe(url);
     expect(restored).not.toBeNull();
     expect(restored?.latitude).toBeCloseTo(point.latitude, 6);
     expect(restored?.longitude).toBeCloseTo(point.longitude, 6);
+  });
+
+  it("still parses previously saved OpenStreetMap links", () => {
+    const restored = parseMapPointFromUrl(
+      "https://www.openstreetmap.org/?mlat=49.593800&mlon=17.250900#map=17/49.593800/17.250900",
+    );
+    expect(restored?.latitude).toBeCloseTo(49.5938, 6);
+    expect(restored?.longitude).toBeCloseTo(17.2509, 6);
   });
 
   it("resolves pinch zoom and clamps it to supported bounds", () => {
