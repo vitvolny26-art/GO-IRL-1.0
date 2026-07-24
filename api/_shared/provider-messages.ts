@@ -93,7 +93,10 @@ async function sendGraphPayload(url: string, token: string, payload: unknown) {
     try {
       response = await postViaNodeHttps(url, accessToken, body);
     } catch (error) {
-      throw new Error(`meta_transport_failed:${safeTransportCode(error)}`);
+      throw Object.assign(
+        new Error(`meta_transport_failed:${safeTransportCode(error)}`),
+        { cause: error },
+      );
     }
   }
   if (!response.ok) {
