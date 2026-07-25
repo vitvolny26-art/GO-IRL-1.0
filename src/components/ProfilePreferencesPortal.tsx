@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Bell, CalendarDays, MapPin, Share2 } from "lucide-react";
 import { useAppStore } from "../store";
@@ -46,7 +46,7 @@ const reminderOptions: Array<{ value: ReminderProvider; label: string; disabled?
 type PreferenceKey = "mapProvider" | "calendarProvider" | "shareProvider" | "reminderProvider";
 
 type PreferenceRowProps = {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string | null | undefined;
   options: Array<{ value: string; label: string; disabled?: boolean }>;
@@ -94,9 +94,7 @@ export function ProfilePreferencesPortal() {
   if (!target) return null;
   const labels = copy[language];
   const change = (key: PreferenceKey, value: string | null) => {
-    const next = updateUserPreferences({ [key]: value } as Partial<UserPreferences>);
-    setPreferences(next);
-    window.dispatchEvent(new CustomEvent("go-irl-user-preferences-changed"));
+    setPreferences(updateUserPreferences({ [key]: value } as Partial<UserPreferences>));
   };
 
   return createPortal(
