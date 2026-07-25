@@ -1,17 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-
-vi.mock("./supabase", () => ({
-  getUserKey: () => "test-user",
-  supabase: {
-    storage: {
-      from: () => ({
-        upload: vi.fn(),
-        getPublicUrl: vi.fn(),
-      }),
-    },
-  },
-}));
-
 import { buildProfileAvatarPath, isDataImageAvatar, profileAvatarExtension } from "./profileAvatar";
 
 const fileLike = (name: string, type: string) => ({ name, type }) as File;
