@@ -3,8 +3,8 @@ title: GO IRL Documentation Status Registry
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-07-26
+next_review: 2026-08-26
 ---
 
 # GO IRL Documentation Status Registry
@@ -34,6 +34,8 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` is the source of truth for the report-only Project Coordinator role and AI Staff OS mission boundaries.
 - `docs/onboarding/AI_ROLES.md` is the working registry for reusable AI roles.
 - `docs/onboarding/AI_FIXER_AGENT.md` is the source of truth for the AI Fixer / QA + UX Polish Agent.
+- `docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md` is the source of truth for successor bootstrap, startup evidence, and indexed instruction retrieval.
+- `docs/onboarding/CHATGPT_PROJECT_SETUP.md` is the source of truth for the ChatGPT Project thin bootstrap prompt and startup routing.
 - `docs/governance/AI_ORGANIZATION.md` is the working source for AI councils, escalation, and role interaction.
 - `docs/reports/README.md` defines AI/task report naming and required report sections.
 - `docs/THIRD_PARTY_NOTICES.md` records attribution and license notices for third-party visual assets used in generated product media.
@@ -101,6 +103,8 @@ next_review:
 | `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for report-only Daily Mission routing, role activation, budgets, validation, and human gates. |
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
 | `docs/onboarding/AI_FIXER_AGENT.md` | Onboarding / AI Agent Prompt | Active | Да | Source of truth for small bug, QA, and UX polish agent behavior and safety limits. |
+| `docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md` | Onboarding / AI Bootstrap | Active | Да | Thin successor bootstrap; current phase comes from `CURRENT_PHASE.md`, while role and task behavior comes from indexed Drive instructions. |
+| `docs/onboarding/CHATGPT_PROJECT_SETUP.md` | Onboarding / Project Bootstrap | Active | Да | Thin ChatGPT Project bootstrap; must not hardcode mutable runtime IDs, schedules, SHAs, or blockers. |
 | `docs/reports/README.md` | Reports / AI Work Logs | Active | Нет | Defines report location and format for AI Fixer task reports. |
 | `docs/reports/2026-07-16-agent-report-archivist-finalization.md` | Reports / Agent Work Log | Draft | Нет | Durable record of the Archivist governance rollout; not runtime or governance authority. |
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, escalation, and Coordinator interaction. |
@@ -236,7 +240,9 @@ GO IRL Documentation
 │       ├── ARCHIVIST_CHARTER.md
 │       ├── PROJECT_COORDINATOR_CHARTER.md
 │       ├── AI_ROLES.md
-│       └── AI_FIXER_AGENT.md
+│       ├── AI_FIXER_AGENT.md
+│       ├── AI_SUCCESSOR_INSTRUCTIONS.md
+│       └── CHATGPT_PROJECT_SETUP.md
 ├── Reports
 │   └── docs/reports/
 │       ├── README.md
@@ -252,7 +258,7 @@ GO IRL Documentation
 │       ├── SPRINT_2.md
 │       ├── SPRINT_3.md
 │       ├── SPRINT_4.md
-│       └── SPRINT_5.md
+│       ├── SPRINT_5.md
 └── Deprecated / Snapshot Candidates
     ├── SETUP.md
     ├── SETUP_RU.md
