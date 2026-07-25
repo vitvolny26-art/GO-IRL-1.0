@@ -1,4 +1,3 @@
-import { Map, MapPinned } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { buildMapProviderUrl } from "../mapProvider";
 import {
@@ -21,6 +20,33 @@ const defaultDeviceProvider = (): MapProvider => {
   const userAgent = navigator.userAgent || "";
   return /iPhone|iPad|iPod|Mac/i.test(`${platform} ${userAgent}`) ? "apple" : "google";
 };
+
+const DeviceMapsMark = ({ provider }: { provider: MapProvider }) =>
+  provider === "apple" ? (
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <rect x="3" y="3" width="26" height="26" rx="7" fill="#f5f5f7" />
+      <path d="M8 23.5V8.5l6-2.5 5 2.5 5-2.5v15l-5 2.5-5-2.5-6 2.5Z" fill="#ffffff" stroke="#3a3a3c" strokeWidth="1.2" />
+      <path d="M14 6v15M19 8.5v15" stroke="#34c759" strokeWidth="2.2" />
+      <path d="M8 14.5 14 12l5 2.5 5-2.5" stroke="#0a84ff" strokeWidth="2" fill="none" />
+      <circle cx="19" cy="14.5" r="2.2" fill="#ff3b30" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M16 3.5a9.5 9.5 0 0 0-9.5 9.5c0 7.2 9.5 15.5 9.5 15.5S25.5 20.2 25.5 13A9.5 9.5 0 0 0 16 3.5Z" fill="#34a853" />
+      <path d="M16 3.5A9.5 9.5 0 0 0 7.7 8.4l8.3 4.8 8.3-4.8A9.5 9.5 0 0 0 16 3.5Z" fill="#4285f4" />
+      <path d="m7.7 8.4 8.3 4.8-4.8 8.3C8.5 18.4 6.5 15.3 6.5 13c0-1.7.4-3.2 1.2-4.6Z" fill="#fbbc04" />
+      <path d="m24.3 8.4-8.3 4.8 4.8 8.3c2.7-3.1 4.7-6.2 4.7-8.5 0-1.7-.4-3.2-1.2-4.6Z" fill="#ea4335" />
+      <circle cx="16" cy="13" r="3.4" fill="#ffffff" />
+      <circle cx="16" cy="13" r="1.8" fill="#4285f4" />
+    </svg>
+  );
+
+const MapyMark = () => (
+  <svg viewBox="0 0 32 32" aria-hidden="true">
+    <rect x="3" y="3" width="26" height="26" rx="8" fill="#b8ff2c" />
+    <path d="M9 22V10h3.2l3.8 5.2 3.8-5.2H23v12h-3.2v-7.1L16 20l-3.8-5.1V22H9Z" fill="#111318" />
+  </svg>
+);
 
 const labels: Record<Language, { menu: string; device: string; mapy: string }> = {
   ru: {
@@ -50,8 +76,8 @@ type MenuPosition = {
   left: number;
 };
 
-const menuWidth = 120;
-const menuHeight = 66;
+const menuWidth = 142;
+const menuHeight = 76;
 const viewportPadding = 12;
 
 const resolveMenuPosition = (x: number, y: number): MenuPosition => {
@@ -71,6 +97,7 @@ export function MapProviderPickerPortal() {
   const lastPointer = useRef({ x: window.innerWidth - 72, y: 124 });
   const language = readUserPreferences().language || "ru";
   const copy = labels[language];
+  const deviceProvider = defaultDeviceProvider();
 
   useEffect(() => {
     const rememberPointer = (event: PointerEvent) => {
@@ -146,9 +173,9 @@ export function MapProviderPickerPortal() {
           role="menuitem"
           aria-label={copy.device}
           title={copy.device}
-          onClick={() => chooseProvider(defaultDeviceProvider())}
+          onClick={() => chooseProvider(deviceProvider)}
         >
-          <Map aria-hidden="true" />
+          <DeviceMapsMark provider={deviceProvider} />
         </button>
         <button
           type="button"
@@ -157,7 +184,7 @@ export function MapProviderPickerPortal() {
           title={copy.mapy}
           onClick={() => chooseProvider("mapy")}
         >
-          <MapPinned aria-hidden="true" />
+          <MapyMark />
         </button>
       </section>
     </div>
