@@ -45,13 +45,38 @@ const labels: Record<Language, { menu: string; device: string; mapy: string }> =
   },
 };
 
+type MenuPosition = {
+  top: number;
+  left: number;
+};
+
+const menuWidth = 120;
+const menuHeight = 66;
+const viewportPadding = 12;
+
+const resolveMenuPosition = (x: number, y: number): MenuPosition => {
+  const left = Math.min(
+    Math.max(viewportPadding, x - menuWidth / 2),
+    window.innerWidth - menuWidth - viewportPadding,
+  );
+  const preferredTop = y - menuHeight - 14;
+  const top = preferredTop >= viewportPadding ? preferredTop : y + 14;
+  return { top, left };
+};
+
 export function MapProviderPickerPortal() {
   const [sourceUrl, setSourceUrl] = useState("");
+  const [position, setPosition] = useState<MenuPosition>({ top: 76, left: 16 });
   const menuRef = useRef<HTMLElement>(null);
+  const lastPointer = useRef({ x: window.innerWidth - 72, y: 124 });
   const language = readUserPreferences().language || "ru";
   const copy = labels[language];
 
   useEffect(() => {
+    const rememberPointer = (event: PointerEvent) => {
+      lastPointer.current = { x: event.clientX, y: event.clientY };
+    };
+
     const handleRequest = (event: Event) => {
       const request = event as CustomEvent<MapProviderPickerRequest>;
       const nextSourceUrl = request.detail?.sourceUrl?.trim();
@@ -63,11 +88,16 @@ export function MapProviderPickerPortal() {
         return;
       }
 
+      setPosition(resolveMenuPosition(lastPointer.current.x, lastPointer.current.y));
       setSourceUrl(nextSourceUrl);
     };
 
+    document.addEventListener("pointerdown", rememberPointer, true);
     window.addEventListener(mapProviderPickerEvent, handleRequest);
-    return () => window.removeEventListener(mapProviderPickerEvent, handleRequest);
+    return () => {
+      document.removeEventListener("pointerdown", rememberPointer, true);
+      window.removeEventListener(mapProviderPickerEvent, handleRequest);
+    };
   }, []);
 
   useEffect(() => {
@@ -79,12 +109,17 @@ export function MapProviderPickerPortal() {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setSourceUrl("");
     };
+    const closeOnViewportChange = () => setSourceUrl("");
 
     document.addEventListener("pointerdown", closeOnOutsideClick);
     document.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("resize", closeOnViewportChange);
+    window.addEventListener("scroll", closeOnViewportChange, true);
     return () => {
       document.removeEventListener("pointerdown", closeOnOutsideClick);
       document.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("resize", closeOnViewportChange);
+      window.removeEventListener("scroll", closeOnViewportChange, true);
     };
   }, [sourceUrl]);
 
@@ -104,6 +139,7 @@ export function MapProviderPickerPortal() {
         data-map-provider-choice
         role="menu"
         aria-label={copy.menu}
+        style={{ top: position.top, left: position.left }}
       >
         <button
           type="button"
