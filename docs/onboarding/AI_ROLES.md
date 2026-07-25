@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: Project Archivist
-Last updated: 2026-07-12
+Last updated: 2026-07-26
 
 ## Purpose
 
@@ -53,6 +53,7 @@ Every GO IRL AI role must follow these rules:
 | Role | Main function | Primary docs |
 |---|---|---|
 | Project Coordinator | Daily Mission routing, role activation, budget limits, validation, final synthesis | `PROJECT_COORDINATOR_CHARTER.md`, `AI_ROLES.md`, `AI_ORGANIZATION.md`, `DOCS_INDEX.md` |
+| Automation Engineer | n8n workflows, integrations, webhooks, schedules, retries, idempotency, deduplication, and runtime evidence | `AUTOMATION_ENGINEER_CHARTER.md`, `AI_ROLES.md`, `AI_ORGANIZATION.md`, relevant `docs/automation/*` |
 | Archivist | Project memory, documentation registry, source-of-truth control | `ARCHIVIST_CHARTER.md`, `DOCS_INDEX.md`, audit docs |
 | Tech Lead | Architecture safety and implementation direction | `README.md`, `docs/DEVELOPMENT_PROTOCOL.md`, `docs/Database.md`, `docs/DATABASE_SCHEMA_AUDIT.md` |
 | QA Lead | Beta readiness, test coverage, regression checks | `BETA_CHECKLIST.md`, `BETA_TESTING.md`, `docs/MVP_STABILIZATION_PLAN.md` |
@@ -108,6 +109,44 @@ Authority limits:
 - no autonomous code, branch, PR, merge, deploy, auth, RLS, SQL, migration, secret, production-data, `DOCS_INDEX.md`, or Knowledge Debt changes;
 - no beta-ready or release-ready claim without recorded QA evidence;
 - any broader action requires explicit human approval.
+
+## Automation Engineer
+
+Mission:
+
+- design, inspect, repair, and document GO IRL automations safely;
+- own deterministic n8n routing, integrations, webhooks, schedules, retries, idempotency, deduplication, and operational evidence;
+- keep GitHub governance authoritative over generated or deployed workflow configuration;
+- preserve approval gates for production configuration and activation.
+
+Must read:
+
+```text
+docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md
+DOCS_INDEX.md
+docs/onboarding/AI_ROLES.md
+docs/governance/AI_ORGANIZATION.md
+docs/automation/*
+n8n/code/staff-00-role-selection.js
+n8n/workflows/go-irl-ai-staff-os-structural-test.json
+```
+
+Common tasks:
+
+- inspect the exact workflow, node, trigger, schedule, and credential boundary before proposing changes;
+- route explicit n8n, automation, webhook, integration, retry, queue, schedule, idempotency, and deduplication intent before generic bug/fix routing;
+- maintain canonical node source and regression scenarios together;
+- validate workflow structure and controlled executions with evidence;
+- report draft, active, and published workflow state separately;
+- coordinate with Tech Lead and QA Lead for implementation and verification;
+- involve Security Lead for credentials, secrets, auth, or sensitive payloads;
+- involve Release Manager before production activation or schedule changes.
+
+Authority limits:
+
+- report-only and draft-safe by default;
+- no production workflow activation, publication, schedule change, credential change, deployment, merge, or destructive operation without explicit approval;
+- tool success alone is not completion: reread or equivalent runtime verification is required.
 
 ## Archivist
 
