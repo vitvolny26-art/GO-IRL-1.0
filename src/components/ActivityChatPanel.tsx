@@ -2,10 +2,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import {
   ensureActivityChat,
+  getCurrentChatIdentity,
   loadActivityChat,
   loadActivityChatMessages,
   sendActivityChatMessage,
 } from "../activityChatFeature";
+import {
+  activityChatUnreadChangedEvent,
+  latestVisibleActivityChatMessageAt,
+  markActivityChatRead,
+} from "../activityChatUnread";
 import { getCity } from "../config/cities";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
@@ -120,13 +126,21 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
 
     try {
       await ensureActivityChat(activity.id);
-      const [nextChat, nextMessages] = await Promise.all([
+      const [nextChat, nextMessages, identity] = await Promise.all([
         loadActivityChat(activity.id),
         loadActivityChatMessages(activity.id),
+        getCurrentChatIdentity(),
       ]);
 
       setChat(nextChat);
       setMessages(nextMessages);
+
+      const latestMessageAt = latestVisibleActivityChatMessageAt(nextMessages);
+      if (latestMessageAt && markActivityChatRead(activity.id, identity.userKey, latestMessageAt)) {
+        window.dispatchEvent(new CustomEvent(activityChatUnreadChangedEvent, {
+          detail: { activityId: activity.id },
+        }));
+      }
     } catch {
       setError("Чат доступен только участникам");
     } finally {
