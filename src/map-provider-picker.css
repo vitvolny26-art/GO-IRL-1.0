@@ -7,84 +7,91 @@
 
 .map-provider-picker-sheet {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 76px);
-  right: 16px;
   display: grid;
-  grid-template-columns: repeat(2, 48px);
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 18px;
-  background: rgba(20, 21, 24, 0.96);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.46);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  transform-origin: top right;
+  grid-template-columns: repeat(2, 56px);
+  gap: 10px;
+  width: max-content;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  background: rgba(17, 19, 24, 0.94);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  transform-origin: center bottom;
   animation: map-provider-menu-in 140ms ease-out;
 }
 
 .map-provider-picker-sheet::before {
   content: "";
   position: absolute;
-  top: -6px;
-  right: 20px;
+  bottom: -6px;
+  left: 50%;
   width: 12px;
   height: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
-  border-left: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(20, 21, 24, 0.96);
-  transform: rotate(45deg);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(17, 19, 24, 0.94);
+  transform: translateX(-50%) rotate(45deg);
 }
 
 .map-provider-picker-sheet button {
   position: relative;
   z-index: 1;
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   place-items: center;
   padding: 0;
-  border: 0;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #f5f7fa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.055);
+  color: #f4f6f8;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
 }
 
 .map-provider-picker-sheet button:hover,
 .map-provider-picker-sheet button:focus-visible {
-  background: rgba(184, 255, 44, 0.14);
+  border-color: rgba(184, 255, 44, 0.42);
+  background: rgba(184, 255, 44, 0.12);
   color: #b8ff2c;
   outline: none;
 }
 
 .map-provider-picker-sheet button:active {
-  transform: scale(0.94);
+  transform: scale(0.92);
+}
+
+.map-provider-picker-sheet button:first-child svg {
+  stroke-width: 1.9;
+}
+
+.map-provider-picker-sheet button:last-child {
+  color: #b8ff2c;
+  background: rgba(184, 255, 44, 0.08);
+}
+
+.map-provider-picker-sheet button:last-child:hover,
+.map-provider-picker-sheet button:last-child:focus-visible {
+  background: rgba(184, 255, 44, 0.16);
 }
 
 .map-provider-picker-sheet svg {
-  width: 24px;
-  height: 24px;
-  stroke-width: 2;
+  width: 30px;
+  height: 30px;
 }
 
 @keyframes map-provider-menu-in {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.96);
+    transform: translateY(8px) scale(0.94);
   }
 
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-  }
-}
-
-@media (max-width: 380px) {
-  .map-provider-picker-sheet {
-    right: 12px;
   }
 }
 
