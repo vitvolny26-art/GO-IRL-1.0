@@ -6,7 +6,7 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5178",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc -p tsconfig.api.json",
     "lint": "eslint .",
     "test": "vitest run",
     "build": "vite build",
