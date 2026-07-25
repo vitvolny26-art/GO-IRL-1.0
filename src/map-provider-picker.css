@@ -2,114 +2,94 @@
   position: fixed;
   inset: 0;
   z-index: 1200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(6, 12, 24, 0.58);
-  backdrop-filter: blur(10px);
+  background: transparent;
 }
 
 .map-provider-picker-sheet {
-  width: min(100%, 420px);
-  padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 24px;
-  background: var(--surface, #111827);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.38);
-}
-
-.map-provider-picker-sheet header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.map-provider-picker-sheet header div {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 76px);
+  right: 16px;
   display: grid;
-  gap: 4px;
+  grid-template-columns: repeat(2, 48px);
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(20, 21, 24, 0.96);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.46);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transform-origin: top right;
+  animation: map-provider-menu-in 140ms ease-out;
 }
 
-.map-provider-picker-sheet header strong {
-  font-size: 18px;
-  line-height: 1.25;
+.map-provider-picker-sheet::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(20, 21, 24, 0.96);
+  transform: rotate(45deg);
 }
 
-.map-provider-picker-sheet header span {
-  color: var(--text-secondary, #9ca3af);
-  font-size: 14px;
-}
-
-.map-provider-picker-sheet header button {
+.map-provider-picker-sheet button {
+  position: relative;
+  z-index: 1;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   place-items: center;
+  padding: 0;
   border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  color: inherit;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #f5f7fa;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
 }
 
-.map-provider-picker-options {
-  display: grid;
-  gap: 10px;
+.map-provider-picker-sheet button:hover,
+.map-provider-picker-sheet button:focus-visible {
+  background: rgba(184, 255, 44, 0.14);
+  color: #b8ff2c;
+  outline: none;
 }
 
-.map-provider-picker-options button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 52px;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  color: inherit;
-  font: inherit;
-  text-align: left;
+.map-provider-picker-sheet button:active {
+  transform: scale(0.94);
 }
 
-.map-provider-picker-options button.is-selected {
-  border-color: var(--accent, #8b5cf6);
-  background: color-mix(in srgb, var(--accent, #8b5cf6) 18%, transparent);
+.map-provider-picker-sheet svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
 }
 
-.map-provider-picker-options svg {
-  width: 20px;
-  height: 20px;
+@keyframes map-provider-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.map-provider-picker-remember {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 16px 2px;
-  color: var(--text-secondary, #d1d5db);
-  font-size: 14px;
+@media (max-width: 380px) {
+  .map-provider-picker-sheet {
+    right: 12px;
+  }
 }
 
-.map-provider-picker-remember input {
-  width: 18px;
-  height: 18px;
-}
-
-.map-provider-picker-confirm {
-  width: 100%;
-  min-height: 48px;
-  border: 0;
-  border-radius: 16px;
-  background: var(--accent, #8b5cf6);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-}
-
-@media (min-width: 640px) {
-  .map-provider-picker-backdrop {
-    align-items: center;
+@media (prefers-reduced-motion: reduce) {
+  .map-provider-picker-sheet {
+    animation: none;
   }
 }
