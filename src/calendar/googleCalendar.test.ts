@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildGoogleCalendarUrl, getCalendarDateRange } from "./googleCalendar";
+import {
+  buildAppleCalendarUrl,
+  buildCalendarProviderUrl,
+  buildOutlookCalendarUrl,
+  buildRawGoogleCalendarUrl,
+  getCalendarDateRange,
+} from "./googleCalendar";
 import type { Activity } from "../types";
 
 const activity: Activity = {
@@ -41,9 +47,9 @@ const activity: Activity = {
 
 const queryParams = (url: string) => new URL(url).searchParams;
 
-describe("Google Calendar helper", () => {
+describe("calendar provider helpers", () => {
   it("builds a Google Calendar template URL", () => {
-    const url = buildGoogleCalendarUrl(activity, {
+    const url = buildRawGoogleCalendarUrl(activity, {
       language: "ru",
       eventUrl: "https://t.me/GOirl_bot?startapp=calendar-1",
     });
@@ -56,15 +62,35 @@ describe("Google Calendar helper", () => {
   });
 
   it("encodes title and location through URLSearchParams", () => {
-    const params = queryParams(buildGoogleCalendarUrl(activity, { language: "ru" }));
-
+    const params = queryParams(buildRawGoogleCalendarUrl(activity, { language: "ru" }));
     expect(params.get("text")).toBe("Волейбол после работы");
     expect(params.get("location")).toBe("Прага, парк Летна");
   });
 
+  it("builds an Apple calendar data URL", () => {
+    const url = buildAppleCalendarUrl(activity, { language: "en" });
+    expect(url.startsWith("data:text/calendar;charset=utf-8,")).toBe(true);
+    const decoded = decodeURIComponent(url.split(",", 2)[1]);
+    expect(decoded).toContain("BEGIN:VEVENT");
+    expect(decoded).toContain("SUMMARY:Volleyball after work");
+  });
+
+  it("builds an Outlook compose URL", () => {
+    const url = buildOutlookCalendarUrl(activity, { language: "en" });
+    const params = queryParams(url);
+    expect(url.startsWith("https://outlook.live.com/calendar/0/deeplink/compose?")).toBe(true);
+    expect(params.get("subject")).toBe("Volleyball after work");
+    expect(params.get("startdt")).toMatch(/Z$/);
+  });
+
+  it("routes each provider explicitly", () => {
+    expect(buildCalendarProviderUrl(activity, "google")).toContain("calendar.google.com");
+    expect(buildCalendarProviderUrl(activity, "apple")).toContain("data:text/calendar");
+    expect(buildCalendarProviderUrl(activity, "outlook")).toContain("outlook.live.com");
+  });
+
   it("uses the default 90 minute duration when no vertical duration exists", () => {
     const { start, end } = getCalendarDateRange(activity);
-
     expect((end.getTime() - start.getTime()) / 60000).toBe(90);
   });
 
@@ -74,16 +100,14 @@ describe("Google Calendar helper", () => {
       metadata: { sport: { durationMinutes: 45 } },
     };
     const { start, end } = getCalendarDateRange(withDuration);
-
     expect((end.getTime() - start.getTime()) / 60000).toBe(45);
   });
 
   it("puts the event link into calendar details", () => {
-    const params = queryParams(buildGoogleCalendarUrl(activity, {
+    const params = queryParams(buildRawGoogleCalendarUrl(activity, {
       language: "en",
       eventUrl: "https://t.me/GOirl_bot?startapp=calendar-1",
     }));
-
     expect(params.get("details")).toContain("https://t.me/GOirl_bot?startapp=calendar-1");
     expect(params.get("details")).toContain("GO IRL");
   });
