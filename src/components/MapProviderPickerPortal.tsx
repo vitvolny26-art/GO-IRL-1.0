@@ -42,10 +42,15 @@ const DeviceMapsMark = ({ provider }: { provider: MapProvider }) =>
   );
 
 const MapyMark = () => (
-  <svg viewBox="0 0 32 32" aria-hidden="true">
-    <rect x="3" y="3" width="26" height="26" rx="8" fill="#b8ff2c" />
-    <path d="M9 22V10h3.2l3.8 5.2 3.8-5.2H23v12h-3.2v-7.1L16 20l-3.8-5.1V22H9Z" fill="#111318" />
-  </svg>
+  <img
+    src="https://api.mapy.com/img/api/logo_green.svg"
+    alt=""
+    aria-hidden="true"
+    width="40"
+    height="32"
+    loading="eager"
+    referrerPolicy="no-referrer"
+  />
 );
 
 const labels: Record<Language, { menu: string; device: string; mapy: string }> = {
