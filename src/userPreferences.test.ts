@@ -7,6 +7,15 @@ import {
   userPreferencesStorageKey,
 } from "./userPreferences";
 
+const values = new Map<string, string>();
+const storage = {
+  clear: () => values.clear(),
+  getItem: (key: string) => values.get(key) ?? null,
+  setItem: (key: string, value: string) => values.set(key, value),
+};
+
+Object.defineProperty(globalThis, "localStorage", { value: storage });
+
 beforeEach(() => {
   localStorage.clear();
 });
