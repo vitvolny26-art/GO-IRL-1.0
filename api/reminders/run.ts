@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { PostgrestError } from "@supabase/supabase-js";
 import { readEnv, requireEnv } from "../_shared/env.js";
 import { createVercelHandler } from "../_shared/vercel-handler.js";
 import { isReminderWorkerAuthorized } from "../_shared/worker-authorization.js";
@@ -109,8 +110,15 @@ async function reminderHealth(): Promise<MessagingHealthSnapshot> {
   };
 }
 
+type OperatorAlertClient = {
+  rpc: (
+    functionName: "go_irl_claim_messaging_operator_alert",
+    args: { p_alert_key: string; p_cooldown_seconds: number },
+  ) => PromiseLike<{ data: boolean | null; error: PostgrestError | null }>;
+};
+
 async function maybeAlertOperator(
-  client: ReturnType<typeof createClient>,
+  client: OperatorAlertClient,
   alertKey: string,
   message: string | null,
 ) {
