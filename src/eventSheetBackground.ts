@@ -20,9 +20,13 @@ export const getEventSheetBackgroundStyle = ({
 
   return {
     backgroundColor: "#111319",
-    backgroundImage: `url("${image}")`,
-    backgroundPosition: "center top",
-    backgroundRepeat: "no-repeat",
-    backgroundSize: "cover",
+    backgroundImage: [
+      "linear-gradient(180deg, rgba(8, 10, 14, 0.18) 0%, rgba(8, 10, 14, 0.62) 58%, #111319 100%)",
+      `url("${image}")`,
+      `url("${image}")`,
+    ].join(", "),
+    backgroundPosition: "center, center top, center top",
+    backgroundRepeat: "no-repeat, no-repeat, no-repeat",
+    backgroundSize: "100% 100%, contain, cover",
   };
 };
