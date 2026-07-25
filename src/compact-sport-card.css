@@ -133,7 +133,7 @@
   display: inline !important;
 }
 
-.compact-sport-card .sport-card-top-actions > .event-request-alert[aria-label^="Новых сообщений:"] {
+.compact-sport-card .sport-card-top-actions > .event-chat-unread-alert {
   position: absolute !important;
   top: 110px !important;
   right: 0 !important;
@@ -146,12 +146,12 @@
   box-shadow: none !important;
 }
 
-.compact-sport-card .sport-card-top-actions > .event-request-alert[aria-label^="Новых сообщений:"] svg {
+.compact-sport-card .sport-card-top-actions > .event-chat-unread-alert svg {
   width: 22px !important;
   height: 22px !important;
 }
 
-.compact-sport-card .sport-card-top-actions > .event-request-alert[aria-label^="Новых сообщений:"] span {
+.compact-sport-card .sport-card-top-actions > .event-chat-unread-alert span {
   top: -4px !important;
   right: 14px !important;
 }
@@ -312,12 +312,12 @@
     font-size: 12px !important;
   }
 
-  .compact-sport-card .sport-card-top-actions > .event-request-alert[aria-label^="Новых сообщений:"] {
+  .compact-sport-card .sport-card-top-actions > .event-chat-unread-alert {
     top: 109px !important;
     width: 80px !important;
   }
 
-  .compact-sport-card .sport-card-top-actions > .event-request-alert[aria-label^="Новых сообщений:"] span {
+  .compact-sport-card .sport-card-top-actions > .event-chat-unread-alert span {
     right: 12px !important;
   }
 
