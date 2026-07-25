@@ -1,41 +1,31 @@
-import { MapPin, X } from "lucide-react";
+import { Map, MapPin, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { buildMapProviderUrl } from "../mapProvider";
 import {
-  mapProviderOptions,
   mapProviderPickerEvent,
   type MapProviderPickerRequest,
 } from "../mapProviderPicker";
-import {
-  readUserPreferences,
-  updateUserPreferences,
-  type MapProvider,
-} from "../userPreferences";
+import type { MapProvider } from "../userPreferences";
 
 const openUrl = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
+const defaultDeviceProvider = (): MapProvider => {
+  const platform = navigator.platform || "";
+  const userAgent = navigator.userAgent || "";
+  return /iPhone|iPad|iPod|Mac/i.test(`${platform} ${userAgent}`) ? "apple" : "google";
+};
+
 export function MapProviderPickerPortal() {
   const [sourceUrl, setSourceUrl] = useState("");
-  const [selected, setSelected] = useState<MapProvider>("mapy");
-  const [remember, setRemember] = useState(true);
 
   useEffect(() => {
     const handleRequest = (event: Event) => {
       const request = event as CustomEvent<MapProviderPickerRequest>;
       const nextSourceUrl = request.detail?.sourceUrl?.trim();
       if (!nextSourceUrl) return;
-
-      const savedProvider = readUserPreferences().mapProvider;
-      if (savedProvider) {
-        openUrl(buildMapProviderUrl(nextSourceUrl, savedProvider));
-        return;
-      }
-
       setSourceUrl(nextSourceUrl);
-      setSelected("mapy");
-      setRemember(true);
     };
 
     window.addEventListener(mapProviderPickerEvent, handleRequest);
@@ -44,9 +34,8 @@ export function MapProviderPickerPortal() {
 
   if (!sourceUrl) return null;
 
-  const confirm = () => {
-    if (remember) updateUserPreferences({ mapProvider: selected });
-    openUrl(buildMapProviderUrl(sourceUrl, selected));
+  const openProvider = (provider: MapProvider) => {
+    openUrl(buildMapProviderUrl(sourceUrl, provider));
     setSourceUrl("");
   };
 
@@ -56,37 +45,24 @@ export function MapProviderPickerPortal() {
         <header>
           <div>
             <strong>Открыть адрес</strong>
-            <span>Выберите приложение карты</span>
+            <span>Выберите, где открыть точное место события</span>
           </div>
           <button type="button" aria-label="Закрыть" onClick={() => setSourceUrl("")}><X /></button>
         </header>
 
-        <div className="map-provider-picker-options">
-          {mapProviderOptions.map((provider) => (
-            <button
-              key={provider.id}
-              type="button"
-              className={selected === provider.id ? "is-selected" : ""}
-              onClick={() => setSelected(provider.id)}
-            >
-              <MapPin />
-              <span>{provider.label}</span>
-            </button>
-          ))}
+        <div
+          className="map-provider-picker-options"
+          style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}
+        >
+          <button type="button" onClick={() => openProvider(defaultDeviceProvider())}>
+            <Map />
+            <span>Карты устройства</span>
+          </button>
+          <button type="button" onClick={() => openProvider("mapy")}>
+            <MapPin />
+            <span>Mapy.com</span>
+          </button>
         </div>
-
-        <label className="map-provider-picker-remember">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(event) => setRemember(event.target.checked)}
-          />
-          <span>Запомнить мой выбор</span>
-        </label>
-
-        <button className="map-provider-picker-confirm" type="button" onClick={confirm}>
-          Открыть
-        </button>
       </section>
     </div>
   );
