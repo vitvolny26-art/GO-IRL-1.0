@@ -11,7 +11,11 @@ import {
 } from "../userPreferences";
 import type { Language } from "../types";
 
-const providerSprite = "/assets/providers/map-provider-marks.svg";
+const providerMarks: Record<MapProvider, string> = {
+  apple: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Apple_Maps_logo.svg",
+  google: "https://upload.wikimedia.org/wikipedia/commons/a/a3/Google_Maps_icon_%282026%29.svg",
+  mapy: "https://upload.wikimedia.org/wikipedia/commons/c/c6/Logo_Mapy-com.svg",
+};
 
 const openUrl = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
@@ -24,9 +28,7 @@ const defaultDeviceProvider = (): MapProvider => {
 };
 
 const ProviderMark = ({ provider }: { provider: MapProvider }) => (
-  <svg viewBox={provider === "mapy" ? "0 0 40 32" : "0 0 32 32"} aria-hidden="true">
-    <use href={`${providerSprite}#${provider}`} />
-  </svg>
+  <img src={providerMarks[provider]} alt="" aria-hidden="true" loading="eager" />
 );
 
 const labels: Record<Language, { menu: string; device: string; mapy: string }> = {
