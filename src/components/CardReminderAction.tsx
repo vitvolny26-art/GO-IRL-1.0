@@ -199,7 +199,7 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
     <>
       {joined && unreadCount > 0 ? (
         <button
-          className="event-request-alert"
+          className="event-request-alert event-chat-unread-alert"
           type="button"
           aria-label={`Новых сообщений: ${unreadCount}`}
           onClick={openUnreadChat}
