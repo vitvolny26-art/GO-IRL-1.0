@@ -8,6 +8,7 @@ import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
 import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
+import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -30,6 +31,7 @@ import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
 import "./event-location-picker.css";
 import "./map-provider-picker.css";
+import "./profile-preferences.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 
@@ -113,6 +115,7 @@ createRoot(document.getElementById("root")!).render(
       <OrganizerEventDetailsPortal />
       <EventLocationPickerPortal />
       <MapProviderPickerPortal />
+      <ProfilePreferencesPortal />
     </QueryClientProvider>
   </StrictMode>,
 );
