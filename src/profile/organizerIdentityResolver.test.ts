@@ -1,4 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../supabase", () => ({
+  supabase: {},
+}));
+
 import type { ProfileRepository } from "./profileRepository";
 import {
   organizerInitials,
