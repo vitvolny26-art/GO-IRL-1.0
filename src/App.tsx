@@ -87,6 +87,7 @@ import {
 } from "./invitationLink";
 import { EventWeatherStrip } from "./components/EventWeatherStrip";
 import { isOutdoorGenericActivity } from "./eventWeather";
+import { getEventSheetBackgroundStyle } from "./eventSheetBackground";
 import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
 import {
   eventActionTranslationKey,
@@ -1553,6 +1554,11 @@ function GenericActivitySheet({
   const waitingMembers = activity.members.filter((member) => member.status === "waiting");
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
   const activityAvatar = genericActivityAvatar(activity, language, category.icon);
+  const sheetBackgroundStyle = getEventSheetBackgroundStyle({
+    icon: activityAvatar,
+    activity: activity.activity[language],
+    title: activity.title[language],
+  });
 
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
@@ -1566,7 +1572,7 @@ function GenericActivitySheet({
 
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
-      <article className="activity-sheet" onMouseDown={(event) => event.stopPropagation()}>
+      <article className="activity-sheet" style={sheetBackgroundStyle} onMouseDown={(event) => event.stopPropagation()}>
         <div className="sheet-handle" />
         <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
         {loading && <EventDetailsSkeleton />}

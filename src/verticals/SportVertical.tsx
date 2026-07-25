@@ -31,6 +31,7 @@ import {
 } from "../eventInteractionState";
 import { eventDurationLabel } from "../eventCardPresentation";
 import { buildDurationOptions, formatDurationOption } from "../durationOptions";
+import { getEventSheetBackgroundStyle } from "../eventSheetBackground";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -410,6 +411,11 @@ export function SportActivitySheet({
   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
   const avatar = sportAvatarForActivity(activity, language, meta);
+  const sheetBackgroundStyle = getEventSheetBackgroundStyle({
+    icon: avatar,
+    activity: meta.sportType || activity.activity[language],
+    title: activity.title[language],
+  });
 
   useEffect(() => {
     setMembersOpen(initialMembersOpen);
@@ -486,7 +492,7 @@ export function SportActivitySheet({
 
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
-      <article className="activity-sheet sport-sheet" onMouseDown={(event) => event.stopPropagation()}>
+      <article className="activity-sheet sport-sheet" style={sheetBackgroundStyle} onMouseDown={(event) => event.stopPropagation()}>
         <div className="sheet-handle" />
         <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
         {loading && <SportDetailsSkeleton />}
