@@ -7,6 +7,7 @@ import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
+import { EventLocationProviderPortal } from "./components/EventLocationProviderPortal";
 import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import "./styles.css";
@@ -30,6 +31,7 @@ import "./participant-notifications.css";
 import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
 import "./event-location-picker.css";
+import "./event-location-provider.css";
 import "./map-provider-picker.css";
 import "./profile-preferences.css";
 
@@ -114,6 +116,7 @@ createRoot(document.getElementById("root")!).render(
       <OrganizerProfilePortal />
       <OrganizerEventDetailsPortal />
       <EventLocationPickerPortal />
+      <EventLocationProviderPortal />
       <MapProviderPickerPortal />
       <ProfilePreferencesPortal />
     </QueryClientProvider>
