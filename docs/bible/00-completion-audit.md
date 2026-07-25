@@ -1,128 +1,99 @@
 ---
 title: GO IRL Bible Completion Audit
-owner: Project Archivist
+owner: Chief Archivist / Technical Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-25
+next_review: 2026-08-25
 ---
 
 # GO IRL Bible Completion Audit
 
 ## Verdict
 
-The GO IRL Bible is **structurally complete for MVP 1.0 / MVP 1.1 beta boundaries**, but it is **not final**.
+The Product Bible is **complete for the current documented scope** and structurally covers Books I-X.
 
-Foundation, Platform Architecture, Database/Supabase Boundaries, Modules Architecture, Product Requirements, UX/Interaction, Beta Operations, Runtime Boundaries, Governance/AI Organization, and Operations/Release are now materially covered.
+| Measure | Evidence | Result |
+|---|---|---:|
+| Book coverage | Books I-X present | 10/10 — 100% |
+| Required Bible files | Audit, roadmap, five Book I files, Books II-X and supporting audits | 18/18 — 100% |
+| Active-file metadata | YAML owner/status/source/review dates | 18/18 — 100% |
+| Scope separation | Current production truth, proven Closed-Beta baseline, approved next phase, long-term vision | 18/18 — 100% |
+| Bible 1.0 documentation completion | All required chapters present, bounded, linked, and reconciled | **100%** |
 
-Do not rewrite from scratch. Preserve, classify, reconcile, and update only what current code, schema, release state, and market positioning require.
+This percentage measures documentation coverage and reconciliation. It does not measure product release readiness, provider approval, schema rollout, or public-launch readiness.
 
-## Current confirmed files
+## Scope model
 
-```text
-GO IRL Bible
-├── docs/bible/00-completion-audit.md
-├── docs/bible/00-bible-roadmap.md
-├── docs/bible/01-foundation/
-│   ├── 00-foundation-overview.md
-│   ├── 01-product-philosophy.md
-│   ├── 01-why-we-exist.md
-│   ├── 02-core-principles.md
-│   └── 03-mvp-scope-and-market-positioning.md
-├── docs/bible/02-platform-architecture.md
-├── docs/bible/03-database-and-supabase-boundaries.md
-├── docs/bible/04-modules-architecture.md
-├── docs/bible/04-modules-mvp-audit.md
-├── docs/bible/05-product-requirements.md
-├── docs/bible/05-product-requirements-mvp-split.md
-├── docs/bible/06-ux-interaction-guidelines.md
-├── docs/bible/07-beta-readiness-and-operations.md
-├── docs/bible/08-runtime-boundaries.md
-├── docs/bible/09-governance-and-ai-organization.md
-└── docs/bible/10-operations-and-release.md
-```
+Every chapter uses four explicit layers:
 
-## Missing or not confirmed in this repository
+1. **Current production truth** — verified runtime evidence and current GitHub `main`.
+2. **Proven Closed-Beta baseline** — Olomouc and the six canonical beta categories.
+3. **Approved next phase** — Release Preparation and focused post-beta stabilization.
+4. **Long-term vision** — platform capabilities that are not claimed as shipped.
 
-No current Bible 1.0 MVP boundary chapter is missing.
+Current lifecycle authority: [`../release/CURRENT_PHASE.md`](../release/CURRENT_PHASE.md).
 
-`03-database-design.md` is replaced for current Bible 1.0 by:
+## Bible map
 
-```text
-docs/bible/03-database-and-supabase-boundaries.md
-```
+| Book | File(s) | Status |
+|---|---|---|
+| I — Foundation | [`01-foundation/00-foundation-overview.md`](01-foundation/00-foundation-overview.md) and linked Foundation chapters | Complete |
+| II — Platform Architecture | [`02-platform-architecture.md`](02-platform-architecture.md) | Complete |
+| III — Database and Supabase Boundaries | [`03-database-and-supabase-boundaries.md`](03-database-and-supabase-boundaries.md) | Complete; one product/schema decision remains gated |
+| IV — Module Architecture | [`04-modules-architecture.md`](04-modules-architecture.md), [`04-modules-mvp-audit.md`](04-modules-mvp-audit.md) | Complete |
+| V — Product Requirements / PRD | [`05-product-requirements.md`](05-product-requirements.md), [`05-product-requirements-mvp-split.md`](05-product-requirements-mvp-split.md) | Complete |
+| VI — UX and Interaction Principles | [`06-ux-interaction-guidelines.md`](06-ux-interaction-guidelines.md) | Complete |
+| VII — Beta Readiness and Operations | [`07-beta-readiness-and-operations.md`](07-beta-readiness-and-operations.md) | Complete as historical baseline and release input |
+| VIII — Runtime Boundaries | [`08-runtime-boundaries.md`](08-runtime-boundaries.md) | Complete |
+| IX — Governance | [`09-governance-and-ai-organization.md`](09-governance-and-ai-organization.md) | Complete against current `main` |
+| X — Operations and Releases | [`10-operations-and-release.md`](10-operations-and-release.md) | Complete for Release Preparation |
 
-## Completeness status
+## Ready chapters
 
-| Part | Current file | Status | Notes |
-|---|---|---|---|
-| Audit | `00-completion-audit.md` | Active | This file tracks Bible completion state. |
-| Roadmap | `00-bible-roadmap.md` | Active | Completion plan and maintenance direction. |
-| Book I — Foundation overview | `01-foundation/00-foundation-overview.md` | Active | Defines product essence, current beta focus, non-goals, source-of-truth hierarchy. |
-| Book I — Product philosophy | `01-foundation/01-product-philosophy.md` | Active | Defines anti-feed philosophy, Telegram-first/local-first principles, success definition. |
-| Book I — Why we exist | `01-foundation/01-why-we-exist.md` | Active | Defines the real-life attendance problem and why GO IRL exists. |
-| Book I — Core principles | `01-foundation/02-core-principles.md` | Active | Defines the core product and technical guardrails. |
-| Book I — MVP scope and market positioning | `01-foundation/03-mvp-scope-and-market-positioning.md` | Active | Current MVP boundary for Olomouc beta and market guardrails. |
-| Book II — Platform Architecture | `02-platform-architecture.md` | Active | Current React/Supabase/Telegram Mini App architecture and beta stabilization boundaries. |
-| Book III — Database and Supabase Boundaries | `03-database-and-supabase-boundaries.md` | Active | Current Supabase/schema/RLS/auth/demo safety boundary. |
-| Book IV — Modules Architecture | `04-modules-architecture.md` | Active | Current module/vertical boundaries, Sport-first specialization, Generic fallback, runtime panels. |
-| Book IV — Modules MVP Audit | `04-modules-mvp-audit.md` | Active | Current six-category beta module boundary. |
-| Book V — Product Requirements | `05-product-requirements.md` | Active | Consolidated current PRD for MVP 1.0 / MVP 1.1 beta stabilization. |
-| Book V — PRD MVP Split | `05-product-requirements-mvp-split.md` | Active | Classifies MVP 1.0, MVP 1.1, future, blocked-before-beta. |
-| Book VI — UX and Interaction | `06-ux-interaction-guidelines.md` | Active | Current Telegram Mini App, Browser Demo, cards, create/join/share/chat/profile/weather UX boundary. |
-| Book VII — Beta Readiness and Operations | `07-beta-readiness-and-operations.md` | Active | Defines beta ops, QA gates, release gates, demo mode, Telegram constraints. |
-| Book VIII — Runtime Boundaries | `08-runtime-boundaries.md` | Active | Defines trusted auth, Supabase, demo, profile, chat, share/join, weather, admin boundaries. |
-| Book IX — Governance and AI Organization | `09-governance-and-ai-organization.md` | Active | Defines AI roles, councils, Archivist, NotebookLM/Gemini boundaries, source-of-truth governance. |
-| Book X — Operations and Release | `10-operations-and-release.md` | Active | Defines beta gates, release gates, smoke checks, incidents, and readiness rules. |
+All Books I-X are materially complete and cross-linked. No current-scope chapter is missing.
 
-## Bible Completion Index
+## External owner decisions
 
-| Area | Completion |
-|---|---:|
-| Foundation | 90% |
-| Product philosophy | 90% |
-| MVP market boundary | 90% |
-| Platform architecture | 85% |
-| Database / Supabase boundary | 85% |
-| Modules / verticals | 85% |
-| Product requirements | 85% |
-| UX / interaction | 85% |
-| Beta operations | 85% |
-| Runtime boundaries | 85% |
-| Governance / AI organization | 85% |
-| Operations / release | 85% |
-| Overall Bible 1.0 | 88% |
+These are documented gates, not missing Bible chapters:
 
-## Current priorities
+| Decision | Current safe wording | Owner |
+|---|---|---|
+| Activity Chat lifetime | Temporary event coordination; applied migration behavior wins until a separate approved SQL/code task changes it. | Product Owner + Supabase Steward |
+| Broad public launch | Not claimed. Release Preparation remains active. | Product Owner + Release Manager |
+| Category expansion | Six categories remain the proven Olomouc baseline; expansion requires an explicit reviewed decision. | Product Owner |
+| WhatsApp and Instagram delivery | Gated until provider-specific production evidence is green. | Product Owner + Release Manager |
+| Governance automation revision | Current GitHub `main` remains authoritative until replacement workflow documentation is merged. | Chief Archivist |
 
-### High
+## Conflicts resolved in this pass
 
-1. Reconcile Bible claims with latest code, Supabase schema/migrations, README, ROADMAP, BACKLOG, RELEASE_NOTES, and DOCS_INDEX.
-2. Keep beta readiness language aligned with actual lint/build/test and smoke-check status.
+- Replaced active Closed-Beta wording with the current Release Preparation lifecycle.
+- Normalized the mission to **Less scrolling. More life.**
+- Separated current production truth from beta evidence, approved next phase, and long-term vision.
+- Added current Profile preferences for maps, calendars, sharing, and reminders without claiming unsupported delivery.
+- Reclassified reminders and provider-neutral lifecycle messaging as implemented where verified; provider enablement remains channel-gated.
+- Preserved `activities`, current migrations, trusted auth, and RLS as implementation authority.
+- Updated governance wording so n8n, Drive, NotebookLM, ClickUp, and reports remain non-authoritative.
+- Added explicit previous/next navigation across Books I-X.
 
-### Medium
+## Stale references recorded
 
-1. Normalize naming to avoid duplicate `01-*` chapters.
-2. Add or verify YAML frontmatter on older Bible files.
-3. Add cross-links between Bible, `DOCS_INDEX.md`, `ROADMAP.md`, and `BACKLOG.md` where useful.
+- `docs/DATABASE_SCHEMA_AUDIT.md` still names the superseded `docs/bible/03-database-design.md`.
+- Several release and backlog documents retain beta-era wording; they are not lifecycle authority.
+- Open pull requests may describe newer governance automation, but unmerged PR text is not current `main`.
 
-## Required reconciliation before final Bible
+## Knowledge Debt
 
-1. Reconcile Bible with `README.md`, `RELEASE_NOTES.md`, `DOCS_INDEX.md`, `ROADMAP.md`, and `BACKLOG.md`.
-2. Reconcile database chapters with `supabase/schema.sql`, migrations, `supabase/README.md`, and `docs/DATABASE_SCHEMA_AUDIT.md`.
-3. Reconcile UX chapter with current Telegram Mini App and browser demo behavior.
-4. Reconcile product scope with `docs/MARKET_POSITIONING.md` and `docs/COMPETITOR_WATCH.md`.
-5. Reconcile release wording with actual lint/build/test and manual smoke-check status.
-6. Do not mark Bible final until MVP/code/schema/market/release reconciliation is complete.
+No Knowledge Debt item is closed by this audit.
 
-## Do not do yet
+`KD-006` now has evidence for review because [`../GO_IRL_PRODUCT.md`](../GO_IRL_PRODUCT.md) is registered and connected, but closure still requires explicit validation in [`../audit/KNOWLEDGE_DEBT.md`](../audit/KNOWLEDGE_DEBT.md).
 
-- Do not rewrite all books from scratch.
-- Do not delete historical drafts blindly.
-- Do not let future code refactors overwrite product philosophy.
-- Do not import competitor features into MVP without passing the market guardrail.
-- Do not run SQL, change RLS, change auth, or touch secrets from Bible cleanup.
+## Completion rule
 
-## Status
+The Bible is complete when it accurately bounds current truth and unresolved decisions. It must not claim that future features, unapplied schema, provider approvals, or a public launch already exist.
 
-Current status: **structurally complete for MVP 1.0 / MVP 1.1 beta boundaries, not final**.
+## Navigation
+
+- Next: [`00-bible-roadmap.md`](00-bible-roadmap.md)
+- Start Book I: [`01-foundation/00-foundation-overview.md`](01-foundation/00-foundation-overview.md)
+- Central product bridge: [`../GO_IRL_PRODUCT.md`](../GO_IRL_PRODUCT.md)

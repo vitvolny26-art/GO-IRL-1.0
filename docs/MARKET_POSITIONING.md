@@ -3,15 +3,15 @@ title: GO IRL Market Positioning
 owner: Product Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-20
-next_review: 2026-08-20
+last_review: 2026-07-25
+next_review: 2026-08-25
 ---
 
 # GO IRL Market Positioning
 
 Status: **current product source of truth for market positioning**
 Scope: GO IRL Release Preparation, Olomouc first
-Last updated: 2026-07-20
+Last updated: 2026-07-25
 
 ## Current lifecycle context
 
@@ -35,7 +35,7 @@ The main user problem is not lack of calendars. The main problem is that people 
 
 ## Product promise
 
-**Less scrolling. More living.**
+**Less scrolling. More life.**
 
 Practical product promise:
 

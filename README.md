@@ -3,8 +3,8 @@ title: GO IRL Telegram Mini App
 owner: Tech Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-20
-next_review: 2026-08-20
+last_review: 2026-07-25
+next_review: 2026-08-25
 ---
 
 # GO IRL Telegram Mini App
@@ -15,16 +15,18 @@ Before contributing or implementing new features, read:
 
 0. [DOCS_INDEX.md](DOCS_INDEX.md)
 1. [docs/release/CURRENT_PHASE.md](docs/release/CURRENT_PHASE.md)
-2. [docs/PRODUCT_PHILOSOPHY.md](docs/PRODUCT_PHILOSOPHY.md)
-3. [docs/GO_IRL_CONSTITUTION.md](docs/GO_IRL_CONSTITUTION.md)
-4. [docs/MARKET_POSITIONING.md](docs/MARKET_POSITIONING.md)
-5. [docs/COMPETITOR_WATCH.md](docs/COMPETITOR_WATCH.md)
-6. [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md)
-7. [docs/COACH_CHAT_TRUST_LAYER.md](docs/COACH_CHAT_TRUST_LAYER.md)
+2. [docs/GO_IRL_PRODUCT.md](docs/GO_IRL_PRODUCT.md)
+3. [docs/PRODUCT_PHILOSOPHY.md](docs/PRODUCT_PHILOSOPHY.md)
+4. [docs/GO_IRL_CONSTITUTION.md](docs/GO_IRL_CONSTITUTION.md)
+5. [docs/MARKET_POSITIONING.md](docs/MARKET_POSITIONING.md)
+6. [docs/bible/00-completion-audit.md](docs/bible/00-completion-audit.md)
+7. [docs/COMPETITOR_WATCH.md](docs/COMPETITOR_WATCH.md)
+8. [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md)
+9. [docs/COACH_CHAT_TRUST_LAYER.md](docs/COACH_CHAT_TRUST_LAYER.md)
 
 Every major product or architecture decision must support the mission:
 
-**Less scrolling. More living.**
+**Less scrolling. More life.**
 
 If a feature increases screen time but does not increase real-life meetings, it should be reconsidered.
 
@@ -127,11 +129,12 @@ Implementation-sensitive notes:
 
 ```powershell
 pnpm run test
+pnpm run typecheck
 pnpm run lint
 pnpm run build
 ```
 
-The build command runs `tsc -b` and then creates the production Vite bundle.
+The build command creates the production Vite bundle. The typecheck also covers the current reminder API entrypoint.
 
 ## Implemented
 
@@ -142,7 +145,11 @@ The build command runs `tsc -b` and then creates the production Vite bundle.
 - Participants list with joined, waiting, and pending states
 - Activity creation with category, activity type, address, and optional location URL
 - Browser demo mode with Olomouc demo events and local-only writes outside Telegram
-- Save Activity to Google Calendar through a template link without Google OAuth
+- Profile preferences for maps, calendars, manual sharing, and automated reminders
+- Map-provider choice and exact event-point routing
+- Calendar actions for Google Calendar, Apple Calendar ICS, and Outlook
+- Server-authoritative reminder preferences with trusted-auth and provider capability gates
+- Provider-neutral lifecycle notification outbox; provider enablement remains channel-specific
 - Share link that opens the Telegram Mini App with `startapp`
 - Browser `/join/:id` fallback opens the target activity
 - City selection architecture with Olomouc as the first city
@@ -155,11 +162,11 @@ The build command runs `tsc -b` and then creates the production Vite bundle.
 - Sport Coach MVP 1.1 product scope: Coach is sport-only; future roles move to Event Roles
 - Coach/Role + Chat trust layer documented as the conversion pattern that keeps event support close to temporary event chat
 - ActivityRendererRegistry with Sport and Generic registrations for future vertical expansion
-- GO IRL brand logo, favicon, app icon, and Open Graph preview
+- GO IRL brand logo, favicon, app icon, Open Graph preview, event-card artwork, and event-detail-sheet artwork
 - Supabase schema and RLS policies in `supabase/schema.sql`
 - Supabase Edge Function `verifyTelegramInitData` for Telegram HMAC verification and trusted session issuing
 - Supabase setup guide in `supabase/README.md`
-- ESLint and Vitest quality gates
+- ESLint, TypeScript, build, and Vitest quality gates
 - Netlify build configuration in `netlify.toml` is historical/secondary; Vercel is the current deployment target.
 - Vercel fallback deployment configuration in `vercel.json`
 
@@ -167,6 +174,9 @@ The build command runs `tsc -b` and then creates the production Vite bundle.
 
 - `docs/release/CURRENT_PHASE.md` - current project phase and release decision source of truth
 - `DOCS_INDEX.md` - documentation status registry and source-of-truth map
+- `docs/GO_IRL_PRODUCT.md` - central product narrative and current/beta/next/vision scope bridge
+- `docs/bible/00-completion-audit.md` - Product Bible map and completion status
+- `docs/bible/00-bible-roadmap.md` - Product Bible maintenance roadmap
 - `docs/MVP_DOC_AUDIT.md` - MVP documentation conflict registry
 - `docs/MISSING_SECTIONS.md` - missing documentation boundary registry
 - `docs/audit/KNOWLEDGE_DEBT.md` - active knowledge debt registry
@@ -215,7 +225,7 @@ node scripts/go-irl-health-audit.cjs
 
 ## Current stabilization status
 
-Date: 2026-07-20
+Date: 2026-07-25
 
 Current phase:
 

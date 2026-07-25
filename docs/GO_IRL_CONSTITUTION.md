@@ -1,3 +1,12 @@
+---
+title: GO IRL Constitution
+owner: Product Owner and Technical Lead
+status: Active
+source_of_truth: true
+last_review: 2026-07-25
+next_review: 2026-08-25
+---
+
 # GO IRL Constitution
 
 Before reading the Constitution, read:
@@ -7,13 +16,24 @@ Before reading the Constitution, read:
 The Product Philosophy explains why GO IRL exists.
 The Constitution explains how GO IRL must be built.
 
-This document is the product and architecture source of truth for GO IRL. All major product, design, technical, and roadmap decisions must follow it.
+This document is the product and architecture principles source of truth for GO IRL. All major product, design, technical, and roadmap decisions must follow it.
+
+## Scope interpretation
+
+This Constitution does not override verified runtime evidence, current GitHub `main`, applied Supabase schema/migrations, auth, or RLS.
+
+Read every statement through four layers:
+
+1. **Current production truth** — current `main` and verified runtime evidence.
+2. **Proven Closed-Beta baseline** — Olomouc and the six canonical beta categories.
+3. **Approved next phase** — Release Preparation and focused post-beta stabilization.
+4. **Long-term vision** — future platform capabilities that are not current production claims.
 
 ## 1. Vision
 
 GO IRL is a real-life platform.
 
-Mission: Less scrolling. More living.
+Mission: Less scrolling. More life.
 
 The main product question is:
 
@@ -32,12 +52,12 @@ If the answer is no, do not add it.
 - Offline First: the product exists to move people from screen time to real meetings.
 - Mobile First: Telegram Mini App and mobile web are primary surfaces.
 - Community First: features should strengthen local trust and participation.
-- API First: product capabilities must be reusable by Telegram, web, future Android, and future iOS clients.
+- API First: product capabilities should be reusable by Telegram, web, future Android, and future iOS clients when those clients are approved.
 - Backend First: core business rules belong on the backend/platform layer.
-- Event Driven: important activity changes should be observable by notifications, digest, analytics, and safety systems.
+- Event Driven: important activity changes should be observable by notifications, digest, analytics, and safety systems where implemented and approved.
 - Privacy First: collect the minimum data required and expose the minimum data publicly.
 - Safety First: moderation, reports, blocking, rate limits, and identity protection are product requirements, not extras.
-- Vertical Experiences: different real-life domains need their own UX, rules, recommendations, and safety model.
+- Vertical Experiences: different real-life domains may need their own UX, rules, recommendations, and safety model after explicit approval.
 
 ## 4. Positioning
 
@@ -55,7 +75,7 @@ The main entity is `Activity`.
 
 Do not use `game` as the domain foundation.
 
-Any real-life meeting can be an Activity:
+Any real-life meeting can conceptually be an Activity:
 
 - volleyball
 - coffee
@@ -66,11 +86,13 @@ Any real-life meeting can be an Activity:
 - date
 - trip
 
+This conceptual range does not expand current release scope automatically.
+
 ## 6. Vertical Experiences
 
-Each vertical can own its own logic, UI, filters, recommendations, and safety rules.
+Each future vertical may own its own logic, UI, filters, recommendations, and safety rules.
 
-Initial vertical model:
+Long-term vertical model:
 
 - Generic Activity: fallback flow for activities without a dedicated vertical.
 - Sport: sport type, skill level, equipment, duration, indoor/outdoor, sport-specific matching.
@@ -81,7 +103,7 @@ Initial vertical model:
 - Culture: concerts, cinema, exhibitions, public events.
 - Local Life: neighborhood and city activities.
 
-Dating is not a normal event. Dating is a separate vertical:
+Dating is not a normal event. Dating is a separate future vertical:
 
 `discover -> like/pass -> match -> anonymous chat -> mutual reveal`
 
@@ -89,9 +111,9 @@ Dating must not launch without privacy, safety, reporting, moderation, anonymous
 
 ## 7. Categories
 
-Categories should live in the database and be managed through an admin surface.
+The long-term direction is for categories to live in the database and be managed through a governed admin surface.
 
-Initial groups:
+Possible long-term groups:
 
 - Sport
 - Activities
@@ -101,11 +123,11 @@ Initial groups:
 - Travel
 - Dating
 
-Hardcoded categories are acceptable only as an early compatibility layer, not as the permanent architecture.
+Hardcoded categories are acceptable as an early compatibility layer. Current category truth comes from code/configuration and reviewed product decisions, not this future model.
 
 ## 8. Platform Architecture
 
-GO IRL platform surfaces and systems:
+GO IRL platform surfaces and systems may include:
 
 - Telegram Mini App
 - Responsive Web
@@ -118,13 +140,13 @@ GO IRL platform surfaces and systems:
 - AI
 - Notifications
 
-All clients must use the same platform rules and database source of truth.
+Current clients must use the same verified platform rules and database source of truth. Future surfaces require separate approval.
 
 ## 9. Frontend Rule
 
 Frontend displays data and calls APIs.
 
-Business logic should live on the backend/platform layer.
+Business logic should live on the backend/platform layer where the current architecture supports it.
 
 The frontend may keep small UX helpers, validation previews, and compatibility fallbacks, but it must not become the authority for:
 
@@ -138,28 +160,31 @@ The frontend may keep small UX helpers, validation previews, and compatibility f
 
 ## 10. Backend Rule
 
-Backend is the source of business logic:
+Backend is the authority for implemented business logic such as:
 
 - auth
 - activities
 - invitations
 - waiting list
-- RLI
 - moderation
 - notifications
-- roles
+- roles where implemented
 - API
-- WebSocket
+- WebSocket/realtime where implemented
+
+Future RLI or other systems are not implied as current runtime.
 
 ## 11. Database
 
 GO IRL uses PostgreSQL / Supabase.
 
-There is one database for all clients.
+There is one governed production data model for all current clients.
 
-Important product data must be stored in the database, not only in `localStorage`.
+Important product data must be stored in the database, not only in `localStorage`, except explicit Browser Demo Mode local state.
 
-Examples:
+Current schema truth is controlled by `supabase/schema.sql`, applied migrations, `supabase/README.md`, and verified runtime evidence.
+
+Possible current or future product data includes:
 
 - activities
 - cities
@@ -173,26 +198,27 @@ Examples:
 - moderation state
 - RLI signals
 
+Presence in this list is not proof that a table or public feature exists.
+
 ## 12. n8n
 
-n8n is used for automation, not for core business logic.
+n8n is used for automation, not for core business logic or source-of-truth approval.
 
-n8n jobs:
+Approved automation may support:
 
-- Telegram notifications
-- WhatsApp/email later
-- evening digest
-- reminders
+- evidence collection and report preparation
+- notifications and reminders
 - waiting list notifications
-- AI event discovery workflows
-- backups
-- analytics
+- future digest or discovery workflows
+- backups and analytics where governed
 
 The Mini App must not stay alive in the background to power notifications.
 
+Current workflow IDs, schedules, credentials, and production status belong in active governance documents on GitHub.
+
 ## 13. AI Platform
 
-AI can be used for:
+AI may be used for:
 
 - event discovery
 - event normalization
@@ -200,6 +226,8 @@ AI can be used for:
 - recommendations
 - moderation support
 - summaries
+
+These are long-term capabilities unless current `main` and runtime evidence prove otherwise.
 
 AI must not receive unnecessary personal data.
 
@@ -222,7 +250,7 @@ Public surfaces should show only what is needed to join or evaluate an Activity 
 
 ## 15. Safety
 
-Safety requirements:
+Safety requirements for relevant product surfaces:
 
 - reports
 - block user
@@ -237,15 +265,15 @@ Safety must be implemented before high-risk verticals such as Dating.
 
 ## 16. Reputation System
 
-GO IRL needs trust, but must not become a popularity contest.
+GO IRL may need trust, but must not become a popularity contest.
 
 Reputation exists to make real-life meetings safer and healthier. It must never become a public shame score, financial token, or social ranking.
 
 ### Real Life Index (RLI)
 
-RLI is a public or semi-public signal of offline activity.
+RLI is a future public or semi-public signal of offline activity.
 
-It reflects:
+It may reflect:
 
 - participation;
 - organizing Activities;
@@ -262,9 +290,9 @@ RLI is not:
 
 ### Trust Score
 
-Trust Score is hidden and internal.
+Trust Score is a future hidden internal signal.
 
-It is used by the system for:
+It may be used by the system for:
 
 - anti-spam;
 - moderation support;
@@ -280,7 +308,7 @@ Before Trust Score penalties become significant, GO IRL must have auditability, 
 
 Community Contribution is separate from RLI.
 
-It reflects help given to the community, not only activity volume:
+It may reflect help given to the community, not only activity volume:
 
 - organizing quality Activities;
 - helping newcomers;
@@ -297,9 +325,9 @@ It can later support:
 
 ### Life Map
 
-Life Map is personal activity history, not a competition.
+Life Map is a future personal activity history, not a competition.
 
-It can show:
+It may show:
 
 - categories tried;
 - cities visited;
@@ -311,7 +339,7 @@ Life Map must not become a leaderboard.
 
 ## 17. Real Life Index
 
-RLI is reputation for real meetings.
+RLI is future reputation for real meetings.
 
 It is not likes.
 
@@ -319,25 +347,24 @@ It is not currency.
 
 It is not a game.
 
-RLI increases for:
+A future approved model may consider:
 
 - participation
 - organization
 - confirmed meetings
 - helping the community
-
-RLI decreases for:
-
 - no-show
 - spam
 - fake events
 - confirmed reports
 
+No RLI behavior is current production truth until separately approved, implemented, tested, and documented.
+
 ## 18. Activity Attendance Confirmation
 
 No QR codes at the start.
 
-After an Activity:
+A future attendance-confirmation flow may allow:
 
 - organizer confirms participants
 - participants can confirm each other
@@ -355,15 +382,17 @@ Optional geolocation confirmation can be added later only when:
 
 The Mini App must not work in the background.
 
-All background notifications go through backend/n8n.
+Background notifications go through approved backend workers and provider adapters.
 
-Notifications should respect working hours, quiet hours, opt-in preferences, and privacy rules.
+Notifications must respect working hours, quiet hours, opt-in preferences, provider capabilities, consent, and privacy rules.
+
+Current provider enablement is an operational fact and must be verified per channel.
 
 ## 20. Activity Chat Philosophy
 
 Activity Chat is optional and temporary.
 
-It is created only when the organizer enables it for a specific Activity.
+It is created only for a specific Activity according to current implementation and permissions.
 
 It exists only around that Activity.
 
@@ -377,11 +406,11 @@ The main goal of Activity Chat is to help people meet offline:
 - time or location changes
 - quick participant questions
 
-By default, Activity Chat should be archived 24 hours after the Activity ends.
+Current lifetime behavior is controlled by the applied migration and runtime. The future idea of archiving 24 hours after the Activity ends requires a separate approved product, SQL, code, RLS, and release task before it can become a production promise.
 
 ## 21. Roadmap Principles
 
-Friends, Travel, and Dating come after foundation:
+Friends, Travel, and Dating come after the foundation:
 
 - Supabase
 - RLS
@@ -390,14 +419,15 @@ Friends, Travel, and Dating come after foundation:
 - performance
 - safety
 
-Sport remains the reference vertical until the foundation is stable.
+Sport remains the reference vertical until the foundation is stable. Release Preparation does not automatically authorize these future verticals.
 
 ## 22. Non-Negotiables
 
 - No feature that does not support real-life meetings.
 - No hidden background tracking.
 - No unsafe Dating launch without privacy/safety.
-- No business logic in frontend.
-- No hardcoded categories forever.
+- No frontend authority for identity or permissions.
+- No permanent hardcoded taxonomy as the final architecture.
 - No uncontrolled access to user data.
 - No permanent Activity Chat that turns GO IRL into a generic messenger.
+- No future vision presented as current production truth.
