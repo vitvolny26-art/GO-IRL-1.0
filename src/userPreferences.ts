@@ -16,6 +16,7 @@ export type UserPreferences = {
 
 export const userPreferencesStorageKey = "go-irl-user-preferences";
 export const legacyLanguageStorageKey = "go-irl-language";
+export const userPreferencesChangedEvent = "go-irl-user-preferences-changed";
 
 const mapProviders = new Set<MapProvider>(["google", "apple", "mapy"]);
 const calendarProviders = new Set<CalendarProvider>(["google", "apple", "outlook"]);
@@ -55,6 +56,7 @@ export const updateUserPreferences = (patch: Partial<UserPreferences>): UserPref
   localStorage.setItem(userPreferencesStorageKey, JSON.stringify(next));
 
   if (next.language) localStorage.setItem(legacyLanguageStorageKey, next.language);
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(userPreferencesChangedEvent));
   return next;
 };
 
