@@ -34,6 +34,16 @@
   color: rgba(255, 255, 255, 0.78);
 }
 
+.admin-login-status {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(201, 255, 61, 0.1);
+  color: #c9ff3d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .admin-login-card a {
   color: #fff;
   font-weight: 700;
