@@ -1,5 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { Bell, BellRing, Check, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { Bell, BellRing, Check, MessageCircle, Trash2 } from "lucide-react";
+import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
+import {
+  activityChatUnreadChangedEvent,
+  countUnreadActivityChatMessages,
+  latestVisibleActivityChatMessageAt,
+  loadActivityChatReadAt,
+  markActivityChatRead,
+} from "../activityChatUnread";
 import {
   eventStartsAt,
   removeEventReminder,
@@ -15,6 +23,7 @@ import {
   saveServerEventReminder,
   usesServerReminderPersistence,
 } from "../reminders/server-preferences";
+import { useAppStore } from "../store";
 import { readUserPreferences, updateUserPreferences } from "../userPreferences";
 
 type Props = { activityId: string; date: string; time: string; label?: string };
@@ -35,6 +44,7 @@ const leadOptions: Array<{ value: ReminderLeadMinutes; label: string }> = [
 
 export function CardReminderAction({ activityId, date, time, label = "Настроить напоминание" }: Props) {
   const serverBacked = usesServerReminderPersistence();
+  const joined = useAppStore((state) => state.joinedIds.includes(activityId));
   const preferredChannel = readUserPreferences().reminderProvider || "telegram";
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState<EventReminderPreference | null>(null);
@@ -43,7 +53,47 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
   const [linkedChannels, setLinkedChannels] = useState<Set<ReminderChannel> | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
   const rootRef = useRef<HTMLSpanElement>(null);
+  const latestMessageAtRef = useRef<string | null>(null);
+
+  const refreshUnread = useCallback(async () => {
+    if (!joined) {
+      setUnreadCount(0);
+      return;
+    }
+
+    try {
+      const [messages, identity] = await Promise.all([
+        loadActivityChatMessages(activityId),
+        getCurrentChatIdentity(),
+      ]);
+      latestMessageAtRef.current = latestVisibleActivityChatMessageAt(messages);
+      setUnreadCount(countUnreadActivityChatMessages(
+        messages,
+        identity.userKey,
+        loadActivityChatReadAt(activityId, identity.userKey),
+      ));
+    } catch {
+      latestMessageAtRef.current = null;
+      setUnreadCount(0);
+    }
+  }, [activityId, joined]);
+
+  useEffect(() => {
+    void refreshUnread();
+    const timer = window.setInterval(() => {
+      if (!document.hidden) void refreshUnread();
+    }, 20_000);
+    const handleRefresh = () => { void refreshUnread(); };
+    window.addEventListener("focus", handleRefresh);
+    window.addEventListener(activityChatUnreadChangedEvent, handleRefresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", handleRefresh);
+      window.removeEventListener(activityChatUnreadChangedEvent, handleRefresh);
+    };
+  }, [refreshUnread]);
 
   useEffect(() => {
     if (!serverBacked) return;
@@ -85,6 +135,20 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
       document.removeEventListener("keydown", escape);
     };
   }, [open]);
+
+  const openUnreadChat = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    void getCurrentChatIdentity().then((identity) => {
+      const latest = latestMessageAtRef.current;
+      if (!latest || !markActivityChatRead(activityId, identity.userKey, latest)) return;
+      setUnreadCount(0);
+      window.dispatchEvent(new CustomEvent(activityChatUnreadChangedEvent, { detail: { activityId } }));
+    });
+    const card = event.currentTarget.closest("article");
+    const openChatButton = card?.querySelector<HTMLButtonElement>(".activity-card-footer .sport-coach-action");
+    openChatButton?.click();
+  };
 
   const save = async () => {
     const preference = {
@@ -132,67 +196,80 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
   };
 
   return (
-    <span className="card-reminder-action" ref={rootRef}>
-      <button
-        className={saved ? "sport-card-icon-action is-reminder-active" : "sport-card-icon-action"}
-        type="button"
-        aria-label={label}
-        aria-expanded={open}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          setOpen((value) => !value);
-        }}
-      >
-        {saved ? <BellRing aria-hidden="true" /> : <Bell aria-hidden="true" />}
-      </button>
-      {open ? (
-        <span className="card-reminder-panel" role="dialog" aria-label={label} onClick={(event) => event.stopPropagation()}>
-          <strong>Напомнить о событии</strong>
-          <span className="card-reminder-leads">
-            {leadOptions.map((option) => (
-              <button className={leadMinutes === option.value ? "is-selected" : ""} type="button" key={option.value} onClick={() => setLeadMinutes(option.value)}>
-                {option.label}
-              </button>
-            ))}
-          </span>
-          <span className="card-reminder-channels">
-            {channels.map((option) => {
-              const unavailable = !serverBacked || linkedChannels === null || !linkedChannels.has(option.id);
-              return (
-                <button
-                  className={channel === option.id ? "is-selected" : ""}
-                  type="button"
-                  key={option.id}
-                  disabled={unavailable || saving}
-                  title={unavailable
-                    ? serverBacked
-                      ? "Канал не подключён или недоступен для доставки"
-                      : "Сначала войдите в GO IRL через поддерживаемый мессенджер"
-                    : undefined}
-                  onClick={() => { setChannel(option.id); setError(""); }}
-                >
-                  <img src={option.icon} alt="" /><span>{option.label}</span>{channel === option.id ? <Check aria-hidden="true" /> : null}
-                </button>
-              );
-            })}
-          </span>
-          {!serverBacked ? (
-            <span className="card-reminder-info">
-              Войдите в GO IRL через поддерживаемый мессенджер, чтобы получать напоминания.
-            </span>
-          ) : null}
-          {error ? <span className="card-reminder-error" role="alert">{error}</span> : null}
-          <button className="card-reminder-save" type="button" disabled={saving || !serverBacked || linkedChannels === null || !linkedChannels.has(channel)} onClick={save}>
-            {saving ? "Сохраняем…" : "Сохранить напоминание"}
-          </button>
-          {saved ? (
-            <button className="card-reminder-remove" type="button" disabled={saving} onClick={remove}>
-              <Trash2 aria-hidden="true" /> Удалить
-            </button>
-          ) : null}
-        </span>
+    <>
+      {joined && unreadCount > 0 ? (
+        <button
+          className="event-request-alert event-chat-unread-alert"
+          type="button"
+          aria-label={`Новых сообщений: ${unreadCount}`}
+          onClick={openUnreadChat}
+        >
+          <MessageCircle aria-hidden="true" />
+          <span>{unreadCount > 99 ? "99+" : unreadCount}</span>
+        </button>
       ) : null}
-    </span>
+      <span className="card-reminder-action" ref={rootRef}>
+        <button
+          className={saved ? "sport-card-icon-action is-reminder-active" : "sport-card-icon-action"}
+          type="button"
+          aria-label={label}
+          aria-expanded={open}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setOpen((value) => !value);
+          }}
+        >
+          {saved ? <BellRing aria-hidden="true" /> : <Bell aria-hidden="true" />}
+        </button>
+        {open ? (
+          <span className="card-reminder-panel" role="dialog" aria-label={label} onClick={(event) => event.stopPropagation()}>
+            <strong>Напомнить о событии</strong>
+            <span className="card-reminder-leads">
+              {leadOptions.map((option) => (
+                <button className={leadMinutes === option.value ? "is-selected" : ""} type="button" key={option.value} onClick={() => setLeadMinutes(option.value)}>
+                  {option.label}
+                </button>
+              ))}
+            </span>
+            <span className="card-reminder-channels">
+              {channels.map((option) => {
+                const unavailable = !serverBacked || linkedChannels === null || !linkedChannels.has(option.id);
+                return (
+                  <button
+                    className={channel === option.id ? "is-selected" : ""}
+                    type="button"
+                    key={option.id}
+                    disabled={unavailable || saving}
+                    title={unavailable
+                      ? serverBacked
+                        ? "Канал не подключён или недоступен для доставки"
+                        : "Сначала войдите в GO IRL через поддерживаемый мессенджер"
+                      : undefined}
+                    onClick={() => { setChannel(option.id); setError(""); }}
+                  >
+                    <img src={option.icon} alt="" /><span>{option.label}</span>{channel === option.id ? <Check aria-hidden="true" /> : null}
+                  </button>
+                );
+              })}
+            </span>
+            {!serverBacked ? (
+              <span className="card-reminder-info">
+                Войдите в GO IRL через поддерживаемый мессенджер, чтобы получать напоминания.
+              </span>
+            ) : null}
+            {error ? <span className="card-reminder-error" role="alert">{error}</span> : null}
+            <button className="card-reminder-save" type="button" disabled={saving || !serverBacked || linkedChannels === null || !linkedChannels.has(channel)} onClick={save}>
+              {saving ? "Сохраняем…" : "Сохранить напоминание"}
+            </button>
+            {saved ? (
+              <button className="card-reminder-remove" type="button" disabled={saving} onClick={remove}>
+                <Trash2 aria-hidden="true" /> Удалить
+              </button>
+            ) : null}
+          </span>
+        ) : null}
+      </span>
+    </>
   );
 }

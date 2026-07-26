@@ -410,6 +410,7 @@ export function SportActivitySheet({
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
+  const locationLabel = [cityName, activity.address].filter(Boolean).join(" · ");
   const avatar = sportAvatarForActivity(activity, language, meta);
   const sheetBackgroundStyle = getEventSheetBackgroundStyle({
     icon: avatar,
@@ -500,21 +501,20 @@ export function SportActivitySheet({
         <div className="sport-sheet-hero">
           <div className="sport-card-symbol large"><span className="sport-avatar-glyph">{avatar}</span></div>
           <div>
-            <div className="sport-eyebrow">{sportLevelLabel(meta.level, language)} · {sportEnvironmentLabel(meta.environment, language)}</div>
+            <div className="sport-eyebrow">{sportEnvironmentLabel(meta.environment, language)}</div>
             <h2>{stripLeadingEmoji(activity.title[language])}</h2>
             <p>{stripLeadingEmoji(activity.description[language])}</p>
           </div>
         </div>
         <div className="sport-chip-row sport-sheet-chips">
           <span>{cleanSportLabel(meta.sportType || activity.activity[language])}</span>
+          <span>{sportLevelLabel(meta.level, language)}</span>
           <span>{sportEnvironmentLabel(meta.environment, language)}</span>
           <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
         </div>
         <div className="detail-list sport-detail-list">
-          <div><Sparkles /><span>{t.sportLevel}</span><strong>{sportLevelLabel(meta.level, language)}</strong></div>
           <div><ShieldCheck /><span>{t.sportFormat}</span><strong>{sportFormatLabel(meta.format, language)}</strong></div>
-          <div><MapPin /><span>{t.city}</span><strong>{cityName}</strong></div>
-          <div><MapPin /><span>{t.address}</span><a className="sport-address-link" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer">{activity.address || cityName}</a></div>
+          <div><MapPin /><span>{t.address}</span><a className="sport-address-link" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer">{locationLabel || cityName}</a></div>
           <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
           <div><ShieldCheck /><span>{t.sportEquipmentNeeded}</span><strong>{meta.equipmentNeeded ? t.yes : t.no}</strong></div>
@@ -524,7 +524,7 @@ export function SportActivitySheet({
           {meta.organizerTips && <div><CircleUserRound /><span>{t.sportOrganizerTips}</span><strong>{meta.organizerTips}</strong></div>}
           {showWeather && (
             <button className="weather-detail-toggle" onClick={() => setWeatherDetailsOpen((open) => !open)} type="button">
-              <Sparkles />
+              <span className="weather-condition-icon" aria-hidden="true">{weather?.icon || "🌤️"}</span>
               <span>{t.weatherHint}</span>
               <strong className="weather-summary-lines">
                 {weather ? weatherSummaryLines(weather).map((line) => <span key={line}>{line}</span>) : weatherText}
@@ -541,7 +541,7 @@ export function SportActivitySheet({
             <div className="weather-bars">
               {weatherHours.map((hour) => (
                 <div className="weather-bar-row" key={hour.time}>
-                  <span>{hour.time.slice(11, 16)}</span>
+                  <span className="weather-hour-time"><b aria-hidden="true">{hour.icon}</b>{hour.time.slice(11, 16)}</span>
                   <span className="weather-hour-metric">🌡️ {hour.temperature}°C</span>
                   <span className="weather-hour-metric">☔ {hour.rain}%</span>
                   <span className="weather-hour-metric">💨 {hour.wind} km/h</span>
@@ -550,21 +550,8 @@ export function SportActivitySheet({
             </div>
           </section>
         )}
-        {sportMapSearchUrl && (
-          <section className="sport-place-card" aria-label="Место события">
-            <div>
-              <span>Место</span>
-              <strong>{activity.address || cityName}</strong>
-            </div>
-            <a className="sport-map-link" href={sportMapSearchUrl} target="_blank" rel="noreferrer">
-              Открыть в Google Maps
-            </a>
-          </section>
-        )}
 
         {interaction.showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
-
-        <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={false} />
 
         <button className="detail-members-toggle" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
           <UsersRound />
@@ -605,6 +592,8 @@ export function SportActivitySheet({
             </div>
           </div>
         )}
+
+        <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={false} />
 
         <div className="sheet-actions compact-sheet-actions">
           <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>

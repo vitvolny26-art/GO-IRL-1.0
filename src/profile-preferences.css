@@ -57,9 +57,47 @@
   font-size: 0.95rem;
 }
 
-.profile-preference-row select {
+.profile-preference-select {
+  position: relative;
+  display: grid;
+  min-width: 0;
+}
+
+.profile-preference-select select {
   width: 100%;
   min-width: 0;
+  min-height: 46px;
+  padding: 0 42px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  outline: none;
+  appearance: none;
+  background: rgba(7, 10, 14, 0.58);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.profile-preference-select select:focus-visible {
+  border-color: rgba(201, 255, 61, 0.62);
+  box-shadow: 0 0 0 3px rgba(201, 255, 61, 0.12);
+}
+
+.profile-preference-select select option {
+  background: #11151a;
+  color: #f6f7f7;
+}
+
+.profile-preference-select > svg {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  color: var(--lime);
+  transform: translateY(-50%);
 }
 
 @media (max-width: 520px) {
@@ -67,7 +105,7 @@
     grid-template-columns: 36px 1fr;
   }
 
-  .profile-preference-row select {
+  .profile-preference-select {
     grid-column: 1 / -1;
   }
 }

@@ -47,7 +47,7 @@ export function EventWeatherStrip({ activity, language, enabled, durationMinutes
     <div className={`event-card-weather${weather ? "" : " is-pending"}`} aria-label={t.weatherHint}>
       {weather ? (
         <>
-          <span><b aria-hidden="true">{weather.text.split(" ")[0] || "☀️"}</b>{weather.temperature}°C</span>
+          <span><b aria-hidden="true">{weather.icon}</b>{weather.temperature}°C</span>
           <span><b aria-hidden="true">☔</b>{weather.rain}%</span>
           <span><b aria-hidden="true">💨</b>{weather.wind} km/h</span>
         </>

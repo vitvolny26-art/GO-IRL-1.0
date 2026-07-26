@@ -12,6 +12,24 @@ const isBrowserMockAuthEnabled = () => typeof window !== "undefined" && !getTele
 const isDemoAuthEnabled = () => configuredDemoAuthEnabled || isBrowserMockAuthEnabled();
 const sessionStorageKey = "go-irl-trusted-session-v2";
 
+const memoryIdentityStorage = (() => {
+  const values = new Map<string, string>();
+  return {
+    getItem: (key: string) => values.get(key) ?? null,
+    setItem: (key: string, value: string) => values.set(key, value),
+  };
+})();
+
+const getIdentityStorage = () =>
+  typeof localStorage === "undefined" ? memoryIdentityStorage : localStorage;
+
+const createIdentityUuid = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 export type TrustedAuthUser = {
   id: string;
   userKey: string;
@@ -80,8 +98,8 @@ function resolveLegacyDemoIdentity() {
   if (!legacyIdentity) {
     legacyIdentity = resolveDemoIdentity({
       telegramId: getTelegramWebApp()?.initDataUnsafe?.user?.id || (isBrowserMockAuthEnabled() ? browserMockTelegramId : undefined),
-      storage: localStorage,
-      randomUUID: () => crypto.randomUUID(),
+      storage: getIdentityStorage(),
+      randomUUID: createIdentityUuid,
     });
   }
   return legacyIdentity;
