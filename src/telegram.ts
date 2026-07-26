@@ -32,7 +32,8 @@ declare global {
   }
 }
 
-export const getTelegramWebApp = () => window.Telegram?.WebApp;
+export const getTelegramWebApp = () =>
+  typeof window === "undefined" ? undefined : window.Telegram?.WebApp;
 
 export const isTelegramWebApp = () => Boolean(getTelegramWebApp()?.initDataUnsafe);
 
