@@ -62,30 +62,7 @@ jobs:
 
       - name: Apply select patch
         working-directory: repo
-        run: |
-          git apply --check ../patches/.tmp/ux-select.patch
-          git apply ../patches/.tmp/ux-select.patch
-          python - <<'PY'
-          from pathlib import Path
-          test = Path("src/components/ProfilePreferencesPortal.test.ts")
-          test.write_text(test.read_text().replace(
-              'import { visiblePreferenceOptions } from "./ProfilePreferencesPortal";',
-              'import { visiblePreferenceOptions } from "../profilePreferenceOptions";',
-          ))
-          portal = Path("src/components/ProfilePreferencesPortal.tsx")
-          text = portal.read_text()
-          text = text.replace(
-              'import { useAppStore } from "../store";\n',
-              'import { useAppStore } from "../store";\nimport { visiblePreferenceOptions, type PreferenceOption } from "../profilePreferenceOptions";\n',
-          )
-          text = text.replace('type PreferenceOption = { value: string; label: string; disabled?: boolean };\n', '')
-          text = text.replace('export const visiblePreferenceOptions = (options: PreferenceOption[]) => options.filter((option) => !option.disabled);\n\n', '')
-          portal.write_text(text)
-          Path("src/profilePreferenceOptions.ts").write_text(
-              'export type PreferenceOption = { value: string; label: string; disabled?: boolean };\n\n'
-              'export const visiblePreferenceOptions = (options: PreferenceOption[]) => options.filter((option) => !option.disabled);\n'
-          )
-          PY
+        run: git apply --check ../patches/.tmp/ux-select.patch && git apply ../patches/.tmp/ux-select.patch
 
       - name: Verify patch whitespace
         working-directory: repo
