@@ -24,7 +24,9 @@ index 6d9f140..a156448 100644
 +  const city = getCity(activity.cityId).name.en;
 +  requestMapProvider(activity.locationUrl?.trim() || buildEventLocationUrl(activity.address, city));
  };
-@@ -1590,7 +1588,11 @@
+ 
+ const openActivityCalendar = (activity: Activity, language: Language) => {
+@@ -1590,7 +1588,11 @@ const openActivityCalendar = (activity: Activity, language: Language) => {
          <div className="detail-list">
            <div><Sparkles /><span>{t.category}</span><strong>{category.name[language]}</strong></div>
            <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
@@ -107,7 +109,11 @@ index 028708d..c560c26 100644
 +  cs: { title: "Otevřít adresu", hint: "Vyberte mapu", close: "Zavřít", device: "Mapy zařízení", mapy: "Mapy.com" },
 +  en: { title: "Open address", hint: "Choose a map", close: "Close", device: "Device maps", mapy: "Mapy.com" },
 +};
-@@ -21,25 +15,16 @@
+ 
+ const openUrl = (url: string) => {
+   window.open(url, "_blank", "noopener,noreferrer");
+ };
+ 
  export function MapProviderPickerPortal() {
 +  const language = useAppStore((state) => state.language);
    const [sourceUrl, setSourceUrl] = useState("");
@@ -115,7 +121,9 @@ index 028708d..c560c26 100644
 -  const [remember, setRemember] = useState(true);
 +  const deviceProvider = useMemo(() => resolveDeviceMapProvider(), []);
 +  const labels = copy[language];
-@@ -27,18 +30,15 @@
+ 
+   useEffect(() => {
+     const handleRequest = (event: Event) => {
        const request = event as CustomEvent<MapProviderPickerRequest>;
        const nextSourceUrl = request.detail?.sourceUrl?.trim();
 -      if (!nextSourceUrl) return;
@@ -131,6 +139,7 @@ index 028708d..c560c26 100644
 -      setRemember(true);
 +      if (nextSourceUrl) setSourceUrl(nextSourceUrl);
 +    };
++
 +    const handleEscape = (event: KeyboardEvent) => {
 +      if (event.key === "Escape") setSourceUrl("");
      };
@@ -143,7 +152,9 @@ index 028708d..c560c26 100644
 +      document.removeEventListener("keydown", handleEscape);
 +    };
    }, []);
-@@ -49,43 +49,31 @@
+ 
+   if (!sourceUrl) return null;
+ 
 -  const confirm = () => {
 -    if (remember) updateUserPreferences({ mapProvider: selected });
 -    openUrl(buildMapProviderUrl(sourceUrl, selected));
@@ -156,7 +167,14 @@ index 028708d..c560c26 100644
 -    <div className="map-provider-picker-backdrop" role="dialog" aria-modal="true" aria-label="Выбор карты">
 -      <section className="map-provider-picker-sheet" data-map-provider-choice>
 +    <div className="map-provider-picker-backdrop" role="presentation" onClick={() => setSourceUrl("")}>
-+      <section className="map-provider-picker-sheet" data-map-provider-choice role="dialog" aria-modal="true" aria-label={labels.title} onClick={(event) => event.stopPropagation()}>
++      <section
++        className="map-provider-picker-sheet"
++        data-map-provider-choice
++        role="dialog"
++        aria-modal="true"
++        aria-label={labels.title}
++        onClick={(event) => event.stopPropagation()}
++      >
          <header>
            <div>
 -            <strong>Открыть адрес</strong>
@@ -170,20 +188,38 @@ index 028708d..c560c26 100644
  
          <div className="map-provider-picker-options">
 -          {mapProviderOptions.map((provider) => (
--            <button key={provider.id} type="button" className={selected === provider.id ? "is-selected" : ""} onClick={() => setSelected(provider.id)}>
--              <MapPin /><span>{provider.label}</span>
+-            <button
+-              key={provider.id}
+-              type="button"
+-              className={selected === provider.id ? "is-selected" : ""}
+-              onClick={() => setSelected(provider.id)}
+-            >
+-              <MapPin />
+-              <span>{provider.label}</span>
 -            </button>
 -          ))}
-+          <button type="button" onClick={() => openProvider(deviceProvider)}><Navigation aria-hidden="true" /><span>{labels.device}</span></button>
-+          <button type="button" onClick={() => openProvider("mapy")}><Map aria-hidden="true" /><span>{labels.mapy}</span></button>
++          <button type="button" onClick={() => openProvider(deviceProvider)}>
++            <Navigation aria-hidden="true" />
++            <span>{labels.device}</span>
++          </button>
++          <button type="button" onClick={() => openProvider("mapy")}>
++            <Map aria-hidden="true" />
++            <span>{labels.mapy}</span>
++          </button>
          </div>
 -
 -        <label className="map-provider-picker-remember">
--          <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} />
+-          <input
+-            type="checkbox"
+-            checked={remember}
+-            onChange={(event) => setRemember(event.target.checked)}
+-          />
 -          <span>Запомнить мой выбор</span>
 -        </label>
 -
--        <button className="map-provider-picker-confirm" type="button" onClick={confirm}>Открыть</button>
+-        <button className="map-provider-picker-confirm" type="button" onClick={confirm}>
+-          Открыть
+-        </button>
        </section>
      </div>
    );
@@ -192,6 +228,7 @@ index b605403..fa09c58 100644
 --- a/src/map-provider-picker.css
 +++ b/src/map-provider-picker.css
 @@ -55,57 +55,95 @@
+ 
  .map-provider-picker-options {
    display: grid;
 +  grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -231,7 +268,7 @@ index b605403..fa09c58 100644
 +  background: rgba(201, 255, 61, 0.1);
 +  outline: none;
  }
-@@ -83,29 +121,62 @@
+ 
  .map-provider-picker-options svg {
 -  width: 20px;
 -  height: 20px;
@@ -268,10 +305,38 @@ index b605403..fa09c58 100644
 -.map-provider-picker-remember input {
 -  width: 18px;
 -  height: 18px;
-+.event-location-action:disabled { cursor: default; opacity: 0.6; }
-+.event-location-action > svg { width: 19px !important; height: 19px !important; color: var(--lime) !important; }
-+.event-location-copy { display: grid !important; min-width: 0 !important; gap: 3px !important; }
-+.event-location-city { color: var(--text) !important; font-size: 13px !important; line-height: 1.2 !important; }
++.event-location-action:disabled {
++  cursor: default;
++  opacity: 0.6;
+ }
+ 
+-.map-provider-picker-confirm {
+-  width: 100%;
+-  min-height: 48px;
+-  border: 0;
+-  border-radius: 16px;
+-  background: var(--accent, #8b5cf6);
+-  color: #fff;
+-  font: inherit;
+-  font-weight: 700;
++.event-location-action > svg {
++  width: 19px !important;
++  height: 19px !important;
++  color: var(--lime) !important;
++}
++
++.event-location-copy {
++  display: grid !important;
++  min-width: 0 !important;
++  gap: 3px !important;
++}
++
++.event-location-city {
++  color: var(--text) !important;
++  font-size: 13px !important;
++  line-height: 1.2 !important;
++}
++
 +.event-location-address {
 +  display: -webkit-box !important;
 +  min-width: 0 !important;
@@ -287,10 +352,8 @@ index b605403..fa09c58 100644
 +  -webkit-box-orient: vertical !important;
 +  -webkit-line-clamp: 2 !important;
  }
--
--.map-provider-picker-confirm {
--  width: 100%; min-height: 48px; border: 0; border-radius: 16px; background: var(--accent, #8b5cf6); color: #fff; font: inherit; font-weight: 700;
--}
+ 
+ @media (min-width: 640px) {
 diff --git a/src/mapProviderPicker.test.ts b/src/mapProviderPicker.test.ts
 new file mode 100644
 index 0000000..7e2c70e
@@ -305,6 +368,7 @@ index 0000000..7e2c70e
 +    expect(resolveDeviceMapProvider("Mozilla/5.0 (iPhone)", "iPhone")).toBe("apple");
 +    expect(resolveDeviceMapProvider("Mozilla/5.0 (Macintosh)", "MacIntel")).toBe("apple");
 +  });
++
 +  it("uses Google Maps on other devices", () => {
 +    expect(resolveDeviceMapProvider("Mozilla/5.0 (Linux; Android 15)", "Linux armv8l")).toBe("google");
 +    expect(resolveDeviceMapProvider("Mozilla/5.0 (Windows NT 10.0)", "Win32")).toBe("google");
@@ -314,7 +378,9 @@ diff --git a/src/mapProviderPicker.ts b/src/mapProviderPicker.ts
 index 8d0392e..0a87566 100644
 --- a/src/mapProviderPicker.ts
 +++ b/src/mapProviderPicker.ts
-@@ -7,11 +7,18 @@
+@@ -7,11 +7,18 @@ export type MapProviderPickerRequest = {
+ };
+ 
  export const requestMapProvider = (sourceUrl: string) => {
 +  const normalized = sourceUrl.trim();
 +  if (!normalized) return;
@@ -323,24 +389,31 @@ index 8d0392e..0a87566 100644
 +    detail: { sourceUrl: normalized },
    }));
  };
-+
+ 
 +export const resolveDeviceMapProvider = (
 +  userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent,
 +  platform = typeof navigator === "undefined" ? "" : navigator.platform,
 +): MapProvider => /iPhone|iPad|iPod|Macintosh|MacIntel/i.test(`${userAgent} ${platform}`) ? "apple" : "google";
- 
++
  export const mapProviderOptions: Array<{ id: MapProvider; label: string }> = [
+   { id: "mapy", label: "Mapy.com" },
+   { id: "google", label: "Google Maps" },
 diff --git a/src/verticals/SportVertical.tsx b/src/verticals/SportVertical.tsx
 index b4d1e82..f95cec2 100644
 --- a/src/verticals/SportVertical.tsx
 +++ b/src/verticals/SportVertical.tsx
-@@ -22,6 +22,8 @@
+@@ -22,6 +22,8 @@ import { stripLeadingEmoji } from "../cardText";
+ import { activityIconFromText } from "../activityIcon";
  import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
  import { EventWeatherStrip } from "../components/EventWeatherStrip";
 +import { EventLocationAction } from "../components/EventLocationAction";
 +import { requestMapProvider } from "../mapProviderPicker";
  import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
-@@ -45,13 +47,9 @@
+ import {
+   eventActionTranslationKey,
+@@ -45,13 +47,9 @@ const activityInviteUrl = (activity: Activity) => {
+ };
+ 
  const openActivityMap = (activity: Activity) => {
 -  if (activity.locationUrl?.trim()) {
 -    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
@@ -352,12 +425,18 @@ index b4d1e82..f95cec2 100644
 +  const query = [activity.address.trim(), city].filter(Boolean).join(", ");
 +  requestMapProvider(activity.locationUrl?.trim() || `https://mapy.com/zakladni?q=${encodeURIComponent(query)}`);
  };
-@@ -410,7 +408,6 @@
+ 
+ const openActivityCalendar = (activity: Activity, language: Language) => {
+@@ -410,7 +408,6 @@ export function SportActivitySheet({
+   const pendingMembers = activity.members.filter((member) => member.status === "pending");
    const sportMapQuery = buildMapsQuery([activity.address, cityName]);
    const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
 -  const locationLabel = [cityName, activity.address].filter(Boolean).join(" · ");
    const avatar = sportAvatarForActivity(activity, language, meta);
-@@ -514,7 +511,12 @@
+   const sheetBackgroundStyle = getEventSheetBackgroundStyle({
+     icon: avatar,
+@@ -514,7 +511,12 @@ export function SportActivitySheet({
+         </div>
          <div className="detail-list sport-detail-list">
            <div><ShieldCheck /><span>{t.sportFormat}</span><strong>{sportFormatLabel(meta.format, language)}</strong></div>
 -          <div><MapPin /><span>{t.address}</span><a className="sport-address-link" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer">{locationLabel || cityName}</a></div>
@@ -368,3 +447,5 @@ index b4d1e82..f95cec2 100644
 +            ariaLabel={t.address}
 +          />
            <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
+           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
+           <div><ShieldCheck /><span>{t.sportEquipmentNeeded}</span><strong>{meta.equipmentNeeded ? t.yes : t.no}</strong></div>
