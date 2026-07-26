@@ -70,11 +70,11 @@ export type ReviewReport = {
 };
 
 export type ReviewPolicy = {
-  publicPublishingEnabled: false;
-  verifiedAttendanceRequired: true;
-  oneReviewPerReviewerAndSubject: true;
-  moderationGateRequired: true;
-  directOrganizerReplyEnabled: false;
+  publicPublishingEnabled: boolean;
+  verifiedAttendanceRequired: boolean;
+  oneReviewPerReviewerAndSubject: boolean;
+  moderationGateRequired: boolean;
+  directOrganizerReplyEnabled: boolean;
 };
 
 export const reviewPolicy: ReviewPolicy = {
