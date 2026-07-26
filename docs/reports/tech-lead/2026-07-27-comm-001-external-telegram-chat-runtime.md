@@ -28,8 +28,8 @@ Tech Lead
 - `src/externalTelegramChat.test.ts` from PR #373
 
 ## Findings
-- PR #373 contains a valid isolated contract slice but is stale and non-mergeable against current main.
-- The current Activity Chat panel also contains weather and confirmed-coach presentation logic; blind full-file replacement is unsafe.
+- PR #373 contained a valid isolated contract slice but was stale against current main.
+- The current Activity Chat panel also contains weather and confirmed-coach presentation logic, so the integration preserved the full existing file and added one isolated component.
 - Shared event-link persistence is not approved because schema/RLS changes require separate explicit approval.
 
 ## Changes made
@@ -37,15 +37,26 @@ Tech Lead
 - Ported organizer/joined-participant access rules.
 - Ported event/team lifecycle resolution.
 - Ported Telegram WebApp/browser opening helper.
-- Added focused unit tests.
+- Added device-local event-link persistence with validation.
+- Added organizer-only attach, update, and remove controls.
+- Added joined-participant open action.
+- Preserved the current in-app Activity Chat as explicit fallback.
+- Added focused unit tests and presentation styles.
 
 ## Checks
-GitHub Actions pending.
+GitHub Actions CI #1160 passed on head `af79d457cf7bb5346dfac192a5f528376b22bb9b`:
+- Test: success
+- Typecheck: success
+- Lint: success
+- Build: success
+
+An earlier CI run failed at Test because the storage test assumed a browser `window`; the test was corrected to use an isolated in-memory mock. Production code was unchanged by that correction.
 
 ## GitHub
 - Branch: `feat/comm-001-external-telegram-chat-runtime`
+- Draft PR: #397
 - Base: `f91b13130456eb1a3d026c37c8f426a6b55f4289`
-- Replaces stale PR #373 after verification.
+- Stale PR #373 closed as superseded.
 
 ## ClickUp
 - Task `869e9dyhk` remains in progress.
@@ -54,8 +65,9 @@ GitHub Actions pending.
 - Not updated in this slice.
 
 ## Blockers
-- Organizer attach/update/remove UI needs a safe patch-capable checkout environment.
-- Shared persistence for participants needs a reviewed persistence path; no SQL/RLS change is authorized.
+- The Telegram link is device-local and is not synchronized to other participants.
+- Shared persistence requires an approved schema/RLS or existing-authoritative repository path.
+- Team chat UI remains outside this event-only slice.
 
 ## Next step
-Wire an `EventTelegramChatAction` into the existing event chat panel without removing weather, coach, or Activity Chat fallback behavior.
+Review and merge the event UI slice if approved, then design the separately gated shared persistence path before claiming multi-user Telegram chat availability.
