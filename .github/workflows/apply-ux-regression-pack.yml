@@ -7,12 +7,6 @@ on:
     paths:
       - ".tmp/**"
       - ".github/workflows/apply-ux-regression-pack.yml"
-  pull_request:
-    branches:
-      - fix/ux-regression-pack
-    paths:
-      - ".tmp/**"
-      - ".github/workflows/apply-ux-regression-pack.yml"
 
 permissions:
   contents: write
@@ -115,15 +109,7 @@ jobs:
 
       - name: Test
         working-directory: repo
-        run: set -o pipefail; pnpm run test 2>&1 | tee test-output.txt
-
-      - name: Upload test output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: staged-test-output
-          path: repo/test-output.txt
-          if-no-files-found: ignore
+        run: pnpm run test
 
       - name: Typecheck
         working-directory: repo
@@ -138,7 +124,6 @@ jobs:
         run: pnpm run build
 
       - name: Create atomic commit
-        if: github.event_name == 'push'
         working-directory: repo
         run: |
           git config user.name "GO IRL AI Fixer"
