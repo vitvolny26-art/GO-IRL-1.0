@@ -3,290 +3,422 @@ title: Roadmap
 owner: Product Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-26
+next_review: 2026-08-09
 ---
 
-# Roadmap
+# GO IRL Product Roadmap
 
-GO IRL is being built as a platform, not a one-off Telegram Mini App. New work should stay compatible with future web, Android, and iOS clients.
+GO IRL is a Telegram-first local meetup layer that helps people leave the chat and meet in real life. The product is being built as a platform, not as a one-off Mini App, so new work must remain compatible with future web, Android, and iOS clients.
 
-All major product and architecture decisions must follow [docs/GO_IRL_CONSTITUTION.md](docs/GO_IRL_CONSTITUTION.md).
+This file is the canonical product roadmap. Historical sprint records remain in `docs/roadmap/SPRINT_0.md` through `docs/roadmap/SPRINT_5.md`, but they do not override this document.
 
-Market positioning and MVP feature filters must follow [docs/MARKET_POSITIONING.md](docs/MARKET_POSITIONING.md).
+Major product and architecture decisions must follow:
 
-Competitor-driven product signals are tracked in [docs/COMPETITOR_WATCH.md](docs/COMPETITOR_WATCH.md).
+- [GO IRL Constitution](docs/GO_IRL_CONSTITUTION.md)
+- [Market Positioning](docs/MARKET_POSITIONING.md)
+- [Competitor Watch](docs/COMPETITOR_WATCH.md)
+- [Sport Coach MVP](docs/SPORT_COACH_MVP.md)
 
-For the Sport Coach MVP 1.1 scope, see [docs/SPORT_COACH_MVP.md](docs/SPORT_COACH_MVP.md).
+## Current state
 
-## Current release preparation gate
-
-Closed Beta was completed on 2026-07-20. The current phase is Release Preparation and focused post-beta stabilization. Broad public launch is not yet claimed.
+Closed Beta was completed on 2026-07-20. The active phase is **Release Preparation and Stabilization**. Broad public launch is not yet claimed.
 
 Current proven baseline:
 
-- Browser Mock Mode is patched for non-Telegram browser usage.
+- Browser Mock Mode works for non-Telegram usage.
 - Browser demo writes are local-only and must not touch production Supabase.
-- Coach and Event Chat are mounted in sport event details.
-- Sport card time rendering is patched.
-- Bug report opens support instead of copying share text.
-- Weather uses Open-Meteo in sport details.
-- Share links use Telegram Mini App `startapp` deep links.
-- Static beta/dev marker was removed from `index.html`.
+- Sport details include Coach and Event Chat.
+- Event cards, time rendering, support flow, weather, and Telegram `startapp` sharing have working implementations.
+- The core product loop is present: create event, share, join, chat, and meet in real life.
 
 Current release gate:
 
-- Typecheck, lint, build, tests, and `git diff --check` must pass on every reviewed change.
+- `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`, `pnpm run test`, and `git diff --check` must pass on reviewed changes.
 - Real Telegram smoke verification is required before broad public launch.
-- Supabase production verification remains manual and production-sensitive.
+- Supabase production tables, authentication, migrations, and RLS require manual production-sensitive verification.
 - Vercel deployment, support, monitoring, analytics, and moderation readiness must be verified.
-- Operational provider limits are not automatically code failures.
+- Production must not depend on demo-only identity.
+- Operational provider limits must be distinguished from code failures.
 
-Do not claim public-launch-ready until the latest `main` passes quality gates and required operational smoke checks.
+Do not claim public-launch-ready until the latest `main` and required operational checks provide direct evidence that this gate is green.
 
-## Market guardrail for release preparation
+## Product thesis and guardrails
 
-Release Preparation does not turn GO IRL into a generic event calendar, ticketing platform, sport-only app, dating product, or social feed.
+GO IRL remains centered on the validated Olomouc loop:
 
-Release Preparation preserves the validated closed-beta thesis:
+> Create a small local activity in 30–60 seconds, share it through Telegram, let people join with minimal friction, coordinate in event chat, and meet in real life.
 
-> GO IRL is a Telegram-first local meetup layer for small real-life activities in Olomouc.
+Release and roadmap decisions must prioritize:
 
-Release-preparation scope must stay centered on:
-
-- create event in 30-60 seconds;
-- share through Telegram;
-- one-tap Join;
+- fast event creation;
+- Telegram sharing;
+- one-tap Join or bounded request flow;
 - participant count and capacity;
 - event chat;
-- organizer/host trust;
-- people showing up in real life.
+- organizer and host trust;
+- real attendance.
 
-Proven closed-beta baseline categories:
-
-1. Volleyball
-2. Running
-3. Walking
-4. Coffee meetup
-5. Board games
-6. Language exchange
-
-Before adding any feature, apply this test:
+Before adding a feature, ask:
 
 > Does this make it easier for people to leave the chat and meet in real life?
 
-If not, it is future scope.
+If the answer is not supported by evidence, the feature remains future scope.
 
-## Explicit release-preparation non-goals
-
-Do not build during Release Preparation without an explicit reviewed product decision:
+Explicit non-goals without a reviewed product decision:
 
 - ticketing or payments;
 - club CRM;
 - subscriptions or premium plans;
-- AI recommendations;
 - photo albums or post-event social feed;
-- public ratings/reviews;
+- public ratings or reviews;
 - direct messages;
-- full recurring engine;
-- big multi-city catalog;
-- complex profiles;
-- dating, friends, travel, or lifestyle verticals.
+- full recurring-event engine;
+- broad multi-city catalog;
+- complex social profiles;
+- Friends, Travel, Dating, or broad lifestyle verticals;
+- AI recommendations presented as validated product value.
 
-These may be revisited only after release readiness and Olomouc product evidence justify expansion.
+## Roadmap principles
 
-## Strategic Development Order
+1. Evidence before expansion.
+2. Draft scope is not implementation authorization.
+3. Every future phase has an entry gate and an exit signal.
+4. Product, safety, infrastructure, and operations must advance together.
+5. Sport remains the reference vertical until expansion is justified.
+6. Historical completion does not prove current release readiness.
+7. Deferred features require an explicit reviewed product decision.
 
-The current product priority is release preparation, foundation, and infrastructure. Friends, Travel, Dating, ticketing, and broad social features remain deferred until the proven Olomouc loop and release operations are stable.
+## Roadmap at a glance
 
-Before new vertical expansion, release evidence must validate the Sport Coach hypothesis in Olomouc:
+| Phase | State | Product outcome | Primary gate |
+|---|---|---|---|
+| Phase 0 — Foundation | Complete / Historical | Safe development and release foundation | Historical record only |
+| Phase 1 — MVP Core | Complete / Historical | Clear create-share-join-chat-meet loop | Preserve and verify the loop |
+| Active bridge — Release Preparation and Stabilization | Active | Prove release, infrastructure, and operational readiness | Current `main` and runtime evidence |
+| Phase 2 — Telegram and Notifications | Draft / Gated | Native Telegram coordination without Mini App background work | Release gate green |
+| Phase 3 — Trust and Real Attendance | Draft / Gated | Trust signals based on real participation | Stable loop and explicit trust approval |
+| Phase 4 — Modules and Discovery | Draft / Gated | Modular product and evidence-based expansion | Olomouc and Sport evidence |
+| Phase 5 — Production Growth | Draft / Gated | Safe broader public usage | Public-safety and operational readiness |
+
+## Phase 0 — Foundation
+
+**State:** Complete / Historical  
+**Goal:** Make the project safe to develop and release.
+
+Delivered foundation:
+
+- GitHub repository and CI workflow established.
+- Build, TypeScript, lint, and tests configured.
+- Supabase schema and RLS documented.
+- Deployment and verification checklists created.
+- Secrets excluded from the repository.
+
+Historical completion notes are not current runtime evidence. Netlify references are historical; Vercel is the current deployment target.
+
+Source record: [`docs/roadmap/SPRINT_0.md`](docs/roadmap/SPRINT_0.md).
+
+## Phase 1 — MVP Core
+
+**State:** Complete / Historical  
+**Goal:** Make the main user journey clear, fast, and useful.
+
+Core loop:
+
+```text
+create event -> share through Telegram -> participants join -> event chat -> people meet in real life
+```
+
+Delivered or preserved scope:
+
+- Event cards communicate what, when, where, who, price, capacity, and join state.
+- Home and discovery center on local activities and categories.
+- Activity creation and join/request flows remain fast and bounded.
+- Organizers can edit activities and review private requests.
+- Empty, loading, success, and error states are treated as product requirements.
+
+Guardrail: do not expand the MVP Core into social feed, direct messages, ticketing, payments, or dating.
+
+Source record: [`docs/roadmap/SPRINT_1.md`](docs/roadmap/SPRINT_1.md).
+
+## Active bridge — Release Preparation and Stabilization
+
+**State:** Active  
+**Goal:** Verify the post-beta product, infrastructure, operations, and real Telegram flow before broader launch.
+
+### Workstreams
+
+1. **Core-loop stability**
+   - Keep event cards readable and reliable.
+   - Stabilize join state, participant count, chat, share, and organizer controls.
+   - Ensure profile basics create enough trust to join.
+   - Preserve the proven Olomouc baseline unless a reviewed product decision changes it.
+
+2. **Infrastructure hardening**
+   - Verify Supabase production readiness.
+   - Keep migrations safe, repeatable, and explicitly approved.
+   - Harden and document RLS for user, activity, and chat data.
+   - Enforce roles and permissions.
+   - Maintain database verification SQL and release checklists.
+   - Remove legacy local fallbacks only after production replacement is verified.
+
+3. **Sport Coach MVP 1.1**
+   - Keep Coach sport-only.
+   - Stabilize coach request and confirmation flows.
+   - Keep browser demo behavior local-only.
+   - Show coach details and confirmed badges only from valid state.
+   - Measure show-up rate and beginner comfort.
+
+4. **Product quality and performance**
+   - Improve event cards, creation, details, profile, and organizer UX only where needed for the current loop.
+   - Improve empty, loading, and error states.
+   - Add lazy loading, code splitting, bundle optimization, and Telegram startup improvements where evidence shows value.
+
+5. **Release operations**
+   - Verify Vercel deployment and environment configuration.
+   - Verify support, monitoring, analytics, moderation, and incident readiness.
+   - Run real Telegram smoke checks, including a second-account share/join flow.
+
+### Exit criteria
+
+This bridge is complete only when:
+
+- the latest reviewed `main` passes all required quality checks;
+- real Telegram smoke verification passes;
+- production Supabase behavior and RLS are verified through approved procedures;
+- production does not depend on demo-only identity;
+- support, monitoring, analytics, moderation, and deployment readiness are evidenced;
+- critical create-share-join-chat-meet flows have no unresolved release blocker.
+
+## Phase 2 — Telegram and Notifications
+
+**State:** Draft / Gated  
+**Goal:** Make GO IRL feel native inside Telegram without violating Mini App runtime boundaries.
+
+Planned scope:
+
+- Verify BotFather menu button and Mini App URL.
+- Verify Telegram `startapp` share links.
+- Add backend-triggered Telegram notifications.
+- Notify organizers about private join requests.
+- Notify participants about approve/reject decisions.
+- Add reminders before activity start.
+
+Runtime boundaries:
+
+- Mini App lifecycle remains explicit.
+- Closing is user-triggered.
+- No Mini App background polling.
+- Browser demo mode must not touch production Supabase.
+
+Entry gate:
+
+- Release Preparation exit criteria are green.
+- Notification architecture and provider behavior are reviewed.
+- Required production configuration has explicit approval.
+
+Deferred within this phase:
+
+- evening digest;
+- quiet hours and working hours;
+- broad n8n notification automation;
+- autonomous engagement campaigns.
+
+Source record: [`docs/roadmap/SPRINT_2.md`](docs/roadmap/SPRINT_2.md).
+
+## Phase 3 — Trust, Verification, and Real Attendance
+
+**State:** Draft / Gated  
+**Goal:** Build trust around real attendance without introducing unsafe or unproven reputation mechanics.
+
+Planned scope:
+
+- Attendance confirmation.
+- Organizer-to-participant verification.
+- Participant-to-participant verification only after privacy and abuse review.
+- RLI history and basic profile reputation.
+- Achievements tied to real participation.
+
+Current trust baseline:
+
+- clear event cards;
+- organizer and host information;
+- participant count and capacity;
+- event chat;
+- Sport Coach support for beginner comfort;
+- Telegram share and join loop.
+
+Entry gate:
+
+- Current product loop is stable.
+- Attendance evidence can be collected safely.
+- Product, privacy, moderation, and abuse decisions are explicitly approved.
+
+Not authorized by this roadmap:
+
+- public Trust Score;
+- public ratings or leaderboard;
+- token or reward mechanics;
+- geolocation attendance confirmation;
+- complex reputation UI.
+
+Source record: [`docs/roadmap/SPRINT_3.md`](docs/roadmap/SPRINT_3.md).
+
+## Phase 4 — Modules and Discovery
+
+**State:** Draft / Gated  
+**Goal:** Evolve the stable core into a modular platform and expand only where product evidence supports it.
+
+Planned scope:
+
+- Keep Sport as the first reference module.
+- Add module-specific cards, filters, and creation fields.
+- Prepare Activities, Nature, Parties, Creative, and Learning as independently governed modules.
+- Add discovery through search, quick filters, and simple matching by city, interest, date, and free spots.
+- Expand cities through configuration rather than hard-coded forks.
+
+Current boundary:
+
+- Sport is the reference vertical.
+- Generic fallback remains for non-sport activities.
+- The proven Olomouc category baseline remains stable unless changed by reviewed evidence.
+- No broad multi-city catalog before release and product validation.
+
+Entry gate:
+
+- Release readiness is proven.
+- Olomouc usage and attendance evidence justify expansion.
+- Sport Coach evidence supports or rejects the event-role hypothesis.
+- New module ownership, safety, and success metrics are defined.
+
+Deferred:
+
+- Friends, Travel, and Dating verticals;
+- full city catalog;
+- broad lifestyle expansion;
+- AI recommendations without validated product evidence.
+
+Source record: [`docs/roadmap/SPRINT_4.md`](docs/roadmap/SPRINT_4.md).
+
+## Phase 5 — Production Growth
+
+**State:** Draft / Gated  
+**Goal:** Prepare for broader public usage after the core loop, release operations, and safety controls are stable.
+
+Planned scope:
+
+- Activation, join, share, and completed-activity analytics.
+- Reporting and moderation.
+- Abuse protection.
+- Referral loop.
+- Web parity with Telegram Mini App behavior.
+
+Entry gate:
+
+- Latest quality checks pass on the reviewed release commit.
+- Real Telegram smoke verification passes.
+- Supabase production tables and RLS behavior are verified.
+- Share/join flow is verified from a second Telegram account.
+- Production does not depend on demo-only identity.
+- Support, monitoring, moderation, analytics, and public-safety review are complete.
+
+Not authorized before review:
+
+- referral incentives;
+- public moderation tooling;
+- analytics-driven growth loops;
+- large-scale city expansion;
+- paid growth experiments.
+
+Source record: [`docs/roadmap/SPRINT_5.md`](docs/roadmap/SPRINT_5.md).
+
+## Sport Coach validation track
+
+Sport Coach is a bounded validation track inside Release Preparation and later trust/module decisions. It is not a universal event-role system.
+
+Product hypothesis:
 
 > Sport events with a confirmed coach should have a higher show-up rate and higher beginner comfort than sport events without a coach.
 
-1. Proven Closed-Beta Loop Stability
-   - Browser demo/mock mode works without Telegram.
-   - Event cards are stable and readable.
-   - Join state, participant count, event chat, and share flow work reliably.
-   - Profile basics create enough trust to join an event.
-   - The proven six-category baseline remains stable unless changed by an explicit reviewed product decision.
-2. Infrastructure Hardening
-   - Supabase production readiness.
-   - Safe, repeatable migrations.
-   - RLS hardening for all user and event data.
-   - Roles and permission enforcement.
-   - Database verification SQL and release checklist.
-   - Remove dependency on legacy local fallback where possible after production migration is applied.
-3. Sport Coach MVP 1.1
-   - Keep Coach sport-only.
-   - Stabilize coach request flow for sport events.
-   - Add demo confirmed coach for browser mock mode.
-   - Add coach detail block and sport card badge.
-   - Measure show-up rate and beginner comfort.
-4. Performance
-   - Lazy loading.
-   - Code splitting.
-   - Bundle optimization.
-   - Telegram Mini App startup performance.
-5. n8n Notifications
-   - Server-side notification workflow.
-   - Evening digest.
-   - Working hours.
-   - Quiet hours.
-   - No Mini App background work.
-6. AI Event Discovery
-   - External sources.
-   - Event collection.
-   - AI normalization.
-   - Duplicate detection.
-   - Confidence scoring.
-   - Save discovered events to the database.
-7. Event Roles Foundation
-   - Start only after Sport Coach improves show-up rate or beginner comfort.
-   - Future roles are not called Coach.
-   - Board games can use Game Master.
-   - Language events can use Language Buddy or Conversation Mentor.
-   - City walks can use Guide.
-   - Social meetups can use Host or Icebreaker.
-8. Friends Vertical
-   - Start only after database and notification foundation is stable.
-9. Travel Vertical
-   - Start only after Friends and source discovery architecture are stable.
-10. Dating Vertical
-   - Last, because it requires privacy, safety, anonymous chat, mutual reveal, reporting, moderation, and abuse protection.
+Primary signal:
 
-## Sport Coach MVP 1.1
+- Show-up Rate: joined users who actually attended.
 
-Coach is a sport-only role in MVP 1.1.
+Supporting signals:
 
-Coach is not a generic event helper. Guides, tutors, social hosts, game masters, referees, and moderators are future Event Roles work and must not be mixed into the Coach MVP.
-
-### Product goal
-
-Reduce the fear of joining sport events and improve real-life attendance.
-
-The coach helps with:
-
-- warm-up;
-- rules;
-- beginner support;
-- team flow;
-- safety;
-- helping users feel comfortable when arriving alone.
-
-### MVP patches
-
-1. Coach model compatibility
-   - Keep the existing `coach_profiles`, `coach_requests`, and `coach_reviews` model.
-   - Keep `user_key`, `activity_id`, and `coach_profile_id`.
-   - Do not replace with `user_id`, `event_id`, or `coach_id` in MVP 1.1.
-2. Demo Sport Coach
-   - Browser/no Telegram demo uses Alex, Sport Coach, Olomouc.
-   - Demo request becomes confirmed immediately.
-   - Demo writes never touch production Supabase.
-3. Sport Coach Bottom Sheet
-   - Button: "Need a coach" / "Нужен тренер".
-   - Choice: Sport Coach, Beginner Helper, Team Captain.
-   - Organizer note.
-   - Status: requested or confirmed.
-4. Sport Coach Event Block
-   - Event detail shows confirmed coach.
-   - Chat link stays close to coach block.
-   - Copy explains that coach helps beginners and event flow.
-5. Sport Coach Badge
-   - Sport cards show "✨ Есть тренер" only for confirmed coach.
-   - Pending requests must not show the confirmed badge.
-6. Minimal Review
-   - 1-5 rating.
-   - Short comment.
-   - Beginner comfort marker: "Did the coach help you feel comfortable if you came alone?"
-
-### Validation metrics
-
-Primary:
-
-- Show-up Rate: joined users who actually came.
-
-Supporting:
-
-- coach badge open/click rate;
-- join -> chat message rate;
-- join -> attendance confirmation rate;
+- coach badge open rate;
+- join-to-chat-message rate;
+- join-to-attendance-confirmation rate;
 - beginner comfort yes/no;
 - repeat sport attendance;
 - organizer coach-request conversion.
 
-### Not now
+Future Event Roles may use role names appropriate to each vertical, such as Game Master, Language Buddy, Guide, or Host. Do not normalize these roles or build a universal role marketplace before Sport Coach proves value.
 
-- Payments.
-- Marketplace.
-- Universal event roles.
-- Referee.
-- City guide.
-- Language buddy.
-- Tutor.
-- Social host.
-- Game master.
-- Verified coach badge.
-- Availability calendar.
+## Decision gates
 
-## Event Roles Vision
+### Gate A — Release readiness
 
-Future Event Roles are the scalable pattern after Sport Coach is validated.
+Evidence required:
 
-The product rule:
+- latest `main` quality checks;
+- real Telegram smoke verification;
+- production Supabase verification;
+- deployment and operational readiness.
 
-> For every event type, use the role name that is clear in one second.
+### Gate B — Product-loop stability
 
-Examples:
+Evidence required:
 
-| Vertical | Future role |
-|---|---|
-| Sport | Coach, Referee, Captain, Safety Lead |
-| Board games | Game Master |
-| Language | Language Buddy, Conversation Mentor |
-| City walks | Guide, Route Leader |
-| Social meetups | Host, Icebreaker |
+- reliable create, share, join, chat, participant, and attendance flow;
+- no unresolved release blocker in the core loop;
+- sufficient organizer and participant trust signals.
 
-Future normalized tables may include:
+### Gate C — Trust approval
 
-- `event_role_profiles`
-- `event_role_requests`
-- `event_role_assignments`
-- `event_role_reviews`
+Evidence required:
 
-Do not build these before Sport Coach proves value.
+- reviewed trust model;
+- privacy, moderation, and abuse controls;
+- explicit scope approval;
+- safe attendance evidence model.
 
-## Phase 1 - Production Foundation
+### Gate D — Expansion evidence
 
-- Trusted Telegram auth is implemented in the repository through Supabase Edge Function verification and verified JWT session flow.
-- Production rollout still requires real environment smoke checks and Supabase secrets verification.
-- Keep build and TypeScript checks green.
-- Preserve the current generic event MVP as the fallback experience.
-- Sprint 2 architecture docs are prepared: Constitution, Database, RLS, Admin, Security, Notifications, AI, EventLifecycle, UserLifecycle, RecommendationEngine, Moderation.
-- Keep Sport as the current reference vertical without expanding into Friends, Travel, or Dating yet.
-- Harden Supabase RLS and document every policy.
-- Apply backend foundation migration v2 for `user_roles`, moderator/admin helpers, audit log, and verification SQL only through the approved Supabase release process.
-- Apply security hardening migration v3 for DB-level text length constraints only through the approved Supabase release process.
-- Use verified auth context for production writes.
-- Remove public frontend admin allowlist from the production security model before public moderation tools launch.
-- Chat data model for optional, temporary Activity Chat.
-- Chat RLS design with participant-only access.
-- Chat toggle in Activity settings as an architecture item, not runtime UI yet.
-- Apply and verify migrations for `city_id`, `metadata`, `participant_note`, and `activity_type`.
-- Add database verification SQL to release flow.
-- Keep Telegram Mini App lifecycle explicit: no surprise close, no background polling, user-triggered close only.
-- Privacy settings placeholder.
-- No background tracking policy.
-- User notification opt-in design.
+Evidence required:
 
-## Phase 2 - Performance and Product Quality
+- Olomouc retention and attendance signals;
+- Sport Coach validation results;
+- clear module or city owner;
+- measurable expansion success criteria.
 
-- Keep Sport vertical MVP as the reference vertical.
-- CAL-001 Save Activity to Google Calendar through a template URL without OAuth.
-- Maintain ActivityRendererRegistry with Sport and Generic registrations.
-- Continue improving event cards, create flow, details, profile, and organizer controls only where needed for current MVP quality.
-- Add Discover / For You screen with search, quick filters, and simple matching by city, interests, date, and free spots.
-- Add favorite activity selection to the user profile.
-- Improve empty, loading, and error states.
-- Add city expansion for Prague, Brno, Ostrava, and future cities through configuration.
-- Lazy-load heavy screens and vertical modules.
+### Gate E — Public growth readiness
+
+Evidence required:
+
+- moderation and abuse protection;
+- analytics and support readiness;
+- public-safety review;
+- stable operations under broader usage.
+
+## Dependency chain
+
+1. Preserve and verify Foundation and MVP Core.
+2. Complete Release Preparation and Stabilization.
+3. Add Telegram notifications without violating runtime boundaries.
+4. Introduce trust features only after explicit approval and stable attendance evidence.
+5. Expand modules and cities only after release and product evidence.
+6. Start production-growth mechanics only after operational and public-safety readiness.
+
+## Historical sprint records
+
+The following retained files preserve planning history and source traceability:
+
+- [`docs/roadmap/SPRINT_0.md`](docs/roadmap/SPRINT_0.md) — Archived.
+- [`docs/roadmap/SPRINT_1.md`](docs/roadmap/SPRINT_1.md) — Archived.
+- [`docs/roadmap/SPRINT_2.md`](docs/roadmap/SPRINT_2.md) — Draft historical input.
+- [`docs/roadmap/SPRINT_3.md`](docs/roadmap/SPRINT_3.md) — Draft historical input.
+- [`docs/roadmap/SPRINT_4.md`](docs/roadmap/SPRINT_4.md) — Draft historical input.
+- [`docs/roadmap/SPRINT_5.md`](docs/roadmap/SPRINT_5.md) — Draft historical input.
+
+They remain available for audit and context, but this file controls current roadmap state, sequencing, gates, and scope.
