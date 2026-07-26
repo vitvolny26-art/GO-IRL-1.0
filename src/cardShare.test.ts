@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   buildCardShareTarget,
   buildCardShareText,
+  buildFacebookShareTarget,
   buildMessengerAndroidIntentTarget,
   buildMessengerAppTarget,
   buildMessengerPreviewUrl,
   buildMessengerShareBridgeTarget,
+  buildMetaEventPreviewUrl,
 } from "./cardShare";
 
 const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
@@ -28,8 +30,18 @@ describe("card share", () => {
     expect(decodeURIComponent(buildCardShareTarget("whatsapp", content))).toContain(content.url);
   });
 
-  it("builds the Messenger preview URL for the same event", () => {
+  it("builds one shared Meta preview URL for the same event", () => {
+    expect(buildMetaEventPreviewUrl(content)).toBe(previewUrl);
     expect(buildMessengerPreviewUrl(content)).toBe(previewUrl);
+  });
+
+  it("keeps Facebook separate from Messenger and never puts preview URL in user text", () => {
+    const target = new URL(buildFacebookShareTarget(content));
+    expect(target.origin + target.pathname).toBe("https://www.facebook.com/sharer/sharer.php");
+    expect(target.searchParams.get("u")).toBe(previewUrl);
+    expect(target.searchParams.get("quote")).toContain(content.url);
+    expect(target.searchParams.get("quote")).not.toContain("/api/meta/event-preview");
+    expect(buildCardShareTarget("facebook", content)).toBe(target.toString());
   });
 
   it("uses the dynamic event preview in the Messenger Send Dialog", () => {
@@ -58,6 +70,6 @@ describe("card share", () => {
 
   it("falls back to the original URL when no valid event id is present", () => {
     const fallback = { ...content, url: "https://example.com/event" };
-    expect(buildMessengerPreviewUrl(fallback)).toBe(fallback.url);
+    expect(buildMetaEventPreviewUrl(fallback)).toBe(fallback.url);
   });
 });

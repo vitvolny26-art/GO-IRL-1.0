@@ -26,11 +26,12 @@ type CardShareActionProps = {
   onTelegramShare?: () => Promise<PreparedTelegramShareResult>;
 };
 
-type ShareChannel = ShareProvider | "native";
+type ShareChannel = ShareProvider | "facebook" | "native";
 type ActivityChatUnreadChangedDetail = { activityId?: string };
 
 const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
+  { id: "facebook", label: "Facebook", icon: "/icons/facebook.svg" },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
   { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
   { id: "native", label: "Поделиться", icon: null },
@@ -125,7 +126,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
 
   const share = async (channel: ShareChannel, remember = false) => {
     setOpen(false);
-    if (remember && channel !== "native") updateUserPreferences({ shareProvider: channel });
+    if (remember && channel !== "native" && channel !== "facebook") {
+      updateUserPreferences({ shareProvider: channel });
+    }
 
     if (channel === "telegram") {
       if (onTelegramShare) {
@@ -141,7 +144,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       return;
     }
 
-    if (channel === "whatsapp") {
+    if (channel === "facebook" || channel === "whatsapp") {
       openExternalShareTarget(buildCardShareTarget(channel, content));
       return;
     }
@@ -223,7 +226,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                void share(channel.id, channel.id !== "native");
+                void share(channel.id, channel.id !== "native" && channel.id !== "facebook");
               }}
             >
               <span className="card-share-icon-circle">
