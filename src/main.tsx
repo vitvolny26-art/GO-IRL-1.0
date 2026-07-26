@@ -39,6 +39,7 @@ import "./profile-preferences.css";
 import "./participant-identity.css";
 import "./profile-hub.css";
 import "./mobile-ux-followup.css";
+import "./event-main-block.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 
