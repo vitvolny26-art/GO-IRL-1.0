@@ -3,11 +3,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const workflowFile = path.resolve(__dirname, '..', 'n8n', 'workflows', 'go-irl-ai-staff-os-structural-test.json');
+const roleSelectionFile = path.resolve(__dirname, '..', 'n8n', 'code', 'staff-00-role-selection.js');
 const workflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
+const roleSelectionCode = fs.readFileSync(roleSelectionFile, 'utf8');
 const nodes = new Map(workflow.nodes.map((node) => [node.name, node]));
 
 function runCode(name, json, items = [{ json }], staticData = {}) {
-  const code = nodes.get(name)?.parameters?.jsCode;
+  const code = name === 'STAFF-00 Role Selection'
+    ? roleSelectionCode
+    : nodes.get(name)?.parameters?.jsCode;
   assert.ok(code, `Missing Code node: ${name}`);
   const execute = new Function('$json', '$input', '$getWorkflowStaticData', code);
   return execute(json, { all: () => items }, () => staticData);
@@ -50,6 +54,8 @@ const cases = [
   ['A Beta QA', baseMission('Beta QA verification', 'Test beta acceptance quality'), ['Project Coordinator', 'Product Lead', 'QA Lead']],
   ['B Auth/RLS', baseMission('Auth and RLS audit', 'Verify Supabase security and private data'), ['Project Coordinator', 'Tech Lead', 'QA Lead', 'Security Lead', 'Supabase Steward']],
   ['C Bug investigation', baseMission('Investigate broken join bug', 'Find regression error'), ['Project Coordinator', 'Tech Lead', 'QA Lead']],
+  ['D Automation engineering', baseMission('Fix n8n workflow retry bug', 'Repair automation webhook execution'), ['Project Coordinator', 'Automation Engineer', 'Tech Lead', 'QA Lead']],
+  ['E Security precedence', baseMission('Fix n8n auth workflow', 'Verify RLS and private data handling'), ['Project Coordinator', 'Tech Lead', 'QA Lead', 'Security Lead', 'Supabase Steward']],
 ];
 
 for (const [label, mission, expected] of cases) {
@@ -64,7 +70,7 @@ assert.ok(forbidden.invalid_results.length > 0);
 assert.equal(forbidden.critic_required, true);
 assert.equal(forbidden.human_approval_required, true);
 assert.equal(forbidden.status, 'blocked');
-console.log('PASS D forbidden proposal: invalid + critic + approval + blocked');
+console.log('PASS F forbidden proposal: invalid + critic + approval + blocked');
 
 const clean = runResultPipeline(baseMission('Documentation alignment', 'Check README alignment'));
 assert.equal(clean.invalid_results.length, 0);
@@ -74,7 +80,7 @@ assert.equal(clean.status, 'completed');
 assert.equal(clean.total_estimated_cost_usd, 0);
 assert.equal(clean.synthetic, true);
 assert.equal(clean.report_only, true);
-console.log('PASS E clean restore: completed + zero cost + synthetic report-only');
+console.log('PASS G clean restore: completed + zero cost + synthetic report-only');
 
 const budget = normalize(baseMission('Budget test', 'Verify reserve split'));
 assert.equal(budget.budget.reserved_budget_usd, 0.25);
