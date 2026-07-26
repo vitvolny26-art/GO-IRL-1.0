@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MessageCircle, Send } from "lucide-react";
+import { MapPin, MessageCircle, Send, UserCheck } from "lucide-react";
 import {
   ensureActivityChat,
   getCurrentChatIdentity,
@@ -16,6 +16,11 @@ import { getCity } from "../config/cities";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
 import { isOutdoorGenericActivity } from "../eventWeather";
+import { getDemoCoachProfile, loadCoachRequestsForActivity } from "../coachFeature";
+import {
+  resolveConfirmedCoachPresentation,
+  type ConfirmedCoachPresentation,
+} from "../confirmedCoachPresentation";
 import { ParticipantIdentityLabel } from "./ParticipantIdentityLabel";
 
 type ActivityChatPanelProps = {
@@ -23,6 +28,10 @@ type ActivityChatPanelProps = {
   openRequest?: number;
   showHelperAction?: boolean;
 };
+
+type CoachRequestsChangedDetail = { activityId?: string };
+
+const coachRequestsChangedEvent = "go-irl-coach-requests-changed";
 
 const formatCloseTime = (value?: string | null) => {
   if (!value) return "";
@@ -104,6 +113,32 @@ function OutdoorWeatherPanel({ activity }: { activity: Activity }) {
   );
 }
 
+function ConfirmedCoachBesideChat({
+  presentation,
+}: {
+  presentation: ConfirmedCoachPresentation;
+}) {
+  const coach = getDemoCoachProfile(presentation.coachProfileId || undefined);
+  const initials = coach?.displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "CO";
+
+  return (
+    <section className="confirmed-coach-chat-card" aria-label={presentation.title}>
+      <span className="confirmed-coach-chat-avatar" aria-hidden="true">{initials}</span>
+      <div className="confirmed-coach-chat-copy">
+        <span className="confirmed-coach-chat-status"><UserCheck size={15} aria-hidden="true" />{presentation.title}</span>
+        <strong>{coach?.displayName || "Подтверждённый Sport Coach"}</strong>
+        {coach?.city ? <small><MapPin size={13} aria-hidden="true" />{coach.city}</small> : null}
+        <p>{presentation.supportCopy}</p>
+      </div>
+    </section>
+  );
+}
+
 export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPanelProps) {
   const [open, setOpen] = useState(false);
   const [chat, setChat] = useState<ActivityChat | null>(null);
@@ -112,6 +147,7 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmedCoach, setConfirmedCoach] = useState<ConfirmedCoachPresentation | null>(null);
   const panelRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const showOutdoorWeather = isOutdoorGenericActivity(activity);
@@ -150,6 +186,34 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
   };
 
   useEffect(() => {
+    let active = true;
+
+    const reloadConfirmedCoach = () => {
+      void loadCoachRequestsForActivity(activity.id)
+        .then((requests) => {
+          if (active) setConfirmedCoach(resolveConfirmedCoachPresentation(requests));
+        })
+        .catch(() => {
+          if (active) setConfirmedCoach(null);
+        });
+    };
+
+    const handleCoachRequestsChanged = (event: Event) => {
+      const detail = (event as CustomEvent<CoachRequestsChangedDetail>).detail;
+      if (detail?.activityId && detail.activityId !== activity.id) return;
+      reloadConfirmedCoach();
+    };
+
+    reloadConfirmedCoach();
+    window.addEventListener(coachRequestsChangedEvent, handleCoachRequestsChanged);
+
+    return () => {
+      active = false;
+      window.removeEventListener(coachRequestsChangedEvent, handleCoachRequestsChanged);
+    };
+  }, [activity.id]);
+
+  useEffect(() => {
     if (!open) return;
     void reload();
   }, [activity.id, open]);
@@ -183,6 +247,7 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
   return (
     <>
       {showOutdoorWeather ? <OutdoorWeatherPanel activity={activity} /> : null}
+      {confirmedCoach ? <ConfirmedCoachBesideChat presentation={confirmedCoach} /> : null}
 
       <section className="activity-chat-panel" ref={panelRef}>
         <button
