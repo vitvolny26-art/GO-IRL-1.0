@@ -1,12 +1,21 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   canAccessExternalTelegramChat,
+  loadLocalEventTelegramChatLink,
   normalizeExternalTelegramChatUrl,
   openExternalTelegramChat,
+  removeLocalEventTelegramChatLink,
   resolveExternalTelegramChatLifecycle,
+  saveLocalEventTelegramChatLink,
 } from "./externalTelegramChat";
 
+const activityId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
+
 describe("external Telegram chat links", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   it("normalizes supported Telegram group links and rejects unsafe URLs", () => {
     expect(normalizeExternalTelegramChatUrl("https://telegram.me/+AbC_123-xyz/")).toBe("https://t.me/+AbC_123-xyz");
     expect(normalizeExternalTelegramChatUrl("https://t.me/joinchat/AbC_123-xyz")).toBe("https://t.me/joinchat/AbC_123-xyz");
@@ -32,6 +41,24 @@ describe("external Telegram chat links", () => {
     expect(resolveExternalTelegramChatLifecycle({ kind: "event", eventEndsAt: "2026-07-25T12:00:00.000Z", now })).toBe("locked");
     expect(resolveExternalTelegramChatLifecycle({ kind: "event", eventEndsAt: "2026-07-19T12:00:00.000Z", now })).toBe("deletion_due");
     expect(resolveExternalTelegramChatLifecycle({ kind: "event", eventEndsAt: "2026-07-19T12:00:00.000Z", keepArchive: true, now })).toBe("archived");
+  });
+
+  it("stores normalized event links locally and removes them", () => {
+    const saved = saveLocalEventTelegramChatLink(activityId, "https://telegram.me/+AbC_123-xyz/", "user:1");
+    expect(saved?.url).toBe("https://t.me/+AbC_123-xyz");
+    expect(loadLocalEventTelegramChatLink(activityId)).toMatchObject({
+      kind: "event",
+      url: "https://t.me/+AbC_123-xyz",
+      attachedByUserKey: "user:1",
+    });
+
+    removeLocalEventTelegramChatLink(activityId);
+    expect(loadLocalEventTelegramChatLink(activityId)).toBeNull();
+  });
+
+  it("does not store invalid event links", () => {
+    expect(saveLocalEventTelegramChatLink(activityId, "javascript:alert(1)", "user:1")).toBeNull();
+    expect(loadLocalEventTelegramChatLink(activityId)).toBeNull();
   });
 
   it("uses Telegram WebApp opening when available", () => {
