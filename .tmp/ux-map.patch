@@ -1,0 +1,370 @@
+diff --git a/src/App.tsx b/src/App.tsx
+index 6d9f140..a156448 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -86,6 +86,8 @@
+   parseInvitationStartParam,
+ } from "./invitationLink";
+ import { EventWeatherStrip } from "./components/EventWeatherStrip";
++import { EventLocationAction } from "./components/EventLocationAction";
++import { requestMapProvider } from "./mapProviderPicker";
+ import { isOutdoorGenericActivity } from "./eventWeather";
+ import { getEventSheetBackgroundStyle } from "./eventSheetBackground";
+ import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
+@@ -114,12 +116,8 @@ import { isTemplateCarouselDrag } from "./templateCarousel";
+ };
+ 
+ const openActivityMap = (activity: Activity) => {
+-  if (activity.locationUrl?.trim()) {
+-    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+-    return;
+-  }
+-  const query = activity.address.trim() || getCity(activity.cityId).name.en;
+-  window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
++  const city = getCity(activity.cityId).name.en;
++  requestMapProvider(activity.locationUrl?.trim() || buildEventLocationUrl(activity.address, city));
+ };
+@@ -1590,7 +1588,11 @@
+         <div className="detail-list">
+           <div><Sparkles /><span>{t.category}</span><strong>{category.name[language]}</strong></div>
+           <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
+-          <div><Compass /><span>{t.city}</span><strong>{cityName}</strong></div>
+-          <div><MapPin /><span>{t.address}</span>{activity.locationUrl ? <a href={activity.locationUrl} target="_blank" rel="noreferrer">{activity.address}</a> : <strong>{activity.address}</strong>}</div>
++          <EventLocationAction
++            city={cityName}
++            address={activity.address}
++            sourceUrl={activity.locationUrl}
++            ariaLabel={t.address}
++          />
+           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
+           {activity.participantNote && <div><Sparkles /><span>{t.participantNote}</span><strong>{activity.participantNote}</strong></div>}
+diff --git a/src/components/EventLocationAction.tsx b/src/components/EventLocationAction.tsx
+new file mode 100644
+index 0000000..e8bdc50
+--- /dev/null
++++ b/src/components/EventLocationAction.tsx
+@@ -0,0 +1,32 @@
++import { MapPin } from "lucide-react";
++import { buildEventLocationUrl } from "../eventLocations";
++import { requestMapProvider } from "../mapProviderPicker";
++
++type EventLocationActionProps = {
++  city: string;
++  address: string;
++  sourceUrl?: string | null;
++  ariaLabel: string;
++};
++
++export function EventLocationAction({ city, address, sourceUrl, ariaLabel }: EventLocationActionProps) {
++  const cleanCity = city.trim();
++  const cleanAddress = address.trim();
++  const target = sourceUrl?.trim() || buildEventLocationUrl(cleanAddress, cleanCity);
++
++  return (
++    <button
++      className="event-location-action"
++      type="button"
++      aria-label={`${ariaLabel}: ${[cleanCity, cleanAddress].filter(Boolean).join(", ")}`}
++      disabled={!target}
++      onClick={() => requestMapProvider(target)}
++    >
++      <MapPin aria-hidden="true" />
++      <span className="event-location-copy">
++        {cleanCity ? <strong className="event-location-city">{cleanCity}</strong> : null}
++        {cleanAddress ? <span className="event-location-address">{cleanAddress}</span> : null}
++      </span>
++    </button>
++  );
++}
+diff --git a/src/components/MapProviderPickerPortal.tsx b/src/components/MapProviderPickerPortal.tsx
+index 028708d..c560c26 100644
+--- a/src/components/MapProviderPickerPortal.tsx
++++ b/src/components/MapProviderPickerPortal.tsx
+@@ -1,92 +1,86 @@
+-import { MapPin, X } from "lucide-react";
+-import { useEffect, useState } from "react";
++import { Map, Navigation, X } from "lucide-react";
++import { useEffect, useMemo, useState } from "react";
+ import { buildMapProviderUrl } from "../mapProvider";
+ import {
+-  mapProviderOptions,
+   mapProviderPickerEvent,
++  resolveDeviceMapProvider,
+   type MapProviderPickerRequest,
+ } from "../mapProviderPicker";
+-import {
+-  readUserPreferences,
+-  updateUserPreferences,
+-  type MapProvider,
+-} from "../userPreferences";
++import { useAppStore } from "../store";
++import type { Language } from "../types";
++import type { MapProvider } from "../userPreferences";
++
++const copy: Record<Language, { title: string; hint: string; close: string; device: string; mapy: string }> = {
++  ru: { title: "Открыть адрес", hint: "Выберите карту", close: "Закрыть", device: "Карты устройства", mapy: "Mapy.com" },
++  uk: { title: "Відкрити адресу", hint: "Оберіть карту", close: "Закрити", device: "Карти пристрою", mapy: "Mapy.com" },
++  cs: { title: "Otevřít adresu", hint: "Vyberte mapu", close: "Zavřít", device: "Mapy zařízení", mapy: "Mapy.com" },
++  en: { title: "Open address", hint: "Choose a map", close: "Close", device: "Device maps", mapy: "Mapy.com" },
++};
+@@ -21,25 +15,16 @@
+ export function MapProviderPickerPortal() {
++  const language = useAppStore((state) => state.language);
+   const [sourceUrl, setSourceUrl] = useState("");
+-  const [selected, setSelected] = useState<MapProvider>("mapy");
+-  const [remember, setRemember] = useState(true);
++  const deviceProvider = useMemo(() => resolveDeviceMapProvider(), []);
++  const labels = copy[language];
+@@ -27,18 +30,15 @@
+       const request = event as CustomEvent<MapProviderPickerRequest>;
+       const nextSourceUrl = request.detail?.sourceUrl?.trim();
+-      if (!nextSourceUrl) return;
+-
+-      const savedProvider = readUserPreferences().mapProvider;
+-      if (savedProvider) {
+-        openUrl(buildMapProviderUrl(nextSourceUrl, savedProvider));
+-        return;
+-      }
+-
+-      setSourceUrl(nextSourceUrl);
+-      setSelected("mapy");
+-      setRemember(true);
++      if (nextSourceUrl) setSourceUrl(nextSourceUrl);
++    };
++    const handleEscape = (event: KeyboardEvent) => {
++      if (event.key === "Escape") setSourceUrl("");
+     };
+ 
+     window.addEventListener(mapProviderPickerEvent, handleRequest);
+-    return () => window.removeEventListener(mapProviderPickerEvent, handleRequest);
++    document.addEventListener("keydown", handleEscape);
++    return () => {
++      window.removeEventListener(mapProviderPickerEvent, handleRequest);
++      document.removeEventListener("keydown", handleEscape);
++    };
+   }, []);
+@@ -49,43 +49,31 @@
+-  const confirm = () => {
+-    if (remember) updateUserPreferences({ mapProvider: selected });
+-    openUrl(buildMapProviderUrl(sourceUrl, selected));
++  const openProvider = (provider: MapProvider) => {
++    openUrl(buildMapProviderUrl(sourceUrl, provider));
+     setSourceUrl("");
+   };
+ 
+   return (
+-    <div className="map-provider-picker-backdrop" role="dialog" aria-modal="true" aria-label="Выбор карты">
+-      <section className="map-provider-picker-sheet" data-map-provider-choice>
++    <div className="map-provider-picker-backdrop" role="presentation" onClick={() => setSourceUrl("")}>
++      <section className="map-provider-picker-sheet" data-map-provider-choice role="dialog" aria-modal="true" aria-label={labels.title} onClick={(event) => event.stopPropagation()}>
+         <header>
+           <div>
+-            <strong>Открыть адрес</strong>
+-            <span>Выберите приложение карты</span>
++            <strong>{labels.title}</strong>
++            <span>{labels.hint}</span>
+           </div>
+-          <button type="button" aria-label="Закрыть" onClick={() => setSourceUrl("")}><X /></button>
++          <button type="button" aria-label={labels.close} onClick={() => setSourceUrl("")}><X /></button>
+         </header>
+ 
+         <div className="map-provider-picker-options">
+-          {mapProviderOptions.map((provider) => (
+-            <button key={provider.id} type="button" className={selected === provider.id ? "is-selected" : ""} onClick={() => setSelected(provider.id)}>
+-              <MapPin /><span>{provider.label}</span>
+-            </button>
+-          ))}
++          <button type="button" onClick={() => openProvider(deviceProvider)}><Navigation aria-hidden="true" /><span>{labels.device}</span></button>
++          <button type="button" onClick={() => openProvider("mapy")}><Map aria-hidden="true" /><span>{labels.mapy}</span></button>
+         </div>
+-
+-        <label className="map-provider-picker-remember">
+-          <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} />
+-          <span>Запомнить мой выбор</span>
+-        </label>
+-
+-        <button className="map-provider-picker-confirm" type="button" onClick={confirm}>Открыть</button>
+       </section>
+     </div>
+   );
+diff --git a/src/map-provider-picker.css b/src/map-provider-picker.css
+index b605403..fa09c58 100644
+--- a/src/map-provider-picker.css
++++ b/src/map-provider-picker.css
+@@ -55,57 +55,95 @@
+ .map-provider-picker-options {
+   display: grid;
++  grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 10px;
+ }
+ 
+ .map-provider-picker-options button {
+-  display: flex;
+-  align-items: center;
+-  gap: 12px;
+-  width: 100%;
+-  min-height: 52px;
+-  padding: 12px 14px;
++  display: grid;
++  min-width: 0;
++  min-height: 72px;
++  place-items: center;
++  align-content: center;
++  gap: 8px;
++  padding: 12px 10px;
+   border: 1px solid rgba(255, 255, 255, 0.12);
+   border-radius: 16px;
+   background: rgba(255, 255, 255, 0.05);
+   color: inherit;
+   font: inherit;
+-  text-align: left;
++  font-weight: 800;
++  text-align: center;
+ }
+ 
+-.map-provider-picker-options button.is-selected {
+-  border-color: var(--accent, #8b5cf6);
+-  background: color-mix(in srgb, var(--accent, #8b5cf6) 18%, transparent);
++.map-provider-picker-options button:focus-visible,
++.map-provider-picker-options button:hover {
++  border-color: rgba(201, 255, 61, 0.48);
++  background: rgba(201, 255, 61, 0.1);
++  outline: none;
+ }
+@@ -83,29 +121,62 @@
+ .map-provider-picker-options svg {
+-  width: 20px;
+-  height: 20px;
++  width: 22px;
++  height: 22px;
++  color: var(--lime);
+ }
+ 
+-.map-provider-picker-remember {
+-  display: flex;
+-  align-items: center;
+-  gap: 10px;
+-  margin: 16px 2px;
+-  color: var(--text-secondary, #d1d5db);
+-  font-size: 14px;
++.event-location-action {
++  display: grid !important;
++  grid-column: 1 / -1 !important;
++  grid-template-columns: 25px minmax(0, 1fr) !important;
++  align-items: center !important;
++  gap: 10px !important;
++  width: 100% !important;
++  min-width: 0 !important;
++  min-height: 68px !important;
++  padding: 10px 0 !important;
++  border: 0 !important;
++  border-bottom: 1px solid var(--line) !important;
++  border-radius: 0 !important;
++  background: transparent !important;
++  color: inherit !important;
++  text-align: left !important;
+ }
+ 
+-.map-provider-picker-remember input {
+-  width: 18px;
+-  height: 18px;
++.event-location-action:disabled { cursor: default; opacity: 0.6; }
++.event-location-action > svg { width: 19px !important; height: 19px !important; color: var(--lime) !important; }
++.event-location-copy { display: grid !important; min-width: 0 !important; gap: 3px !important; }
++.event-location-city { color: var(--text) !important; font-size: 13px !important; line-height: 1.2 !important; }
++.event-location-address {
++  display: -webkit-box !important;
++  min-width: 0 !important;
++  overflow: hidden !important;
++  color: #dfff89 !important;
++  font-size: 13px !important;
++  font-weight: 850 !important;
++  line-height: 1.25 !important;
++  text-decoration: underline !important;
++  text-decoration-thickness: 1px !important;
++  text-underline-offset: 3px !important;
++  overflow-wrap: anywhere !important;
++  -webkit-box-orient: vertical !important;
++  -webkit-line-clamp: 2 !important;
+ }
+-
+-.map-provider-picker-confirm {
+-  width: 100%; min-height: 48px; border: 0; border-radius: 16px; background: var(--accent, #8b5cf6); color: #fff; font: inherit; font-weight: 700;
+-}
+diff --git a/src/mapProviderPicker.test.ts b/src/mapProviderPicker.test.ts
+new file mode 100644
+index 0000000..7e2c70e
+--- /dev/null
++++ b/src/mapProviderPicker.test.ts
+@@ -0,0 +1,14 @@
++import { describe, expect, it } from "vitest";
++import { resolveDeviceMapProvider } from "./mapProviderPicker";
++
++describe("device map provider", () => {
++  it("uses Apple Maps on Apple devices", () => {
++    expect(resolveDeviceMapProvider("Mozilla/5.0 (iPhone)", "iPhone")).toBe("apple");
++    expect(resolveDeviceMapProvider("Mozilla/5.0 (Macintosh)", "MacIntel")).toBe("apple");
++  });
++  it("uses Google Maps on other devices", () => {
++    expect(resolveDeviceMapProvider("Mozilla/5.0 (Linux; Android 15)", "Linux armv8l")).toBe("google");
++    expect(resolveDeviceMapProvider("Mozilla/5.0 (Windows NT 10.0)", "Win32")).toBe("google");
++  });
++});
+diff --git a/src/mapProviderPicker.ts b/src/mapProviderPicker.ts
+index 8d0392e..0a87566 100644
+--- a/src/mapProviderPicker.ts
++++ b/src/mapProviderPicker.ts
+@@ -7,11 +7,18 @@
+ export const requestMapProvider = (sourceUrl: string) => {
++  const normalized = sourceUrl.trim();
++  if (!normalized) return;
+   window.dispatchEvent(new CustomEvent<MapProviderPickerRequest>(mapProviderPickerEvent, {
+-    detail: { sourceUrl },
++    detail: { sourceUrl: normalized },
+   }));
+ };
++
++export const resolveDeviceMapProvider = (
++  userAgent = typeof navigator === "undefined" ? "" : navigator.userAgent,
++  platform = typeof navigator === "undefined" ? "" : navigator.platform,
++): MapProvider => /iPhone|iPad|iPod|Macintosh|MacIntel/i.test(`${userAgent} ${platform}`) ? "apple" : "google";
+ 
+ export const mapProviderOptions: Array<{ id: MapProvider; label: string }> = [
+diff --git a/src/verticals/SportVertical.tsx b/src/verticals/SportVertical.tsx
+index b4d1e82..f95cec2 100644
+--- a/src/verticals/SportVertical.tsx
++++ b/src/verticals/SportVertical.tsx
+@@ -22,6 +22,8 @@
+ import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
+ import { EventWeatherStrip } from "../components/EventWeatherStrip";
++import { EventLocationAction } from "../components/EventLocationAction";
++import { requestMapProvider } from "../mapProviderPicker";
+ import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
+@@ -45,13 +47,9 @@
+ const openActivityMap = (activity: Activity) => {
+-  if (activity.locationUrl?.trim()) {
+-    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+-    return;
+-  }
+   const city = getCity(activity.cityId).name.en;
+-  const query = encodeURIComponent(activity.address.trim() || city);
+-  window.open(`https://mapy.cz/zakladni?q=${query}`, "_blank", "noopener,noreferrer");
++  const query = [activity.address.trim(), city].filter(Boolean).join(", ");
++  requestMapProvider(activity.locationUrl?.trim() || `https://mapy.com/zakladni?q=${encodeURIComponent(query)}`);
+ };
+@@ -410,7 +408,6 @@
+   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
+   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
+-  const locationLabel = [cityName, activity.address].filter(Boolean).join(" · ");
+   const avatar = sportAvatarForActivity(activity, language, meta);
+@@ -514,7 +511,12 @@
+         <div className="detail-list sport-detail-list">
+           <div><ShieldCheck /><span>{t.sportFormat}</span><strong>{sportFormatLabel(meta.format, language)}</strong></div>
+-          <div><MapPin /><span>{t.address}</span><a className="sport-address-link" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer">{locationLabel || cityName}</a></div>
++          <EventLocationAction
++            city={cityName}
++            address={activity.address}
++            sourceUrl={activity.locationUrl || sportMapSearchUrl}
++            ariaLabel={t.address}
++          />
+           <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
