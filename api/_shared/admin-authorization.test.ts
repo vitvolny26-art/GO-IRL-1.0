@@ -1,8 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { authorizeAdminRequest } from "./admin-authorization.js";
+import {
+  authorizeAdminRequest,
+  runAuthorizedAdminAction,
+  type AdminAuthorizationDependencies,
+} from "./admin-authorization.js";
 
 const secret = "road105-test-secret-with-sufficient-length";
 const allowedUserKey = "telegram:test-admin";
+const issuer = "go-irl-supabase-edge";
 const nowSeconds = 1_800_000_000;
 
 const base64Url = (input: Uint8Array | string) => {
@@ -19,6 +24,7 @@ async function signToken(overrides: Record<string, unknown> = {}) {
     role: "authenticated",
     sub: "00000000-0000-4000-8000-000000000001",
     exp: nowSeconds + 3600,
+    iss: issuer,
     go_irl_user_key: allowedUserKey,
     go_irl_role: "admin",
     ...overrides,
@@ -35,74 +41,116 @@ async function signToken(overrides: Record<string, unknown> = {}) {
   return `${unsigned}.${base64Url(signature)}`;
 }
 
-const requestWith = (token?: string) => new Request("https://goirl.invalid/api/admin/session", {
+const requestWith = (token?: string, body?: string) => new Request("https://goirl.invalid/api/admin/session", {
   method: "POST",
   headers: token ? { authorization: `Bearer ${token}` } : {},
+  body,
+});
+
+const dependencies = (
+  overrides: Partial<AdminAuthorizationDependencies> = {},
+): AdminAuthorizationDependencies => ({
+  allowedUserKey,
+  issuer,
+  jwtSecret: secret,
+  loadRole: async () => "admin",
+  nowSeconds,
+  ...overrides,
 });
 
 describe("authorizeAdminRequest", () => {
   it("allows the dedicated Telegram identity only when the current server role is admin", async () => {
     const loadRole = vi.fn(async () => "admin");
-    const result = await authorizeAdminRequest(requestWith(await signToken()), {
-      allowedUserKey,
-      jwtSecret: secret,
-      loadRole,
-      nowSeconds,
-    });
+    const logger = vi.fn();
+    const result = await authorizeAdminRequest(
+      requestWith(await signToken()),
+      dependencies({ loadRole, logger }),
+    );
 
     expect(result).toMatchObject({ ok: true, userKey: allowedUserKey });
     expect(loadRole).toHaveBeenCalledWith(allowedUserKey, expect.any(String));
+    expect(logger).toHaveBeenCalledWith("admin_login_allowed", { reason: "authorized" });
   });
 
-  it("denies another Telegram identity with a generic response", async () => {
-    const result = await authorizeAdminRequest(requestWith(await signToken({
-      go_irl_user_key: "telegram:another-account",
-    })), {
-      allowedUserKey,
-      jwtSecret: secret,
-      loadRole: async () => "admin",
-      nowSeconds,
-    });
+  it("denies another admin identity on the dedicated login path", async () => {
+    const result = await authorizeAdminRequest(
+      requestWith(await signToken({ go_irl_user_key: "telegram:other-admin" })),
+      dependencies(),
+    );
 
     expect(result).toEqual({ ok: false, status: 403, error: "access_denied" });
     expect(JSON.stringify(result)).not.toContain(allowedUserKey);
   });
 
-  it("denies a stale or downgraded production role", async () => {
-    const result = await authorizeAdminRequest(requestWith(await signToken()), {
-      allowedUserKey,
-      jwtSecret: secret,
-      loadRole: async () => "user",
-      nowSeconds,
-    });
+  it("denies the allowed identity when the current server role is no longer admin", async () => {
+    const result = await authorizeAdminRequest(
+      requestWith(await signToken()),
+      dependencies({ loadRole: async () => "user" }),
+    );
 
     expect(result).toEqual({ ok: false, status: 403, error: "access_denied" });
   });
 
-  it("denies missing, expired, or invalid sessions before role lookup", async () => {
+  it("denies a stale JWT whose embedded role is user", async () => {
     const loadRole = vi.fn(async () => "admin");
-    const missing = await authorizeAdminRequest(requestWith(), {
-      allowedUserKey,
-      jwtSecret: secret,
-      loadRole,
-      nowSeconds,
-    });
-    const expired = await authorizeAdminRequest(requestWith(await signToken({ exp: nowSeconds - 1 })), {
-      allowedUserKey,
-      jwtSecret: secret,
-      loadRole,
-      nowSeconds,
-    });
-    const invalid = await authorizeAdminRequest(requestWith(`${await signToken()}broken`), {
-      allowedUserKey,
-      jwtSecret: secret,
-      loadRole,
-      nowSeconds,
-    });
+    const result = await authorizeAdminRequest(
+      requestWith(await signToken({ go_irl_role: "user" })),
+      dependencies({ loadRole }),
+    );
+
+    expect(result).toEqual({ ok: false, status: 403, error: "access_denied" });
+    expect(loadRole).not.toHaveBeenCalled();
+  });
+
+  it("denies missing, expired, malformed, or foreign-issued sessions before role lookup", async () => {
+    const loadRole = vi.fn(async () => "admin");
+    const deps = dependencies({ loadRole });
+    const missing = await authorizeAdminRequest(requestWith(), deps);
+    const expired = await authorizeAdminRequest(requestWith(await signToken({ exp: nowSeconds - 1 })), deps);
+    const malformed = await authorizeAdminRequest(requestWith(`${await signToken()}broken`), deps);
+    const foreignIssuer = await authorizeAdminRequest(requestWith(await signToken({ iss: "foreign" })), deps);
 
     expect(missing).toEqual({ ok: false, status: 401, error: "access_denied" });
     expect(expired).toEqual({ ok: false, status: 401, error: "access_denied" });
-    expect(invalid).toEqual({ ok: false, status: 401, error: "access_denied" });
+    expect(malformed).toEqual({ ok: false, status: 401, error: "access_denied" });
+    expect(foreignIssuer).toEqual({ ok: false, status: 403, error: "access_denied" });
     expect(loadRole).not.toHaveBeenCalled();
+  });
+
+  it("records denial categories without logging raw Telegram initData", async () => {
+    const logger = vi.fn();
+    const rawInitData = "query_id=secret&user=%7B%22id%22%3A1%7D&hash=secret";
+    const result = await authorizeAdminRequest(
+      requestWith(undefined, rawInitData),
+      dependencies({ logger }),
+    );
+
+    expect(result).toEqual({ ok: false, status: 401, error: "access_denied" });
+    expect(logger).toHaveBeenCalledWith("admin_login_denied", { reason: "missing_bearer" });
+    expect(JSON.stringify(logger.mock.calls)).not.toContain(rawInitData);
+  });
+
+  it("does not execute a direct admin action without the allowed identity", async () => {
+    const action = vi.fn(async () => "changed");
+    const denied = await runAuthorizedAdminAction(
+      requestWith(await signToken({ go_irl_user_key: "telegram:other-user" })),
+      dependencies(),
+      action,
+    );
+
+    expect(denied).toEqual({ ok: false, status: 403, error: "access_denied" });
+    expect(action).not.toHaveBeenCalled();
+  });
+
+  it("executes an admin action only after server authorization succeeds", async () => {
+    const action = vi.fn(async (authorization) => authorization.userKey);
+    const result = await runAuthorizedAdminAction(
+      requestWith(await signToken()),
+      dependencies(),
+      action,
+    );
+
+    expect(result).toMatchObject({ ok: true, value: allowedUserKey });
+    expect(action).toHaveBeenCalledTimes(1);
   });
 });
