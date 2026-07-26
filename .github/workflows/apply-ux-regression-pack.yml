@@ -71,8 +71,8 @@ jobs:
         run: |
           git apply --check ../patches/.tmp/ux-select.patch
           git apply ../patches/.tmp/ux-select.patch
-          git apply --check ../patches/.tmp/ux-select-test-fix.patch
-          git apply ../patches/.tmp/ux-select-test-fix.patch
+          git apply --check ../patches/.tmp/ux-select-test-isolation.patch
+          git apply ../patches/.tmp/ux-select-test-isolation.patch
 
       - name: Verify patch whitespace
         working-directory: repo
