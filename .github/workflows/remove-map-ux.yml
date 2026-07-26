@@ -6,6 +6,11 @@ on:
       - tmp/remove-map-ux-20260726
     paths:
       - ".github/workflows/remove-map-ux.yml"
+  pull_request:
+    branches:
+      - fix/ux-regression-pack
+    paths:
+      - ".github/workflows/remove-map-ux.yml"
 
 permissions:
   contents: write
