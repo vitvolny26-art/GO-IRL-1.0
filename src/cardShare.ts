@@ -1,4 +1,4 @@
-export type CardShareChannel = "telegram" | "whatsapp" | "messenger" | "instagram";
+export type CardShareChannel = "telegram" | "whatsapp" | "messenger" | "facebook" | "instagram";
 
 export type CardShareContent = {
   title: string;
@@ -14,7 +14,7 @@ export const metaAppId = "1348703396728256";
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
   [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n\n");
 
-export const buildMessengerPreviewUrl = (content: CardShareContent) => {
+export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
   try {
     const inviteUrl = new URL(content.url);
     const eventId = inviteUrl.searchParams.get("startapp")?.trim() || "";
@@ -29,21 +29,30 @@ export const buildMessengerPreviewUrl = (content: CardShareContent) => {
   }
 };
 
+export const buildMessengerPreviewUrl = buildMetaEventPreviewUrl;
+
+export const buildFacebookShareTarget = (content: CardShareContent) => {
+  const target = new URL("https://www.facebook.com/sharer/sharer.php");
+  target.searchParams.set("u", buildMetaEventPreviewUrl(content));
+  target.searchParams.set("quote", buildCardShareText(content));
+  return target.toString();
+};
+
 export const buildMessengerSendTarget = (content: CardShareContent) => {
   const dialogUrl = new URL("https://www.facebook.com/dialog/send");
   dialogUrl.searchParams.set("app_id", metaAppId);
-  dialogUrl.searchParams.set("link", buildMessengerPreviewUrl(content));
+  dialogUrl.searchParams.set("link", buildMetaEventPreviewUrl(content));
   dialogUrl.searchParams.set("redirect_uri", fallbackOrigin);
   return dialogUrl.toString();
 };
 
 export const buildMessengerAppTarget = (content: CardShareContent) => {
-  const link = encodeURIComponent(buildMessengerPreviewUrl(content));
+  const link = encodeURIComponent(buildMetaEventPreviewUrl(content));
   return `fb-messenger://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}`;
 };
 
 export const buildMessengerAndroidIntentTarget = (content: CardShareContent) => {
-  const link = encodeURIComponent(buildMessengerPreviewUrl(content));
+  const link = encodeURIComponent(buildMetaEventPreviewUrl(content));
   return `intent://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}#Intent;scheme=fb-messenger;package=com.facebook.orca;end`;
 };
 
@@ -52,7 +61,7 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
   target.searchParams.set("title", content.title);
   target.searchParams.set("date", content.date);
   target.searchParams.set("address", content.address);
-  target.searchParams.set("url", buildMessengerPreviewUrl(content));
+  target.searchParams.set("url", buildMetaEventPreviewUrl(content));
   return target.toString();
 };
 
@@ -64,5 +73,6 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     return `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(textWithoutUrl)}`;
   }
   if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  if (channel === "facebook") return buildFacebookShareTarget(content);
   return buildMessengerSendTarget(content);
 };
