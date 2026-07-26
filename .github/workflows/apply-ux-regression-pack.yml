@@ -7,6 +7,12 @@ on:
     paths:
       - ".tmp/**"
       - ".github/workflows/apply-ux-regression-pack.yml"
+  pull_request:
+    branches:
+      - fix/ux-regression-pack
+    paths:
+      - ".tmp/**"
+      - ".github/workflows/apply-ux-regression-pack.yml"
 
 permissions:
   contents: write
@@ -76,6 +82,7 @@ jobs:
         run: pnpm run build
 
       - name: Create atomic commit
+        if: github.event_name == 'push'
         working-directory: repo
         run: |
           git config user.name "GO IRL AI Fixer"
