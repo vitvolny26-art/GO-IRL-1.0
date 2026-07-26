@@ -86,8 +86,6 @@ import {
   parseInvitationStartParam,
 } from "./invitationLink";
 import { EventWeatherStrip } from "./components/EventWeatherStrip";
-import { EventLocationAction } from "./components/EventLocationAction";
-import { requestMapProvider } from "./mapProviderPicker";
 import { isOutdoorGenericActivity } from "./eventWeather";
 import { getEventSheetBackgroundStyle } from "./eventSheetBackground";
 import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
@@ -116,8 +114,12 @@ const activityInviteUrl = (activity: Activity) => {
 };
 
 const openActivityMap = (activity: Activity) => {
-  const city = getCity(activity.cityId).name.en;
-  requestMapProvider(activity.locationUrl?.trim() || buildEventLocationUrl(activity.address, city));
+  if (activity.locationUrl?.trim()) {
+    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
+  const query = activity.address.trim() || getCity(activity.cityId).name.en;
+  window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");
 };
 
 const openActivityCalendar = (activity: Activity, language: Language) => {
@@ -1586,12 +1588,8 @@ function GenericActivitySheet({
         <div className="detail-list">
           <div><Sparkles /><span>{t.category}</span><strong>{category.name[language]}</strong></div>
           <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
-          <EventLocationAction
-            city={cityName}
-            address={activity.address}
-            sourceUrl={activity.locationUrl}
-            ariaLabel={t.address}
-          />
+          <div><Compass /><span>{t.city}</span><strong>{cityName}</strong></div>
+          <div><MapPin /><span>{t.address}</span>{activity.locationUrl ? <a href={activity.locationUrl} target="_blank" rel="noreferrer">{activity.address}</a> : <strong>{activity.address}</strong>}</div>
           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
           {activity.participantNote && <div><Sparkles /><span>{t.participantNote}</span><strong>{activity.participantNote}</strong></div>}
           <OrganizerDetailAction organizerKey={activity.organizerKey} organizerName={activity.organizer} label={t.organizer} />

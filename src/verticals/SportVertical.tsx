@@ -22,8 +22,6 @@ import { stripLeadingEmoji } from "../cardText";
 import { activityIconFromText } from "../activityIcon";
 import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
 import { EventWeatherStrip } from "../components/EventWeatherStrip";
-import { EventLocationAction } from "../components/EventLocationAction";
-import { requestMapProvider } from "../mapProviderPicker";
 import { sharePreparedTelegramEvent } from "../telegramPreparedShare";
 import {
   eventActionTranslationKey,
@@ -47,9 +45,13 @@ const activityInviteUrl = (activity: Activity) => {
 };
 
 const openActivityMap = (activity: Activity) => {
+  if (activity.locationUrl?.trim()) {
+    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
   const city = getCity(activity.cityId).name.en;
-  const query = [activity.address.trim(), city].filter(Boolean).join(", ");
-  requestMapProvider(activity.locationUrl?.trim() || `https://mapy.com/zakladni?q=${encodeURIComponent(query)}`);
+  const query = encodeURIComponent(activity.address.trim() || city);
+  window.open(`https://mapy.cz/zakladni?q=${query}`, "_blank", "noopener,noreferrer");
 };
 
 const openActivityCalendar = (activity: Activity, language: Language) => {
@@ -408,6 +410,7 @@ export function SportActivitySheet({
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
+  const locationLabel = [cityName, activity.address].filter(Boolean).join(" · ");
   const avatar = sportAvatarForActivity(activity, language, meta);
   const sheetBackgroundStyle = getEventSheetBackgroundStyle({
     icon: avatar,
@@ -511,12 +514,7 @@ export function SportActivitySheet({
         </div>
         <div className="detail-list sport-detail-list">
           <div><ShieldCheck /><span>{t.sportFormat}</span><strong>{sportFormatLabel(meta.format, language)}</strong></div>
-          <EventLocationAction
-            city={cityName}
-            address={activity.address}
-            sourceUrl={activity.locationUrl || sportMapSearchUrl}
-            ariaLabel={t.address}
-          />
+          <div><MapPin /><span>{t.address}</span><a className="sport-address-link" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer">{locationLabel || cityName}</a></div>
           <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
           <div><ShieldCheck /><span>{t.sportEquipmentNeeded}</span><strong>{meta.equipmentNeeded ? t.yes : t.no}</strong></div>
