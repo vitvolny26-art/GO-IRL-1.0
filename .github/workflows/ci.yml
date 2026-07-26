@@ -31,20 +31,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Capture portal import failure
-        shell: bash
-        run: |
-          set +e
-          pnpm exec vitest run src/components/ParticipantIdentityPortal.test.ts src/components/ProfileHubPortal.test.ts > portal-test.log 2>&1
-          echo "$?" > portal-test-exit.txt
-          exit 0
+      - name: Test
+        run: pnpm run test
 
-      - name: Upload portal diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: portal-test-diagnostics
-          path: |
-            portal-test.log
-            portal-test-exit.txt
-          if-no-files-found: error
-          retention-days: 1
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
