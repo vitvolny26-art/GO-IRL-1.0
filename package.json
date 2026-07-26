@@ -8,7 +8,8 @@
     "dev": "vite --host 127.0.0.1 --port 5178",
     "typecheck": "tsc -b && tsc -p tsconfig.api.json",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run && pnpm run test:staff-os",
+    "test:staff-os": "node scripts/test-n8n-staff-os.cjs",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
