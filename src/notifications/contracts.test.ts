@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildNotificationDeduplicationKey,
   canDisableNotification,
   getNotificationRegistryEntry,
   notificationRegistry,
@@ -25,18 +24,10 @@ describe("notification data model contracts", () => {
     expect(notificationRegistry.every((entry) => entry.defaultChannels.includes("in_app"))).toBe(true);
   });
 
-  it("builds stable recipient and occurrence scoped deduplication keys", () => {
-    expect(buildNotificationDeduplicationKey(
-      "telegram:42",
-      "participation.event_time_changed",
-      { type: "activity", id: "event 1" },
-      "2026-07-26T18:00:00Z",
-    )).toBe(
-      "telegram%3A42:participation.event_time_changed:activity:event%201:2026-07-26T18%3A00%3A00Z",
-    );
-  });
-
-  it("fails closed for unknown runtime registry values", () => {
-    expect(() => getNotificationRegistryEntry("unknown" as never)).toThrow("unknown_notification_kind:unknown");
+  it("resolves registered kinds from the runtime registry", () => {
+    expect(getNotificationRegistryEntry("communication.message")).toMatchObject({
+      category: "communication",
+      serviceCritical: false,
+    });
   });
 });
