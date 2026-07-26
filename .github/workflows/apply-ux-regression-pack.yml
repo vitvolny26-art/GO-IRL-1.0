@@ -42,9 +42,21 @@ jobs:
         working-directory: repo
         run: git apply --check ../patches/.tmp/ux-map.patch && git apply ../patches/.tmp/ux-map.patch
 
+      - name: Prepare exact non-Sport weather patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path("patches/.tmp/ux-weather.patch").read_text()
+          marker = "diff --git a/src/verticals/SportVertical.tsx b/src/verticals/SportVertical.tsx\n"
+          start = source.index(marker)
+          next_marker = "diff --git a/src/weather-ui-fixes.css b/src/weather-ui-fixes.css\n"
+          end = source.index(next_marker, start)
+          Path("weather-non-sport.patch").write_text(source[:start] + source[end:])
+          PY
+
       - name: Apply non-Sport weather patch
         working-directory: repo
-        run: git apply --check ../patches/.tmp/ux-weather-no-sport.patch && git apply ../patches/.tmp/ux-weather-no-sport.patch
+        run: git apply --check ../weather-non-sport.patch && git apply ../weather-non-sport.patch
 
       - name: Apply Sport weather patch
         working-directory: repo
