@@ -10,6 +10,7 @@ import { getCity } from "../config/cities";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
 import type { Activity, ActivityChat, ActivityChatMessage } from "../types";
 import { isOutdoorGenericActivity } from "../eventWeather";
+import { ParticipantIdentityLabel } from "./ParticipantIdentityLabel";
 
 type ActivityChatPanelProps = {
   activity: Activity;
@@ -207,7 +208,15 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
                   messages.map((message) => (
                     <article key={message.id} className="activity-chat-message">
                       <div className="activity-chat-message-meta">
-                        <strong>{message.senderDisplayName || "GO IRL User"}</strong>
+                        <span className="activity-chat-sender">
+                          <ParticipantIdentityLabel
+                            userKey={message.senderUserKey}
+                            snapshotName={message.senderDisplayName}
+                            avatarClassName="activity-chat-sender-avatar"
+                            nameClassName="activity-chat-sender-name"
+                            nameTag="strong"
+                          />
+                        </span>
                         <span>{formatCloseTime(message.createdAt)}</span>
                       </div>
                       <p>{message.body}</p>

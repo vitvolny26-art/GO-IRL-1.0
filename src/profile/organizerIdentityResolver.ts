@@ -45,7 +45,7 @@ const flush = async () => {
   const requests = pending.splice(0, pending.length);
   if (!requests.length) return;
 
-  const keys = requests.map((request) => request.organizerKey);
+  const keys = [...new Set(requests.map((request) => request.organizerKey).filter(Boolean))];
 
   try {
     const repository = repositoryOverride || await createRepository();
