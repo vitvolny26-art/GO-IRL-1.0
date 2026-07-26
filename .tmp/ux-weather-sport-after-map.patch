@@ -1,0 +1,22 @@
+diff --git a/src/verticals/SportVertical.tsx b/src/verticals/SportVertical.tsx
+index 5c560e0..391dd12 100644
+--- a/src/verticals/SportVertical.tsx
++++ b/src/verticals/SportVertical.tsx
+@@ -524,7 +524,7 @@ const openActivityCalendar = (activity: Activity, language: Language) => {
+           {meta.organizerTips && <div><CircleUserRound /><span>{t.sportOrganizerTips}</span><strong>{meta.organizerTips}</strong></div>}
+           {showWeather && (
+             <button className="weather-detail-toggle" onClick={() => setWeatherDetailsOpen((open) => !open)} type="button">
+-              <Sparkles />
++              <span className="weather-condition-icon" aria-hidden="true">{weather?.icon || "🌤️"}</span>
+               <span>{t.weatherHint}</span>
+               <strong className="weather-summary-lines">
+                 {weather ? weatherSummaryLines(weather).map((line) => <span key={line}>{line}</span>) : weatherText}
+@@ -541,7 +541,7 @@ const openActivityCalendar = (activity: Activity, language: Language) => {
+             <div className="weather-bars">
+               {weatherHours.map((hour) => (
+                 <div className="weather-bar-row" key={hour.time}>
+-                  <span>{hour.time.slice(11, 16)}</span>
++                  <span className="weather-hour-time"><b aria-hidden="true">{hour.icon}</b>{hour.time.slice(11, 16)}</span>
+                   <span className="weather-hour-metric">🌡️ {hour.temperature}°C</span>
+                   <span className="weather-hour-metric">☔ {hour.rain}%</span>
+                   <span className="weather-hour-metric">💨 {hour.wind} km/h</span>
