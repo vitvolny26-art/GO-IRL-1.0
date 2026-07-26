@@ -1,0 +1,101 @@
+.external-telegram-chat-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(8, 18, 28, 0.58);
+  backdrop-filter: blur(18px);
+}
+
+.external-telegram-chat-head,
+.external-telegram-chat-actions,
+.external-telegram-chat-editor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.external-telegram-chat-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.external-telegram-chat-head small,
+.external-telegram-chat-muted,
+.external-telegram-chat-note {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.external-telegram-chat-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(51, 170, 255, 0.16);
+}
+
+.external-telegram-chat-actions,
+.external-telegram-chat-editor {
+  flex-wrap: wrap;
+}
+
+.external-telegram-chat-actions button,
+.external-telegram-chat-editor button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.external-telegram-chat-actions button:not(.secondary):not(.danger),
+.external-telegram-chat-editor button:not(.secondary) {
+  background: #2aabee;
+  color: #06131b;
+}
+
+.external-telegram-chat-actions button.secondary,
+.external-telegram-chat-editor button.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+}
+
+.external-telegram-chat-actions button.danger {
+  width: 40px;
+  padding: 0;
+  background: rgba(255, 100, 100, 0.14);
+  color: #ffb4b4;
+}
+
+.external-telegram-chat-actions button:disabled {
+  opacity: 0.55;
+}
+
+.external-telegram-chat-editor input {
+  flex: 1 1 220px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+}
+
+.external-telegram-chat-error {
+  color: #ffb4b4;
+  font-size: 13px;
+}
+
+.external-telegram-chat-note {
+  padding-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}

@@ -22,6 +22,7 @@ import {
   type ConfirmedCoachPresentation,
 } from "../confirmedCoachPresentation";
 import { ParticipantIdentityLabel } from "./ParticipantIdentityLabel";
+import { ExternalTelegramChatPanel } from "./ExternalTelegramChatPanel";
 
 type ActivityChatPanelProps = {
   activity: Activity;
@@ -248,6 +249,7 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
     <>
       {showOutdoorWeather ? <OutdoorWeatherPanel activity={activity} /> : null}
       {confirmedCoach ? <ConfirmedCoachBesideChat presentation={confirmedCoach} /> : null}
+      <ExternalTelegramChatPanel activity={activity} />
 
       <section className="activity-chat-panel" ref={panelRef}>
         <button
