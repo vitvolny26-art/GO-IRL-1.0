@@ -1,3 +1,5 @@
+/* global $json */
+
 const j = $json || {};
 const m = (j.mission && typeof j.mission === 'object') ? j.mission : {};
 const budget = (j.budget && typeof j.budget === 'object') ? j.budget : {};
