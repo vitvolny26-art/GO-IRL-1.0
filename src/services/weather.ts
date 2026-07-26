@@ -2,12 +2,14 @@ import { formatEventTime } from "../eventTime";
 
 export type WeatherHour = {
   time: string;
+  icon: string;
   temperature: number;
   rain: number;
   wind: number;
 };
 
 export type WeatherResult = {
+  icon: string;
   text: string;
   temperature: number;
   rain: number;
@@ -30,7 +32,7 @@ type OpenMeteoResponse = {
 const geoCache = new Map<string, Promise<{ lat: number; lon: number } | null>>();
 const weatherCache = new Map<string, Promise<WeatherResult | null>>();
 
-const codeIcon = (code: number) => {
+export const weatherIconFromCode = (code: number) => {
   if (code === 0) return "☀️";
   if ([1, 2, 3].includes(code)) return "⛅";
   if ([45, 48].includes(code)) return "🌫️";
@@ -63,6 +65,7 @@ const weatherHourFromData = (data: OpenMeteoResponse, times: string[], index: nu
 
   return {
     time,
+    icon: weatherIconFromCode(Number(data.hourly?.weather_code?.[index] || 0)),
     temperature,
     rain: Number(data.hourly?.precipitation_probability?.[index] ?? 0),
     wind: Math.round(data.hourly?.wind_speed_10m?.[index] ?? 0),
@@ -161,7 +164,8 @@ export async function getEventWeather(input: {
     const hours = detailHoursForEventWindow(data, times, input);
 
     return {
-      text: `${codeIcon(code)} ${temp}°C · ☔ ${rain ?? 0}% · 💨 ${wind || 0} km/h`,
+      icon: weatherIconFromCode(code),
+      text: `${weatherIconFromCode(code)} ${temp}°C · ☔ ${rain ?? 0}% · 💨 ${wind || 0} km/h`,
       temperature: temp,
       rain: rain ?? 0,
       wind: wind || 0,

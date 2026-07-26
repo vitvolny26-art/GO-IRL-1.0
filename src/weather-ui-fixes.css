@@ -21,6 +21,27 @@
   white-space: nowrap;
 }
 
+.weather-hour-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.weather-hour-time b {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.weather-detail-toggle .weather-condition-icon {
+  display: grid !important;
+  width: 25px;
+  place-items: center;
+  color: inherit !important;
+  font-size: 18px !important;
+  line-height: 1;
+}
+
 .generic-weather-card {
   margin: 18px 0 12px;
 }

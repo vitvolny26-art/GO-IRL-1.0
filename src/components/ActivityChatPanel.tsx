@@ -74,7 +74,7 @@ function OutdoorWeatherPanel({ activity }: { activity: Activity }) {
   return (
     <section className="generic-weather-card">
       <button className="weather-detail-toggle generic-weather-toggle" onClick={() => setOpen((current) => !current)} type="button">
-        <span className="generic-weather-icon">☀️</span>
+        <span className="generic-weather-icon" aria-hidden="true">{weather?.icon || "🌤️"}</span>
         <span>Погода</span>
         <strong className="weather-summary-lines">
           {weather ? weatherSummaryLines(weather).map((line) => <span key={line}>{line}</span>) : status}
@@ -90,7 +90,7 @@ function OutdoorWeatherPanel({ activity }: { activity: Activity }) {
           <div className="weather-bars">
             {weatherHours.map((hour) => (
               <div className="weather-bar-row" key={hour.time}>
-                <span>{hour.time.slice(11, 16)}</span>
+                <span className="weather-hour-time"><b aria-hidden="true">{hour.icon}</b>{hour.time.slice(11, 16)}</span>
                 <span className="weather-hour-metric">🌡️ {hour.temperature}°C</span>
                 <span className="weather-hour-metric">☔ {hour.rain}%</span>
                 <span className="weather-hour-metric">💨 {hour.wind} km/h</span>

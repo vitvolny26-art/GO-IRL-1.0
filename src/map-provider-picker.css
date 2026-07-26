@@ -55,57 +55,95 @@
 
 .map-provider-picker-options {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
 .map-provider-picker-options button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 52px;
-  padding: 12px 14px;
+  display: grid;
+  min-width: 0;
+  min-height: 72px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 12px 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.05);
   color: inherit;
   font: inherit;
-  text-align: left;
+  font-weight: 800;
+  text-align: center;
 }
 
-.map-provider-picker-options button.is-selected {
-  border-color: var(--accent, #8b5cf6);
-  background: color-mix(in srgb, var(--accent, #8b5cf6) 18%, transparent);
+.map-provider-picker-options button:focus-visible,
+.map-provider-picker-options button:hover {
+  border-color: rgba(201, 255, 61, 0.48);
+  background: rgba(201, 255, 61, 0.1);
+  outline: none;
 }
 
 .map-provider-picker-options svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  color: var(--lime);
 }
 
-.map-provider-picker-remember {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 16px 2px;
-  color: var(--text-secondary, #d1d5db);
-  font-size: 14px;
+.event-location-action {
+  display: grid !important;
+  grid-column: 1 / -1 !important;
+  grid-template-columns: 25px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 68px !important;
+  padding: 10px 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  text-align: left !important;
 }
 
-.map-provider-picker-remember input {
-  width: 18px;
-  height: 18px;
+.event-location-action:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
-.map-provider-picker-confirm {
-  width: 100%;
-  min-height: 48px;
-  border: 0;
-  border-radius: 16px;
-  background: var(--accent, #8b5cf6);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
+.event-location-action > svg {
+  width: 19px !important;
+  height: 19px !important;
+  color: var(--lime) !important;
+}
+
+.event-location-copy {
+  display: grid !important;
+  min-width: 0 !important;
+  gap: 3px !important;
+}
+
+.event-location-city {
+  color: var(--text) !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+.event-location-address {
+  display: -webkit-box !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: #dfff89 !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1.25 !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 1px !important;
+  text-underline-offset: 3px !important;
+  overflow-wrap: anywhere !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
 }
 
 @media (min-width: 640px) {

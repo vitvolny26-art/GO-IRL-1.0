@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { Bell, CalendarDays, MapPin, Share2 } from "lucide-react";
+import { Bell, CalendarDays, ChevronDown, MapPin, Share2 } from "lucide-react";
 import { useAppStore } from "../store";
+import { visiblePreferenceOptions, type PreferenceOption } from "../profilePreferenceOptions";
 import {
   readUserPreferences,
   updateUserPreferences,
@@ -13,11 +14,11 @@ import {
 } from "../userPreferences";
 import type { Language } from "../types";
 
-const copy: Record<Language, { title: string; hint: string; automatic: string; unavailable: string; maps: string; calendar: string; share: string; reminders: string }> = {
-  ru: { title: "Предпочтения", hint: "Выберите приложения по умолчанию. Сброс снова включает выбор при использовании.", automatic: "Спрашивать каждый раз", unavailable: "Недоступно", maps: "Карты", calendar: "Календарь", share: "Поделиться", reminders: "Напоминания" },
-  uk: { title: "Налаштування", hint: "Оберіть програми за замовчуванням. Скидання знову вмикає вибір під час використання.", automatic: "Запитувати щоразу", unavailable: "Недоступно", maps: "Карти", calendar: "Календар", share: "Поділитися", reminders: "Нагадування" },
-  cs: { title: "Předvolby", hint: "Vyberte výchozí aplikace. Reset znovu zobrazí volbu při použití.", automatic: "Vždy se zeptat", unavailable: "Nedostupné", maps: "Mapy", calendar: "Kalendář", share: "Sdílení", reminders: "Připomínky" },
-  en: { title: "Preferences", hint: "Choose default apps. Reset shows the choice again when used.", automatic: "Ask every time", unavailable: "Unavailable", maps: "Maps", calendar: "Calendar", share: "Share", reminders: "Reminders" },
+const copy: Record<Language, { title: string; hint: string; automatic: string; maps: string; calendar: string; share: string; reminders: string }> = {
+  ru: { title: "Предпочтения", hint: "Выберите приложения по умолчанию. Сброс снова включает выбор при использовании.", automatic: "Спрашивать каждый раз", maps: "Карты", calendar: "Календарь", share: "Поделиться", reminders: "Напоминания" },
+  uk: { title: "Налаштування", hint: "Оберіть програми за замовчуванням. Скидання знову вмикає вибір під час використання.", automatic: "Запитувати щоразу", maps: "Карти", calendar: "Календар", share: "Поділитися", reminders: "Нагадування" },
+  cs: { title: "Předvolby", hint: "Vyberte výchozí aplikace. Reset znovu zobrazí volbu při použití.", automatic: "Vždy se zeptat", maps: "Mapy", calendar: "Kalendář", share: "Sdílení", reminders: "Připomínky" },
+  en: { title: "Preferences", hint: "Choose default apps. Reset shows the choice again when used.", automatic: "Ask every time", maps: "Maps", calendar: "Calendar", share: "Share", reminders: "Reminders" },
 };
 
 const mapOptions: Array<{ value: MapProvider; label: string }> = [
@@ -49,21 +50,26 @@ type PreferenceRowProps = {
   icon: ReactNode;
   label: string;
   value: string | null | undefined;
-  options: Array<{ value: string; label: string; disabled?: boolean }>;
+  options: PreferenceOption[];
   automatic: string;
-  unavailable: string;
   onChange: (value: string | null) => void;
 };
 
-function PreferenceRow({ icon, label, value, options, automatic, unavailable, onChange }: PreferenceRowProps) {
+function PreferenceRow({ icon, label, value, options, automatic, onChange }: PreferenceRowProps) {
+  const visibleOptions = visiblePreferenceOptions(options);
+  const normalizedValue = visibleOptions.some((option) => option.value === value) ? value : "";
+
   return (
     <label className="profile-preference-row">
       <span className="profile-preference-icon">{icon}</span>
       <span className="profile-preference-copy"><strong>{label}</strong></span>
-      <select value={value || ""} onChange={(event) => onChange(event.target.value || null)}>
-        <option value="">{automatic}</option>
-        {options.map((option) => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}{option.disabled ? ` — ${unavailable}` : ""}</option>)}
-      </select>
+      <span className="profile-preference-select">
+        <select aria-label={label} value={normalizedValue || ""} onChange={(event) => onChange(event.target.value || null)}>
+          <option value="">{automatic}</option>
+          {visibleOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+        <ChevronDown aria-hidden="true" />
+      </span>
     </label>
   );
 }
@@ -101,10 +107,10 @@ export function ProfilePreferencesPortal() {
     <section className="profile-preferences" aria-labelledby="profile-preferences-title">
       <header><h2 id="profile-preferences-title">{labels.title}</h2><p>{labels.hint}</p></header>
       <div className="profile-preferences-list">
-        <PreferenceRow icon={<MapPin />} label={labels.maps} value={preferences.mapProvider} options={mapOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("mapProvider", value)} />
-        <PreferenceRow icon={<CalendarDays />} label={labels.calendar} value={preferences.calendarProvider} options={calendarOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("calendarProvider", value)} />
-        <PreferenceRow icon={<Share2 />} label={labels.share} value={preferences.shareProvider} options={shareOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("shareProvider", value)} />
-        <PreferenceRow icon={<Bell />} label={labels.reminders} value={preferences.reminderProvider} options={reminderOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("reminderProvider", value)} />
+        <PreferenceRow icon={<MapPin />} label={labels.maps} value={preferences.mapProvider} options={mapOptions} automatic={labels.automatic} onChange={(value) => change("mapProvider", value)} />
+        <PreferenceRow icon={<CalendarDays />} label={labels.calendar} value={preferences.calendarProvider} options={calendarOptions} automatic={labels.automatic} onChange={(value) => change("calendarProvider", value)} />
+        <PreferenceRow icon={<Share2 />} label={labels.share} value={preferences.shareProvider} options={shareOptions} automatic={labels.automatic} onChange={(value) => change("shareProvider", value)} />
+        <PreferenceRow icon={<Bell />} label={labels.reminders} value={preferences.reminderProvider} options={reminderOptions} automatic={labels.automatic} onChange={(value) => change("reminderProvider", value)} />
       </div>
     </section>,
     target,
