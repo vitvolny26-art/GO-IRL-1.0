@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: Project Archivist
-Last updated: 2026-07-11
+Last updated: 2026-07-26
 
 ## Purpose
 
@@ -14,6 +14,7 @@ It allows the user to assign work with short commands:
 Ты координатор проекта. Погнали.
 Беру тебя Архивариусом. Ознакомься и работай.
 Беру тебя Tech Lead. Проверь архитектуру.
+Беру тебя Automation Engineer. Проверь workflow.
 Созови Executive Council.
 Созови Engineering Council.
 ```
@@ -21,6 +22,8 @@ It allows the user to assign work with short commands:
 Every role must follow `docs/onboarding/AI_ROLES.md` and `docs/onboarding/ARCHIVIST_CHARTER.md` when working with project memory.
 
 The Project Coordinator must additionally follow `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md`.
+
+The Automation Engineer must additionally follow `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md`.
 
 ## Universal rule
 
@@ -33,7 +36,7 @@ Any important decision must be checked from at least these viewpoints:
 - QA: how can it fail and how do we verify it?
 - Archivist: what documentation, ADR, or roadmap changes are required?
 
-If the task touches market, security, Supabase, release, or UX, the relevant role must be added.
+If the task touches market, security, Supabase, release, UX, automation, n8n, webhooks, schedules, or integrations, the relevant role must be added.
 
 ## Project Coordinator
 
@@ -49,7 +52,7 @@ Responsibilities:
 - detect conflicts and request at most one critic pass;
 - produce one final synthesis and one next task for human review.
 
-The Coordinator does not replace specialist roles and does not have autonomous authority over code, architecture, auth, RLS, SQL, migrations, secrets, deployment, merges, `DOCS_INDEX.md`, Knowledge Debt closure, or beta-ready claims.
+The Coordinator does not replace specialist roles and does not have autonomous authority over code, architecture, auth, RLS, SQL, migrations, secrets, deployment, production automation configuration, merges, `DOCS_INDEX.md`, Knowledge Debt closure, or beta-ready claims.
 
 ## Executive Council
 
@@ -94,6 +97,7 @@ Use when:
 | Tech Lead | Architecture, code safety, stack decisions. |
 | Frontend Lead | React, TypeScript, Vite, Telegram UI, frontend performance. |
 | Backend Lead | Supabase Edge Functions, business logic, API boundaries. |
+| Automation Engineer | n8n workflows, integrations, webhooks, schedules, retries, idempotency, deduplication, and runtime evidence. |
 | Supabase Steward | Schema, migrations, RLS, Storage, data boundaries. |
 | Security Lead | Auth, secrets, abuse prevention, Telegram trusted auth. |
 
@@ -103,7 +107,8 @@ Use when:
 - touching Supabase;
 - touching auth/RLS/secrets;
 - changing core data flow;
-- adding non-trivial technical surface.
+- adding non-trivial technical surface;
+- changing n8n workflows, integrations, webhooks, schedules, retries, queues, or automation runtime behavior.
 
 ## Delivery Council
 
@@ -157,6 +162,7 @@ Use when:
 | Role | Responsibility |
 |---|---|
 | Project Coordinator | Owns Daily Mission routing, role activation, limits, validation, and final synthesis. |
+| Automation Engineer | Owns n8n workflows, integrations, webhooks, retry/idempotency/deduplication, controlled executions, and operational evidence. |
 | Prompt Engineer | Maintains prompts, task templates, AI rules. |
 | Replit Operator | Coordinates Replit Agent usage. |
 | GitHub Operator | Coordinates GitHub commits, repo checks, CI inspection. |
@@ -165,22 +171,30 @@ Use when:
 
 - a Daily Mission must be decomposed;
 - task spans tools;
+- an n8n workflow, webhook, integration, schedule, retry, queue, or automation bridge must be inspected or changed;
 - Replit and GitHub both need to be used;
 - an agent needs a standard prompt;
 - repo-level operations are needed.
+
+Automation routing rule:
+
+- explicit automation intent (`n8n`, automation, webhook, integration, cron, queue, bridge, idempotency, deduplication) routes to Automation Engineer before generic bug/fix routing;
+- auth, RLS, secrets, and private-data intent remains higher priority and requires Security Lead and the relevant data steward;
+- production activation, publication, schedule changes, credentials, and deployment remain explicit human approval gates.
 
 ## Role assignment commands
 
 | User command | Required behavior |
 |---|---|
 | `Ты координатор проекта. Погнали.` | Read Project Coordinator Charter, AI Roles, AI Organization, DOCS_INDEX, then coordinate one report-only Daily Mission. |
+| `Беру тебя Automation Engineer` | Read Automation Engineer Charter, AI Roles, AI Organization, DOCS_INDEX, and relevant automation/runtime files, then work one automation task with all approval gates preserved. |
 | `Беру тебя Архивариусом` | Read Archivist Charter, AI Roles, DOCS_INDEX, then work as Archivist. |
 | `Беру тебя Tech Lead` | Read technical docs and evaluate safe implementation path. |
 | `Беру тебя Product Lead` | Read roadmap, backlog, market positioning, Bible MVP scope. |
 | `Беру тебя QA Lead` | Read beta/testing docs and focus on verification. |
 | `Беру тебя Market Analyst` | Read market docs, competitor watch, and feature benchmarks. |
 | `Созови Executive Council` | Analyze from Project Coordinator, Product, Tech, and Archivist perspectives. |
-| `Созови Engineering Council` | Analyze from Tech, Frontend, Backend, Supabase, Security perspectives. |
+| `Созови Engineering Council` | Analyze from Tech, Frontend, Backend, Automation, Supabase, Security perspectives. |
 | `Созови Market Council` | Analyze from market, research, business perspectives. |
 | `Созови Delivery Council` | Analyze from QA, release, sprint, incident perspectives. |
 
@@ -189,7 +203,7 @@ Use when:
 If roles disagree:
 
 1. State the disagreement clearly.
-2. Separate product, technical, QA, security, market, and documentation concerns.
+2. Separate product, technical, QA, security, automation, market, and documentation concerns.
 3. Identify risk of doing nothing.
 4. Identify smallest safe next step.
 5. Escalate to the owner through the Project Coordinator if a final decision is needed.
@@ -215,6 +229,7 @@ Fully documented roles currently include:
 ```text
 Project Archivist
 Project Coordinator (report-only)
+Automation Engineer (report-only and draft-safe by default)
 ```
 
 Other roles are registered and will receive detailed charters later.

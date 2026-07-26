@@ -3,8 +3,8 @@ title: GO IRL Documentation Status Registry
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-07-26
+next_review: 2026-08-26
 ---
 
 # GO IRL Documentation Status Registry
@@ -32,6 +32,7 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` is the source of truth for the deployed documentation-governance workflow IDs, schedule, destinations, deduplication, and error handling.
 - `docs/onboarding/ARCHIVIST_CHARTER.md` is the source of truth for the Project Archivist role.
 - `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` is the source of truth for the report-only Project Coordinator role and AI Staff OS mission boundaries.
+- `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md` is the source of truth for the Automation Engineer role, automation boundaries, verification, and production approval gates.
 - `docs/onboarding/AI_ROLES.md` is the working registry for reusable AI roles.
 - `docs/onboarding/AI_FIXER_AGENT.md` is the source of truth for the AI Fixer / QA + UX Polish Agent.
 - `docs/governance/AI_ORGANIZATION.md` is the working source for AI councils, escalation, and role interaction.
@@ -99,6 +100,7 @@ next_review:
 | `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Active | Да | pnpm, small patches, no unsafe changes. |
 | `docs/onboarding/ARCHIVIST_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for Project Archivist duties, reading order, market intelligence duty, and memory rules. |
 | `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for report-only Daily Mission routing, role activation, budgets, validation, and human gates. |
+| `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md` | Onboarding / Role Charter | Review | Да | Canonical review-stage charter. Manual selection is supported; deterministic runtime activation remains pending merge, deployment, and verification. |
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
 | `docs/onboarding/AI_FIXER_AGENT.md` | Onboarding / AI Agent Prompt | Active | Да | Source of truth for small bug, QA, and UX polish agent behavior and safety limits. |
 | `docs/reports/README.md` | Reports / AI Work Logs | Active | Нет | Defines report location and format for AI Fixer task reports. |
@@ -151,6 +153,7 @@ next_review:
 | Future DB architecture conflicted with current Supabase migrations. | `docs/Database.md`, `docs/bible/03-database-design.md`, `supabase/migration_v8_activity_chat.sql` | `docs/DATABASE_SCHEMA_AUDIT.md` created; `docs/Database.md` should stay marked future architecture. |
 | AI roles and Archivist rules existed only in chat. | Chat history, onboarding docs | Added `ARCHIVIST_CHARTER.md`, `AI_ROLES.md`, and `AI_ORGANIZATION.md`. |
 | Project Coordinator authority existed only as draft governance language. | `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md`, `docs/onboarding/AI_ROLES.md`, `docs/governance/AI_ORGANIZATION.md` | Added a report-only Coordinator charter and synchronized role/governance boundaries. |
+| Automation Engineer authority and routing existed only in the instruction index and chat. | `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md`, `docs/onboarding/AI_ROLES.md`, `docs/governance/AI_ORGANIZATION.md`, `n8n/code/staff-00-role-selection.js` | Added a dedicated charter, synchronized governance, and deterministic automation routing before generic bug/fix routing. |
 | AI Fixer reporting existed only in chat. | Chat history, onboarding docs, reports docs | Added `AI_FIXER_AGENT.md` and `docs/reports/README.md`. |
 | Knowledge architecture existed only in discussion. | Chat history, governance docs | Added `KNOWLEDGE_PLATFORM.md` with status model, KPIs, review cadence, and Project Memory Bus. |
 | Sprint structure existed as loose root-level docs. | `SPRINTS.md`, `SPRINT0_STATUS.md` | Added `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md` through `SPRINT_5.md`. |
@@ -235,6 +238,7 @@ GO IRL Documentation
 │   └── docs/onboarding/
 │       ├── ARCHIVIST_CHARTER.md
 │       ├── PROJECT_COORDINATOR_CHARTER.md
+│       ├── AUTOMATION_ENGINEER_CHARTER.md
 │       ├── AI_ROLES.md
 │       └── AI_FIXER_AGENT.md
 ├── Reports
