@@ -12,6 +12,7 @@ import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import { ProfileHubPortal } from "./components/ProfileHubPortal";
+import { AdminLoginPage } from "./admin/AdminLoginPage";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -100,6 +101,7 @@ initializeLanguagePreference();
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
+const isAdminLogin = window.location.pathname === "/admin/login";
 
 enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();
@@ -113,18 +115,22 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}>
-        <App />
-      </Suspense>
-      <OrganizerProfilePortal />
-      <OrganizerEventDetailsPortal />
-      <EventLocationPickerPortal />
-      <EventLocationProviderPortal />
-      <MapProviderPickerPortal />
-      <ProfilePreferencesPortal />
-      <ParticipantIdentityPortal />
-      <ProfileHubPortal />
-    </QueryClientProvider>
+    {isAdminLogin ? (
+      <AdminLoginPage />
+    ) : (
+      <QueryClientProvider client={queryClient}>
+        <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}>
+          <App />
+        </Suspense>
+        <OrganizerProfilePortal />
+        <OrganizerEventDetailsPortal />
+        <EventLocationPickerPortal />
+        <EventLocationProviderPortal />
+        <MapProviderPickerPortal />
+        <ProfilePreferencesPortal />
+        <ParticipantIdentityPortal />
+        <ProfileHubPortal />
+      </QueryClientProvider>
+    )}
   </StrictMode>,
 );
