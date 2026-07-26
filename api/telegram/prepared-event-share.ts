@@ -120,7 +120,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     }
 
     const imageToken = createTelegramShareCardToken(card, botToken);
-    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}&v=7`;
+    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}&v=8`;
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

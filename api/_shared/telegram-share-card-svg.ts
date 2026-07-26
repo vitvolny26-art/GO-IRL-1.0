@@ -42,20 +42,45 @@ const wrap = (value: string, maxChars: number, maxLines = 2) => {
 const textLines = (lines: string[], x: number, y: number, lineHeight: number, anchor = "start") =>
   lines.map((line, index) => `<tspan x="${x}" y="${y + index * lineHeight}" text-anchor="${anchor}">${xml(line)}</tspan>`).join("");
 
-
 const metricIcon = (kind: "calendar" | "ticket" | "pin", x: number, y: number) => {
   if (kind === "calendar") return `<g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><rect x="${x}" y="${y}" width="36" height="34" rx="6"/><path d="M${x} ${y + 11}h36M${x + 9} ${y - 4}v10M${x + 27} ${y - 4}v10"/></g>`;
   if (kind === "ticket") return `<g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M${x} ${y + 4}h38v9a9 9 0 0 0 0 18v9h-38v-9a9 9 0 0 0 0-18z"/><path d="M${x + 19} ${y + 6}v32" stroke-dasharray="4 7"/></g>`;
   return `<g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M${x + 18} ${y + 39}s17-17 17-28a17 17 0 1 0-34 0c0 11 17 28 17 28z"/><circle cx="${x + 18}" cy="${y + 11}" r="5"/></g>`;
 };
 
+const weatherMetricIcon = (kind: "temperature" | "rain" | "wind", x: number, y: number) => {
+  if (kind === "temperature") {
+    return `<g data-weather-icon="temperature" fill="none" stroke="#f5f7f8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M${x + 15} ${y + 2}v24a11 11 0 1 0 14 0V${y + 2}a7 7 0 0 0-14 0z"/><path d="M${x + 22} ${y + 14}v18"/></g>`;
+  }
+  if (kind === "rain") {
+    return `<g data-weather-icon="rain" fill="none" stroke="#f5f7f8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M${x + 2} ${y + 17}c7-13 29-13 36 0H${x + 2}z"/><path d="M${x + 20} ${y + 17}v15c0 6 8 6 8 0"/><path d="M${x + 9} ${y + 25}l-3 7M${x + 35} ${y + 25}l-3 7"/></g>`;
+  }
+  return `<g data-weather-icon="wind" fill="none" stroke="#f5f7f8" stroke-width="4" stroke-linecap="round"><path d="M${x + 1} ${y + 10}h24c8 0 8-10 1-10-4 0-6 2-7 5"/><path d="M${x + 1} ${y + 21}h34c9 0 9 11 1 11-4 0-7-2-8-5"/><path d="M${x + 1} ${y + 32}h14"/></g>`;
+};
+
+const weatherConditionIcon = (icon: string, x: number, y: number) => {
+  const rainy = /rain|storm|shower|drizzle|☔|🌧|⛈/iu.test(icon);
+  const cloudy = /cloud|fog|mist|☁|🌥|🌦/iu.test(icon);
+  if (rainy) {
+    return `<g data-weather-condition="rain" fill="none" stroke="#ffcb52" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M${x + 4} ${y + 25}c2-10 11-16 21-16 10 0 17 5 20 14 8 0 13 5 13 12 0 7-6 12-14 12H${x + 13}C5 47 0 42 0 35c0-5 2-8 4-10z"/><path d="M${x + 15} ${y + 53}l-4 8M${x + 31} ${y + 53}l-4 8M${x + 47} ${y + 53}l-4 8"/></g>`;
+  }
+  if (cloudy) {
+    return `<g data-weather-condition="cloud" fill="none" stroke="#ffcb52" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M${x + 4} ${y + 31}c2-10 11-16 21-16 10 0 17 5 20 14 8 0 13 5 13 12 0 7-6 12-14 12H${x + 13}C5 53 0 48 0 41c0-5 2-8 4-10z"/></g>`;
+  }
+  return `<g data-weather-condition="sun" fill="none" stroke="#ffcb52" stroke-width="4" stroke-linecap="round"><circle cx="${x + 29}" cy="${y + 29}" r="13"/><path d="M${x + 29} ${y + 1}v8M${x + 29} ${y + 49}v8M${x + 1} ${y + 29}h8M${x + 49} ${y + 29}h8M${x + 9} ${y + 9}l6 6M${x + 43} ${y + 43}l6 6M${x + 49} ${y + 9}l-6 6M${x + 15} ${y + 43}l-6 6"/></g>`;
+};
+
 const weatherBlock = (input: TelegramEventCardInput) => {
   if (!input.weather) return "";
   const weather = input.weather;
   return `<g font-family="DejaVu Sans, sans-serif" font-size="30" font-weight="800" fill="#f5f7f8">
-    <text x="76" y="520">${xml(weather.icon)}  ${Math.round(weather.temperature)}°C</text>
-    <text x="76" y="582">☔  ${Math.round(weather.rain)}%</text>
-    <text x="76" y="644">💨  ${Math.round(weather.wind)} km/h</text>
+    ${weatherConditionIcon(weather.icon || "", 76, 462)}
+    ${weatherMetricIcon("temperature", 76, 520)}
+    <text x="132" y="551">${Math.round(weather.temperature)}°C</text>
+    ${weatherMetricIcon("rain", 76, 575)}
+    <text x="132" y="607">${Math.round(weather.rain)}%</text>
+    ${weatherMetricIcon("wind", 76, 630)}
+    <text x="132" y="662">${Math.round(weather.wind)} km/h</text>
   </g>`;
 };
 
