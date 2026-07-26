@@ -3,8 +3,13 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
+import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
+import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
+import { EventLocationProviderPortal } from "./components/EventLocationProviderPortal";
+import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
+import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
@@ -26,13 +31,77 @@ import "./avatar-cropper.css";
 import "./participant-notifications.css";
 import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
+import "./event-location-picker.css";
+import "./event-location-provider.css";
+import "./map-provider-picker.css";
+import "./profile-preferences.css";
 import "./participant-identity.css";
+
+type SupportedLanguage = "ru" | "uk" | "cs" | "en";
+
+type StoredPreferences = {
+  language?: SupportedLanguage;
+  cityId?: string;
+  mapProvider?: "google" | "apple" | "mapy";
+};
+
+type TelegramUserWithLanguage = {
+  language_code?: string;
+};
+
+const supportedLanguages = new Set<SupportedLanguage>(["ru", "uk", "cs", "en"]);
+const preferencesStorageKey = "go-irl-user-preferences";
+const legacyLanguageStorageKey = "go-irl-language";
+
+const normalizeDeviceLanguage = (value: string | undefined): SupportedLanguage | null => {
+  const code = value?.trim().toLowerCase().split(/[-_]/)[0] as SupportedLanguage | undefined;
+  return code && supportedLanguages.has(code) ? code : null;
+};
+
+const readStoredPreferences = (): StoredPreferences => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(preferencesStorageKey) || "null") as StoredPreferences | null;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const initializeLanguagePreference = () => {
+  const preferences = readStoredPreferences();
+  const storedUnifiedLanguage = preferences.language && supportedLanguages.has(preferences.language)
+    ? preferences.language
+    : null;
+  const storedLegacyLanguage = normalizeDeviceLanguage(localStorage.getItem(legacyLanguageStorageKey) || undefined);
+  const storedLanguage = storedUnifiedLanguage || storedLegacyLanguage;
+
+  if (storedLanguage) {
+    localStorage.setItem(legacyLanguageStorageKey, storedLanguage);
+    if (preferences.language !== storedLanguage) {
+      localStorage.setItem(preferencesStorageKey, JSON.stringify({ ...preferences, language: storedLanguage }));
+    }
+    return;
+  }
+
+  const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user as TelegramUserWithLanguage | undefined;
+  const telegramLanguage = normalizeDeviceLanguage(telegramUser?.language_code);
+  const browserLanguage = navigator.languages
+    .map((language) => normalizeDeviceLanguage(language))
+    .find((language): language is SupportedLanguage => Boolean(language));
+  const language = telegramLanguage || browserLanguage || "en";
+
+  localStorage.setItem(legacyLanguageStorageKey, language);
+  localStorage.setItem(preferencesStorageKey, JSON.stringify({ ...preferences, language }));
+};
+
+initializeLanguagePreference();
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 
 enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();
+enableMapyRuntimeLinks();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -48,6 +117,10 @@ createRoot(document.getElementById("root")!).render(
       </Suspense>
       <OrganizerProfilePortal />
       <OrganizerEventDetailsPortal />
+      <EventLocationPickerPortal />
+      <EventLocationProviderPortal />
+      <MapProviderPickerPortal />
+      <ProfilePreferencesPortal />
       <ParticipantIdentityPortal />
     </QueryClientProvider>
   </StrictMode>,

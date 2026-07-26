@@ -105,6 +105,10 @@ describe('EGF-102 Mission Intake Runtime', () => {
       status: 'approved',
       next_action: 'context build',
       artifacts: [],
+      qa: {
+        reviewed_diff: null,
+        final: null,
+      },
     });
   });
 

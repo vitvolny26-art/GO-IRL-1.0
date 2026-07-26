@@ -9,10 +9,10 @@ export type CardShareContent = {
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const fallbackOrigin = "https://go-irl-1-0.vercel.app";
-const metaAppId = "2315026155981238";
+export const metaAppId = "1348703396728256";
 
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
-  [url, [`GO IRL: ${title}`, date, address].filter(Boolean).join("\n")].filter(Boolean).join("\n\n");
+  [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n\n");
 
 export const buildMessengerPreviewUrl = (content: CardShareContent) => {
   try {
@@ -37,9 +37,23 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
   return dialogUrl.toString();
 };
 
-export const buildAndroidMessengerIntent = (content: CardShareContent) => {
-  const shareText = buildCardShareText({ ...content, url: buildMessengerPreviewUrl(content) });
-  return `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};package=com.facebook.orca;end`;
+export const buildMessengerAppTarget = (content: CardShareContent) => {
+  const link = encodeURIComponent(buildMessengerPreviewUrl(content));
+  return `fb-messenger://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}`;
+};
+
+export const buildMessengerAndroidIntentTarget = (content: CardShareContent) => {
+  const link = encodeURIComponent(buildMessengerPreviewUrl(content));
+  return `intent://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}#Intent;scheme=fb-messenger;package=com.facebook.orca;end`;
+};
+
+export const buildMessengerShareBridgeTarget = (content: CardShareContent, origin = fallbackOrigin) => {
+  const target = new URL("/messenger-share.html", origin);
+  target.searchParams.set("title", content.title);
+  target.searchParams.set("date", content.date);
+  target.searchParams.set("address", content.address);
+  target.searchParams.set("url", buildMessengerPreviewUrl(content));
+  return target.toString();
 };
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {

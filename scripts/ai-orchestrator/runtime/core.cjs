@@ -18,16 +18,16 @@ const TRANSITIONS = {
   proposed: ['validated', 'rejected', 'expired', 'scope_violation'],
   validated: ['awaiting_mission_approval'],
   awaiting_mission_approval: ['approved', 'rejected', 'expired', 'cancelled'],
-  approved: ['context_ready', 'blocked', 'scope_violation', 'expired', 'cancelled'],
-  context_ready: ['planned', 'blocked', 'scope_violation', 'expired', 'cancelled'],
-  planned: ['implementing', 'blocked', 'expired', 'cancelled'],
-  implementing: ['reviewing', 'blocked', 'scope_violation', 'budget_exceeded'],
-  reviewing: ['correction_requested', 'checking', 'blocked', 'scope_violation', 'budget_exceeded', 'expired', 'cancelled'],
-  correction_requested: ['implementing', 'blocked', 'expired', 'cancelled'],
-  checking: ['awaiting_change_approval', 'checks_failed', 'expired', 'cancelled'],
-  awaiting_change_approval: ['report_ready', 'cancelled'],
-  report_ready: ['committed', 'checks_failed', 'archived', 'cancelled'],
-  checks_failed: ['checking', 'report_ready', 'cancelled'],
+  approved: ['context_ready', 'blocked', 'scope_violation', 'expired', 'cancelled', 'rejected'],
+  context_ready: ['planned', 'blocked', 'scope_violation', 'expired', 'cancelled', 'rejected'],
+  planned: ['implementing', 'blocked', 'expired', 'cancelled', 'rejected'],
+  implementing: ['reviewing', 'blocked', 'scope_violation', 'budget_exceeded', 'rejected'],
+  reviewing: ['correction_requested', 'checking', 'blocked', 'scope_violation', 'budget_exceeded', 'expired', 'cancelled', 'rejected'],
+  correction_requested: ['implementing', 'blocked', 'expired', 'cancelled', 'rejected'],
+  checking: ['awaiting_change_approval', 'checks_failed', 'expired', 'cancelled', 'rejected'],
+  awaiting_change_approval: ['report_ready', 'cancelled', 'rejected'],
+  report_ready: ['committed', 'checks_failed', 'archived', 'cancelled', 'rejected'],
+  checks_failed: ['checking', 'report_ready', 'cancelled', 'rejected'],
   committed: ['pushed', 'blocked'],
   pushed: ['draft_pr', 'blocked'],
   draft_pr: ['archived'],
@@ -309,19 +309,35 @@ function approveMission({ missionId, actor, stateDir, now = new Date() }) {
   return record;
 }
 
-function closeMission({ missionId, actor, stateDir, action = 'cancel', now = new Date() }) {
+function closeMission({ missionId, actor, stateDir, action = 'cancel', reason, now = new Date() }) {
   if (!actor || actor.trim() === '') throw new OrchestratorError('HUMAN_ACTOR_REQUIRED', 'Closing a Mission requires a human actor.');
   const state = loadState(stateDir);
   const record = requireMission(state, missionId);
+  if (action === 'reject' && TERMINAL_STATES.has(record.state) && record.state !== 'checks_failed') {
+    if (state.active_mission_id === missionId) {
+      state.active_mission_id = null;
+      saveState(stateDir, state);
+    }
+    return record;
+  }
   if (action === 'archive' && record.state === 'report_ready' && !record.publish_preview) {
     throw new OrchestratorError(
       'PUBLISH_PREVIEW_REQUIRED',
       'A report-ready Mission requires a recorded publication preview before archive.',
     );
   }
-  const nextState = action === 'archive' ? 'archived' : 'cancelled';
+  const nextState = action === 'archive' ? 'archived' : action === 'reject' ? 'rejected' : 'cancelled';
   transition(record, nextState, now);
-  record.closed_by = { actor: actor.trim(), action, at: now.toISOString() };
+  const normalizedReason = typeof reason === 'string' && reason.trim() !== ''
+    ? reason.trim().slice(0, 500)
+    : action === 'reject' ? 'Rejected by owner.' : null;
+  record.closed_by = {
+    actor: actor.trim(),
+    action,
+    at: now.toISOString(),
+    ...(normalizedReason ? { reason: normalizedReason } : {}),
+  };
+  if (action === 'reject') Object.assign(record.history.at(-1), record.closed_by);
   if (state.active_mission_id === missionId) state.active_mission_id = null;
   saveState(stateDir, state);
   return record;

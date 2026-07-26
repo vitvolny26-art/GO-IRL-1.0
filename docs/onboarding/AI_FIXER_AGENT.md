@@ -3,8 +3,8 @@ title: AI Fixer Agent
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-12
-next_review: 2026-08-12
+last_review: 2026-07-26
+next_review: 2026-08-20
 ---
 
 # AI Fixer Agent
@@ -117,12 +117,26 @@ For code or configuration changes:
 - never classify `.github/workflows/**`, `vercel.json`, package files, scripts, Supabase files, or runtime configuration as docs-only;
 - never force-push or rewrite history only to reduce build count.
 
+## Self-hosted runner wait rule
+
+After a code or configuration commit is pushed and a pull request is opened or updated:
+
+- GitHub Actions starts automatically on the configured self-hosted runner;
+- the workflow run may not appear immediately in the API or pull request UI;
+- wait briefly and check the same commit SHA again before concluding that GitHub or the runner is not responding;
+- do not create another commit, push, or workflow retry only because the first status check returned no runs;
+- treat the runner result as authoritative only after the workflow reaches a terminal state;
+- do not present repository verification commands as instructions for the owner when the configured runner or an available execution tool can perform them;
+- in the final `Run:` section, report commands or automation actually executed by the agent or runner; a pending run is not a final result and must be checked again on the same SHA;
+- merge only after `test`, `typecheck`, `lint`, and `build` report PASS.
+
 ## Required verification
 
 After every completed code or configuration patch batch run:
 
 ```bash
 pnpm run lint
+pnpm run typecheck
 pnpm run build
 pnpm run test
 ```
@@ -159,9 +173,10 @@ Use `docs/audit/KNOWLEDGE_DEBT.md` only if a new unresolved documentation or kno
 ## Verification
 
 ```text
-pnpm run lint   PASS/FAIL/NOT REQUIRED
-pnpm run build  PASS/FAIL/NOT REQUIRED
-pnpm run test   PASS/FAIL/NOT REQUIRED
+pnpm run lint       PASS/FAIL/NOT REQUIRED
+pnpm run typecheck  PASS/FAIL/NOT REQUIRED
+pnpm run build      PASS/FAIL/NOT REQUIRED
+pnpm run test       PASS/FAIL/NOT REQUIRED
 ```
 
 ## Risks

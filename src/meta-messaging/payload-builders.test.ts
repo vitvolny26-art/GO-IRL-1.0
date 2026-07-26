@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildInstagramInvitationPayload,
   buildMessengerInvitationPayload,
+  buildMessengerWelcomePayload,
   buildMetaJoinResultPayload,
 } from "./payload-builders";
 import type { MetaEventSummary } from "./types";
@@ -40,18 +41,67 @@ describe("Meta messaging payload builders", () => {
     ]);
   });
 
-  it("builds a branded generic card with native Join and Open actions", () => {
+  it("builds the real Messenger Business API rich card for a known PSID", () => {
+    const payload = buildMessengerInvitationPayload("psid-rich-card", {
+      ...event,
+      language: "ru",
+      imageUrl: "https://goirl.example/api/meta/event-invitation-card?token=signed",
+      openUrl: "https://goirl.example/join/event-meta-1",
+      calendarUrl: "https://calendar.google.com/calendar/render?event=event-meta-1",
+    });
+
+    expect(payload.messaging_type).toBe("RESPONSE");
+    expect(payload.recipient).toEqual({ id: "psid-rich-card" });
+    const template = payload.message.attachment?.payload;
+    expect(template?.template_type).toBe("generic");
+    if (!template || template.template_type !== "generic") throw new Error("expected_generic_template");
+    const element = template.elements[0];
+    expect(element?.image_url).toContain("event-invitation-card");
+    expect(element?.default_action?.url).toBe("https://goirl.example/join/event-meta-1");
+    expect(element?.buttons).toHaveLength(3);
+    expect(element?.buttons).toEqual([
+      { type: "postback", title: "Присоединиться", payload: "join:event-meta-1" },
+      { type: "web_url", title: "Открыть событие", url: "https://goirl.example/join/event-meta-1" },
+      { type: "web_url", title: "В календарь", url: "https://calendar.google.com/calendar/render?event=event-meta-1" },
+    ]);
+  });
+
+  it("builds a Messenger welcome screen with a GO IRL web action", () => {
+    const payload = buildMessengerWelcomePayload("psid-1", "https://go-irl.example");
+
+    expect(payload).toEqual({
+      messaging_type: "RESPONSE",
+      recipient: { id: "psid-1" },
+      message: {
+        attachment: {
+          type: "template",
+          payload: {
+            template_type: "button",
+            text: expect.stringContaining("GO IRL"),
+            buttons: [{ type: "web_url", title: "Открыть GO IRL", url: "https://go-irl.example" }],
+          },
+        },
+      },
+    });
+  });
+
+  it("builds a branded generic card whose actions point to the same web event", () => {
     const payload = buildInstagramInvitationPayload("ig-user-1", {
       ...event,
       imageUrl: "https://goirl.example/api/meta/event-invitation-card?token=signed",
-      inviteUrl: "https://t.me/GOirl_bot?startapp=event-meta-1",
+      openUrl: "https://goirl.example/join/event-meta-1",
+      calendarUrl: "https://calendar.google.com/calendar/render?event=event-meta-1",
     });
-    const element = payload.message.attachment?.payload.elements[0];
+    const template = payload.message.attachment?.payload;
+    expect(template?.template_type).toBe("generic");
+    if (!template || template.template_type !== "generic") throw new Error("expected_generic_template");
+    const element = template.elements[0];
     expect(element?.image_url).toContain("event-invitation-card");
-    expect(element?.default_action?.url).toContain("t.me/GOirl_bot");
+    expect(element?.default_action?.url).toBe("https://goirl.example/join/event-meta-1");
     expect(element?.buttons).toEqual([
       { type: "postback", title: "Присоединиться", payload: "join:event-meta-1" },
-      { type: "web_url", title: "Открыть", url: "https://t.me/GOirl_bot?startapp=event-meta-1" },
+      { type: "web_url", title: "Открыть событие", url: "https://goirl.example/join/event-meta-1" },
+      { type: "web_url", title: "В календарь", url: "https://calendar.google.com/calendar/render?event=event-meta-1" },
     ]);
   });
 

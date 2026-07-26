@@ -91,7 +91,7 @@ These PRD items are future unless explicitly re-approved:
 
 | PRD item | Reason |
 |---|---|
-| Receive reminders | Requires notification model and Telegram/client constraints. Future until implemented and tested. |
+| Receive reminders | Implemented for Telegram with server persistence, RLS, due worker, retries, monitoring, and production deployment. Meta channels remain behind channel-specific live release gates. |
 | Confirm participation | Requires attendance model and trust policy. Future. |
 | Earn RLI | RLI is future reputation system, not beta requirement. |
 | Add to Calendar as required flow | Useful, but not required for closed beta. |

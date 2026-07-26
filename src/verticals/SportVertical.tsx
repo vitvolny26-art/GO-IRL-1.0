@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { BellDot, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
@@ -16,6 +16,7 @@ import { getCity } from "../config/cities";
 import { buildGoogleCalendarUrl } from "../calendar/googleCalendar";
 import { getTelegramWebApp } from "../telegram";
 import { CardShareAction } from "../components/CardShareAction";
+import { CardReminderAction } from "../components/CardReminderAction";
 import { EventCardArtwork } from "../components/EventCardArtwork";
 import { stripLeadingEmoji } from "../cardText";
 import { activityIconFromText } from "../activityIcon";
@@ -30,6 +31,7 @@ import {
 } from "../eventInteractionState";
 import { eventDurationLabel } from "../eventCardPresentation";
 import { buildDurationOptions, formatDurationOption } from "../durationOptions";
+import { getEventSheetBackgroundStyle } from "../eventSheetBackground";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -99,7 +101,7 @@ const sportAvatarForActivity = (activity: Activity, language: Language, meta: Sp
 type SportCardProps = {
   activity: Activity;
   language: Language;
-  onOpen: (activity: Activity, options?: { focusChat?: boolean }) => void;
+  onOpen: (activity: Activity, options?: { focusChat?: boolean; focusRequests?: boolean }) => void;
   onJoin: (activity: Activity) => void;
   onOpenMembers?: (activity: Activity) => void;
 };
@@ -237,6 +239,9 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       : t.details;
   const showCoachAction = interaction.showHelperAction && (isOrganizer || coachState === "confirmed");
   const joinedMembers = activity.members.filter(m => m.status === "joined");
+  const pendingRequestCount = isOrganizer
+    ? activity.members.filter((member) => member.status === "pending").length
+    : 0;
   const shareTitle = cleanSportLabel(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
 
@@ -273,6 +278,18 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     <article className="sport-card compact-sport-card unified-event-card glass-event-card">
       <EventCardArtwork icon={avatar} activity={activity.activity[language]} title={activity.title[language]} />
       <div className="sport-card-top-actions">
+        {pendingRequestCount > 0 ? (
+          <button
+            className="event-request-alert"
+            type="button"
+            aria-label={`${t.requests}: ${pendingRequestCount}`}
+            onClick={() => onOpen(activity, { focusRequests: true })}
+          >
+            <BellDot aria-hidden="true" />
+            <span>{pendingRequestCount}</span>
+          </button>
+        ) : null}
+        <CardReminderAction activityId={activity.id} date={activity.date} time={activity.time} />
         <CardShareAction
           title={shareTitle}
           date={shareDate}
@@ -394,6 +411,11 @@ export function SportActivitySheet({
   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
   const avatar = sportAvatarForActivity(activity, language, meta);
+  const sheetBackgroundStyle = getEventSheetBackgroundStyle({
+    icon: avatar,
+    activity: meta.sportType || activity.activity[language],
+    title: activity.title[language],
+  });
 
   useEffect(() => {
     setMembersOpen(initialMembersOpen);
@@ -470,7 +492,7 @@ export function SportActivitySheet({
 
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
-      <article className="activity-sheet sport-sheet" onMouseDown={(event) => event.stopPropagation()}>
+      <article className="activity-sheet sport-sheet" style={sheetBackgroundStyle} onMouseDown={(event) => event.stopPropagation()}>
         <div className="sheet-handle" />
         <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
         {loading && <SportDetailsSkeleton />}
@@ -575,8 +597,8 @@ export function SportActivitySheet({
                   <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
                   <strong>{member.name}</strong>
                   <span className="request-actions">
-                    <button onClick={() => void handleReview(member.userKey, true)} type="button" aria-label={t.approve} title={t.approve}><Check /></button>
-                    <button onClick={() => void handleReview(member.userKey, false)} type="button" aria-label={t.reject} title={t.reject}><X /></button>
+                    <button onClick={() => void handleReview(member.userKey, true)} type="button" aria-label={t.approve} title={t.approve}><Check /><span>{t.approve}</span></button>
+                    <button onClick={() => void handleReview(member.userKey, false)} type="button" aria-label={t.reject} title={t.reject}><X /><span>{t.reject}</span></button>
                   </span>
                 </div>
               ))}

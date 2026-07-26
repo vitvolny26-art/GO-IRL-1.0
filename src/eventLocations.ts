@@ -12,7 +12,7 @@ export const buildEventLocationUrl = (address: string, city: string) => {
   const cleanCity = city.trim();
   const addressIncludesCity = cleanCity && cleanAddress.toLocaleLowerCase().includes(cleanCity.toLocaleLowerCase());
   const query = [cleanAddress, addressIncludesCity ? "" : cleanCity].filter(Boolean).join(", ");
-  return query ? `https://mapy.cz/zakladni?q=${encodeURIComponent(query)}` : "";
+  return query ? `https://mapy.com/zakladni?q=${encodeURIComponent(query)}` : "";
 };
 
 export const parseSavedEventLocations = (raw: string | null): SavedEventLocation[] => {

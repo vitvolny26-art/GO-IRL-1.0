@@ -117,6 +117,19 @@ Deno.serve(async (request) => {
 
     if (upsertResult.error || !upsertResult.data) throw upsertResult.error || new Error("User upsert failed");
 
+    const identityResult = await supabase
+      .from("user_provider_identities")
+      .upsert({
+        user_key: userKey,
+        provider: "telegram",
+        provider_user_id: String(verified.user.id),
+        status: "active",
+        last_inbound_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "provider,provider_user_id" });
+
+    if (identityResult.error) throw identityResult.error;
+
     const roleResult = await supabase
       .from("user_roles")
       .select("role")

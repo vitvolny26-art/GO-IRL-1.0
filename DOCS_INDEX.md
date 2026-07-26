@@ -3,8 +3,8 @@ title: GO IRL Documentation Status Registry
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-07-26
+next_review: 2026-08-26
 ---
 
 # GO IRL Documentation Status Registry
@@ -19,7 +19,8 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/MARKET_POSITIONING.md` is the **source of truth for market positioning and MVP feature filtering**.
 - `docs/COMPETITOR_WATCH.md` is the **source of truth for competitor signals**, but competitor signals must not automatically become MVP scope.
 - `README.md` is the **source of truth for current code scope**: implemented features, stack, setup, and current runtime model.
-- `RELEASE_NOTES.md` is the source of truth for release state and must not contradict `README.md`.
+- `docs/release/CURRENT_PHASE.md` is the source of truth for the current lifecycle phase.
+- `RELEASE_NOTES.md` is the source of truth for release implementation status and must not contradict `README.md` or the current lifecycle phase.
 - `DEPLOYMENT.md` is the source of truth for Vercel-first deployment flow.
 - `docs/SPORT_COACH_MVP.md` is the source of truth for Sport Coach MVP 1.1 boundaries.
 - `docs/MVP_DOC_AUDIT.md` is the source of truth for known documentation conflicts.
@@ -31,6 +32,7 @@ Use this file before changing product logic, architecture, QA flow, beta scope, 
 - `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` is the source of truth for the deployed documentation-governance workflow IDs, schedule, destinations, deduplication, and error handling.
 - `docs/onboarding/ARCHIVIST_CHARTER.md` is the source of truth for the Project Archivist role.
 - `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` is the source of truth for the report-only Project Coordinator role and AI Staff OS mission boundaries.
+- `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md` is the source of truth for the Automation Engineer role, automation boundaries, verification, and production approval gates.
 - `docs/onboarding/AI_ROLES.md` is the working registry for reusable AI roles.
 - `docs/onboarding/AI_FIXER_AGENT.md` is the source of truth for the AI Fixer / QA + UX Polish Agent.
 - `docs/governance/AI_ORGANIZATION.md` is the working source for AI councils, escalation, and role interaction.
@@ -70,9 +72,10 @@ next_review:
 |---|---|---|---|---|
 | `README.md` | Core / Code Scope | Active | Да | Must stay aligned with `RELEASE_NOTES.md` on Trusted Auth and release blockers. |
 | `DOCS_INDEX.md` | Registry | Active | Да | Must be updated after every doc move/status change. |
-| `ROADMAP.md` | Product Planning | Active | Да | Broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
+| `ROADMAP.md` | Product Planning | Active | Да | Release Preparation is current; broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
 | `BACKLOG.md` | Product Planning | Draft | Нет | Future items must remain tagged. |
 | `CHANGELOG.md` | Release History | Draft | Нет | Needs quality-gate verification before release claims. |
+| `docs/release/CURRENT_PHASE.md` | Release / Current Phase | Active | Да | Lifecycle-phase authority; must stay aligned with README, ROADMAP, and RELEASE_NOTES. |
 | `RELEASE_NOTES.md` | Release Status | Active | Да | Trusted Auth is `[SHIPPED/PRODUCTION PATH]`; operational smoke checks remain. |
 | `DEPLOYMENT.md` | Release / Deploy | Active | Да | Must remain Vercel-first; old Netlify references are historical only. |
 | `BETA_CHECKLIST.md` | QA / Beta | Active | Да | Needs sync after deployment wording changes. |
@@ -97,6 +100,7 @@ next_review:
 | `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Active | Да | pnpm, small patches, no unsafe changes. |
 | `docs/onboarding/ARCHIVIST_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for Project Archivist duties, reading order, market intelligence duty, and memory rules. |
 | `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for report-only Daily Mission routing, role activation, budgets, validation, and human gates. |
+| `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md` | Onboarding / Role Charter | Review | Да | Canonical review-stage charter. Manual selection is supported; deterministic runtime activation remains pending merge, deployment, and verification. |
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
 | `docs/onboarding/AI_FIXER_AGENT.md` | Onboarding / AI Agent Prompt | Active | Да | Source of truth for small bug, QA, and UX polish agent behavior and safety limits. |
 | `docs/reports/README.md` | Reports / AI Work Logs | Active | Нет | Defines report location and format for AI Fixer task reports. |
@@ -104,6 +108,7 @@ next_review:
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, escalation, and Coordinator interaction. |
 | `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
 | `docs/governance/ARCHIVIST_OPERATING_POLICY.md` | Governance / Archivist Policy | Active | Да | Canonical authority, lifecycle, human-gate, and automation-boundary rules. |
+| `docs/governance/TOOL_OPERATING_MODEL.md` | Governance / Tool Operating Model | Review | Нет | Proposed responsibility boundaries and routing rules; must not be treated as Active before review and merge. |
 | `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` | Automation / Governance Workflow | Active | Да | Deployed n8n workflow IDs and operational boundaries; GitHub remains authority. |
 | `docs/roadmap/SPRINTS.md` | Roadmap / Sprint Overview | Draft | Нет | Roadmap-folder copy of sprint plan; not current MVP scope by itself. |
 | `docs/roadmap/SPRINT_0.md` | Roadmap / Sprint Record | Archived | Нет | Historical Sprint 0 record; Netlify references are historical only. |
@@ -138,6 +143,7 @@ next_review:
 
 | Conflict | Files | Resolution |
 |---|---|---|
+| Current lifecycle phase wording was split across active beta and release documents. | `docs/release/CURRENT_PHASE.md`, `README.md`, `ROADMAP.md`, `RELEASE_NOTES.md` | CURRENT_PHASE owns lifecycle phase; active documents must align, while beta records remain historical evidence. |
 | Trusted Auth was both current production model and public blocker. | `README.md`, `RELEASE_NOTES.md`, `PATCH_REPORT.md` | `RELEASE_NOTES.md` marks Trusted Auth as `[SHIPPED/PRODUCTION PATH]`; operational checks remain. |
 | Coach UI promise exceeded current implementation. | `docs/SPORT_COACH_MVP.md`, `src/components/CoachRequestPanel.tsx` | Role Choice and Review Flow moved to future scope. |
 | Sprint 0 Netlify proof conflicted with current Vercel beta flow. | `SPRINT0_STATUS.md`, `DEPLOYMENT.md`, `BETA_CHECKLIST.md` | Sprint 0 docs are historical/deprecated. |
@@ -147,6 +153,7 @@ next_review:
 | Future DB architecture conflicted with current Supabase migrations. | `docs/Database.md`, `docs/bible/03-database-design.md`, `supabase/migration_v8_activity_chat.sql` | `docs/DATABASE_SCHEMA_AUDIT.md` created; `docs/Database.md` should stay marked future architecture. |
 | AI roles and Archivist rules existed only in chat. | Chat history, onboarding docs | Added `ARCHIVIST_CHARTER.md`, `AI_ROLES.md`, and `AI_ORGANIZATION.md`. |
 | Project Coordinator authority existed only as draft governance language. | `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md`, `docs/onboarding/AI_ROLES.md`, `docs/governance/AI_ORGANIZATION.md` | Added a report-only Coordinator charter and synchronized role/governance boundaries. |
+| Automation Engineer authority and routing existed only in the instruction index and chat. | `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md`, `docs/onboarding/AI_ROLES.md`, `docs/governance/AI_ORGANIZATION.md`, `n8n/code/staff-00-role-selection.js` | Added a dedicated charter, synchronized governance, and deterministic automation routing before generic bug/fix routing. |
 | AI Fixer reporting existed only in chat. | Chat history, onboarding docs, reports docs | Added `AI_FIXER_AGENT.md` and `docs/reports/README.md`. |
 | Knowledge architecture existed only in discussion. | Chat history, governance docs | Added `KNOWLEDGE_PLATFORM.md` with status model, KPIs, review cadence, and Project Memory Bus. |
 | Sprint structure existed as loose root-level docs. | `SPRINTS.md`, `SPRINT0_STATUS.md` | Added `docs/roadmap/SPRINTS.md` and `docs/roadmap/SPRINT_0.md` through `SPRINT_5.md`. |
@@ -222,7 +229,8 @@ GO IRL Documentation
 │   └── docs/governance/
 │       ├── AI_ORGANIZATION.md
 │       ├── KNOWLEDGE_PLATFORM.md
-│       └── ARCHIVIST_OPERATING_POLICY.md
+│       ├── ARCHIVIST_OPERATING_POLICY.md
+│       └── TOOL_OPERATING_MODEL.md
 ├── Automation
 │   └── docs/automation/
 │       └── DOCUMENTATION_GOVERNANCE_ARCHIVIST.md
@@ -230,6 +238,7 @@ GO IRL Documentation
 │   └── docs/onboarding/
 │       ├── ARCHIVIST_CHARTER.md
 │       ├── PROJECT_COORDINATOR_CHARTER.md
+│       ├── AUTOMATION_ENGINEER_CHARTER.md
 │       ├── AI_ROLES.md
 │       └── AI_FIXER_AGENT.md
 ├── Reports

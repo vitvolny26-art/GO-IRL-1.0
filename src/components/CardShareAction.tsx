@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Share2 } from "lucide-react";
-import { buildAndroidMessengerIntent, buildCardShareTarget, buildCardShareText, buildMessengerPreviewUrl } from "../cardShare";
-import { openTelegramShareTarget } from "../cardShareNavigation";
+import {
+  buildCardShareTarget,
+  buildCardShareText,
+} from "../cardShare";
+import { openExternalShareTarget, openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
+import { readUserPreferences, updateUserPreferences, type ShareProvider } from "../userPreferences";
 
 type CardShareActionProps = {
   title: string;
@@ -13,13 +17,14 @@ type CardShareActionProps = {
   onTelegramShare?: () => Promise<PreparedTelegramShareResult>;
 };
 
-type ShareChannel = "telegram" | "messenger" | "native";
+type ShareChannel = ShareProvider | "native";
 
-const channels = [
+const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
+  { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
   { id: "native", label: "Поделиться", icon: null },
-] as const;
+];
 
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
@@ -43,15 +48,25 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   }, [open]);
 
   const copyShareText = async (shareUrl = url) => {
+    const shareText = buildCardShareText({ ...content, url: shareUrl });
     try {
-      await navigator.clipboard.writeText(buildCardShareText({ ...content, url: shareUrl }));
+      await navigator.clipboard.writeText(shareText);
     } catch {
-      // Clipboard access may be unavailable inside some embedded browsers.
+      const textarea = document.createElement("textarea");
+      textarea.value = shareText;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
     }
   };
 
-  const share = async (channel: ShareChannel) => {
+  const share = async (channel: ShareChannel, remember = false) => {
     setOpen(false);
+    if (remember && channel !== "native") updateUserPreferences({ shareProvider: channel });
 
     if (channel === "telegram") {
       if (onTelegramShare) {
@@ -63,24 +78,12 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
 
     if (channel === "messenger") {
-      const previewUrl = buildMessengerPreviewUrl(content);
-      if (/Android/i.test(navigator.userAgent)) {
-        window.location.href = buildAndroidMessengerIntent(content);
-        return;
-      }
-      if (navigator.share && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        try {
-          await navigator.share({ title: `GO IRL: ${title}`, text: [date, address].filter(Boolean).join("\n"), url: previewUrl });
-          return;
-        } catch (error) {
-          if (error instanceof DOMException && error.name === "AbortError") return;
-        }
-      }
-      if (/Mobi/i.test(navigator.userAgent)) {
-        await copyShareText(previewUrl);
-        return;
-      }
-      window.open(buildCardShareTarget(channel, content), "_blank", "noopener,noreferrer");
+      openMessengerShareTarget(content);
+      return;
+    }
+
+    if (channel === "whatsapp") {
+      openExternalShareTarget(buildCardShareTarget(channel, content));
       return;
     }
 
@@ -99,6 +102,15 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     await copyShareText();
   };
 
+  const activate = () => {
+    const preferred = readUserPreferences().shareProvider;
+    if (preferred && preferred !== "instagram") {
+      void share(preferred);
+      return;
+    }
+    setOpen((current) => !current);
+  };
+
   return (
     <span className="card-share-action" ref={rootRef}>
       <button
@@ -109,7 +121,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          setOpen((current) => !current);
+          activate();
         }}
       >
         <svg className="card-share-forward-icon" viewBox="8 12 50 36" aria-hidden="true">
@@ -128,7 +140,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                void share(channel.id);
+                void share(channel.id, channel.id !== "native");
               }}
             >
               <span className="card-share-icon-circle">

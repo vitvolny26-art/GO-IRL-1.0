@@ -3,15 +3,21 @@ title: GO IRL Market Positioning
 owner: Product Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-07-20
+next_review: 2026-08-20
 ---
 
 # GO IRL Market Positioning
 
 Status: **current product source of truth for market positioning**
-Scope: GO IRL closed beta, Olomouc first
-Last updated: 2026-07-08
+Scope: GO IRL Release Preparation, Olomouc first
+Last updated: 2026-07-20
+
+## Current lifecycle context
+
+Closed Beta was completed on 2026-07-20. The current phase is **Release Preparation and focused post-beta stabilization**. Broad public launch is not yet claimed.
+
+The six categories used during Closed Beta remain a proven Olomouc baseline and historical acceptance evidence. They are no longer an automatic lifecycle restriction, but category or vertical expansion still requires an explicit reviewed product decision.
 
 ## Core thesis
 
@@ -31,7 +37,7 @@ The main user problem is not lack of calendars. The main problem is that people 
 
 **Less scrolling. More living.**
 
-Practical beta promise:
+Practical product promise:
 
 > Create a small local meetup in under a minute, share it in Telegram, see who joined, chat with participants, and meet in real life.
 
@@ -59,9 +65,9 @@ GO IRL is not:
 - a club membership system;
 - an AI recommendation product before enough real usage data exists.
 
-## MVP beta categories
+## Proven Closed-Beta baseline categories
 
-Closed beta should stay narrow:
+The validated Olomouc baseline is:
 
 1. Volleyball
 2. Running
@@ -78,6 +84,8 @@ Why these six:
 - good for expats/newcomers;
 - work in Olomouc;
 - mix sport, casual social, and intellectual/social formats.
+
+This list remains the default release baseline. Adding or exposing categories requires a reviewed product decision and must not weaken release stability, event density, or the core attendance loop.
 
 ## MVP must-have product loop
 
@@ -105,14 +113,14 @@ P0 features:
 - organizer/host visibility;
 - browser mock mode for testing without Telegram.
 
-## Do not build before beta
+## Release-preparation non-goals
 
-Forbidden for MVP beta:
+Do not build during Release Preparation without an explicit reviewed product decision:
 
 | Feature | Why not now |
 |---|---|
 | Ticketing/payments | Shifts product into Eventbrite/GoOut/Luma territory and creates legal/support risk |
-| Club CRM | Too heavy for Olomouc beta |
+| Club CRM | Too heavy before release operations are proven |
 | Subscriptions/premium | No validated retention yet |
 | AI recommendations | Too early without real event and attendance data |
 | Complex profiles | Slows onboarding |
@@ -120,7 +128,7 @@ Forbidden for MVP beta:
 | Post-event albums/feed | Increases screen time, not arrival rate |
 | Direct messages | Telegram already covers this |
 | Many cities | Dilutes Olomouc density |
-| Big map interface | Useful later, not necessary for beta core loop |
+| Big map interface | Useful later, not necessary for the core loop |
 | Full recurring engine | P1 after manual repeat behavior is proven |
 
 ## Product decisions
@@ -157,19 +165,21 @@ Do not turn Coach into a paid marketplace before the basic event loop is stable.
 
 ## Expansion strategy
 
-### Stage 1: Olomouc beta
+### Stage 1: Olomouc release preparation
 
 Goal:
 
-- prove that small events convert into real attendance.
+- preserve the proven conversion from small events into real attendance;
+- verify release operations before a broad public-launch decision.
 
 Focus:
 
-- 6 categories;
+- proven six-category baseline unless a reviewed decision changes it;
 - Telegram sharing;
 - host trust;
 - event chat;
-- manual community seeding.
+- manual community seeding;
+- support, monitoring, analytics, moderation, Vercel, Telegram, and Supabase readiness.
 
 Primary metrics:
 
@@ -183,7 +193,7 @@ Primary metrics:
 
 ### Stage 2: Czech expansion
 
-Next cities only after Olomouc has density:
+Next cities only after Olomouc has density and release operations are stable:
 
 - Prague;
 - Brno;

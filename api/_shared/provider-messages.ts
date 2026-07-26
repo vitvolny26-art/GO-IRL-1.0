@@ -1,7 +1,9 @@
+import { request as nodeHttpsRequest } from "node:https";
 import type { JoinResult } from "../../src/join/types.js";
 import {
   buildInstagramInvitationPayload,
   buildMessengerInvitationPayload,
+  buildMessengerWelcomePayload,
   buildMetaJoinResultPayload,
 } from "../../src/meta-messaging/payload-builders.js";
 import type { MetaEventSummary, MetaMessagingProvider } from "../../src/meta-messaging/types.js";
@@ -22,15 +24,81 @@ const instagramMessagesUrl = () => readEnv("INSTAGRAM_API_MODE") === "instagram_
   ? `https://graph.instagram.com/${requireEnv("META_GRAPH_VERSION")}/me/messages`
   : graphUrl(`${requireEnv("INSTAGRAM_ACCOUNT_ID")}/messages`);
 
-async function sendGraphPayload(url: string, token: string, payload: unknown) {
-  const response = await fetch(url, {
+const safeTransportCode = (error: unknown) => {
+  const seen = new Set<unknown>();
+  const queue: unknown[] = [error];
+  while (queue.length) {
+    const candidate = queue.shift();
+    if (!candidate || typeof candidate !== "object" || seen.has(candidate)) continue;
+    seen.add(candidate);
+    const record = candidate as { cause?: unknown; code?: unknown; errors?: unknown };
+    if (typeof record.code === "string") {
+      const code = record.code.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 60);
+      if (code) return code;
+    }
+    if (record.cause) queue.push(record.cause);
+    if (Array.isArray(record.errors)) queue.push(...record.errors.slice(0, 5));
+  }
+  return "unknown";
+};
+
+type GraphResponse = Pick<Response, "ok" | "status" | "text">;
+
+const postViaNodeHttps = (
+  url: string,
+  token: string,
+  body: string,
+): Promise<GraphResponse> => new Promise((resolve, reject) => {
+  const request = nodeHttpsRequest(url, {
     method: "POST",
     headers: {
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
+      "content-length": Buffer.byteLength(body),
     },
-    body: JSON.stringify(payload),
+  }, (response) => {
+    let responseBody = "";
+    response.setEncoding("utf8");
+    response.on("data", (chunk: string) => {
+      responseBody += chunk;
+    });
+    response.on("end", () => {
+      const status = response.statusCode ?? 0;
+      resolve({
+        ok: status >= 200 && status < 300,
+        status,
+        text: async () => responseBody,
+      });
+    });
   });
+  request.on("error", reject);
+  request.end(body);
+});
+
+async function sendGraphPayload(url: string, token: string, payload: unknown) {
+  const body = JSON.stringify(payload);
+  const accessToken = token.replace(/[^\x21-\x7E]/g, "");
+  if (!accessToken) throw new Error("meta_access_token_invalid");
+  let response: GraphResponse;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        "content-type": "application/json",
+      },
+      body,
+    });
+  } catch {
+    try {
+      response = await postViaNodeHttps(url, accessToken, body);
+    } catch (error) {
+      throw Object.assign(
+        new Error(`meta_transport_failed:${safeTransportCode(error)}`),
+        { cause: error },
+      );
+    }
+  }
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`meta_send_failed:${response.status}:${errorText.slice(0, 300)}`);
@@ -38,7 +106,9 @@ async function sendGraphPayload(url: string, token: string, payload: unknown) {
 }
 
 const publicOrigin = () => {
-  const host = readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
+  const host = readEnv("VERCEL_ENV") === "preview"
+    ? readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL")
+    : readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
   if (!host) return "";
   try {
     const url = new URL(host.startsWith("http") ? host : `https://${host}`);
@@ -53,7 +123,7 @@ const invitationCardInput = (event: MetaEventSummary): TelegramEventCardInput =>
   title: event.title,
   activity: event.activity || event.title,
   date: event.date || event.dateTime,
-  eventDate: event.date || "",
+  eventDate: event.eventDate || event.date || "",
   time: event.time || "",
   address: event.location,
   participants: event.participants ?? Math.max((event.capacity || 0) - event.availableSpots, 0),
@@ -72,15 +142,28 @@ const invitationCardInput = (event: MetaEventSummary): TelegramEventCardInput =>
   language: event.language || "ru",
 });
 
-const withInvitationImage = (provider: MessagingProvider, event: MetaEventSummary): MetaEventSummary => {
-  if (event.imageUrl) return event;
+const withInvitationPresentation = (provider: MessagingProvider, event: MetaEventSummary): MetaEventSummary => {
   const origin = publicOrigin();
+  const language = event.language || "ru";
+  const eventQuery = `event=${encodeURIComponent(event.eventId)}&language=${encodeURIComponent(language)}`;
+  const openUrl = event.openUrl || (origin
+    ? `${origin}/api/meta/event-preview?${eventQuery}`
+    : event.inviteUrl);
+  const calendarUrl = event.calendarUrl || (origin
+    ? `${origin}/api/meta/event-preview?${eventQuery}&format=ics`
+    : undefined);
+  const cardInput = invitationCardInput({ ...event, inviteUrl: openUrl || event.inviteUrl });
   const secret = provider === "instagram"
     ? readEnv("INSTAGRAM_APP_SECRET") || readEnv("META_APP_SECRET")
     : readEnv("META_APP_SECRET");
-  if (!origin || !secret) return event;
-  const token = createMetaInvitationCardToken(invitationCardInput(event), secret);
-  return { ...event, imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=3` };
+  if (event.imageUrl || !origin || !secret) return { ...event, openUrl, calendarUrl };
+  const token = createMetaInvitationCardToken(cardInput, secret);
+  return {
+    ...event,
+    openUrl,
+    calendarUrl,
+    imageUrl: `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(token)}&v=6`,
+  };
 };
 
 export async function sendProviderInvitation(
@@ -88,7 +171,7 @@ export async function sendProviderInvitation(
   recipientId: string,
   event: MetaEventSummary,
 ) {
-  const invitation = withInvitationImage(provider, event);
+  const invitation = withInvitationPresentation(provider, event);
   if (provider === "whatsapp") {
     return sendGraphPayload(
       graphUrl(`${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`),
@@ -133,6 +216,48 @@ export async function sendProviderJoinResult(
   return sendGraphPayload(
     provider === "instagram" ? instagramMessagesUrl() : graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
     provider === "instagram" ? requireEnv("INSTAGRAM_ACCESS_TOKEN") : requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
+    payload,
+  );
+}
+
+export async function sendMessengerWelcome(recipientId: string) {
+  const origin = publicOrigin();
+  if (!origin) throw new Error("messenger_public_origin_missing");
+  return sendGraphPayload(
+    graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
+    requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
+    buildMessengerWelcomePayload(recipientId, origin),
+  );
+}
+
+export async function sendProviderText(
+  provider: MessagingProvider,
+  recipientId: string,
+  text: string,
+) {
+  if (provider === "whatsapp") {
+    return sendGraphPayload(
+      graphUrl(`${requireEnv("WHATSAPP_PHONE_NUMBER_ID")}/messages`),
+      requireEnv("WHATSAPP_ACCESS_TOKEN"),
+      {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: recipientId,
+        type: "text",
+        text: { body: text },
+      },
+    );
+  }
+  const payload = provider === "messenger"
+    ? { messaging_type: "RESPONSE", recipient: { id: recipientId }, message: { text } }
+    : { recipient: { id: recipientId }, message: { text } };
+  return sendGraphPayload(
+    provider === "instagram"
+      ? instagramMessagesUrl()
+      : graphUrl(`${requireEnv("MESSENGER_PAGE_ID")}/messages`),
+    provider === "instagram"
+      ? requireEnv("INSTAGRAM_ACCESS_TOKEN")
+      : requireEnv("MESSENGER_PAGE_ACCESS_TOKEN"),
     payload,
   );
 }

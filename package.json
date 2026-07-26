@@ -6,9 +6,10 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5178",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc -b && tsc -p tsconfig.api.json",
     "lint": "eslint .",
-    "test": "vitest run",
+    "test": "vitest run && pnpm run test:staff-os",
+    "test:staff-os": "node scripts/test-n8n-staff-os.cjs",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",

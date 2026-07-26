@@ -21,6 +21,7 @@ const COMMANDS = new Set([
   'mission create',
   'mission status',
   'mission approve',
+  'mission reject',
   'context build',
   'planner run',
   'implementer run',
@@ -88,6 +89,33 @@ function publicArtifacts(record, extra = []) {
   return [...new Set(names)].sort();
 }
 
+function publicQaPhase(phase) {
+  if (!phase) return null;
+
+  return {
+    green: phase.green === true,
+    completed_at: typeof phase.completed_at === 'string'
+      ? phase.completed_at
+      : null,
+    commands: Array.isArray(phase.results)
+      ? phase.results.map((result) => ({
+          command: String(result.command || ''),
+          status: Number(result.status) === 0 ? 'PASS' : 'FAIL',
+        }))
+      : [],
+    first_failed_command: phase.first_error
+      ? String(phase.first_error.command || '')
+      : null,
+  };
+}
+
+function publicQa(record) {
+  return {
+    reviewed_diff: publicQaPhase(record?.checks?.reviewed_diff),
+    final: publicQaPhase(record?.checks?.final),
+  };
+}
+
 function successEnvelope(record, extraArtifacts = []) {
   return {
     success: true,
@@ -95,6 +123,7 @@ function successEnvelope(record, extraArtifacts = []) {
     status: record.state,
     next_action: nextActionForRecord(record),
     artifacts: publicArtifacts(record, extraArtifacts),
+    qa: publicQa(record),
   };
 }
 
@@ -125,6 +154,7 @@ function failureEnvelope(error, missionId, stateDir) {
     status: record?.state || 'error',
     next_action: record ? nextActionForRecord(record) : 'fix request',
     artifacts: publicArtifacts(record),
+    qa: publicQa(record),
     error: publicError(error),
   };
 }
@@ -162,6 +192,20 @@ function executeBridgeCommand({ command, request, stateDir, repoRoot, dependenci
     output = approvalType === 'change'
       ? approveChange({ missionId, actor: requireString(request.actor, 'actor'), stateDir })
       : approveMission({ missionId, actor: requireString(request.actor, 'actor'), stateDir });
+  } else if (command === 'mission reject') {
+    const reason = request.reason === undefined ? 'Rejected by owner.' : requireString(request.reason, 'reason');
+    if (reason.length > 500) {
+      const error = new Error('reason must be at most 500 characters.');
+      error.code = 'INVALID_BRIDGE_REQUEST';
+      throw error;
+    }
+    output = closeMission({
+      missionId,
+      actor: requireString(request.actor, 'actor'),
+      stateDir,
+      action: 'reject',
+      reason,
+    });
   } else if (command === 'context build') {
     output = buildMissionContext({
       missionId,
@@ -328,6 +372,7 @@ module.exports = {
   nextActionForRecord,
   parseInput,
   publicArtifacts,
+  publicQa,
   runBridgeCli,
   successEnvelope,
 };

@@ -60,6 +60,7 @@ Supported commands:
 | `mission create` | `mission` | Validate and durably intake a Mission. |
 | `mission status` | `mission_id` | Return only the public Mission state. |
 | `mission approve` | `mission_id`, `actor`; optional `approval_type: "change"` | Record Mission Approval or Change Approval. |
+| `mission reject` | `mission_id`, `actor`; optional `reason` | Idempotently reject an active Mission, record the owner audit trail, and release its runtime slot. |
 | `context build` | `mission_id`; optional `include_patterns`, `grep_queries`, `max_bytes` | Build the bounded Context Pack. |
 | `planner run` | `mission_id` | Create the exact-scope plan and Codex handoff. |
 | `implementer run` | `mission_id`, `execution_id`, and inline `result`; or `mode: "codex"`, `execute_agent: true`, `cost_usd` | Submit an external implementer result or explicitly run Codex. |

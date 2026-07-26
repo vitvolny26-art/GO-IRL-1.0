@@ -21,11 +21,11 @@ type AppHeaderProps = {
   onLanguageChange: (language: Language) => void;
 };
 
-const notificationCopy: Record<Language, { joined: string }> = {
-  ru: { joined: "Новый участник" },
-  uk: { joined: "Новий учасник" },
-  cs: { joined: "Nový účastník" },
-  en: { joined: "New participant" },
+const notificationCopy: Record<Language, { joined: string; request: string }> = {
+  ru: { joined: "Новый участник", request: "Новый запрос на участие" },
+  uk: { joined: "Новий учасник", request: "Новий запит на участь" },
+  cs: { joined: "Nový účastník", request: "Nová žádost o účast" },
+  en: { joined: "New participant", request: "New join request" },
 };
 
 const notificationTitle = (notification: ParticipantJoinNotification, language: Language) =>
@@ -153,7 +153,7 @@ export function AppHeader({
                     <div className={notification.read ? "notification-item" : "notification-item is-unread"} key={notification.id}>
                       <span className="notification-item-icon"><UserRoundPlus /></span>
                       <span className="notification-item-copy">
-                        <strong>{notificationCopy[language].joined}: {notification.memberName}</strong>
+                        <strong>{notificationCopy[language][notification.kind || "joined"]}: {notification.memberName}</strong>
                         <span>{notificationTitle(notification, language)}</span>
                         <small>{notificationTime(notification.createdAt, language)}</small>
                       </span>

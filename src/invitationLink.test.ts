@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  activityIdFromJoinPath,
+  buildMetaEventPreviewUrl,
   buildSeparatedInvitationText,
   buildTelegramActivityInviteUrl,
   buildTelegramShareUrl,
@@ -27,10 +29,24 @@ describe("invitation links", () => {
     expect(buildTelegramActivityInviteUrl("demo-event", "GOirl_bot")).toBeNull();
   });
 
-  it("keeps the URL and invitation copy separated", () => {
+  it("reads a valid event id from the web join path", () => {
+    expect(activityIdFromJoinPath(`/join/${eventId}`)).toBe(eventId);
+    expect(activityIdFromJoinPath("/join/demo-volleyball")).toBe("demo-volleyball");
+    expect(activityIdFromJoinPath("/join/not-an-event")).toBe("");
+  });
+
+  it("builds a public preview URL only for persisted event ids", () => {
+    expect(buildMetaEventPreviewUrl(eventId, "https://goirl.example", "cs"))
+      .toBe(`https://goirl.example/api/meta/event-preview?event=${eventId}&language=cs`);
+    expect(buildMetaEventPreviewUrl("demo-volleyball", "https://goirl.example", "ru")).toBeNull();
+    expect(buildMetaEventPreviewUrl(eventId, "https://goirl.example", "unexpected"))
+      .toBe(`https://goirl.example/api/meta/event-preview?event=${eventId}&language=ru`);
+  });
+
+  it("keeps the URL below the invitation copy", () => {
     const invitationUrl = `https://t.me/GOirl_bot?startapp=${eventId}`;
     const text = "GO IRL: Волейбол\n19 июл. · 16:30\nZŠ Demlova";
-    expect(buildSeparatedInvitationText(invitationUrl, text)).toBe(`${invitationUrl}\n\n${text}`);
+    expect(buildSeparatedInvitationText(invitationUrl, text)).toBe(`${text}\n\n${invitationUrl}`);
 
     const shareUrl = new URL(buildTelegramShareUrl(invitationUrl, text));
     expect(shareUrl.searchParams.get("url")).toBe(invitationUrl);

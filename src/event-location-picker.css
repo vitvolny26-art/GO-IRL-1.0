@@ -1,0 +1,252 @@
+.event-location-picker-portal {
+  display: block;
+}
+
+.event-location-picker-button {
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 14px;
+  border: 1px solid rgba(87, 217, 232, .34);
+  border-radius: 14px;
+  background: rgba(87, 217, 232, .08);
+  color: var(--cyan);
+  font-weight: 900;
+}
+
+.event-location-picker-button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.event-location-picker-backdrop {
+  position: fixed;
+  z-index: 150;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  padding: 12px;
+  background: rgba(0, 0, 0, .72);
+  backdrop-filter: blur(8px);
+}
+
+.event-location-picker-sheet {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 560px);
+  max-height: calc(100dvh - 24px);
+  margin: 0 auto;
+  padding: 14px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 24px;
+  background: #11141a;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .58);
+}
+
+.event-location-picker-sheet header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.event-location-picker-sheet header > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.event-location-picker-sheet header strong {
+  font-size: 20px;
+}
+
+.event-location-picker-sheet header span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.event-location-picker-sheet header button,
+.event-location-map-controls button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 13px;
+  background: rgba(17, 20, 26, .92);
+  color: var(--text);
+}
+
+.event-location-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 240px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 18px;
+  background: #182126;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.event-location-map:active {
+  cursor: grabbing;
+}
+
+.event-location-map-tiles {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 640px;
+  height: 360px;
+  transform: translate(-50%, -50%);
+}
+
+.event-location-map-tiles img {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.event-location-map-pin {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, .9);
+  border-radius: 50% 50% 50% 8px;
+  background: var(--lime);
+  color: #111500;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .45);
+  transform: translate(-50%, -100%) rotate(-45deg);
+  pointer-events: none;
+}
+
+.event-location-map-pin svg {
+  width: 23px;
+  height: 23px;
+  transform: rotate(45deg);
+}
+
+.event-location-map-controls {
+  position: absolute;
+  z-index: 4;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  gap: 7px;
+}
+
+.event-location-map-controls button {
+  width: 40px;
+  height: 40px;
+}
+
+.event-location-map-attribution {
+  position: absolute;
+  z-index: 4;
+  right: 6px;
+  bottom: 5px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .84);
+  color: #1c2830;
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.event-location-picker-coordinates {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.event-location-picker-coordinates svg {
+  width: 16px;
+  height: 16px;
+  color: var(--lime);
+}
+
+.event-location-picker-error {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 111, 97, .4);
+  border-radius: 12px;
+  background: rgba(255, 111, 97, .09);
+  color: var(--coral);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.event-location-picker-actions {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 8px;
+}
+
+.event-location-picker-actions button {
+  display: flex;
+  min-width: 0;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  font-weight: 900;
+}
+
+.event-location-picker-actions button svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.event-location-picker-actions .secondary {
+  border: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .04);
+  color: var(--text);
+}
+
+.event-location-picker-actions .primary {
+  border: 0;
+  background: var(--lime);
+  color: var(--lime-text);
+}
+
+.event-location-picker-actions button:disabled {
+  cursor: wait;
+  opacity: .62;
+}
+
+@media (max-width: 430px) {
+  .event-location-picker-backdrop {
+    padding: 0;
+  }
+
+  .event-location-picker-sheet {
+    max-height: 94dvh;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .event-location-picker-actions {
+    grid-template-columns: 1fr;
+  }
+}

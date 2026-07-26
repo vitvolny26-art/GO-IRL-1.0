@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 

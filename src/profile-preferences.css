@@ -1,0 +1,73 @@
+.profile-preferences {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+}
+
+.profile-preferences header {
+  margin-bottom: 14px;
+}
+
+.profile-preferences h2 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+.profile-preferences p {
+  margin: 0;
+  opacity: 0.72;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.profile-preferences-list {
+  display: grid;
+  gap: 10px;
+}
+
+.profile-preference-row {
+  display: grid;
+  grid-template-columns: 36px minmax(90px, 1fr) minmax(150px, 1.4fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.profile-preference-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-preference-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.profile-preference-copy strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.profile-preference-row select {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 520px) {
+  .profile-preference-row {
+    grid-template-columns: 36px 1fr;
+  }
+
+  .profile-preference-row select {
+    grid-column: 1 / -1;
+  }
+}

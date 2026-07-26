@@ -25,7 +25,7 @@ Telegram remains the primary application. WhatsApp, Instagram, and Messenger are
 - Invitation builders create event summaries and stable `join:<eventId>` / `details:<eventId>` quick-reply payloads.
 - Rich invitations use one compact 1080x900 GO IRL JPEG standard with clean activity artwork, date, price, location, level, capacity, and visual calls to action. Weather is intentionally omitted.
 - The image is served by `api/meta/event-invitation-card.ts` only when a time-limited HMAC token is valid. Tokens contain public event-card data and expire after 24 hours.
-- Instagram Direct and Messenger use a native Generic Template around the image. Join remains a postback; Open is a native web action when a Telegram invite URL is available.
+- Instagram Direct and Messenger use a native Generic Template around the image. Its native actions open the matching `/join/<eventId>` web event and a Google Calendar draft generated from that same event's date, time, duration, title, and location.
 - Missing deployment origin or signing secret degrades to the existing text plus quick-reply invitation instead of blocking delivery.
 - Confirmation builders render joined, duplicate, waitlist, and rejection results with calendar/map links.
 - Mock webhook parsing recognizes text, quick replies, and postbacks.
@@ -37,7 +37,7 @@ Telegram remains the primary application. WhatsApp, Instagram, and Messenger are
 
 ## Invitation visual boundary
 
-The rendered image is a snapshot created when the message is sent. Meta controls the final button chrome and message spacing. Buttons painted inside the JPEG are visual continuity only; the provider-native Join/Open actions are the interactive controls.
+The rendered image is a snapshot created when the message is sent. Its image token, title, subtitle, web-event URL, and calendar URL are all derived from the same trusted event summary. Meta controls the final button chrome, cropping, message spacing, and whether a link opens in an in-app webview or the device browser. Buttons painted inside the JPEG are visual continuity only; the provider-native Open event/Calendar actions are the interactive controls.
 
 ## Production configuration gate
 

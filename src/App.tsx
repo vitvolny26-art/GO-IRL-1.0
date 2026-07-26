@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
 import {
   ArrowLeft,
+  BellDot,
   CalendarDays,
   CalendarPlus,
   Check,
@@ -33,7 +34,7 @@ import { AppHeader } from "./components/AppHeader";
 import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
-import { getCurrentAuthIdentity, getCurrentStartParam, initializeTrustedAuth } from "./authSession";
+import { getCurrentAuthIdentity, getCurrentStartParam, initializeTrustedAuth, isTrustedAuthReady } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
@@ -66,16 +67,19 @@ import {
   validateRequiredText,
 } from "./validation";
 import { ActivityChatPanel } from "./components/ActivityChatPanel";
-import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction } from "./components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction, OrganizerDetailAction } from "./components/EventCardPrimitives";
 import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
+import { CardReminderAction } from "./components/CardReminderAction";
 import { EventCardArtwork } from "./components/EventCardArtwork";
 import { stripLeadingEmoji } from "./cardText";
 import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation } from "./eventLocations";
 import { openAvatarCropper } from "./avatarCropper";
 import { activityIconFor } from "./activityIcon";
 import {
+  activityIdFromJoinPath,
   buildBrowserActivityInviteUrl,
+  buildMetaEventPreviewUrl,
   buildSeparatedInvitationText,
   buildTelegramActivityInviteUrl,
   buildTelegramShareUrl,
@@ -83,6 +87,7 @@ import {
 } from "./invitationLink";
 import { EventWeatherStrip } from "./components/EventWeatherStrip";
 import { isOutdoorGenericActivity } from "./eventWeather";
+import { getEventSheetBackgroundStyle } from "./eventSheetBackground";
 import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
 import {
   eventActionTranslationKey,
@@ -100,7 +105,7 @@ import type { UserProfile, UserProfileDraft } from "./profile/profileTypes";
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "").replace(/^\//, "");
 
-type ActivityOpenOptions = { focusChat?: boolean };
+type ActivityOpenOptions = { focusChat?: boolean; focusRequests?: boolean };
 type OpenActivity = (activity: Activity, options?: ActivityOpenOptions) => void;
 
 const activityInviteUrl = (activity: Activity) => {
@@ -139,12 +144,6 @@ const eventHelperCardCopy: Record<Language, { needed: string; requested: string;
   uk: { needed: "Потрібен помічник", requested: "Помічника запитано", confirmed: "Є помічник" },
   cs: { needed: "Potřebujeme pomocníka", requested: "Pomocník vyžádán", confirmed: "Pomocník potvrzen" },
   en: { needed: "Helper needed", requested: "Helper requested", confirmed: "Helper confirmed" },
-};
-
-const activityIdFromJoinPath = () => {
-  if (typeof window === "undefined") return "";
-  const match = window.location.pathname.match(/^\/join\/([^/?#]+)/);
-  return match ? decodeURIComponent(match[1]) : "";
 };
 
 const LazySportActivityCard = lazy(() => import("./verticals/SportVertical").then((module) => ({ default: module.SportActivityCard })));
@@ -249,6 +248,7 @@ function App() {
   const t = getTranslation(store.language);
   const openActivity: OpenActivity = (activity, options) => {
     setSelected(activity);
+    setSelectedMembersOpen(Boolean(options?.focusRequests));
     setSelectedChatRequest(options?.focusChat ? (request) => request + 1 : 0);
   };
 
@@ -301,7 +301,7 @@ function App() {
   useEffect(() => {
     if (invitationHandled.current) return;
     const startParam = getCurrentStartParam();
-    const pathId = activityIdFromJoinPath();
+    const pathId = activityIdFromJoinPath(window.location.pathname);
     const parsedStartParam = startParam ? parseInvitationStartParam(startParam) : null;
     if (parsedStartParam && !parsedStartParam.valid) {
       invitationHandled.current = true;
@@ -309,6 +309,14 @@ function App() {
       return;
     }
     const invitedId = parsedStartParam?.eventId || pathId;
+    const browserPreviewUrl = pathId && !isTrustedAuthReady()
+      ? buildMetaEventPreviewUrl(pathId, window.location.origin, store.language)
+      : null;
+    if (browserPreviewUrl) {
+      invitationHandled.current = true;
+      window.location.replace(browserPreviewUrl);
+      return;
+    }
     if (invitedId) {
       const invitedActivity = store.activities.find((item) => item.id === invitedId);
       if (invitedActivity) {
@@ -322,7 +330,7 @@ function App() {
         showNotice(t.invitationEventNotFound);
       }
     }
-  }, [store.activities, store.loading, t.invalidInvitationLink, t.invitationEventNotFound]);
+  }, [store.activities, store.language, store.loading, t.invalidInvitationLink, t.invitationEventNotFound]);
 
   const flash = (message: string) => {
     setNotice(message);
@@ -1314,6 +1322,9 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
   const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [helperState, setHelperState] = useState<"none" | "requested" | "confirmed">("none");
   const joinedMembers = activity.members.filter((member) => member.status === "joined");
+  const pendingRequestCount = isOrganizer
+    ? activity.members.filter((member) => member.status === "pending").length
+    : 0;
   const shareTitle = stripLeadingEmoji(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
   const avatar = genericActivityAvatar(activity, language, category.icon);
@@ -1374,6 +1385,18 @@ function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity:
     <article className="activity-card sport-card compact-sport-card unified-event-card glass-event-card">
       <EventCardArtwork icon={avatar} activity={activity.activity[language]} title={activity.title[language]} />
       <div className="sport-card-top-actions">
+        {pendingRequestCount > 0 ? (
+          <button
+            className="event-request-alert"
+            type="button"
+            aria-label={`${t.requests}: ${pendingRequestCount}`}
+            onClick={() => onOpen(activity, { focusRequests: true })}
+          >
+            <BellDot aria-hidden="true" />
+            <span>{pendingRequestCount}</span>
+          </button>
+        ) : null}
+        <CardReminderAction activityId={activity.id} date={activity.date} time={activity.time} />
         <CardShareAction
           title={shareTitle}
           date={shareDate}
@@ -1531,6 +1554,11 @@ function GenericActivitySheet({
   const waitingMembers = activity.members.filter((member) => member.status === "waiting");
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
   const activityAvatar = genericActivityAvatar(activity, language, category.icon);
+  const sheetBackgroundStyle = getEventSheetBackgroundStyle({
+    icon: activityAvatar,
+    activity: activity.activity[language],
+    title: activity.title[language],
+  });
 
   const handleReview = async (memberKey: string, approved: boolean) => {
     await reviewRequest(activity.id, memberKey, approved);
@@ -1544,7 +1572,7 @@ function GenericActivitySheet({
 
   return (
     <div className="sheet-backdrop" onMouseDown={onClose}>
-      <article className="activity-sheet" onMouseDown={(event) => event.stopPropagation()}>
+      <article className="activity-sheet" style={sheetBackgroundStyle} onMouseDown={(event) => event.stopPropagation()}>
         <div className="sheet-handle" />
         <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
         {loading && <EventDetailsSkeleton />}
@@ -1564,7 +1592,7 @@ function GenericActivitySheet({
           <div><MapPin /><span>{t.address}</span>{activity.locationUrl ? <a href={activity.locationUrl} target="_blank" rel="noreferrer">{activity.address}</a> : <strong>{activity.address}</strong>}</div>
           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
           {activity.participantNote && <div><Sparkles /><span>{t.participantNote}</span><strong>{activity.participantNote}</strong></div>}
-          <div><CircleUserRound /><span>{t.organizer}</span><strong>{activity.organizer}</strong></div>
+          <OrganizerDetailAction organizerKey={activity.organizerKey} organizerName={activity.organizer} label={t.organizer} />
           <div><ShieldCheck /><span>{t.visibility}</span><strong>{accessLabel}</strong></div>
         </div>
         <button className="detail-members-toggle" onClick={() => setMembersOpen((open) => !open)} type="button">
@@ -1598,8 +1626,8 @@ function GenericActivitySheet({
                   <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
                   <strong>{member.name}</strong>
                   <span className="request-actions">
-                    <button onClick={() => void handleReview(member.userKey, true)} type="button" aria-label={t.approve} title={t.approve}><Check /></button>
-                    <button onClick={() => void handleReview(member.userKey, false)} type="button" aria-label={t.reject} title={t.reject}><X /></button>
+                    <button onClick={() => void handleReview(member.userKey, true)} type="button" aria-label={t.approve} title={t.approve}><Check /><span>{t.approve}</span></button>
+                    <button onClick={() => void handleReview(member.userKey, false)} type="button" aria-label={t.reject} title={t.reject}><X /><span>{t.reject}</span></button>
                   </span>
                 </div>
               ))}
