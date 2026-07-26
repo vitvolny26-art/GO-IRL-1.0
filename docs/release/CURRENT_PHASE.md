@@ -3,7 +3,8 @@ title: Current Project Phase
 owner: Chief Archivist / Technical Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-20
+authority_scope: lifecycle_phase
+last_review: 2026-07-26
 next_review: 2026-08-20
 ---
 
@@ -11,7 +12,7 @@ next_review: 2026-08-20
 
 ## Decision
 
-GO IRL 1.0 has completed Closed Beta and is now in Release Preparation.
+GO IRL 1.0 has completed Closed Beta and is now in **Release Preparation and focused post-beta stabilization**.
 
 - Previous phase: **Closed Beta** — completed on 2026-07-20.
 - Current phase: **Release Preparation and focused post-beta stabilization**.
@@ -27,16 +28,37 @@ GO IRL 1.0 has completed Closed Beta and is now in Release Preparation.
 
 ## Taxonomy decision
 
-The six categories used during beta remain historical acceptance evidence and a proven Olomouc baseline. They are no longer an active phase restriction.
+The six categories used during beta remain historical acceptance evidence and a proven Olomouc baseline. They are no longer an automatic active-phase restriction.
 
-Adding or exposing new categories and verticals still requires an explicit reviewed product decision. Leaving beta does not authorize automatic scope expansion.
+Adding or exposing new categories, modules, cities, or verticals still requires an explicit reviewed product decision. Leaving beta does not authorize scope expansion.
 
-## Source-of-truth rule
+## Authority split
 
-This document defines the current lifecycle phase. `DOCS_INDEX.md` remains the documentation registry and must list this file explicitly.
+This document owns only the current lifecycle-phase statement.
 
-`RELEASE_NOTES.md` remains the source of truth for release implementation status; this file owns only the lifecycle-phase decision.
+The canonical Product Roadmap is maintained in Google Drive:
 
-Historical beta reports, checklists, tests, and acceptance records remain valid historical evidence and should not be rewritten.
+https://docs.google.com/document/d/12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw/edit
 
-GitHub `main` remains the only project source of truth. ClickUp is the operational mirror and task-management layer.
+Stable Document ID: `12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw`.
+
+The canonical Product Roadmap controls:
+
+- product sequencing;
+- phase definitions beyond the current-phase statement;
+- product entry and exit gates;
+- authorization of future roadmap scope.
+
+GitHub `main` and verified runtime evidence remain authoritative for:
+
+- code and implemented behavior;
+- tests and CI results;
+- schemas, auth, RLS, and migrations;
+- deployment and production configuration;
+- durable technical facts.
+
+Root `ROADMAP.md` is a delegating locator only.
+
+`RELEASE_NOTES.md` remains the source of truth for release implementation status.
+
+Historical beta reports, checklists, tests, and acceptance records remain valid historical evidence and must not be rewritten as current runtime proof.
