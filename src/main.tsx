@@ -38,6 +38,7 @@ import "./map-provider-picker.css";
 import "./profile-preferences.css";
 import "./participant-identity.css";
 import "./profile-hub.css";
+import "./mobile-ux-followup.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 
