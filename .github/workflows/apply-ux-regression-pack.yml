@@ -38,18 +38,25 @@ jobs:
         working-directory: repo
         run: test "$(git rev-parse HEAD)" = "e76f2451c8fa0003105a66d780b3987f02654779"
 
-      - name: Apply UX patches
+      - name: Apply weather patch
         working-directory: repo
-        run: |
-          git apply --check ../patches/.tmp/ux-weather.patch
-          git apply ../patches/.tmp/ux-weather.patch
-          git apply --check ../patches/.tmp/ux-organizer.patch
-          git apply ../patches/.tmp/ux-organizer.patch
-          git apply --check ../patches/.tmp/ux-map.patch
-          git apply ../patches/.tmp/ux-map.patch
-          git apply --check ../patches/.tmp/ux-select.patch
-          git apply ../patches/.tmp/ux-select.patch
-          git diff --check
+        run: git apply --check ../patches/.tmp/ux-weather.patch && git apply ../patches/.tmp/ux-weather.patch
+
+      - name: Apply organizer patch
+        working-directory: repo
+        run: git apply --check ../patches/.tmp/ux-organizer.patch && git apply ../patches/.tmp/ux-organizer.patch
+
+      - name: Apply map patch
+        working-directory: repo
+        run: git apply --check ../patches/.tmp/ux-map.patch && git apply ../patches/.tmp/ux-map.patch
+
+      - name: Apply select patch
+        working-directory: repo
+        run: git apply --check ../patches/.tmp/ux-select.patch && git apply ../patches/.tmp/ux-select.patch
+
+      - name: Verify patch whitespace
+        working-directory: repo
+        run: git diff --check
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
