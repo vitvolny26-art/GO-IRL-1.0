@@ -189,3 +189,63 @@
   font-weight: 800;
   line-height: 1.35;
 }
+
+.confirmed-coach-chat-card {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 11px;
+  align-items: center;
+  margin: 14px 0 8px;
+  padding: 12px;
+  border: 1px solid rgba(201, 255, 61, .28);
+  border-radius: 9px;
+  background: linear-gradient(135deg, rgba(201, 255, 61, .11), rgba(87, 217, 232, .07));
+}
+
+.confirmed-coach-chat-avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(201, 255, 61, .17);
+  color: var(--lime);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.confirmed-coach-chat-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.confirmed-coach-chat-status,
+.confirmed-coach-chat-copy small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.confirmed-coach-chat-status {
+  color: var(--lime);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.confirmed-coach-chat-copy strong {
+  font-size: 14px;
+}
+
+.confirmed-coach-chat-copy small,
+.confirmed-coach-chat-copy p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.confirmed-coach-chat-copy p {
+  margin: 3px 0 0;
+  line-height: 1.4;
+}
