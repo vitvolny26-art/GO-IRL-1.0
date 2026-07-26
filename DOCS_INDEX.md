@@ -100,7 +100,7 @@ next_review:
 | `docs/DEVELOPMENT_PROTOCOL.md` | Engineering Protocol | Active | Да | pnpm, small patches, no unsafe changes. |
 | `docs/onboarding/ARCHIVIST_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for Project Archivist duties, reading order, market intelligence duty, and memory rules. |
 | `docs/onboarding/PROJECT_COORDINATOR_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for report-only Daily Mission routing, role activation, budgets, validation, and human gates. |
-| `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md` | Onboarding / Role Charter | Active | Да | Source of truth for Automation Engineer duties, deterministic routing, workflow verification, and production approval gates. |
+| `docs/onboarding/AUTOMATION_ENGINEER_CHARTER.md` | Onboarding / Role Charter | Review | Да | Canonical review-stage charter. Manual selection is supported; deterministic runtime activation remains pending merge, deployment, and verification. |
 | `docs/onboarding/AI_ROLES.md` | Onboarding / Role Registry | Draft | Да | Working registry for AI roles; individual charters still need expansion. |
 | `docs/onboarding/AI_FIXER_AGENT.md` | Onboarding / AI Agent Prompt | Active | Да | Source of truth for small bug, QA, and UX polish agent behavior and safety limits. |
 | `docs/reports/README.md` | Reports / AI Work Logs | Active | Нет | Defines report location and format for AI Fixer task reports. |
