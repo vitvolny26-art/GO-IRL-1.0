@@ -11,6 +11,11 @@ import {
   saveLocalEventTelegramChatLink,
   type ExternalTelegramChatLink,
 } from "../externalTelegramChat";
+import {
+  loadSharedEventTelegramChatLink,
+  removeSharedEventTelegramChatLink,
+  saveSharedEventTelegramChatLink,
+} from "../externalTelegramChatRepository";
 import type { Activity } from "../types";
 import "./external-telegram-chat.css";
 
@@ -27,9 +32,12 @@ const eventEndsAt = (activity: Activity) => {
 
 export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPanelProps) {
   const [identityKey, setIdentityKey] = useState<string | null>(null);
-  const [link, setLink] = useState<ExternalTelegramChatLink | null>(() => loadLocalEventTelegramChatLink(activity.id));
-  const [draft, setDraft] = useState(link?.url || "");
+  const [link, setLink] = useState<ExternalTelegramChatLink | null>(null);
+  const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [shared, setShared] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -47,11 +55,34 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
   }, []);
 
   useEffect(() => {
-    const next = loadLocalEventTelegramChatLink(activity.id);
-    setLink(next);
-    setDraft(next?.url || "");
+    let active = true;
+    setLoading(true);
     setEditing(false);
     setError("");
+
+    void loadSharedEventTelegramChatLink(activity.id)
+      .then((next) => {
+        if (!active) return;
+        const fallback = next || loadLocalEventTelegramChatLink(activity.id);
+        setLink(fallback);
+        setDraft(fallback?.url || "");
+        setShared(Boolean(next));
+      })
+      .catch(() => {
+        if (!active) return;
+        const fallback = loadLocalEventTelegramChatLink(activity.id);
+        setLink(fallback);
+        setDraft(fallback?.url || "");
+        setShared(false);
+        setError("Общая синхронизация Telegram-чата пока недоступна");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [activity.id]);
 
   const membershipStatus = useMemo(
@@ -71,31 +102,47 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
   });
   const canOpen = Boolean(link && canAccess && lifecycle === "active");
 
-  const save = () => {
-    if (!identityKey || !isOrganizer) return;
+  const save = async () => {
+    if (!identityKey || !isOrganizer || saving) return;
     const normalized = normalizeExternalTelegramChatUrl(draft);
     if (!normalized) {
       setError("Добавьте корректную ссылку t.me на группу или приглашение");
       return;
     }
-    const next = saveLocalEventTelegramChatLink(activity.id, normalized, identityKey);
-    if (!next) {
-      setError("Не удалось сохранить ссылку");
-      return;
-    }
-    setLink(next);
-    setDraft(next.url);
-    setEditing(false);
+
+    setSaving(true);
     setError("");
+    try {
+      const next = await saveSharedEventTelegramChatLink(activity.id, normalized, identityKey, link?.keepArchive);
+      if (!next) throw new Error("telegram_chat_not_saved");
+      saveLocalEventTelegramChatLink(activity.id, next.url, identityKey);
+      setLink(next);
+      setDraft(next.url);
+      setShared(true);
+      setEditing(false);
+    } catch {
+      setError("Не удалось сохранить Telegram-чат для участников");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const remove = () => {
-    if (!isOrganizer) return;
-    removeLocalEventTelegramChatLink(activity.id);
-    setLink(null);
-    setDraft("");
-    setEditing(false);
+  const remove = async () => {
+    if (!isOrganizer || saving) return;
+    setSaving(true);
     setError("");
+    try {
+      await removeSharedEventTelegramChatLink(activity.id);
+      removeLocalEventTelegramChatLink(activity.id);
+      setLink(null);
+      setDraft("");
+      setShared(false);
+      setEditing(false);
+    } catch {
+      setError("Не удалось удалить Telegram-чат");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -104,20 +151,22 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
         <span className="external-telegram-chat-icon" aria-hidden="true"><Link2 size={18} /></span>
         <div>
           <strong>Telegram-чат события</strong>
-          <small>Организатор добавляет ссылку на группу. Внутренний чат остаётся доступен как fallback.</small>
+          <small>Организатор добавляет ссылку на группу. Доступ получают подтверждённые участники.</small>
         </div>
       </div>
 
-      {link && canAccess ? (
+      {loading ? <div className="external-telegram-chat-muted">Загрузка Telegram-чата…</div> : null}
+
+      {!loading && link && canAccess ? (
         <div className="external-telegram-chat-actions">
-          <button type="button" onClick={() => openExternalTelegramChat(link.url)} disabled={!canOpen}>
+          <button type="button" onClick={() => openExternalTelegramChat(link.url)} disabled={!canOpen || saving}>
             <ExternalLink size={17} aria-hidden="true" />
             {lifecycle === "active" ? "Открыть Telegram-чат" : "Telegram-чат закрыт"}
           </button>
           {isOrganizer ? (
             <>
-              <button type="button" className="secondary" onClick={() => setEditing(true)}>Изменить</button>
-              <button type="button" className="danger" onClick={remove} aria-label="Удалить ссылку на Telegram-чат">
+              <button type="button" className="secondary" onClick={() => setEditing(true)} disabled={saving}>Изменить</button>
+              <button type="button" className="danger" onClick={() => void remove()} disabled={saving} aria-label="Удалить ссылку на Telegram-чат">
                 <Trash2 size={17} aria-hidden="true" />
               </button>
             </>
@@ -125,7 +174,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
         </div>
       ) : null}
 
-      {isOrganizer && (!link || editing) ? (
+      {!loading && isOrganizer && (!link || editing || !shared) ? (
         <div className="external-telegram-chat-editor">
           <input
             value={draft}
@@ -134,20 +183,23 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
             inputMode="url"
             autoCapitalize="none"
             autoCorrect="off"
+            disabled={saving}
           />
-          <button type="button" onClick={save}>{link ? "Сохранить" : "Добавить чат"}</button>
-          {editing ? <button type="button" className="secondary" onClick={() => { setEditing(false); setDraft(link?.url || ""); setError(""); }}>Отмена</button> : null}
+          <button type="button" onClick={() => void save()} disabled={saving}>{saving ? "Сохранение…" : link ? "Сохранить для участников" : "Добавить чат"}</button>
+          {editing ? <button type="button" className="secondary" disabled={saving} onClick={() => { setEditing(false); setDraft(link?.url || ""); setError(""); }}>Отмена</button> : null}
         </div>
       ) : null}
 
-      {!isOrganizer && !link ? (
+      {!loading && !isOrganizer && !link ? (
         <div className="external-telegram-chat-muted">Организатор ещё не добавил Telegram-чат.</div>
       ) : null}
-      {link && !canAccess ? (
+      {!loading && link && !canAccess ? (
         <div className="external-telegram-chat-muted">Telegram-чат доступен организатору и подтверждённым участникам.</div>
       ) : null}
       {error ? <div className="external-telegram-chat-error">{error}</div> : null}
-      <div className="external-telegram-chat-note">Сейчас ссылка хранится только на этом устройстве. Общая синхронизация требует отдельно утверждённого persistence/RLS шага.</div>
+      <div className="external-telegram-chat-note">
+        {shared ? "Ссылка синхронизирована и защищена правилами доступа." : "Локальная ссылка видна только на этом устройстве, пока организатор не сохранит её для участников."}
+      </div>
     </section>
   );
 }
