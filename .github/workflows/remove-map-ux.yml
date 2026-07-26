@@ -1,0 +1,99 @@
+name: Remove map UX from regression pack
+
+on:
+  push:
+    branches:
+      - tmp/remove-map-ux-20260726
+    paths:
+      - ".github/workflows/remove-map-ux.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  remove-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v5
+        with:
+          ref: fix/ux-regression-pack
+          fetch-depth: 0
+
+      - name: Verify expected head
+        run: test "$(git rev-parse HEAD)" = "5f36cd898a03bd4a55d91b839433b86d87048bdc"
+
+      - name: Remove map UX only
+        run: |
+          git checkout e76f2451c8fa0003105a66d780b3987f02654779 -- \
+            src/components/MapProviderPickerPortal.tsx \
+            src/map-provider-picker.css \
+            src/mapProviderPicker.ts
+          rm src/components/EventLocationAction.tsx
+          rm src/mapProviderPicker.test.ts
+          python - <<'PY'
+          from pathlib import Path
+
+          app = Path("src/App.tsx")
+          text = app.read_text()
+          replacements = [
+              ('import { EventLocationAction } from "./components/EventLocationAction";\nimport { requestMapProvider } from "./mapProviderPicker";\n', ''),
+              ('''const openActivityMap = (activity: Activity) => {\n  const city = getCity(activity.cityId).name.en;\n  requestMapProvider(activity.locationUrl?.trim() || buildEventLocationUrl(activity.address, city));\n};''', '''const openActivityMap = (activity: Activity) => {\n  if (activity.locationUrl?.trim()) {\n    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");\n    return;\n  }\n  const query = activity.address.trim() || getCity(activity.cityId).name.en;\n  window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(query)}`, "_blank", "noopener,noreferrer");\n};'''),
+              ('''          <EventLocationAction\n            city={cityName}\n            address={activity.address}\n            sourceUrl={activity.locationUrl}\n            ariaLabel={t.address}\n          />''', '''          <div><Compass /><span>{t.city}</span><strong>{cityName}</strong></div>\n          <div><MapPin /><span>{t.address}</span>{activity.locationUrl ? <a href={activity.locationUrl} target="_blank" rel="noreferrer">{activity.address}</a> : <strong>{activity.address}</strong>}</div>'''),
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit(f"App replacement count mismatch: {text.count(old)}")
+              text = text.replace(old, new)
+          app.write_text(text)
+
+          sport = Path("src/verticals/SportVertical.tsx")
+          text = sport.read_text()
+          replacements = [
+              ('import { EventLocationAction } from "../components/EventLocationAction";\nimport { requestMapProvider } from "../mapProviderPicker";\n', ''),
+              ('''const openActivityMap = (activity: Activity) => {\n  const city = getCity(activity.cityId).name.en;\n  const query = [activity.address.trim(), city].filter(Boolean).join(", ");\n  requestMapProvider(activity.locationUrl?.trim() || `https://mapy.com/zakladni?q=${encodeURIComponent(query)}`);\n};''', '''const openActivityMap = (activity: Activity) => {\n  if (activity.locationUrl?.trim()) {\n    window.open(activity.locationUrl, "_blank", "noopener,noreferrer");\n    return;\n  }\n  const city = getCity(activity.cityId).name.en;\n  const query = encodeURIComponent(activity.address.trim() || city);\n  window.open(`https://mapy.cz/zakladni?q=${query}`, "_blank", "noopener,noreferrer");\n};'''),
+              ('''          <EventLocationAction\n            city={cityName}\n            address={activity.address}\n            sourceUrl={activity.locationUrl || sportMapSearchUrl}\n            ariaLabel={t.address}\n          />''', '''          <div><MapPin /><span>{t.address}</span><a className="sport-address-link" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer">{locationLabel || cityName}</a></div>'''),
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit(f"Sport replacement count mismatch: {text.count(old)}")
+              text = text.replace(old, new)
+          sport.write_text(text)
+          PY
+          git diff --check
+
+      - name: Create local revert commit
+        run: |
+          git config user.name "GO IRL AI Fixer"
+          git config user.email "actions@users.noreply.github.com"
+          git add src
+          git commit -m "fix: remove map location chooser changes"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Push verified commit
+        run: git push origin HEAD:fix/ux-regression-pack
