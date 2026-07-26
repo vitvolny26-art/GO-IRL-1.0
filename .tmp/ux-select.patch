@@ -1,0 +1,163 @@
+diff --git a/src/components/ProfilePreferencesPortal.test.ts b/src/components/ProfilePreferencesPortal.test.ts
+new file mode 100644
+index 0000000..0d35c3d
+--- /dev/null
++++ b/src/components/ProfilePreferencesPortal.test.ts
+@@ -0,0 +1,11 @@
++import { describe, expect, it } from "vitest";
++import { visiblePreferenceOptions } from "./ProfilePreferencesPortal";
++
++describe("profile preference options", () => {
++  it("hides providers that are not supported", () => {
++    expect(visiblePreferenceOptions([
++      { value: "telegram", label: "Telegram" },
++      { value: "instagram", label: "Instagram", disabled: true },
++    ])).toEqual([{ value: "telegram", label: "Telegram" }]);
++  });
++});
+diff --git a/src/components/ProfilePreferencesPortal.tsx b/src/components/ProfilePreferencesPortal.tsx
+index 3a23031..5c81a0c 100644
+--- a/src/components/ProfilePreferencesPortal.tsx
++++ b/src/components/ProfilePreferencesPortal.tsx
+@@ -1,6 +1,6 @@
+ import { useEffect, useState, type ReactNode } from "react";
+ import { createPortal } from "react-dom";
+-import { Bell, CalendarDays, MapPin, Share2 } from "lucide-react";
++import { Bell, CalendarDays, ChevronDown, MapPin, Share2 } from "lucide-react";
+ import { useAppStore } from "../store";
+ import {
+   readUserPreferences,
+@@ -13,11 +13,11 @@ import {
+ } from "../userPreferences";
+ import type { Language } from "../types";
+ 
+-const copy: Record<Language, { title: string; hint: string; automatic: string; unavailable: string; maps: string; calendar: string; share: string; reminders: string }> = {
+-  ru: { title: "Предпочтения", hint: "Выберите приложения по умолчанию. Сброс снова включает выбор при использовании.", automatic: "Спрашивать каждый раз", unavailable: "Недоступно", maps: "Карты", calendar: "Календарь", share: "Поделиться", reminders: "Напоминания" },
+-  uk: { title: "Налаштування", hint: "Оберіть програми за замовчуванням. Скидання знову вмикає вибір під час використання.", automatic: "Запитувати щоразу", unavailable: "Недоступно", maps: "Карти", calendar: "Календар", share: "Поділитися", reminders: "Нагадування" },
+-  cs: { title: "Předvolby", hint: "Vyberte výchozí aplikace. Reset znovu zobrazí volbu při použití.", automatic: "Vždy se zeptat", unavailable: "Nedostupné", maps: "Mapy", calendar: "Kalendář", share: "Sdílení", reminders: "Připomínky" },
+-  en: { title: "Preferences", hint: "Choose default apps. Reset shows the choice again when used.", automatic: "Ask every time", unavailable: "Unavailable", maps: "Maps", calendar: "Calendar", share: "Share", reminders: "Reminders" },
++const copy: Record<Language, { title: string; hint: string; automatic: string; maps: string; calendar: string; share: string; reminders: string }> = {
++  ru: { title: "Предпочтения", hint: "Выберите приложения по умолчанию. Сброс снова включает выбор при использовании.", automatic: "Спрашивать каждый раз", maps: "Карты", calendar: "Календарь", share: "Поделиться", reminders: "Напоминания" },
++  uk: { title: "Налаштування", hint: "Оберіть програми за замовчуванням. Скидання знову вмикає вибір під час використання.", automatic: "Запитувати щоразу", maps: "Карти", calendar: "Календар", share: "Поділитися", reminders: "Нагадування" },
++  cs: { title: "Předvolby", hint: "Vyberte výchozí aplikace. Reset znovu zobrazí volbu při použití.", automatic: "Vždy se zeptat", maps: "Mapy", calendar: "Kalendář", share: "Sdílení", reminders: "Připomínky" },
++  en: { title: "Preferences", hint: "Choose default apps. Reset shows the choice again when used.", automatic: "Ask every time", maps: "Maps", calendar: "Calendar", share: "Share", reminders: "Reminders" },
+ };
+@@ -43,27 +43,35 @@ const reminderOptions: Array<{ value: ReminderProvider; label: string; disabled?
+   { value: "instagram", label: "Instagram", disabled: true },
+ ];
+ 
++type PreferenceOption = { value: string; label: string; disabled?: boolean };
+ type PreferenceKey = "mapProvider" | "calendarProvider" | "shareProvider" | "reminderProvider";
+ 
++export const visiblePreferenceOptions = (options: PreferenceOption[]) => options.filter((option) => !option.disabled);
++
+ type PreferenceRowProps = {
+   icon: ReactNode;
+   label: string;
+   value: string | null | undefined;
+-  options: Array<{ value: string; label: string; disabled?: boolean }>;
++  options: PreferenceOption[];
+   automatic: string;
+-  unavailable: string;
+   onChange: (value: string | null) => void;
+ };
+ 
+-function PreferenceRow({ icon, label, value, options, automatic, unavailable, onChange }: PreferenceRowProps) {
++function PreferenceRow({ icon, label, value, options, automatic, onChange }: PreferenceRowProps) {
++  const visibleOptions = visiblePreferenceOptions(options);
++  const normalizedValue = visibleOptions.some((option) => option.value === value) ? value : "";
+   return (
+     <label className="profile-preference-row">
+       <span className="profile-preference-icon">{icon}</span>
+       <span className="profile-preference-copy"><strong>{label}</strong></span>
+-      <select value={value || ""} onChange={(event) => onChange(event.target.value || null)}>
+-        <option value="">{automatic}</option>
+-        {options.map((option) => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}{option.disabled ? ` — ${unavailable}` : ""}</option>)}
+-      </select>
++      <span className="profile-preference-select">
++        <select aria-label={label} value={normalizedValue || ""} onChange={(event) => onChange(event.target.value || null)}>
++          <option value="">{automatic}</option>
++          {visibleOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
++        </select>
++        <ChevronDown aria-hidden="true" />
++      </span>
+     </label>
+   );
+ }
+@@ -101,10 +109,10 @@ export function ProfilePreferencesPortal() {
+     <section className="profile-preferences" aria-labelledby="profile-preferences-title">
+       <header><h2 id="profile-preferences-title">{labels.title}</h2><p>{labels.hint}</p></header>
+       <div className="profile-preferences-list">
+-        <PreferenceRow icon={<MapPin />} label={labels.maps} value={preferences.mapProvider} options={mapOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("mapProvider", value)} />
+-        <PreferenceRow icon={<CalendarDays />} label={labels.calendar} value={preferences.calendarProvider} options={calendarOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("calendarProvider", value)} />
+-        <PreferenceRow icon={<Share2 />} label={labels.share} value={preferences.shareProvider} options={shareOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("shareProvider", value)} />
+-        <PreferenceRow icon={<Bell />} label={labels.reminders} value={preferences.reminderProvider} options={reminderOptions} automatic={labels.automatic} unavailable={labels.unavailable} onChange={(value) => change("reminderProvider", value)} />
++        <PreferenceRow icon={<MapPin />} label={labels.maps} value={preferences.mapProvider} options={mapOptions} automatic={labels.automatic} onChange={(value) => change("mapProvider", value)} />
++        <PreferenceRow icon={<CalendarDays />} label={labels.calendar} value={preferences.calendarProvider} options={calendarOptions} automatic={labels.automatic} onChange={(value) => change("calendarProvider", value)} />
++        <PreferenceRow icon={<Share2 />} label={labels.share} value={preferences.shareProvider} options={shareOptions} automatic={labels.automatic} onChange={(value) => change("shareProvider", value)} />
++        <PreferenceRow icon={<Bell />} label={labels.reminders} value={preferences.reminderProvider} options={reminderOptions} automatic={labels.automatic} onChange={(value) => change("reminderProvider", value)} />
+       </div>
+     </section>,
+     target,
+diff --git a/src/profile-preferences.css b/src/profile-preferences.css
+index 36e298d..1a8dafd 100644
+--- a/src/profile-preferences.css
++++ b/src/profile-preferences.css
+@@ -57,9 +57,47 @@
+   font-size: 0.95rem;
+ }
+ 
+-.profile-preference-row select {
++.profile-preference-select {
++  position: relative;
++  display: grid;
++  min-width: 0;
++}
++
++.profile-preference-select select {
+   width: 100%;
+   min-width: 0;
++  min-height: 46px;
++  padding: 0 42px 0 12px;
++  border: 1px solid rgba(255, 255, 255, 0.14);
++  border-radius: 12px;
++  outline: none;
++  appearance: none;
++  background: rgba(7, 10, 14, 0.58);
++  color: var(--text);
++  font: inherit;
++  font-size: 14px;
++  font-weight: 750;
++}
++
++.profile-preference-select select:focus-visible {
++  border-color: rgba(201, 255, 61, 0.62);
++  box-shadow: 0 0 0 3px rgba(201, 255, 61, 0.12);
++}
++
++.profile-preference-select select option {
++  background: #11151a;
++  color: #f6f7f7;
++}
++
++.profile-preference-select > svg {
++  position: absolute;
++  top: 50%;
++  right: 12px;
++  width: 18px;
++  height: 18px;
++  pointer-events: none;
++  color: var(--lime);
++  transform: translateY(-50%);
+ }
+ 
+ @media (max-width: 520px) {
+@@ -67,7 +105,7 @@
+     grid-template-columns: 36px 1fr;
+   }
+ 
+-  .profile-preference-row select {
++  .profile-preference-select {
+     grid-column: 1 / -1;
+   }
+ }
