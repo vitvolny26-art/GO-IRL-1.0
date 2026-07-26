@@ -92,7 +92,15 @@ jobs:
 
       - name: Test
         working-directory: repo
-        run: pnpm run test
+        run: set -o pipefail; pnpm run test 2>&1 | tee test-output.txt
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staged-test-output
+          path: repo/test-output.txt
+          if-no-files-found: ignore
 
       - name: Typecheck
         working-directory: repo
