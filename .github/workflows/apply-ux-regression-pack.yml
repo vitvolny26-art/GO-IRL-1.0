@@ -48,7 +48,7 @@ jobs:
 
       - name: Apply map patch
         working-directory: repo
-        run: git apply --check ../patches/.tmp/ux-map.patch && git apply ../patches/.tmp/ux-map.patch
+        run: git apply --3way ../patches/.tmp/ux-map.patch
 
       - name: Apply select patch
         working-directory: repo
