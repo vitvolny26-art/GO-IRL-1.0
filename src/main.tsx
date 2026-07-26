@@ -11,6 +11,7 @@ import { EventLocationProviderPortal } from "./components/EventLocationProviderP
 import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
+import { ProfileHubPortal } from "./components/ProfileHubPortal";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -36,6 +37,7 @@ import "./event-location-provider.css";
 import "./map-provider-picker.css";
 import "./profile-preferences.css";
 import "./participant-identity.css";
+import "./profile-hub.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 
@@ -122,6 +124,7 @@ createRoot(document.getElementById("root")!).render(
       <MapProviderPickerPortal />
       <ProfilePreferencesPortal />
       <ParticipantIdentityPortal />
+      <ProfileHubPortal />
     </QueryClientProvider>
   </StrictMode>,
 );
