@@ -1,0 +1,138 @@
+diff --git a/src/components/ActivityChatPanel.tsx b/src/components/ActivityChatPanel.tsx
+index eac2d2a..cb11d5d 100644
+--- a/src/components/ActivityChatPanel.tsx
++++ b/src/components/ActivityChatPanel.tsx
+@@ -74,7 +74,7 @@
+   return (
+     <section className="generic-weather-card">
+       <button className="weather-detail-toggle generic-weather-toggle" onClick={() => setOpen((current) => !current)} type="button">
+-        <span className="generic-weather-icon">☀️</span>
++        <span className="generic-weather-icon" aria-hidden="true">{weather?.icon || "🌤️"}</span>
+         <span>Погода</span>
+         <strong className="weather-summary-lines">
+           {weather ? weatherSummaryLines(weather).map((line) => <span key={line}>{line}</span>) : status}
+@@ -89,7 +89,7 @@
+           <div className="weather-bars">
+             {weatherHours.map((hour) => (
+               <div className="weather-bar-row" key={hour.time}>
+-                <span>{hour.time.slice(11, 16)}</span>
++                <span className="weather-hour-time"><b aria-hidden="true">{hour.icon}</b>{hour.time.slice(11, 16)}</span>
+                 <span className="weather-hour-metric">🌡️ {hour.temperature}°C</span>
+                 <span className="weather-hour-metric">☔ {hour.rain}%</span>
+                 <span className="weather-hour-metric">💨 {hour.wind} km/h</span>
+diff --git a/src/components/EventWeatherStrip.tsx b/src/components/EventWeatherStrip.tsx
+index 9f5ea6f..578050a 100644
+--- a/src/components/EventWeatherStrip.tsx
++++ b/src/components/EventWeatherStrip.tsx
+@@ -49,7 +49,7 @@ export function EventWeatherStrip({ activity, language, enabled, durationMinutes
+     <div className={`event-card-weather${weather ? "" : " is-pending"}`} aria-label={t.weatherHint}>
+       {weather ? (
+         <>
+-          <span><b aria-hidden="true">{weather.text.split(" ")[0] || "☀️"}</b>{weather.temperature}°C</span>
++          <span><b aria-hidden="true">{weather.icon}</b>{weather.temperature}°C</span>
+           <span><b aria-hidden="true">☔</b>{weather.rain}%</span>
+           <span><b aria-hidden="true">💨</b>{weather.wind} km/h</span>
+         </>
+diff --git a/src/services/weather.test.ts b/src/services/weather.test.ts
+new file mode 100644
+index 0000000..99feafd
+--- /dev/null
++++ b/src/services/weather.test.ts
+@@ -0,0 +1,20 @@
++import { describe, expect, it } from "vitest";
++import { weatherCodeIcon } from "./weather";
++
++describe("weather code icons", () => {
++  it.each([
++    [0, "☀️"],
++    [2, "⛅"],
++    [45, "🌫️"],
++    [53, "🌦️"],
++    [63, "🌧️"],
++    [73, "❄️"],
++    [95, "⛈️"],
++    [999, "🌤️"],
++  ])("maps Open-Meteo code %s", (code, icon) => {
++    expect(weatherCodeIcon(code)).toBe(icon);
++  });
++});
+diff --git a/src/services/weather.ts b/src/services/weather.ts
+index 58cb889..75f9196 100644
+--- a/src/services/weather.ts
++++ b/src/services/weather.ts
+@@ -3,6 +3,7 @@ import { formatEventTime } from "../eventTime";
+ export type WeatherHour = {
+   time: string;
++  icon: string;
+   temperature: number;
+   rain: number;
+   wind: number;
+@@ -10,6 +11,7 @@ export type WeatherHour = {
+ 
+ export type WeatherResult = {
+   text: string;
++  icon: string;
+   temperature: number;
+   rain: number;
+   wind: number;
+@@ -32,7 +34,7 @@ const geoCache = new Map<string, Promise<{ lat: number; lon: number } | null>>();
+ const weatherCache = new Map<string, Promise<WeatherResult | null>>();
+ 
+-const codeIcon = (code: number) => {
++export const weatherCodeIcon = (code: number) => {
+   if (code === 0) return "☀️";
+   if ([1, 2, 3].includes(code)) return "⛅";
+   if ([45, 48].includes(code)) return "🌫️";
+@@ -65,6 +67,7 @@ const weatherHourFromData = (data: OpenMeteoResponse, times: string[], index: nu
+ 
+   return {
+     time,
++    icon: weatherCodeIcon(Number(data.hourly?.weather_code?.[index] ?? 0)),
+     temperature,
+     rain: Number(data.hourly?.precipitation_probability?.[index] ?? 0),
+     wind: Math.round(data.hourly?.wind_speed_10m?.[index] ?? 0),
+@@ -163,7 +166,8 @@ export async function getEventWeather(input: {
+     const hours = detailHoursForEventWindow(data, times, input);
+ 
+     return {
+-      text: `${codeIcon(code)} ${temp}°C · ☔ ${rain ?? 0}% · 💨 ${wind || 0} km/h`,
++      text: `${weatherCodeIcon(code)} ${temp}°C · ☔ ${rain ?? 0}% · 💨 ${wind || 0} km/h`,
++      icon: weatherCodeIcon(code),
+       temperature: temp,
+       rain: rain ?? 0,
+       wind: wind || 0,
+diff --git a/src/weather-ui-fixes.css b/src/weather-ui-fixes.css
+index dcba2a9..ea7bf21 100644
+--- a/src/weather-ui-fixes.css
++++ b/src/weather-ui-fixes.css
+@@ -12,6 +12,27 @@
+   display: block;
+ }
+ 
++.weather-condition-icon {
++  display: grid;
++  width: 38px;
++  height: 38px;
++  place-items: center;
++  flex: 0 0 auto;
++  border-radius: 14px;
++  background: rgba(201,255,61,.12);
++  font-size: 19px;
++  line-height: 1;
++}
++
++.weather-hour-time {
++  display: flex;
++  align-items: center;
++  gap: 4px;
++  white-space: nowrap;
++}
++
++.weather-hour-time b {
++  font-size: 14px;
++  line-height: 1;
++}
++
+ .weather-bar-row {
+   grid-template-columns: 48px 1fr 1fr 1fr !important;
+   gap: 8px !important;
