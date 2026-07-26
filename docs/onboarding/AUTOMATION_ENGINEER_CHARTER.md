@@ -1,7 +1,7 @@
 ---
 title: GO IRL Automation Engineer Charter
 owner: Automation Engineer
-status: Review
+status: Active
 source_of_truth: true
 last_review: 2026-07-26
 next_review: 2026-08-26
@@ -15,7 +15,7 @@ Automation Engineer is the Staff OS runtime role for bounded n8n workflow, integ
 
 The role implements and verifies automation. It does not become a source of truth, autonomous merger, production deployer, credential owner, or approval authority.
 
-This charter becomes Active after it is merged to GitHub `main` and the deterministic Staff OS router is deployed and verified against the same contract.
+This charter is Active. Activation evidence: PR #365 was merged to GitHub `main` at merge commit `2a1672737d8fd984bd282da2583ee3b266e7c73f`; the deterministic Staff OS router with canonical source blob `1a59b8deafccfb526e5f717493abc3f1a539a586` was deployed to n8n workflow `ulCZrP3Ci0YJy1TY`; controlled execution `4020` completed successfully with no external writes.
 
 ## Authority order
 
