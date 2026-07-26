@@ -49,20 +49,7 @@
 }
 
 .category-grid.module-grid .category-button > span {
-  grid-column: 1;
-  grid-row: 1;
-  align-self: start;
-  justify-self: start;
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 11px;
-  background: rgba(7, 9, 12, 0.58);
-  font-size: 21px;
-  line-height: 1;
-  backdrop-filter: blur(8px);
+  display: none;
 }
 
 .category-grid.module-grid .category-button strong {
