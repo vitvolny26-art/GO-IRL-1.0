@@ -1,0 +1,42 @@
+diff --git a/src/components/ProfilePreferencesPortal.test.ts b/src/components/ProfilePreferencesPortal.test.ts
+index 0d35c3d..4e51d3a 100644
+--- a/src/components/ProfilePreferencesPortal.test.ts
++++ b/src/components/ProfilePreferencesPortal.test.ts
+@@ -1,5 +1,5 @@
+ import { describe, expect, it } from "vitest";
+-import { visiblePreferenceOptions } from "./ProfilePreferencesPortal";
++import { visiblePreferenceOptions } from "../profilePreferenceOptions";
+ 
+ describe("profile preference options", () => {
+   it("hides providers that are not supported", () => {
+diff --git a/src/components/ProfilePreferencesPortal.tsx b/src/components/ProfilePreferencesPortal.tsx
+index 5c81a0c..6f35577 100644
+--- a/src/components/ProfilePreferencesPortal.tsx
++++ b/src/components/ProfilePreferencesPortal.tsx
+@@ -4,6 +4,7 @@ import { Bell, CalendarDays, ChevronDown, MapPin, Share2 } from "lucide-react";
+ import { useAppStore } from "../store";
++import { visiblePreferenceOptions, type PreferenceOption } from "../profilePreferenceOptions";
+ import {
+   readUserPreferences,
+   updateUserPreferences,
+@@ -43,11 +44,8 @@ const reminderOptions: Array<{ value: ReminderProvider; label: string; disabled?
+   { value: "instagram", label: "Instagram", disabled: true },
+ ];
+ 
+-type PreferenceOption = { value: string; label: string; disabled?: boolean };
+ type PreferenceKey = "mapProvider" | "calendarProvider" | "shareProvider" | "reminderProvider";
+ 
+-export const visiblePreferenceOptions = (options: PreferenceOption[]) => options.filter((option) => !option.disabled);
+-
+ type PreferenceRowProps = {
+   icon: ReactNode;
+   label: string;
+diff --git a/src/profilePreferenceOptions.ts b/src/profilePreferenceOptions.ts
+new file mode 100644
+index 0000000..2a0f450
+--- /dev/null
++++ b/src/profilePreferenceOptions.ts
+@@ -0,0 +1,3 @@
++export type PreferenceOption = { value: string; label: string; disabled?: boolean };
++
++export const visiblePreferenceOptions = (options: PreferenceOption[]) => options.filter((option) => !option.disabled);
