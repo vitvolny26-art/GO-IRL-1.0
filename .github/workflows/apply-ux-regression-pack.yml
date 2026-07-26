@@ -42,28 +42,13 @@ jobs:
         working-directory: repo
         run: git apply --check ../patches/.tmp/ux-map.patch && git apply ../patches/.tmp/ux-map.patch
 
-      - name: Prepare non-Sport weather patch
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          source = Path("patches/.tmp/ux-weather.patch").read_text()
-          parts = source.split("diff --git ")[1:]
-          kept = []
-          for part in parts:
-              header = part.splitlines()[0]
-              path = header.split(" b/")[0].removeprefix("a/")
-              if path != "src/verticals/SportVertical.tsx":
-                  kept.append("diff --git " + part)
-          Path("weather-non-sport.patch").write_text("".join(kept))
-          PY
-
-      - name: Apply weather patch
+      - name: Apply non-Sport weather patch
         working-directory: repo
-        run: |
-          git apply --check ../weather-non-sport.patch
-          git apply ../weather-non-sport.patch
-          git apply --check ../patches/.tmp/ux-weather-sport-after-map.patch
-          git apply ../patches/.tmp/ux-weather-sport-after-map.patch
+        run: git apply --check ../patches/.tmp/ux-weather-no-sport.patch && git apply ../patches/.tmp/ux-weather-no-sport.patch
+
+      - name: Apply Sport weather patch
+        working-directory: repo
+        run: git apply --check ../patches/.tmp/ux-weather-sport.patch && git apply ../patches/.tmp/ux-weather-sport.patch
 
       - name: Apply organizer patch
         working-directory: repo
