@@ -68,7 +68,11 @@ jobs:
 
       - name: Apply select patch
         working-directory: repo
-        run: git apply --check ../patches/.tmp/ux-select.patch && git apply ../patches/.tmp/ux-select.patch
+        run: |
+          git apply --check ../patches/.tmp/ux-select.patch
+          git apply ../patches/.tmp/ux-select.patch
+          git apply --check ../patches/.tmp/ux-select-test-fix.patch
+          git apply ../patches/.tmp/ux-select-test-fix.patch
 
       - name: Verify patch whitespace
         working-directory: repo
