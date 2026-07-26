@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Share2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MessageCircle, Share2 } from "lucide-react";
 import {
   buildCardShareTarget,
   buildCardShareText,
@@ -7,6 +7,15 @@ import {
 import { openExternalShareTarget, openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 import { readUserPreferences, updateUserPreferences, type ShareProvider } from "../userPreferences";
+import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
+import {
+  activityChatUnreadChangedEvent,
+  countUnreadActivityChatMessages,
+  loadActivityChatReadAt,
+} from "../activityChatUnread";
+import { activityIdFromInviteUrl, canShowEventCardUnread } from "../cardChatUnread";
+import { useAppStore } from "../store";
+import "./card-chat-unread.css";
 
 type CardShareActionProps = {
   title: string;
@@ -18,6 +27,7 @@ type CardShareActionProps = {
 };
 
 type ShareChannel = ShareProvider | "native";
+type ActivityChatUnreadChangedDetail = { activityId?: string };
 
 const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
@@ -28,8 +38,13 @@ const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> 
 
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const rootRef = useRef<HTMLSpanElement>(null);
   const content = { title, date, address, url };
+  const activityId = useMemo(() => activityIdFromInviteUrl(url), [url]);
+  const joinedIds = useAppStore((state) => state.joinedIds);
+  const canAccessChat = Boolean(activityId && joinedIds.includes(activityId));
+  const showUnread = canShowEventCardUnread(activityId, joinedIds, unreadCount);
 
   useEffect(() => {
     if (!open) return;
@@ -46,6 +61,50 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open]);
+
+  useEffect(() => {
+    let active = true;
+
+    const refreshUnread = async () => {
+      if (!canAccessChat || !activityId) {
+        if (active) setUnreadCount(0);
+        return;
+      }
+
+      try {
+        const [identity, messages] = await Promise.all([
+          getCurrentChatIdentity(),
+          loadActivityChatMessages(activityId),
+        ]);
+        const lastReadAt = loadActivityChatReadAt(activityId, identity.userKey);
+        const nextUnreadCount = countUnreadActivityChatMessages(messages, identity.userKey, lastReadAt);
+        if (active) setUnreadCount(nextUnreadCount);
+      } catch {
+        if (active) setUnreadCount(0);
+      }
+    };
+
+    const handleUnreadChanged = (event: Event) => {
+      const detail = (event as CustomEvent<ActivityChatUnreadChangedDetail>).detail;
+      if (detail?.activityId && detail.activityId !== activityId) return;
+      void refreshUnread();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") void refreshUnread();
+    };
+
+    void refreshUnread();
+    window.addEventListener(activityChatUnreadChangedEvent, handleUnreadChanged);
+    window.addEventListener("focus", refreshUnread);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      active = false;
+      window.removeEventListener(activityChatUnreadChangedEvent, handleUnreadChanged);
+      window.removeEventListener("focus", refreshUnread);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [activityId, canAccessChat]);
 
   const copyShareText = async (shareUrl = url) => {
     const shareText = buildCardShareText({ ...content, url: shareUrl });
@@ -111,8 +170,32 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     setOpen((current) => !current);
   };
 
+  const openUnreadChat = () => {
+    const card = rootRef.current?.closest("article");
+    const chatAction = card?.querySelector<HTMLButtonElement>(".compact-sport-actions .sport-coach-action");
+    if (!chatAction) return;
+    setUnreadCount(0);
+    chatAction.click();
+  };
+
   return (
     <span className="card-share-action" ref={rootRef}>
+      {showUnread ? (
+        <button
+          className="event-chat-unread-alert"
+          type="button"
+          aria-label={`Непрочитанные сообщения: ${unreadCount}`}
+          title="Открыть непрочитанные сообщения"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openUnreadChat();
+          }}
+        >
+          <MessageCircle size={18} aria-hidden="true" />
+          <span>{unreadCount > 99 ? "99+" : unreadCount}</span>
+        </button>
+      ) : null}
       <button
         className="sport-card-icon-action"
         type="button"
