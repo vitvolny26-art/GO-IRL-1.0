@@ -26,6 +26,7 @@ type LifecycleInput = {
 
 const allowedHosts = new Set(["t.me", "telegram.me", "www.t.me", "www.telegram.me"]);
 const validPath = /^\/(?:joinchat\/[-_A-Za-z0-9]+|\+[-_A-Za-z0-9]+|[A-Za-z0-9_]{5,})(?:\/\d+)?\/?$/;
+const eventStoragePrefix = "go-irl:external-telegram-chat:event:";
 
 export const normalizeExternalTelegramChatUrl = (value: string) => {
   const trimmed = value.trim();
@@ -73,6 +74,50 @@ export const resolveExternalTelegramChatLifecycle = ({
   if (keepArchive) return "archived";
   if (elapsed < 7 * 24 * 60 * 60 * 1000) return "locked";
   return "deletion_due";
+};
+
+const eventStorageKey = (activityId: string) => `${eventStoragePrefix}${activityId}`;
+
+export const loadLocalEventTelegramChatLink = (activityId: string): ExternalTelegramChatLink | null => {
+  if (!activityId || typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(eventStorageKey(activityId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ExternalTelegramChatLink>;
+    const url = normalizeExternalTelegramChatUrl(String(parsed.url || ""));
+    if (!url || parsed.kind !== "event" || !parsed.attachedByUserKey || !parsed.attachedAt) return null;
+    return {
+      kind: "event",
+      url,
+      attachedByUserKey: String(parsed.attachedByUserKey),
+      attachedAt: String(parsed.attachedAt),
+      keepArchive: Boolean(parsed.keepArchive),
+    };
+  } catch {
+    return null;
+  }
+};
+
+export const saveLocalEventTelegramChatLink = (
+  activityId: string,
+  value: string,
+  attachedByUserKey: string,
+) => {
+  const url = normalizeExternalTelegramChatUrl(value);
+  if (!activityId || !url || !attachedByUserKey || typeof window === "undefined") return null;
+  const link: ExternalTelegramChatLink = {
+    kind: "event",
+    url,
+    attachedByUserKey,
+    attachedAt: new Date().toISOString(),
+  };
+  window.localStorage.setItem(eventStorageKey(activityId), JSON.stringify(link));
+  return link;
+};
+
+export const removeLocalEventTelegramChatLink = (activityId: string) => {
+  if (!activityId || typeof window === "undefined") return;
+  window.localStorage.removeItem(eventStorageKey(activityId));
 };
 
 type OpenDependencies = {
