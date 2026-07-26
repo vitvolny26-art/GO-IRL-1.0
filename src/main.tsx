@@ -12,7 +12,12 @@ import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import { ProfileHubPortal } from "./components/ProfileHubPortal";
-import { AdminLoginPage } from "./admin/AdminLoginPage";
+import {
+  AdminAccessDeniedPage,
+  AdminLoginPage,
+  AdminPanelPage,
+} from "./admin/AdminLoginPage";
+import { resolveAdminRoute } from "./admin/adminSession";
 import "./styles.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
@@ -101,7 +106,7 @@ initializeLanguagePreference();
 
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
-const isAdminLogin = window.location.pathname === "/admin/login";
+const adminRoute = resolveAdminRoute(window.location.pathname);
 
 enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();
@@ -113,11 +118,17 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
   });
 }
 
+const adminSurface = adminRoute === "login"
+  ? <AdminLoginPage />
+  : adminRoute === "denied"
+    ? <AdminAccessDeniedPage />
+    : adminRoute === "panel"
+      ? <AdminPanelPage />
+      : null;
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {isAdminLogin ? (
-      <AdminLoginPage />
-    ) : (
+    {adminSurface || (
       <QueryClientProvider client={queryClient}>
         <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}>
           <App />
