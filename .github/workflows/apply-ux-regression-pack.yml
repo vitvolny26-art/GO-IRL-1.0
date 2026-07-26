@@ -1,0 +1,85 @@
+name: Apply UX regression pack
+
+on:
+  push:
+    branches:
+      - tmp/apply-ux-regression-pack-20260726
+    paths:
+      - ".tmp/**"
+      - ".github/workflows/apply-ux-regression-pack.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v5
+        with:
+          ref: tmp/apply-ux-regression-pack-20260726
+          path: patches
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v5
+        with:
+          ref: fix/ux-regression-pack
+          path: repo
+          fetch-depth: 0
+
+      - name: Verify expected PR head
+        working-directory: repo
+        run: test "$(git rev-parse HEAD)" = "e76f2451c8fa0003105a66d780b3987f02654779"
+
+      - name: Apply UX patches
+        working-directory: repo
+        run: |
+          git apply --check ../patches/.tmp/ux-weather.patch
+          git apply ../patches/.tmp/ux-weather.patch
+          git apply --check ../patches/.tmp/ux-organizer.patch
+          git apply ../patches/.tmp/ux-organizer.patch
+          git apply --check ../patches/.tmp/ux-map.patch
+          git apply ../patches/.tmp/ux-map.patch
+          git apply --check ../patches/.tmp/ux-select.patch
+          git apply ../patches/.tmp/ux-select.patch
+          git diff --check
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: repo/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: repo
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        working-directory: repo
+        run: pnpm run test
+
+      - name: Typecheck
+        working-directory: repo
+        run: pnpm run typecheck
+
+      - name: Lint
+        working-directory: repo
+        run: pnpm run lint
+
+      - name: Build
+        working-directory: repo
+        run: pnpm run build
+
+      - name: Create atomic commit
+        working-directory: repo
+        run: |
+          git config user.name "GO IRL AI Fixer"
+          git config user.email "actions@users.noreply.github.com"
+          git add src
+          git commit -m "fix: apply event details UX regression pack"
+          git push origin HEAD:fix/ux-regression-pack
