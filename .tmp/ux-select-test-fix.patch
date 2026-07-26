@@ -1,5 +1,5 @@
 diff --git a/src/components/ProfilePreferencesPortal.test.ts b/src/components/ProfilePreferencesPortal.test.ts
-index 0d35c3d..4e51d3a 100644
+index 0d35c3d..311a795 100644
 --- a/src/components/ProfilePreferencesPortal.test.ts
 +++ b/src/components/ProfilePreferencesPortal.test.ts
 @@ -1,5 +1,5 @@
@@ -10,10 +10,12 @@ index 0d35c3d..4e51d3a 100644
  describe("profile preference options", () => {
    it("hides providers that are not supported", () => {
 diff --git a/src/components/ProfilePreferencesPortal.tsx b/src/components/ProfilePreferencesPortal.tsx
-index 5c81a0c..6f35577 100644
+index 5c81a0c..afc227f 100644
 --- a/src/components/ProfilePreferencesPortal.tsx
 +++ b/src/components/ProfilePreferencesPortal.tsx
-@@ -4,6 +4,7 @@ import { Bell, CalendarDays, ChevronDown, MapPin, Share2 } from "lucide-react";
+@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
+ import { createPortal } from "react-dom";
+ import { Bell, CalendarDays, ChevronDown, MapPin, Share2 } from "lucide-react";
  import { useAppStore } from "../store";
 +import { visiblePreferenceOptions, type PreferenceOption } from "../profilePreferenceOptions";
  import {
@@ -33,7 +35,7 @@ index 5c81a0c..6f35577 100644
    label: string;
 diff --git a/src/profilePreferenceOptions.ts b/src/profilePreferenceOptions.ts
 new file mode 100644
-index 0000000..2a0f450
+index 0000000..f706741
 --- /dev/null
 +++ b/src/profilePreferenceOptions.ts
 @@ -0,0 +1,3 @@
