@@ -7,23 +7,31 @@ export type AdminAuthorizationLogger = (event: "admin_login_allowed" | "admin_lo
 type AdminJwtClaims = {
   aud?: string;
   exp?: number;
+  iss?: string;
   role?: string;
   sub?: string;
   go_irl_role?: string;
   go_irl_user_key?: string;
 };
 
-type AdminAuthorizationDependencies = {
+export type AdminAuthorizationDependencies = {
   allowedUserKey: string;
+  issuer: string;
   jwtSecret: string;
   loadRole: (userKey: string, accessToken: string) => Promise<string | null>;
   logger?: AdminAuthorizationLogger;
   nowSeconds?: number;
 };
 
+export type AuthorizedAdmin = { ok: true; userKey: string; subject: string };
+
 export type AdminAuthorizationResult =
-  | { ok: true; userKey: string; subject: string }
+  | AuthorizedAdmin
   | { ok: false; status: 401 | 403; error: "access_denied" };
+
+export type AdminActionResult<T> =
+  | { ok: true; authorization: AuthorizedAdmin; value: T }
+  | Extract<AdminAuthorizationResult, { ok: false }>;
 
 const deny = (status: 401 | 403, reason: string, logger?: AdminAuthorizationLogger): AdminAuthorizationResult => {
   logger?.("admin_login_denied", { reason });
@@ -79,7 +87,12 @@ export async function authorizeAdminRequest(
 
   const now = dependencies.nowSeconds ?? Math.floor(Date.now() / 1000);
   if (!claims.exp || claims.exp <= now) return deny(401, "expired_session", dependencies.logger);
-  if (claims.aud !== "authenticated" || claims.role !== "authenticated" || !claims.sub) {
+  if (
+    claims.iss !== dependencies.issuer
+    || claims.aud !== "authenticated"
+    || claims.role !== "authenticated"
+    || !claims.sub
+  ) {
     return deny(403, "invalid_claims", dependencies.logger);
   }
   if (claims.go_irl_user_key !== dependencies.allowedUserKey || claims.go_irl_role !== "admin") {
@@ -91,6 +104,20 @@ export async function authorizeAdminRequest(
 
   dependencies.logger?.("admin_login_allowed", { reason: "authorized" });
   return { ok: true, userKey: claims.go_irl_user_key, subject: claims.sub };
+}
+
+export async function runAuthorizedAdminAction<T>(
+  request: Request,
+  dependencies: AdminAuthorizationDependencies,
+  action: (authorization: AuthorizedAdmin) => Promise<T> | T,
+): Promise<AdminActionResult<T>> {
+  const authorization = await authorizeAdminRequest(request, dependencies);
+  if (!authorization.ok) return authorization;
+  return {
+    ok: true,
+    authorization,
+    value: await action(authorization),
+  };
 }
 
 const productionRoleLoader = async (userKey: string, accessToken: string) => {
@@ -111,7 +138,11 @@ const productionRoleLoader = async (userKey: string, accessToken: string) => {
 
 export const productionAdminAuthorizationDependencies = (): AdminAuthorizationDependencies => ({
   allowedUserKey: requireEnv("GO_IRL_ADMIN_USER_KEY"),
+  issuer: "go-irl-supabase-edge",
   jwtSecret: requireEnv("GO_IRL_JWT_SECRET"),
   loadRole: productionRoleLoader,
-  logger: (event, details) => console.warn(event, details),
+  logger: (event, details) => {
+    if (event === "admin_login_allowed") console.info(event, details);
+    else console.warn(event, details);
+  },
 });
