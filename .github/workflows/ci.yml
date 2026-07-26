@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Diff check
+        run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD
+
       - name: Test
         run: pnpm run test
 
