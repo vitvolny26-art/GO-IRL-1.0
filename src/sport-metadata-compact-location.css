@@ -1,0 +1,73 @@
+.sport-sheet .sport-eyebrow {
+  display: none;
+}
+
+.sport-sheet .sport-sheet-chips > span {
+  display: none;
+}
+
+.sport-sheet .sport-sheet-chips > span:nth-child(2) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 12px;
+  border: 1px solid rgba(217, 255, 99, 0.38);
+  border-radius: 999px;
+  background: rgba(217, 255, 99, 0.1);
+  color: #e8ff9f;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.sport-sheet .sport-detail-list > div:first-child {
+  display: none;
+}
+
+.sport-sheet .sport-detail-list > div:nth-child(2) {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  grid-template-areas:
+    "icon city"
+    "icon address";
+  align-items: start;
+  gap: 2px 10px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.sport-sheet .sport-detail-list > div:nth-child(2) > svg {
+  grid-area: icon;
+  margin-top: 2px;
+}
+
+.sport-sheet .sport-detail-list > div:nth-child(2) > span {
+  grid-area: city;
+  font-size: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sport-sheet .sport-detail-list > div:nth-child(2) > span::after {
+  content: "Место события";
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.sport-sheet .sport-detail-list .sport-address-link {
+  grid-area: address;
+  display: inline;
+  width: fit-content;
+  max-width: 100%;
+  color: #dcff78;
+  font-weight: 750;
+  line-height: 1.35;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.sport-sheet .sport-detail-list .sport-address-link:hover,
+.sport-sheet .sport-detail-list .sport-address-link:focus-visible {
+  color: #efffb5;
+}

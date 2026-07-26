@@ -40,6 +40,7 @@ import "./participant-identity.css";
 import "./profile-hub.css";
 import "./mobile-ux-followup.css";
 import "./event-main-block.css";
+import "./sport-metadata-compact-location.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 
