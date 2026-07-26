@@ -8,7 +8,14 @@ const workflow = JSON.parse(fs.readFileSync(workflowFile, 'utf8'));
 const roleSelectionCode = fs.readFileSync(roleSelectionFile, 'utf8');
 const nodes = new Map(workflow.nodes.map((node) => [node.name, node]));
 
+const embeddedRoleSelection = nodes.get('STAFF-00 Role Selection');
+assert.ok(embeddedRoleSelection?.parameters?.jsCode, 'Sanitized fixture must retain the STAFF-00 Role Selection node');
+assert.match(roleSelectionCode, /Automation Engineer/, 'Canonical router must register Automation Engineer');
+console.log('PASS canonical source policy: fixture provides structure; n8n/code router provides executable role selection');
+
 function runCode(name, json, items = [{ json }], staticData = {}) {
+  // The sanitized workflow is a structural fixture. Role-selection behavior is
+  // always executed from the canonical source file under n8n/code/.
   const code = name === 'STAFF-00 Role Selection'
     ? roleSelectionCode
     : nodes.get(name)?.parameters?.jsCode;
