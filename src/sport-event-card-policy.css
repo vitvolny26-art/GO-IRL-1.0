@@ -1,0 +1,99 @@
+/* Sport card hierarchy: primary actions, participants, conditional chat, optional metadata. */
+.sport-policy-field-marker {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.sport-policy-optional-marker { color: var(--muted); }
+.sport-policy-required-marker { color: var(--lime); }
+
+.compact-sport-card .runtime-card-control-stack {
+  position: absolute;
+  top: 50px;
+  right: 14px;
+  z-index: 9;
+  display: grid;
+  gap: 6px;
+  width: 80px;
+}
+
+.compact-sport-card .runtime-card-stack-control {
+  appearance: none;
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 12px;
+  background: rgba(10, 14, 16, .72);
+  color: rgba(255, 255, 255, .92);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+}
+
+.compact-sport-card .runtime-card-stack-control svg {
+  width: 18px;
+  height: 18px;
+  color: var(--lime);
+  flex: 0 0 auto;
+}
+
+.compact-sport-card .runtime-card-chat-control span:empty { display: none; }
+.compact-sport-card .runtime-card-chat-control.has-unread {
+  border-color: rgba(201, 255, 61, .42);
+  color: var(--lime);
+}
+
+.compact-sport-card .sport-policy-metadata-row {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  width: calc(100% - 96px) !important;
+  margin: 12px 96px 0 0 !important;
+  gap: 6px !important;
+}
+
+.compact-sport-card .sport-policy-metadata-row .runtime-participants-chip,
+.compact-sport-card .sport-policy-metadata-row [hidden] {
+  display: none !important;
+}
+
+.compact-sport-card .sport-policy-metadata-row .sport-card-chip {
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 30px !important;
+  padding: 5px 10px !important;
+}
+
+.compact-sport-card .runtime-card-participants-dropdown {
+  top: 124px;
+  right: 12px;
+}
+
+@media (max-width: 380px) {
+  .compact-sport-card .runtime-card-control-stack {
+    top: 48px;
+    right: 12px;
+    width: 76px;
+  }
+
+  .compact-sport-card .sport-policy-metadata-row {
+    width: calc(100% - 90px) !important;
+    margin-right: 90px !important;
+  }
+
+  .compact-sport-card .runtime-card-participants-dropdown {
+    top: 120px;
+    right: 8px;
+  }
+}
