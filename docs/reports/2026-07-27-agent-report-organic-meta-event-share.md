@@ -51,12 +51,18 @@ Provide event-specific invitation-card sharing to WhatsApp, Instagram, Facebook,
 - `pnpm run build` — PASS.
 - `pnpm run test` — PASS, 104 files and 497 tests.
 - Focused card-share tests — PASS, 15 tests.
+- Vercel preview deployment for commit `5e6bcec` — READY.
+- GitHub Vercel status for PR #414 — SUCCESS.
+- Production event-preview smoke request — PASS, HTTP 200 with event-specific `og:title` and `og:image`.
+- Generated event image smoke request — PASS, HTTP 200 `image/jpeg`.
+- Calendar and Telegram join links are present in the rendered public event page.
 
 ## Risks
 
 - Instagram and Messenger do not expose a stable public deep link for preselecting a recipient with arbitrary rich-link content. Without production Meta Business messaging, the operating system share sheet remains the safe supported path.
 - The final visual preview is controlled by each receiving app's link scraper and cache. A previously cached card may take time to refresh.
 - Native inline chat buttons and proactive outbound bot messages are not part of organic sharing.
+- The Vercel preview environment cannot load the event-preview backend because its private backend variables are not available there. Organic share URLs intentionally use the production public-preview origin, which passed the smoke check. No environment variables were copied or changed.
 
 ## Not touched
 
@@ -68,7 +74,7 @@ Provide event-specific invitation-card sharing to WhatsApp, Instagram, Facebook,
 
 ## Next step
 
-Create a preview deployment and perform one physical-device smoke test per channel using a current public or invite-only event:
+PR #414 is a Draft and must remain unmerged until one physical-device smoke test per channel passes using a current public or invite-only event:
 
 1. WhatsApp opens directly with the event-preview URL and renders the event card.
 2. Facebook Share renders the same event card.
