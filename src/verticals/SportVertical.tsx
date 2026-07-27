@@ -18,6 +18,7 @@ import { getTelegramWebApp } from "../telegram";
 import { CardShareAction } from "../components/CardShareAction";
 import { CardReminderAction } from "../components/CardReminderAction";
 import { EventCardArtwork } from "../components/EventCardArtwork";
+import { ActivityIcon } from "../components/ActivityIcon";
 import { stripLeadingEmoji } from "../cardText";
 import { activityIconFromText } from "../activityIcon";
 import { buildBrowserActivityInviteUrl, buildTelegramActivityInviteUrl } from "../invitationLink";
@@ -458,7 +459,9 @@ export function SportActivitySheet({
         {loading && <SportDetailsSkeleton />}
         {error && <div className="details-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
         <div className="sport-sheet-hero">
-          <div className="sport-card-symbol large"><span className="sport-avatar-glyph">{avatar}</span></div>
+          <div className="sport-card-symbol large">
+            <ActivityIcon emoji={avatar} label={activity.activity[language]} />
+          </div>
           <div>
             <div className="sport-eyebrow">{sportEnvironmentLabel(meta.environment, language)}</div>
             <h2>{stripLeadingEmoji(activity.title[language])}</h2>
