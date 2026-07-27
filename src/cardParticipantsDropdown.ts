@@ -20,10 +20,15 @@ const currentLanguage = (): Language => {
 const activityLabel = (activity: Activity, language: Language) =>
   normalizeText(stripLeadingEmoji(activity.activity[language] || activity.activity.en || activity.activity.ru));
 
+const activityTitle = (activity: Activity, language: Language) =>
+  normalizeText(stripLeadingEmoji(activity.title[language] || activity.title.en || activity.title.ru));
+
 const findActivityForCard = (card: HTMLElement, language: Language) => {
   const heading = normalizeText(card.querySelector("h3")?.textContent);
-  const candidates = useAppStore.getState().activities.filter((activity) => activity.type === "sport" || activity.categoryId === "sport");
-  return candidates.find((activity) => activityLabel(activity, language) === heading)
+  const subtitle = normalizeText(card.querySelector(".sport-card-main p")?.textContent);
+  const candidates = useAppStore.getState().activities;
+  return candidates.find((activity) => activityLabel(activity, language) === heading && activityTitle(activity, language) === subtitle)
+    || candidates.find((activity) => activityLabel(activity, language) === heading)
     || candidates.find((activity) => activityLabel(activity, language).includes(heading) || heading.includes(activityLabel(activity, language)))
     || null;
 };
