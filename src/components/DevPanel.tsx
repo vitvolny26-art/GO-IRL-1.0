@@ -1,7 +1,11 @@
 import { useState } from "react";
+import type { UserRole } from "../types";
 
 declare const __GO_IRL_COMMIT__: string;
 declare const __GO_IRL_BUILT_AT__: string;
+
+export const adminPanelPath = "/admin/login";
+export const shouldShowAdminDevPanel = (userRole: UserRole) => userRole === "admin";
 
 const safeCopy = async (text: string) => {
   try {
@@ -25,6 +29,10 @@ export function DevPanel() {
     const url = new URL(window.location.href);
     url.searchParams.set("refresh", String(Date.now()));
     window.location.replace(url.toString());
+  };
+
+  const openAdminPanel = () => {
+    window.location.assign(adminPanelPath);
   };
 
   const debugInfo = {
@@ -95,6 +103,7 @@ export function DevPanel() {
               Built: {builtAt}
             </div>
             <button onClick={reload} style={{ width: "100%", margin: "6px 0", padding: 13, border: 0, borderRadius: 14, background: "#2563eb", color: "#fff", fontWeight: 700 }}>Reload latest build</button>
+            <button onClick={openAdminPanel} style={{ width: "100%", margin: "6px 0", padding: 13, border: 0, borderRadius: 14, background: "#20242a", color: "#fff", fontWeight: 700 }}>Админ-панель</button>
             <button onClick={() => safeCopy(commit)} style={{ width: "100%", margin: "6px 0", padding: 13, border: 0, borderRadius: 14, background: "#20242a", color: "#fff" }}>Copy commit</button>
             <button onClick={() => safeCopy(JSON.stringify(debugInfo, null, 2))} style={{ width: "100%", margin: "6px 0", padding: 13, border: 0, borderRadius: 14, background: "#20242a", color: "#fff" }}>Copy debug info</button>
             <button onClick={() => setOpen(false)} style={{ width: "100%", margin: "10px 0 0", padding: 13, border: 0, borderRadius: 14, background: "#30343b", color: "#fff" }}>Close</button>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Bell, CircleUserRound, Settings2, ShieldCheck } from "lucide-react";
 import { useAppStore } from "../store";
-import type { Language, UserRole } from "../types";
+import type { Language } from "../types";
 
 export type ProfileHubSection = "identity" | "preferences" | "my-go-irl" | "diagnostics";
 
@@ -12,8 +12,6 @@ export const profileHubSections: readonly ProfileHubSection[] = [
   "my-go-irl",
   "diagnostics",
 ];
-
-export const shouldShowAdminEntry = (userRole: UserRole) => userRole === "admin";
 
 const copy: Record<Language, {
   title: string;
@@ -26,8 +24,6 @@ const copy: Record<Language, {
   myGoIrlHint: string;
   diagnostics: string;
   diagnosticsHint: string;
-  admin: string;
-  adminHint: string;
   editing: string;
 }> = {
   ru: {
@@ -41,8 +37,6 @@ const copy: Record<Language, {
     myGoIrlHint: "Статистика, события и заявки",
     diagnostics: "Диагностика",
     diagnosticsHint: "Состояние синхронизации и выход в Telegram",
-    admin: "Админ-панель",
-    adminHint: "Защищённый вход и управление",
     editing: "Сначала завершите редактирование профиля",
   },
   uk: {
@@ -56,8 +50,6 @@ const copy: Record<Language, {
     myGoIrlHint: "Статистика, події та заявки",
     diagnostics: "Діагностика",
     diagnosticsHint: "Стан синхронізації та повернення до Telegram",
-    admin: "Адмін-панель",
-    adminHint: "Захищений вхід і керування",
     editing: "Спочатку завершіть редагування профілю",
   },
   cs: {
@@ -71,8 +63,6 @@ const copy: Record<Language, {
     myGoIrlHint: "Statistiky, události a žádosti",
     diagnostics: "Diagnostika",
     diagnosticsHint: "Stav synchronizace a návrat do Telegramu",
-    admin: "Panel administrátora",
-    adminHint: "Chráněné přihlášení a správa",
     editing: "Nejprve dokončete úpravu profilu",
   },
   en: {
@@ -86,15 +76,12 @@ const copy: Record<Language, {
     myGoIrlHint: "Stats, events and requests",
     diagnostics: "Diagnostics",
     diagnosticsHint: "Sync state and return to Telegram",
-    admin: "Admin panel",
-    adminHint: "Protected sign-in and management",
     editing: "Finish editing your profile first",
   },
 };
 
 export function ProfileHubPortal() {
   const language = useAppStore((state) => state.language);
-  const userRole = useAppStore((state) => state.userRole);
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [section, setSection] = useState<ProfileHubSection>("identity");
   const [editing, setEditing] = useState(false);
@@ -156,12 +143,6 @@ export function ProfileHubPortal() {
             <span><strong>{item.label}</strong><small>{item.hint}</small></span>
           </button>
         ))}
-        {shouldShowAdminEntry(userRole) ? (
-          <a className="profile-hub-card profile-hub-admin-card" href="/admin/login">
-            <span className="profile-hub-card-icon"><ShieldCheck /></span>
-            <span><strong>{labels.admin}</strong><small>{labels.adminHint}</small></span>
-          </a>
-        ) : null}
       </div>
     </nav>,
     target,
