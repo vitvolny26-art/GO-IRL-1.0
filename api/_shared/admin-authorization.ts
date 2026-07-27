@@ -24,16 +24,15 @@ export type AdminAuthorizationDependencies = {
 };
 
 export type AuthorizedAdmin = { ok: true; userKey: string; subject: string };
+export type DeniedAdmin = { ok: false; status: 401 | 403; error: "access_denied" };
 
-export type AdminAuthorizationResult =
-  | AuthorizedAdmin
-  | { ok: false; status: 401 | 403; error: "access_denied" };
+export type AdminAuthorizationResult = AuthorizedAdmin | DeniedAdmin;
 
 export type AdminActionResult<T> =
   | { ok: true; authorization: AuthorizedAdmin; value: T }
-  | Extract<AdminAuthorizationResult, { ok: false }>;
+  | DeniedAdmin;
 
-const deny = (status: 401 | 403, reason: string, logger?: AdminAuthorizationLogger): AdminAuthorizationResult => {
+const deny = (status: 401 | 403, reason: string, logger?: AdminAuthorizationLogger): DeniedAdmin => {
   logger?.("admin_login_denied", { reason });
   return { ok: false, status, error: "access_denied" };
 };
@@ -112,7 +111,7 @@ export async function runAuthorizedAdminAction<T>(
   action: (authorization: AuthorizedAdmin) => Promise<T> | T,
 ): Promise<AdminActionResult<T>> {
   const authorization = await authorizeAdminRequest(request, dependencies);
-  if (!authorization.ok) return authorization;
+  if ("status" in authorization) return authorization;
   return { ok: true, authorization, value: await action(authorization) };
 }
 
