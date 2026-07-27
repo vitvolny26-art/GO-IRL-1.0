@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BellDot, CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Ticket, Trash2, UsersRound, X } from "lucide-react";
+import { CalendarDays, CalendarPlus, Check, ChevronRight, CircleUserRound, Clock3, Bug, Ellipsis, MapPin, Pencil, Share2, ShieldCheck, Sparkles, Thermometer, Ticket, Trash2, Umbrella, UsersRound, Wind, X } from "lucide-react";
 import { getTranslation, localeByLanguage } from "../i18n";
 import { openBugReport } from "../bugReport";
 import { getEventWeather, type WeatherHour, type WeatherResult } from "../services/weather";
@@ -84,12 +84,20 @@ const buildMapsQuery = (parts: Array<string | null | undefined>) =>
 
 const buildGoogleMapsSearchUrl = (query: string) =>
   query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null;
+const escapeRegExp = (value: string) => value.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
+const compactAddressLines = (address: string, cityName: string) => {
+  const city = cityName.trim() ? new RegExp(escapeRegExp(cityName.trim()), "giu") : null;
+  return address.split(/\r?\n|,\s*/).map(part => city ? part.replace(city, "") : part)
+    .map(part => part.replace(/^[\s,·–—-]+|[\s,·–—-]+$/g, "").trim()).filter(Boolean).slice(0, 2);
+};
 
 const weatherSummaryLines = (weather: WeatherResult) => [
-  `🌡️ ${weather.temperature}°C`,
-  `☔ ${weather.rain}%`,
-  `💨 ${weather.wind} km/h`,
+  <span key="temperature"><Thermometer aria-hidden="true" /><span>{weather.temperature}°C</span></span>,
+  <span key="rain"><Umbrella aria-hidden="true" /><span>{weather.rain}%</span></span>,
+  <span key="wind"><Wind aria-hidden="true" /><span>{weather.wind} km/h</span></span>,
 ];
+const weatherSummaryText = (weather: WeatherResult) =>
+  [`${weather.temperature}°C`, `${weather.rain}%`, `${weather.wind} km/h`].join(" · ");
 
 const sportAvatar = (value: string | null | undefined) => {
   return activityIconFromText(String(value || ""), "🏆");
@@ -224,7 +232,6 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     });
   };
   const durationLabel = eventDurationLabel(meta.durationMinutes, t.minutesShort);
-  const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
   const [coachState, setCoachState] = useState<"none" | "requested" | "confirmed">("none");
   const avatar = sportAvatarForActivity(activity, language, meta);
   const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
@@ -238,10 +245,6 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
       ? coachCardCopy[language].confirmed
       : t.details;
   const showCoachAction = interaction.showHelperAction && (isOrganizer || coachState === "confirmed");
-  const joinedMembers = activity.members.filter(m => m.status === "joined");
-  const pendingRequestCount = isOrganizer
-    ? activity.members.filter((member) => member.status === "pending").length
-    : 0;
   const shareTitle = cleanSportLabel(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
 
@@ -278,17 +281,6 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
     <article className="sport-card compact-sport-card unified-event-card glass-event-card">
       <EventCardArtwork icon={avatar} activity={activity.activity[language]} title={activity.title[language]} />
       <div className="sport-card-top-actions">
-        {pendingRequestCount > 0 ? (
-          <button
-            className="event-request-alert"
-            type="button"
-            aria-label={`${t.requests}: ${pendingRequestCount}`}
-            onClick={() => onOpen(activity, { focusRequests: true })}
-          >
-            <BellDot aria-hidden="true" />
-            <span>{pendingRequestCount}</span>
-          </button>
-        ) : null}
         <CardReminderAction activityId={activity.id} date={activity.date} time={activity.time} />
         <CardShareAction
           title={shareTitle}
@@ -303,44 +295,11 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         <h3>{shareTitle}</h3>
         <p>{stripLeadingEmoji(activity.title[language]) || mapLabel}</p>
       </button>
-      <div className="sport-chip-row">
-        {coachState === "confirmed" ? <span className="sport-card-chip"><Sparkles size={16} aria-hidden="true" /><span>{coachCardCopy[language].confirmed}</span></span> : null}
-        <button
-          className="sport-card-participants-chip"
-          type="button"
-          aria-label={`${t.participants}: ${activity.participants} / ${activity.capacity}`}
-          aria-expanded={membersPreviewOpen}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setMembersPreviewOpen(prev => !prev);
-          }}
-        >
-          <UsersRound size={16} aria-hidden="true" />
-          <span>{activity.participants} / {activity.capacity}</span>
-        </button>
-        {durationLabel ? <span className="sport-card-chip sport-duration-chip" aria-label={`${t.sportDuration}: ${durationLabel}`}><CalendarPlus size={16} aria-hidden="true" /><span>{durationLabel}</span></span> : null}
+      <div className="sport-chip-row" aria-label={`${sportLevelLabel(meta.level, language)} | ${sportEnvironmentLabel(meta.environment, language)} | ${durationLabel}`}>
+        <span className="sport-card-chip sport-level-chip">{sportLevelLabel(meta.level, language)}</span>
+        <span className="sport-card-chip sport-environment-chip">{sportEnvironmentLabel(meta.environment, language)}</span>
+        {durationLabel ? <span className="sport-card-chip sport-duration-chip">{durationLabel}</span> : null}
       </div>
-      {membersPreviewOpen && (
-        <div className="sport-card-members-preview">
-          {joinedMembers.length > 0 ? (
-            joinedMembers.map((member) => (
-              <div key={member.userKey} className="sport-card-member-preview-row">
-                <span className="sport-card-member-avatar">
-                  {member.name?.slice(0, 2).toUpperCase() || "GO"}
-                </span>
-                <span className="sport-card-member-name">
-                  {member.name || "GO IRL User"}
-                </span>
-              </div>
-            ))
-          ) : (
-            <div className="sport-card-members-empty">
-              {t.noParticipants || "Пока никого нет"}
-            </div>
-          )}
-        </div>
-      )}
       <EventWeatherStrip activity={activity} language={language} enabled={meta.environment === "outdoor"} durationMinutes={meta.durationMinutes || 90} />
       <div className="activity-card-details sport-details-grid">
         <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
@@ -410,7 +369,7 @@ export function SportActivitySheet({
   const pendingMembers = activity.members.filter((member) => member.status === "pending");
   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
-  const locationLabel = [cityName, activity.address].filter(Boolean).join(" · ");
+  const addressLines = compactAddressLines(activity.address, cityName);
   const avatar = sportAvatarForActivity(activity, language, meta);
   const sheetBackgroundStyle = getEventSheetBackgroundStyle({
     icon: avatar,
@@ -514,7 +473,7 @@ export function SportActivitySheet({
         </div>
         <div className="detail-list sport-detail-list">
           <div><ShieldCheck /><span>{t.sportFormat}</span><strong>{sportFormatLabel(meta.format, language)}</strong></div>
-          <div><MapPin /><span>{t.address}</span><a className="sport-address-link" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer">{locationLabel || cityName}</a></div>
+          <div className="sport-location-row"><MapPin /><a className="sport-location-block" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer"><span className="sport-location-city">{cityName}</span>{addressLines.map((line, index) => <span className="sport-location-address" key={`${line}-${index}`}>{line}</span>)}</a></div>
           <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
           <div><ShieldCheck /><span>{t.sportEquipmentNeeded}</span><strong>{meta.equipmentNeeded ? t.yes : t.no}</strong></div>
@@ -523,12 +482,8 @@ export function SportActivitySheet({
           {meta.requirements && <div><ShieldCheck /><span>{t.sportRequirements}</span><strong>{meta.requirements}</strong></div>}
           {meta.organizerTips && <div><CircleUserRound /><span>{t.sportOrganizerTips}</span><strong>{meta.organizerTips}</strong></div>}
           {showWeather && (
-            <button className="weather-detail-toggle" onClick={() => setWeatherDetailsOpen((open) => !open)} type="button">
-              <span className="weather-condition-icon" aria-hidden="true">{weather?.icon || "🌤️"}</span>
-              <span>{t.weatherHint}</span>
-              <strong className="weather-summary-lines">
-                {weather ? weatherSummaryLines(weather).map((line) => <span key={line}>{line}</span>) : weatherText}
-              </strong>
+            <button className="weather-detail-toggle weather-summary-toggle" onClick={() => setWeatherDetailsOpen((open) => !open)} type="button" aria-label={t.weatherHint}>
+              <strong className="weather-summary-lines">{weather ? weatherSummaryLines(weather) : weatherText}</strong>
             </button>
           )}
         </div>
@@ -536,23 +491,22 @@ export function SportActivitySheet({
           <section className="weather-detail-card" aria-label={t.weatherDetails}>
             <div className="weather-detail-head">
               <span>{t.weatherDetails}</span>
-              <strong>{weather ? weatherSummaryLines(weather).join(" · ") : weatherText}</strong>
+              <strong>{weather ? weatherSummaryText(weather) : weatherText}</strong>
             </div>
             <div className="weather-bars">
               {weatherHours.map((hour) => (
                 <div className="weather-bar-row" key={hour.time}>
                   <span className="weather-hour-time"><b aria-hidden="true">{hour.icon}</b>{hour.time.slice(11, 16)}</span>
-                  <span className="weather-hour-metric">🌡️ {hour.temperature}°C</span>
-                  <span className="weather-hour-metric">☔ {hour.rain}%</span>
-                  <span className="weather-hour-metric">💨 {hour.wind} km/h</span>
+                  <span className="weather-hour-metric"><Thermometer aria-hidden="true" /><span>{hour.temperature}°C</span></span>
+                  <span className="weather-hour-metric"><Umbrella aria-hidden="true" /><span>{hour.rain}%</span></span>
+                  <span className="weather-hour-metric"><Wind aria-hidden="true" /><span>{hour.wind} km/h</span></span>
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {interaction.showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
-
+        <section className="sport-community-block">
         <button className="detail-members-toggle" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
           <UsersRound />
           <span>{t.participants}</span>
@@ -594,6 +548,9 @@ export function SportActivitySheet({
         )}
 
         <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={false} />
+        </section>
+
+        {interaction.showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
 
         <div className="sheet-actions compact-sheet-actions">
           <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>

@@ -64,7 +64,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const telegramUrl = card.inviteUrl;
     const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
     const imageUrl = secret
-      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=6`
+      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=7`
       : `${origin}/brand/logo-wide.png`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");

@@ -32,7 +32,7 @@
   place-items: center !important;
   align-self: center !important;
   overflow: hidden !important;
-  border-radius: 50% !important;
+  border-radius: 12px !important;
   background: rgba(201, 255, 61, .12) !important;
   color: var(--lime) !important;
   font-size: 11px !important;

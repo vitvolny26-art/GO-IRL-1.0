@@ -140,7 +140,7 @@ function ConfirmedCoachBesideChat({
   );
 }
 
-export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPanelProps) {
+export function ActivityChatPanel({ activity, openRequest = 0, showHelperAction = true }: ActivityChatPanelProps) {
   const [open, setOpen] = useState(false);
   const [chat, setChat] = useState<ActivityChat | null>(null);
   const [messages, setMessages] = useState<ActivityChatMessage[]>([]);
@@ -248,9 +248,6 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
   return (
     <>
       {showOutdoorWeather ? <OutdoorWeatherPanel activity={activity} /> : null}
-      {confirmedCoach ? <ConfirmedCoachBesideChat presentation={confirmedCoach} /> : null}
-      <ExternalTelegramChatPanel activity={activity} />
-
       <section className="activity-chat-panel" ref={panelRef}>
         <button
           type="button"
@@ -331,6 +328,8 @@ export function ActivityChatPanel({ activity, openRequest = 0 }: ActivityChatPan
           </div>
         ) : null}
       </section>
+      <ExternalTelegramChatPanel activity={activity} />
+      {showHelperAction && confirmedCoach ? <ConfirmedCoachBesideChat presentation={confirmedCoach} /> : null}
     </>
   );
 }
