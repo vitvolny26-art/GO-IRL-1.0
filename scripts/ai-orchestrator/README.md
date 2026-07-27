@@ -12,6 +12,18 @@ It implements:
 
 The runtime never merges or deploys. Real Codex and GitHub mutations require explicit execution flags.
 
+## Chief Archivist evidence boundary
+
+`runtime/chief-archivist-evidence.cjs` is the repository-side deterministic boundary for Chief Archivist evidence. It:
+
+- loads the three versioned prompt contracts from `scripts/ai-orchestrator/prompts/` and fails closed when any is missing or empty;
+- orders selected sources by authority rank and evidence ID;
+- enforces explicit source-count and character limits;
+- exposes only the evidence IDs selected for the current execution;
+- rejects report ledgers that use unselected evidence, global scope, fewer than three substantive rows for `COMPLETED`, or strong claims without a matching ledger claim.
+
+The module does not call an LLM, read Google Drive or ClickUp itself, or replace the orchestration state machine. External orchestration supplies current evidence content; this boundary selects and validates it before and after model execution.
+
 ## EGF-102 approved Mission Intake
 
 The no-LLM Mission Intake boundary connects an upstream human-approved Mission to the runtime and JSON bridge:
