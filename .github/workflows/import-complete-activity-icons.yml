@@ -1,0 +1,128 @@
+name: Import complete activity icons
+
+on:
+  push:
+    branches:
+      - fix/add-complete-activity-icons
+    paths:
+      - .github/workflows/import-complete-activity-icons.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-icons:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/add-complete-activity-icons
+          fetch-depth: 0
+
+      - name: Download approved icon archive
+        run: |
+          python -m pip install --disable-pip-version-check gdown
+          gdown 1yPn5QCYmuf7CDXldc55oftzU0rLMqB61 -O /tmp/go-irl-icons.zip
+          unzip -q /tmp/go-irl-icons.zip -d /tmp/go-irl-icons
+
+      - name: Install WebP encoder
+        run: sudo apt-get update && sudo apt-get install -y webp
+
+      - name: Build deterministic 40-icon set
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=/tmp/go-irl-icons/go-irl-3d-category-icons
+          out=src/assets/activity-icons
+          rm -rf "$out"
+          mkdir -p "$out"
+
+          convert_icon() {
+            cwebp -quiet -q 82 -resize 384 384 "$root/$1" -o "$out/$2"
+          }
+
+          convert_icon 01-sport/01-volleyball.png 01-volleyball.webp
+          convert_icon 01-sport/02-football.png 02-football.webp
+          convert_icon 01-sport/03-basketball.png 03-basketball.webp
+          convert_icon 01-sport/04-tennis.png 04-tennis.webp
+          convert_icon 01-sport/05-gym.png 05-gym.webp
+          convert_icon 01-sport/06-running.png 06-running.webp
+          convert_icon 01-sport/07-cycling.png 07-cycling.webp
+          convert_icon 01-sport/08-badminton.png 08-badminton.webp
+          convert_icon 01-sport/09-table-tennis.png 09-table-tennis.webp
+          convert_icon 01-sport/10-yoga.png 10-yoga.webp
+          convert_icon 02-activities/01-coffee.png 11-coffee.webp
+          convert_icon 02-activities/02-cinema.png 12-cinema.webp
+          convert_icon 02-activities/03-bowling.png 13-bowling.webp
+          convert_icon 02-activities/04-board-games.png 14-board-games.webp
+          convert_icon 02-activities/05-chess.png 15-chess.webp
+          convert_icon 02-activities/06-karaoke.png 16-karaoke.webp
+          convert_icon 02-activities/07-roller-skating.png 17-roller-skating.webp
+          convert_icon 03-events-parties/01-beer.png 18-beer.webp
+          convert_icon 03-events-parties/02-pub-quiz.png 19-pub-quiz.webp
+          convert_icon 03-events-parties/03-wine.png 20-wine-evening.webp
+          convert_icon 03-events-parties/04-concert.png 21-concert.webp
+          convert_icon 03-events-parties/05-festival.png 22-festival.webp
+          convert_icon 03-events-parties/06-dancing.png 23-dancing.webp
+          convert_icon 04-nature/01-hiking.png 24-hiking.webp
+          convert_icon 04-nature/02-walking.png 25-park-walk.webp
+          convert_icon 04-nature/03-swimming.png 26-swimming.webp
+          convert_icon 04-nature/04-picnic.png 27-picnic.webp
+          convert_icon 04-nature/05-camping.png 28-camping.webp
+          convert_icon 04-nature/06-fishing.png 29-fishing.webp
+          convert_icon 04-nature/07-kayaking.png 30-kayaking.webp
+          convert_icon 05-social/01-walking.png 31-city-walk.webp
+          convert_icon 05-social/02-dinner.png 32-dinner.webp
+          convert_icon 05-social/03-language-exchange.png 33-language-exchange.webp
+          convert_icon 05-social/04-coworking.png 34-coworking.webp
+          convert_icon 05-social/05-new-connections.png 35-new-connections.webp
+          convert_icon 06-creativity/01-painting.png 36-drawing.webp
+          convert_icon 06-creativity/02-photography.png 37-photo-walk.webp
+          convert_icon 06-creativity/03-pottery.png 38-ceramics.webp
+          convert_icon 06-creativity/04-music-jam.png 39-music-jam.webp
+          convert_icon 06-creativity/05-workshop.png 40-workshop.webp
+
+          test "$(find "$out" -maxdepth 1 -name '*.webp' | wc -l)" -eq 40
+
+      - name: Point runtime at dedicated icon assets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          assets = Path('src/activityIconAssets.ts')
+          text = assets.read_text()
+          text = text.replace(
+              'const iconModules = import.meta.glob("./assets/event-backgrounds/card-3x4/*.webp", {',
+              'const iconModules = import.meta.glob("./assets/activity-icons/*.webp", {'
+          )
+          text = text.replace(
+              'iconModules[`./assets/event-backgrounds/card-3x4/${file}`] || null',
+              'iconModules[`./assets/activity-icons/${file}`] || null'
+          )
+          text = text.replace(
+              'export const getActivityIconAsset = (emoji: string) => resolveFile(emojiFiles[emoji]);',
+              '''export const getActivityIconAsset = (emoji: string, label = "") => {
+  if (emoji === "🚶") {
+    const normalized = label.toLocaleLowerCase();
+    const isParkWalk = normalized.includes("park") || normalized.includes("парке") || normalized.includes("парку");
+    return resolveFile(isParkWalk ? "25-park-walk.webp" : "31-city-walk.webp");
+  }
+  return resolveFile(emojiFiles[emoji]);
+};'''
+          )
+          assets.write_text(text)
+
+          runtime = Path('src/enableActivity3dIcons.ts')
+          text = runtime.read_text()
+          text = text.replace('const src = getActivityIconAsset(match);', 'const src = getActivityIconAsset(match, text.replace(emojiPattern, "").trim());')
+          runtime.write_text(text)
+          PY
+
+      - name: Commit complete icon set
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/import-complete-activity-icons.yml
+          git add src/assets/activity-icons src/activityIconAssets.ts src/enableActivity3dIcons.ts
+          git commit -m "UX: add complete 40-item 3D activity icon set"
+          git push origin HEAD:fix/add-complete-activity-icons
