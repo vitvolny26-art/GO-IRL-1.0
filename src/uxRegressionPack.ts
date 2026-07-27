@@ -106,6 +106,43 @@ const matchSportCardActivity = (card: HTMLElement, language: Language) => {
     || null;
 };
 
+type ChipIcon = "level" | "environment" | "duration" | "participants";
+
+const chipIconPaths: Record<ChipIcon, string[]> = {
+  level: ["M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3z", "m9 12 2 2 4-4"],
+  environment: ["M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0", "M12 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6"],
+  duration: ["M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20", "M12 6v6l4 2"],
+  participants: ["M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8", "M22 21v-2a4 4 0 0 0-3-3.87", "M16 3.13a4 4 0 0 1 0 7.75"],
+};
+
+const createChipIcon = (icon: ChipIcon) => {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  svg.classList.add("runtime-chip-icon");
+  chipIconPaths[icon].forEach((pathData) => {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathData);
+    svg.append(path);
+  });
+  return svg;
+};
+
+const setChipContent = (chip: HTMLElement, icon: ChipIcon, label: string) => {
+  const currentLabel = chip.querySelector<HTMLElement>(".runtime-chip-label");
+  if (chip.dataset.runtimeChipIcon === icon && currentLabel?.textContent === label) return;
+  const text = document.createElement("span");
+  text.className = "runtime-chip-label";
+  text.textContent = label;
+  chip.replaceChildren(createChipIcon(icon), text);
+  chip.dataset.runtimeChipIcon = icon;
+};
+
 const openMembersFromCard = (card: HTMLElement) => {
   card.querySelector<HTMLButtonElement>(".sport-card-main")?.click();
   window.setTimeout(() => {
@@ -134,9 +171,9 @@ const ensureParticipantsChip = (card: HTMLElement, activity: Activity, language:
   }
 
   const label = `${runtimeCopy(language).participants}: ${activity.participants} / ${activity.capacity}`;
-  const text = `👥 ${activity.participants}/${activity.capacity}`;
+  const text = `${activity.participants}/${activity.capacity}`;
   if (chip.getAttribute("aria-label") !== label) chip.setAttribute("aria-label", label);
-  if (chip.textContent !== text) chip.textContent = text;
+  setChipContent(chip, "participants", text);
 };
 
 const applyCardEnvironment = (card: HTMLElement, activity: Activity, language: Language) => {
@@ -150,13 +187,26 @@ const applyCardEnvironment = (card: HTMLElement, activity: Activity, language: L
     return;
   }
   if (environmentChip) environmentChip.hidden = false;
+
+  const environmentText = indoor ? runtimeCopy(language).indoor : sportEnvironmentLabel(environment, language);
+  if (environmentChip) setChipContent(environmentChip, "environment", environmentText);
   if (!indoor) return;
 
-  if (environmentChip && environmentChip.textContent !== runtimeCopy(language).indoor) {
-    environmentChip.textContent = runtimeCopy(language).indoor;
-  }
   const weather = card.querySelector<HTMLElement>(".event-card-weather");
   if (weather && !weather.hidden) weather.hidden = true;
+};
+
+const decorateSportCardChips = (card: HTMLElement) => {
+  const level = card.querySelector<HTMLElement>(".sport-level-chip");
+  const duration = card.querySelector<HTMLElement>(".sport-duration-chip");
+  if (level) {
+    const label = level.querySelector<HTMLElement>(".runtime-chip-label")?.textContent || level.textContent?.trim() || "";
+    if (label) setChipContent(level, "level", label);
+  }
+  if (duration) {
+    const label = duration.querySelector<HTMLElement>(".runtime-chip-label")?.textContent || duration.textContent?.trim() || "";
+    if (label) setChipContent(duration, "duration", label);
+  }
 };
 
 const applySportCards = (language: Language) => {
@@ -166,6 +216,7 @@ const applySportCards = (language: Language) => {
     if (!activity) return;
     ensureParticipantsChip(card, activity, language);
     applyCardEnvironment(card, activity, language);
+    decorateSportCardChips(card);
   });
 };
 
