@@ -52,6 +52,8 @@ export type AppAuthIdentity =
   | TrustedAuthSession
   | (DemoIdentityResolution & { source: DemoIdentityResolution["source"]; legacy: true });
 
+type TrustedAuthInitializationResult = AppAuthIdentity | null;
+
 type AuthIdentityLike = {
   user?: {
     userKey?: string | null;
@@ -74,6 +76,7 @@ export const readAuthDisplayName = (identity: unknown) => {
 };
 
 let trustedSession: TrustedAuthSession | null = readTrustedSession();
+let trustedAuthInitialization: Promise<TrustedAuthInitializationResult> | null = null;
 let legacyIdentity: DemoIdentityResolution | null = null;
 let authError: string | null = null;
 
@@ -105,11 +108,7 @@ function resolveLegacyDemoIdentity() {
   return legacyIdentity;
 }
 
-export async function initializeTrustedAuth() {
-  if (trustedSession && trustedSession.expiresAt > Math.floor(Date.now() / 1000) + 60) {
-    return trustedSession;
-  }
-
+async function runTrustedAuthInitialization(): Promise<TrustedAuthInitializationResult> {
   const initData = getTelegramInitData();
   if (!initData) {
     const legacy = resolveLegacyDemoIdentity();
@@ -159,6 +158,20 @@ export async function initializeTrustedAuth() {
     authError = "trusted_auth_unavailable";
     return null;
   }
+}
+
+export function initializeTrustedAuth(): Promise<TrustedAuthInitializationResult> {
+  if (trustedSession && trustedSession.expiresAt > Math.floor(Date.now() / 1000) + 60) {
+    return Promise.resolve(trustedSession);
+  }
+
+  if (trustedAuthInitialization) return trustedAuthInitialization;
+
+  const initialization = runTrustedAuthInitialization().finally(() => {
+    if (trustedAuthInitialization === initialization) trustedAuthInitialization = null;
+  });
+  trustedAuthInitialization = initialization;
+  return initialization;
 }
 
 export const getTrustedAccessToken = async () => {
