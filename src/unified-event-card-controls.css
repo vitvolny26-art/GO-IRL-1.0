@@ -1,0 +1,58 @@
+/* Event template is the shared control contract for Sport and generic cards. */
+.unified-event-card .runtime-card-control-stack {
+  position: absolute;
+  top: 44px;
+  right: 16px;
+  z-index: 9;
+  display: grid;
+  gap: 6px;
+  width: 82px;
+}
+
+.unified-event-card .runtime-card-stack-control {
+  display: inline-flex;
+  width: 82px;
+  min-width: 82px;
+  min-height: 31px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 14px;
+  background: rgba(10, 14, 16, .72);
+  color: #e8ffad;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.05;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+}
+
+.unified-event-card .runtime-card-stack-control svg {
+  width: 14px;
+  height: 14px;
+  color: #e8ffad;
+  flex: 0 0 auto;
+}
+
+.unified-event-card .runtime-card-chat-control span:empty { display: none; }
+
+.unified-event-card .runtime-card-control-stack .runtime-card-participants-dropdown {
+  top: 72px;
+  right: 0;
+}
+
+@media (max-width: 380px) {
+  .unified-event-card .runtime-card-control-stack {
+    top: 42px;
+    right: 12px;
+    width: 78px;
+  }
+
+  .unified-event-card .runtime-card-stack-control {
+    width: 78px;
+    min-width: 78px;
+  }
+}
