@@ -25,7 +25,12 @@ security definer
 set search_path to 'public'
 as $$
   select
-    public.go_irl_request_can_moderate()
+    exists (
+      select 1
+      from public.user_roles role_row
+      where role_row.user_key = public.go_irl_request_user_key()
+        and role_row.role in ('moderator', 'admin')
+    )
     or exists (
       select 1
       from public.activities activity
@@ -92,7 +97,7 @@ to authenticated
 using (public.go_irl_is_activity_organizer(activity_id));
 
 grant select, insert, update, delete on public.activity_external_telegram_chats to authenticated;
-grant execute on function public.go_irl_can_access_external_telegram_chat(uuid) to authenticated;
-grant execute on function public.go_irl_is_activity_organizer(uuid) to authenticated;
+revoke execute on function public.go_irl_can_access_external_telegram_chat(uuid) from public, anon, authenticated;
+revoke execute on function public.go_irl_is_activity_organizer(uuid) from public, anon, authenticated;
 
 commit;
