@@ -1,0 +1,30 @@
+.admin-login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #0c1118;
+}
+
+.admin-login-card {
+  width: min(100%, 420px);
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  text-align: center;
+}
+
+.admin-login-mark {
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  opacity: 0.7;
+}
+
+.admin-login-card h1 { margin: 0 0 12px; font-size: 32px; }
+.admin-login-card p { margin: 0 0 18px; color: rgba(255, 255, 255, 0.78); }
+.admin-login-status { margin: 0 0 18px; padding: 12px 14px; border-radius: 14px; background: rgba(201, 255, 61, 0.1); color: #c9ff3d; font-size: 14px; font-weight: 700; }
+.admin-login-card a { color: #fff; font-weight: 700; }

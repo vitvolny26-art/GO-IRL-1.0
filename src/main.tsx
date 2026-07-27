@@ -13,6 +13,8 @@ import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import { ProfileHubPortal } from "./components/ProfileHubPortal";
+import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/AdminLoginPage";
+import { resolveAdminRoute } from "./admin/adminSession";
 import "./styles.css";
 import "./category-cards.css";
 import "./activity-3d-icons.css";
@@ -46,16 +48,8 @@ import "./event-main-block.css";
 import "./sport-metadata-compact-location.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
-
-type StoredPreferences = {
-  language?: SupportedLanguage;
-  cityId?: string;
-  mapProvider?: "google" | "apple" | "mapy";
-};
-
-type TelegramUserWithLanguage = {
-  language_code?: string;
-};
+type StoredPreferences = { language?: SupportedLanguage; cityId?: string; mapProvider?: "google" | "apple" | "mapy" };
+type TelegramUserWithLanguage = { language_code?: string };
 
 const supportedLanguages = new Set<SupportedLanguage>(["ru", "uk", "cs", "en"]);
 const preferencesStorageKey = "go-irl-user-preferences";
@@ -77,61 +71,58 @@ const readStoredPreferences = (): StoredPreferences => {
 
 const initializeLanguagePreference = () => {
   const preferences = readStoredPreferences();
-  const storedUnifiedLanguage = preferences.language && supportedLanguages.has(preferences.language)
-    ? preferences.language
-    : null;
+  const storedUnifiedLanguage = preferences.language && supportedLanguages.has(preferences.language) ? preferences.language : null;
   const storedLegacyLanguage = normalizeDeviceLanguage(localStorage.getItem(legacyLanguageStorageKey) || undefined);
   const storedLanguage = storedUnifiedLanguage || storedLegacyLanguage;
-
   if (storedLanguage) {
     localStorage.setItem(legacyLanguageStorageKey, storedLanguage);
-    if (preferences.language !== storedLanguage) {
-      localStorage.setItem(preferencesStorageKey, JSON.stringify({ ...preferences, language: storedLanguage }));
-    }
+    if (preferences.language !== storedLanguage) localStorage.setItem(preferencesStorageKey, JSON.stringify({ ...preferences, language: storedLanguage }));
     return;
   }
-
   const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user as TelegramUserWithLanguage | undefined;
   const telegramLanguage = normalizeDeviceLanguage(telegramUser?.language_code);
-  const browserLanguage = navigator.languages
-    .map((language) => normalizeDeviceLanguage(language))
-    .find((language): language is SupportedLanguage => Boolean(language));
+  const browserLanguage = navigator.languages.map((language) => normalizeDeviceLanguage(language)).find((language): language is SupportedLanguage => Boolean(language));
   const language = telegramLanguage || browserLanguage || "en";
-
   localStorage.setItem(legacyLanguageStorageKey, language);
   localStorage.setItem(preferencesStorageKey, JSON.stringify({ ...preferences, language }));
 };
 
 initializeLanguagePreference();
-
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
+const adminRoute = resolveAdminRoute(window.location.pathname);
 
 enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();
 enableMapyRuntimeLinks();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    void navigator.serviceWorker.register("/service-worker.js").catch(() => undefined);
-  });
+  window.addEventListener("load", () => { void navigator.serviceWorker.register("/service-worker.js").catch(() => undefined); });
 }
+
+const adminSurface = adminRoute === "login"
+  ? <AdminLoginPage />
+  : adminRoute === "denied"
+    ? <AdminAccessDeniedPage />
+    : adminRoute === "panel"
+      ? <AdminPanelPage />
+      : null;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}>
-        <App />
-      </Suspense>
-      <OrganizerProfilePortal />
-      <OrganizerEventDetailsPortal />
-      <EventLocationPickerPortal />
-      <EventLocationProviderPortal />
-      <MapProviderPickerPortal />
-      <ProfilePreferencesPortal />
-      <ParticipantIdentityPortal />
-      <ProfileHubPortal />
-    </QueryClientProvider>
+    {adminSurface || (
+      <QueryClientProvider client={queryClient}>
+        <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}><App /></Suspense>
+        <OrganizerProfilePortal />
+        <OrganizerEventDetailsPortal />
+        <EventLocationPickerPortal />
+        <EventLocationProviderPortal />
+        <MapProviderPickerPortal />
+        <ProfilePreferencesPortal />
+        <ParticipantIdentityPortal />
+        <ProfileHubPortal />
+      </QueryClientProvider>
+    )}
   </StrictMode>,
 );
 
