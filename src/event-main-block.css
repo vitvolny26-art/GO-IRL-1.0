@@ -53,5 +53,6 @@
 }
 
 /* ui-scope-20260727-community */
-.activity-sheet .sport-community-block{margin-top:14px;overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.025)}
+.activity-sheet .sport-community-block{display:flex;flex-direction:column;margin-top:14px;overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(255,255,255,.025)}
+.activity-sheet .sport-community-block>.detail-members-toggle{order:1}.activity-sheet .sport-community-block>.members-section{order:2}.activity-sheet .sport-community-block>.external-telegram-chat-panel{order:3}.activity-sheet .sport-community-block>.activity-chat-panel{order:4}
 .activity-sheet .sport-community-block>.detail-members-toggle,.activity-sheet .sport-community-block>.members-section,.activity-sheet .sport-community-block>.activity-chat-panel,.activity-sheet .sport-community-block>.external-telegram-chat-panel{width:100%;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}.activity-sheet .sport-community-block>.members-section,.activity-sheet .sport-community-block>.activity-chat-panel,.activity-sheet .sport-community-block>.external-telegram-chat-panel{border-top:1px solid rgba(255,255,255,.08)!important}.activity-sheet .sport-community-block .activity-chat-toggle,.activity-sheet .sport-community-block .activity-chat-box{border-radius:0!important}
