@@ -47,6 +47,12 @@
   cursor: pointer;
 }
 
+.profile-hub-admin-card {
+  border-color: color-mix(in srgb, #2563eb 48%, transparent);
+  background: color-mix(in srgb, #2563eb 14%, var(--surface, #fff));
+  text-decoration: none;
+}
+
 .profile-hub-card:hover,
 .profile-hub-card:focus-visible,
 .profile-hub-card.is-active {
