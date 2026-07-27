@@ -4,7 +4,7 @@
 }
 
 .compact-sport-card .sport-card-top-actions > .event-chat-unread-alert {
-  top: 160px !important;
+  top: 210px !important;
   right: -3px !important;
 }
 
@@ -17,6 +17,35 @@
 .compact-sport-card .runtime-participants-chip:focus-visible {
   outline: 2px solid var(--lime);
   outline-offset: 2px;
+}
+
+.compact-sport-card .sport-chip-row .sport-card-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.compact-sport-card .sport-chip-row .runtime-chip-icon {
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: var(--lime) !important;
+  stroke-width: 2 !important;
+}
+
+.compact-sport-card .sport-chip-row .runtime-chip-label {
+  display: inline-block !important;
+  min-width: 0 !important;
+  color: inherit !important;
+  font: inherit !important;
+  line-height: inherit !important;
+  white-space: nowrap !important;
+}
+
+.compact-sport-card .sport-card-participants-chip .runtime-chip-icon {
+  width: 20px !important;
+  height: 20px !important;
 }
 
 .compact-sport-card[data-runtime-indoor] .event-card-weather,
@@ -81,6 +110,10 @@
 }
 
 @media (max-width: 380px) {
+  .compact-sport-card .sport-card-top-actions > .event-chat-unread-alert {
+    top: 204px !important;
+  }
+
   .runtime-hero-brand {
     grid-template-columns: 78px minmax(0, 1fr);
     gap: 12px;
