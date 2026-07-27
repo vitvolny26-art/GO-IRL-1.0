@@ -8,6 +8,7 @@ import {
   buildMessengerPreviewUrl,
   buildMessengerShareBridgeTarget,
   buildMetaEventPreviewUrl,
+  buildOrganicCardShareContent,
 } from "./cardShare";
 
 const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
@@ -25,14 +26,21 @@ describe("card share", () => {
     expect(buildCardShareText(content)).toBe(`GO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc\n\n${content.url}`);
   });
 
-  it("keeps Telegram and WhatsApp on the exact event deep link", () => {
+  it("keeps Telegram on the exact event deep link and gives WhatsApp the rich preview URL", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", content))).toContain(content.url);
-    expect(decodeURIComponent(buildCardShareTarget("whatsapp", content))).toContain(content.url);
+    const whatsappTarget = decodeURIComponent(buildCardShareTarget("whatsapp", content));
+    expect(whatsappTarget).toContain(previewUrl);
+    expect(whatsappTarget).not.toContain(content.url);
   });
 
   it("builds one shared Meta preview URL for the same event", () => {
     expect(buildMetaEventPreviewUrl(content)).toBe(previewUrl);
     expect(buildMessengerPreviewUrl(content)).toBe(previewUrl);
+    expect(buildOrganicCardShareContent(content)).toEqual({
+      title: "GO IRL: Ролики в парке",
+      text: "16 июл. · 18:00\nSmetanovy sady, Olomouc",
+      url: previewUrl,
+    });
   });
 
   it("keeps Facebook separate from Messenger and never puts preview URL in user text", () => {
