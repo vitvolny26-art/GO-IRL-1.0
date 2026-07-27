@@ -6,6 +6,7 @@ import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
 import { enableActivity3dIcons } from "./enableActivity3dIcons";
 import { enableUxRegressionPack } from "./uxRegressionPack";
+import { enableCardParticipantsDropdown } from "./cardParticipantsDropdown";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
@@ -50,6 +51,7 @@ import "./mobile-ux-followup.css";
 import "./event-main-block.css";
 import "./sport-metadata-compact-location.css";
 import "./ux-regression-pack.css";
+import "./card-participants-dropdown.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 type StoredPreferences = { language?: SupportedLanguage; cityId?: string; mapProvider?: "google" | "apple" | "mapy" };
@@ -100,6 +102,7 @@ enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();
 enableMapyRuntimeLinks();
 enableUxRegressionPack();
+enableCardParticipantsDropdown();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => { void navigator.serviceWorker.register("/service-worker.js").catch(() => undefined); });
