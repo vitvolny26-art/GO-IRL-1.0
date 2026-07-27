@@ -1,3 +1,4 @@
+import { stripLeadingEmoji } from "./cardText";
 import { getTranslation } from "./i18n";
 import { useAppStore } from "./store";
 import type { Activity, ActivityMember, Language } from "./types";
@@ -17,12 +18,14 @@ const currentLanguage = (): Language => {
 };
 
 const activityLabel = (activity: Activity, language: Language) =>
-  normalizeText(activity.activity[language] || activity.activity.en || activity.activity.ru);
+  normalizeText(stripLeadingEmoji(activity.activity[language] || activity.activity.en || activity.activity.ru));
 
 const findActivityForCard = (card: HTMLElement, language: Language) => {
   const heading = normalizeText(card.querySelector("h3")?.textContent);
   const candidates = useAppStore.getState().activities.filter((activity) => activity.type === "sport" || activity.categoryId === "sport");
-  return candidates.find((activity) => activityLabel(activity, language).includes(heading) || heading.includes(activityLabel(activity, language))) || null;
+  return candidates.find((activity) => activityLabel(activity, language) === heading)
+    || candidates.find((activity) => activityLabel(activity, language).includes(heading) || heading.includes(activityLabel(activity, language)))
+    || null;
 };
 
 export const joinedParticipants = (activity: Activity): ActivityMember[] =>
@@ -47,7 +50,11 @@ const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Lan
 
   const header = document.createElement("div");
   header.className = "runtime-card-participants-header";
-  header.innerHTML = `<strong>${t.participants}</strong><span>${activity.participants} / ${activity.capacity}</span>`;
+  const title = document.createElement("strong");
+  title.textContent = t.participants;
+  const count = document.createElement("span");
+  count.textContent = `${activity.participants} / ${activity.capacity}`;
+  header.append(title, count);
   dropdown.append(header);
 
   const list = document.createElement("div");
@@ -101,7 +108,7 @@ const handleParticipantsClick = (event: Event) => {
 
   event.preventDefault();
   event.stopPropagation();
-  if (event instanceof MouseEvent) event.stopImmediatePropagation();
+  event.stopImmediatePropagation();
 
   const dropdown = ensureDropdown(chip, card, activity, language);
   const opening = dropdown.hidden;
