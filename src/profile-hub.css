@@ -4,32 +4,10 @@
 }
 
 .profile-hub-navigation {
+  order: -20;
   display: grid;
   gap: 14px;
   margin-bottom: 18px;
-}
-
-.profile-page.profile-hub-enabled > .profile-hero {
-  order: -20;
-  position: relative;
-  display: flex !important;
-  margin-bottom: 14px;
-}
-
-.profile-page.profile-hub-enabled > .profile-hub-navigation {
-  order: -10;
-}
-
-.profile-page.profile-hub-enabled > .profile-hero .profile-edit-button,
-.profile-page.profile-hub-enabled > .profile-hero .profile-edit-action {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: auto;
-  max-width: calc(100% - 24px);
-  min-height: 34px;
-  padding: 7px 12px;
-  white-space: nowrap;
 }
 
 .profile-hub-navigation header {
@@ -113,7 +91,7 @@
   line-height: 1.25;
 }
 
-.profile-page.profile-hub-enabled > :not(.profile-hub-navigation):not(.profile-hero) {
+.profile-page.profile-hub-enabled > :not(.profile-hub-navigation) {
   display: none !important;
 }
 
