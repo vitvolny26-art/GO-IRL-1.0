@@ -1,8 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { authorizeAdminRequest, productionRoleLoader, runAuthorizedAdminAction, type AdminAuthorizationDependencies } from "./admin-authorization.js";
+import {
+  authorizeAdminRequest,
+  parseAdminUserKeys,
+  productionAdminAuthorizationDependencies,
+  productionRoleLoader,
+  runAuthorizedAdminAction,
+  type AdminAuthorizationDependencies,
+} from "./admin-authorization.js";
 
 const secret = "road105-test-secret-with-sufficient-length";
 const allowedUserKey = "telegram:test-admin";
+const secondAllowedUserKey = "telegram:second-admin";
 const issuer = "go-irl-supabase-edge";
 const nowSeconds = 1_800_000_000;
 
@@ -23,21 +31,32 @@ async function signToken(overrides: Record<string, unknown> = {}) {
 }
 
 const requestWith = (token?: string) => new Request("https://goirl.invalid/api/admin/session", { method: "POST", headers: token ? { authorization: `Bearer ${token}` } : {} });
-const dependencies = (overrides: Partial<AdminAuthorizationDependencies> = {}): AdminAuthorizationDependencies => ({ allowedUserKey, issuer, jwtSecret: secret, loadRole: async () => "admin", nowSeconds, ...overrides });
+const dependencies = (overrides: Partial<AdminAuthorizationDependencies> = {}): AdminAuthorizationDependencies => ({
+  allowedUserKeys: new Set([allowedUserKey, secondAllowedUserKey]),
+  issuer,
+  jwtSecret: secret,
+  loadRole: async () => "admin",
+  nowSeconds,
+  ...overrides,
+});
 
 describe("dedicated admin authorization", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  it("allows only the approved identity with current admin role", async () => {
+  it("allows both approved identities with current admin roles", async () => {
     const loadRole = vi.fn(async () => "admin");
     await expect(authorizeAdminRequest(requestWith(await signToken()), dependencies({ loadRole }))).resolves.toMatchObject({ ok: true, userKey: allowedUserKey });
-    expect(loadRole).toHaveBeenCalledOnce();
+    await expect(authorizeAdminRequest(
+      requestWith(await signToken({ go_irl_user_key: secondAllowedUserKey })),
+      dependencies({ loadRole }),
+    )).resolves.toMatchObject({ ok: true, userKey: secondAllowedUserKey });
+    expect(loadRole).toHaveBeenCalledTimes(2);
   });
 
-  it("denies another admin, downgraded role, stale role and invalid sessions", async () => {
-    await expect(authorizeAdminRequest(requestWith(await signToken({ go_irl_user_key: "telegram:other-admin" })), dependencies())).resolves.toEqual({ ok: false, status: 403, error: "access_denied" });
+  it("denies an unlisted admin, downgraded role, stale role and invalid sessions", async () => {
+    await expect(authorizeAdminRequest(requestWith(await signToken({ go_irl_user_key: "telegram:unlisted-admin" })), dependencies())).resolves.toEqual({ ok: false, status: 403, error: "access_denied" });
     await expect(authorizeAdminRequest(requestWith(await signToken()), dependencies({ loadRole: async () => "user" }))).resolves.toEqual({ ok: false, status: 403, error: "access_denied" });
     await expect(authorizeAdminRequest(requestWith(await signToken({ go_irl_role: "user" })), dependencies())).resolves.toEqual({ ok: false, status: 403, error: "access_denied" });
     await expect(authorizeAdminRequest(requestWith(), dependencies())).resolves.toEqual({ ok: false, status: 401, error: "access_denied" });
@@ -118,5 +137,28 @@ describe("dedicated admin authorization", () => {
         },
       },
     );
+  });
+
+  it("parses a comma-separated server-only allowlist without duplicates", () => {
+    expect([...parseAdminUserKeys(" telegram:first-admin,telegram:second-admin,telegram:first-admin ")]).toEqual([
+      "telegram:first-admin",
+      "telegram:second-admin",
+    ]);
+  });
+
+  it("prefers the multi-admin production variable and keeps the legacy fallback", () => {
+    vi.stubEnv("GO_IRL_ADMIN_USER_KEYS", "telegram:first-admin, telegram:second-admin");
+    vi.stubEnv("GO_IRL_ADMIN_USER_KEY", "telegram:legacy-admin");
+    vi.stubEnv("GO_IRL_JWT_SECRET", secret);
+
+    expect([...productionAdminAuthorizationDependencies().allowedUserKeys]).toEqual([
+      "telegram:first-admin",
+      "telegram:second-admin",
+    ]);
+
+    vi.stubEnv("GO_IRL_ADMIN_USER_KEYS", "");
+    expect([...productionAdminAuthorizationDependencies().allowedUserKeys]).toEqual([
+      "telegram:legacy-admin",
+    ]);
   });
 });

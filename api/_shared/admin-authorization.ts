@@ -1,4 +1,4 @@
-import { requireEnv } from "./env.js";
+import { readEnv, requireEnv } from "./env.js";
 
 export type AdminAuthorizationLogger = (event: "admin_login_allowed" | "admin_login_denied", details: {
   reason: string;
@@ -27,7 +27,7 @@ type AdminJwtVerificationResult =
   };
 
 export type AdminAuthorizationDependencies = {
-  allowedUserKey: string;
+  allowedUserKeys: ReadonlySet<string>;
   issuer: string;
   jwtSecret: string;
   loadRole: (userKey: string, accessToken: string) => Promise<string | null>;
@@ -122,7 +122,11 @@ export async function authorizeAdminRequest(
   ) {
     return deny(403, "invalid_claims", dependencies.logger);
   }
-  if (claims.go_irl_user_key !== dependencies.allowedUserKey || claims.go_irl_role !== "admin") {
+  if (
+    !claims.go_irl_user_key
+    || !dependencies.allowedUserKeys.has(claims.go_irl_user_key)
+    || claims.go_irl_role !== "admin"
+  ) {
     return deny(403, "identity_not_allowed", dependencies.logger);
   }
 
@@ -165,8 +169,22 @@ export const productionRoleLoader = async (userKey: string, _accessToken: string
   return rows[0]?.role || null;
 };
 
+export const parseAdminUserKeys = (value: string) => new Set(
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean),
+);
+
+const productionAdminUserKeys = () => {
+  const configuredKeys = readEnv("GO_IRL_ADMIN_USER_KEYS") || requireEnv("GO_IRL_ADMIN_USER_KEY");
+  const allowedUserKeys = parseAdminUserKeys(configuredKeys);
+  if (allowedUserKeys.size === 0) throw new Error("missing_environment:GO_IRL_ADMIN_USER_KEYS");
+  return allowedUserKeys;
+};
+
 export const productionAdminAuthorizationDependencies = (): AdminAuthorizationDependencies => ({
-  allowedUserKey: requireEnv("GO_IRL_ADMIN_USER_KEY"),
+  allowedUserKeys: productionAdminUserKeys(),
   issuer: "go-irl-supabase-edge",
   jwtSecret: requireEnv("GO_IRL_JWT_SECRET"),
   loadRole: productionRoleLoader,
