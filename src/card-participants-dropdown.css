@@ -1,0 +1,95 @@
+.compact-sport-card .runtime-card-participants-dropdown {
+  position: absolute;
+  top: 205px;
+  right: 12px;
+  z-index: 12;
+  width: min(250px, calc(100% - 24px));
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid rgba(217, 255, 99, .3);
+  border-radius: 16px;
+  background: rgba(8, 12, 14, .96);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .5);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.compact-sport-card .runtime-card-participants-dropdown[hidden] {
+  display: none !important;
+}
+
+.runtime-card-participants-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 2px 9px;
+  border-bottom: 1px solid rgba(255, 255, 255, .09);
+}
+
+.runtime-card-participants-header strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.runtime-card-participants-header span {
+  color: var(--lime);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.runtime-card-participants-list {
+  display: grid;
+  gap: 6px;
+  padding-top: 8px;
+}
+
+.runtime-card-participants-list > p {
+  margin: 0;
+  padding: 10px 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.runtime-card-participant-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .035);
+}
+
+.runtime-card-participant-row > strong {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, .94);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-card-participant-avatar {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(217, 255, 99, .3);
+  border-radius: 10px;
+  background: rgba(217, 255, 99, .1);
+  color: var(--lime);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+@media (max-width: 380px) {
+  .compact-sport-card .runtime-card-participants-dropdown {
+    top: 198px;
+    right: 8px;
+    width: min(232px, calc(100% - 16px));
+  }
+}
