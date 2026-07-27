@@ -16,7 +16,7 @@ export async function handleAdminSession(request: Request) {
 
   try {
     const result = await authorizeAdminRequest(request, productionAdminAuthorizationDependencies());
-    if (!result.ok) return json(result.status, { error: result.error });
+    if ("status" in result) return json(result.status, { error: result.error });
     return json(200, { authorized: true });
   } catch (error) {
     console.error("admin_login_failed", {
