@@ -3,5 +3,9 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["api/reminders/run.ts"]
+  "include": [
+    "api/reminders/run.ts",
+    "api/admin/session.ts",
+    "api/_shared/admin-authorization.ts"
+  ]
 }
