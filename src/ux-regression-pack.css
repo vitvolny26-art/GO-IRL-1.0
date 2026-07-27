@@ -1,0 +1,93 @@
+/* Unified UX regression pack: one unread badge, participants, localized hero and indoor defaults. */
+.compact-sport-card .card-share-action > .event-chat-unread-alert {
+  display: none !important;
+}
+
+.compact-sport-card .sport-card-top-actions > .event-chat-unread-alert {
+  top: 160px !important;
+  right: -3px !important;
+}
+
+.compact-sport-card .runtime-participants-chip {
+  appearance: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.compact-sport-card .runtime-participants-chip:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+.compact-sport-card[data-runtime-indoor] .event-card-weather,
+.event-card-weather[hidden],
+.weather-summary-toggle[hidden],
+.weather-detail-card[hidden] {
+  display: none !important;
+}
+
+.go-irl-hero-logo-frame > .go-irl-hero-logo-img {
+  display: none !important;
+}
+
+.runtime-hero-brand {
+  display: grid;
+  grid-template-columns: minmax(82px, 28%) minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  min-height: 100%;
+  padding: 18px 22px;
+  text-align: left;
+}
+
+.runtime-hero-brand-mark {
+  display: block;
+  width: 100%;
+  max-width: 126px;
+  aspect-ratio: 1;
+  justify-self: center;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 0 34px rgba(201, 255, 61, .2);
+}
+
+.runtime-hero-brand-copy {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.runtime-hero-brand-copy > strong {
+  color: var(--lime);
+  font-size: clamp(34px, 9vw, 52px);
+  font-weight: 1000;
+  line-height: .9;
+  letter-spacing: -.055em;
+}
+
+.runtime-hero-brand-copy > span {
+  color: #fff;
+  font-size: clamp(15px, 4vw, 21px);
+  font-weight: 900;
+  line-height: 1.08;
+}
+
+.runtime-hero-brand-copy > small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+@media (max-width: 380px) {
+  .runtime-hero-brand {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .runtime-hero-brand-copy > strong {
+    font-size: 33px;
+  }
+}
