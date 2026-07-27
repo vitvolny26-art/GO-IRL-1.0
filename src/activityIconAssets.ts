@@ -63,5 +63,12 @@ const resolveFile = (file?: string) => file
   ? iconModules[`./assets/activity-icons/${file}`] || null
   : null;
 
-export const getActivityIconAsset = (emoji: string) => resolveFile(emojiFiles[emoji]);
+const cityWalkPattern = /^(?:прогулка|прогулянка|procházka|walk)$/iu;
+
+export const getActivityIconAsset = (emoji: string, label = "") => {
+  if (emoji === "🚶" && cityWalkPattern.test(label.trim())) {
+    return resolveFile("31-city-walk.webp");
+  }
+  return resolveFile(emojiFiles[emoji]);
+};
 export const getCategoryIconAsset = (categoryId: string) => resolveFile(categoryFiles[categoryId]);
