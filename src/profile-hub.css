@@ -146,3 +146,7 @@
     min-height: 68px;
   }
 }
+
+/* ui-scope-20260727-profile */
+.profile-page.profile-hub-enabled>.profile-hub-navigation{display:contents}.profile-page.profile-hub-enabled .profile-hub-navigation>header{order:-30;margin-bottom:14px}.profile-page.profile-hub-enabled:not(.is-editing)>.profile-hero{position:relative;order:-20;display:flex!important;width:100%;margin-bottom:14px;padding-bottom:66px}.profile-page.profile-hub-enabled .profile-hub-grid{order:-10;width:100%;margin-bottom:18px}
+.profile-page.profile-hub-enabled .profile-edit-button{position:absolute;right:14px;bottom:14px;display:inline-flex!important;width:auto!important;min-width:0!important;max-width:calc(100% - 28px);min-height:38px;padding:8px 12px!important;align-items:center;justify-content:center;gap:6px;white-space:nowrap!important}.profile-page.profile-hub-enabled .profile-main{min-width:0;padding-right:0}

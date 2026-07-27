@@ -71,6 +71,9 @@ describe("Telegram event share-card image", () => {
     expect(withWeather).toContain("19°C");
     expect(withWeather).toContain("60%");
     expect(withWeather).toContain("6 km/h");
+    expect(withWeather).toContain('data-weather-lines="three"');
+    expect(withWeather).not.toContain("data-weather-condition");
+    expect(withWeather.match(/data-weather-icon=/g)).toHaveLength(3);
   });
 
   it("resolves approved category artwork as the full-card JPEG background", () => {
@@ -129,6 +132,8 @@ describe("Telegram event share-card image", () => {
     expect(svg).toContain("23°C");
     expect(svg).toContain("12%");
     expect(svg).toContain("19 km/h");
+    expect(svg).toContain('data-weather-lines="three"');
+    expect(svg).not.toContain("data-weather-condition");
     expect(svg).not.toContain("data-event-artwork");
     expect(svg).toBe(buildTelegramShareCardSvg(metaCard));
 

@@ -118,3 +118,7 @@
   .event-card-weather > span { gap: 4px; font-size: 12px; }
   .event-card-weather b { font-size: 15px; }
 }
+
+/* ui-scope-20260727-weather */
+.weather-summary-toggle{display:block!important;width:100%!important;padding:12px 14px!important;text-align:left!important}.weather-summary-toggle .weather-summary-lines,.weather-summary-lines{display:grid!important;width:100%!important;gap:5px!important;justify-items:start!important;white-space:normal!important}
+.weather-summary-lines>span,.weather-hour-metric{display:inline-flex!important;min-width:0;align-items:center;gap:7px;white-space:nowrap!important}.weather-summary-lines svg,.weather-hour-metric svg{width:17px;height:17px;flex:0 0 auto;color:var(--lime)}.weather-summary-lines>span>span,.weather-hour-metric>span{white-space:nowrap!important}
