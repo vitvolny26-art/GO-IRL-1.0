@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import sharp from "sharp";
-import handler from "./event-invitation-card.js";
-import type { TelegramEventCardInput } from "../_shared/telegram-event-card.js";
-import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
+import handler from "../../../api/meta/event-invitation-card.js";
+import type { TelegramEventCardInput } from "../../../api/_shared/telegram-event-card.js";
+import { createMetaInvitationCardToken } from "../../../api/_shared/telegram-share-card-token.js";
 
 const runtimeEnv = (globalThis as typeof globalThis & {
   process: { env: Record<string, string | undefined> };

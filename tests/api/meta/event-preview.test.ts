@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { metaEventPreviewCopy } from "./event-preview.js";
+import { metaEventPreviewCopy } from "../../../api/meta/event-preview.js";
 
 describe("Meta event preview copy", () => {
   it("localizes all public actions for every supported language", () => {
