@@ -39,18 +39,9 @@
   pointer-events: none;
 }
 
-.category-grid.module-grid .category-button:active {
-  transform: scale(0.975);
-}
-
-.category-grid.module-grid .category-button:focus-visible {
-  outline: 2px solid var(--lime);
-  outline-offset: 2px;
-}
-
-.category-grid.module-grid .category-button > span {
-  display: none;
-}
+.category-grid.module-grid .category-button:active { transform: scale(0.975); }
+.category-grid.module-grid .category-button:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+.category-grid.module-grid .category-button > span { display: none; }
 
 .category-grid.module-grid .category-button strong {
   grid-column: 1;
@@ -83,32 +74,27 @@
 
 .category-grid.module-grid .category-button:nth-child(1) {
   border-color: rgba(201, 255, 61, 0.46);
-  background-image: url("./assets/event-backgrounds/card-3x4/03-basketball.webp");
+  background-image: url("./assets/category-backgrounds/sport.webp");
 }
-
 .category-grid.module-grid .category-button:nth-child(2) {
   border-color: rgba(87, 217, 232, 0.46);
-  background-image: url("./assets/event-backgrounds/card-3x4/14-board-games.webp");
+  background-image: url("./assets/category-backgrounds/activities.webp");
 }
-
 .category-grid.module-grid .category-button:nth-child(3) {
   border-color: rgba(255, 203, 82, 0.44);
-  background-image: url("./assets/event-backgrounds/card-3x4/18-beer.webp");
+  background-image: url("./assets/category-backgrounds/party.webp");
 }
-
 .category-grid.module-grid .category-button:nth-child(4) {
   border-color: rgba(120, 214, 103, 0.46);
-  background-image: url("./assets/event-backgrounds/card-3x4/24-hiking.webp");
+  background-image: url("./assets/category-backgrounds/nature.webp");
 }
-
 .category-grid.module-grid .category-button:nth-child(5) {
   border-color: rgba(255, 111, 97, 0.42);
-  background-image: url("./assets/event-backgrounds/card-3x4/33-language-exchange.webp");
+  background-image: url("./assets/category-backgrounds/social.webp");
 }
-
 .category-grid.module-grid .category-button:nth-child(6) {
   border-color: rgba(174, 140, 255, 0.46);
-  background-image: url("./assets/event-backgrounds/card-3x4/36-drawing.webp");
+  background-image: url("./assets/category-backgrounds/creativity.webp");
 }
 
 @media (hover: hover) {
@@ -120,18 +106,7 @@
 }
 
 @media (max-width: 350px) {
-  .category-grid.module-grid {
-    gap: 8px;
-  }
-
-  .category-grid.module-grid .category-button {
-    min-height: 122px;
-    padding: 11px;
-  }
-
-  .category-grid.module-grid .category-button svg {
-    width: 32px;
-    height: 32px;
-    padding: 8px;
-  }
+  .category-grid.module-grid { gap: 8px; }
+  .category-grid.module-grid .category-button { min-height: 122px; padding: 11px; }
+  .category-grid.module-grid .category-button svg { width: 32px; height: 32px; padding: 8px; }
 }
