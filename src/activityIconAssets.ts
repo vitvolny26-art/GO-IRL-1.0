@@ -1,4 +1,4 @@
-const iconModules = import.meta.glob("./assets/event-backgrounds/card-3x4/*.webp", {
+const iconModules = import.meta.glob("./assets/activity-icons/*.webp", {
   eager: true,
   import: "default",
   query: "?url",
@@ -60,7 +60,7 @@ const categoryFiles: Readonly<Record<string, string>> = {
 };
 
 const resolveFile = (file?: string) => file
-  ? iconModules[`./assets/event-backgrounds/card-3x4/${file}`] || null
+  ? iconModules[`./assets/activity-icons/${file}`] || null
   : null;
 
 export const getActivityIconAsset = (emoji: string) => resolveFile(emojiFiles[emoji]);
