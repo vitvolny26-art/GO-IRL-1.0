@@ -98,7 +98,12 @@ export async function authorizeAdminRequest(
     return deny(403, "identity_not_allowed", dependencies.logger);
   }
 
-  const currentRole = await dependencies.loadRole(claims.go_irl_user_key, token);
+  let currentRole: string | null;
+  try {
+    currentRole = await dependencies.loadRole(claims.go_irl_user_key, token);
+  } catch {
+    return deny(403, "role_lookup_failed", dependencies.logger);
+  }
   if (currentRole !== "admin") return deny(403, "role_not_allowed", dependencies.logger);
 
   dependencies.logger?.("admin_login_allowed", { reason: "authorized" });
@@ -115,13 +120,14 @@ export async function runAuthorizedAdminAction<T>(
   return { ok: true, authorization, value: await action(authorization) };
 }
 
-const productionRoleLoader = async (userKey: string, accessToken: string) => {
-  const response = await fetch(
+export const productionRoleLoader = async (userKey: string, _accessToken: string, fetcher: typeof fetch = fetch) => {
+  const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const response = await fetcher(
     `${requireEnv("SUPABASE_URL")}/rest/v1/user_roles?select=role&user_key=eq.${encodeURIComponent(userKey)}&limit=1`,
     {
       headers: {
-        apikey: requireEnv("SUPABASE_PUBLISHABLE_KEY"),
-        authorization: `Bearer ${accessToken}`,
+        apikey: serviceRoleKey,
+        authorization: `Bearer ${serviceRoleKey}`,
         accept: "application/json",
       },
     },
