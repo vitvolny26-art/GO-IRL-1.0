@@ -1,4 +1,4 @@
-const iconModules = import.meta.glob("./assets/event-backgrounds/card-3x4/*.webp", {
+const iconModules = import.meta.glob("./assets/activity-icons/*.webp", {
   eager: true,
   import: "default",
   query: "?url",
@@ -60,8 +60,15 @@ const categoryFiles: Readonly<Record<string, string>> = {
 };
 
 const resolveFile = (file?: string) => file
-  ? iconModules[`./assets/event-backgrounds/card-3x4/${file}`] || null
+  ? iconModules[`./assets/activity-icons/${file}`] || null
   : null;
 
-export const getActivityIconAsset = (emoji: string) => resolveFile(emojiFiles[emoji]);
+const cityWalkPattern = /^(?:прогулка|прогулянка|procházka|walk)$/iu;
+
+export const getActivityIconAsset = (emoji: string, label = "") => {
+  if (emoji === "🚶" && cityWalkPattern.test(label.trim())) {
+    return resolveFile("31-city-walk.webp");
+  }
+  return resolveFile(emojiFiles[emoji]);
+};
 export const getCategoryIconAsset = (categoryId: string) => resolveFile(categoryFiles[categoryId]);

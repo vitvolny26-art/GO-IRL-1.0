@@ -72,6 +72,7 @@ import { getOrganizerRoleRequestState } from "./coachFeature";
 import { CardShareAction } from "./components/CardShareAction";
 import { CardReminderAction } from "./components/CardReminderAction";
 import { EventCardArtwork } from "./components/EventCardArtwork";
+import { ActivityIcon } from "./components/ActivityIcon";
 import { stripLeadingEmoji } from "./cardText";
 import { buildEventLocationUrl, loadSavedEventLocations, rememberEventLocation } from "./eventLocations";
 import { openAvatarCropper } from "./avatarCropper";
@@ -1577,7 +1578,9 @@ function GenericActivitySheet({
         <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
         {loading && <EventDetailsSkeleton />}
         {error && <div className="details-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-        <div className={`sheet-symbol category-${category.id}`}>{activityAvatar}</div>
+        <div className={`sheet-symbol category-${category.id}`}>
+          <ActivityIcon emoji={activityAvatar} label={activity.activity[language]} />
+        </div>
         <div className="sheet-label">{category.name[language]} · {stripLeadingEmoji(activity.activity[language])}</div>
         <h2>{stripLeadingEmoji(activity.title[language])}</h2>
         <p className="sheet-description">{stripLeadingEmoji(activity.description[language])}</p>
@@ -1751,7 +1754,6 @@ function EventListSkeleton() {
 }
 
 export default App;
-
 
 
 

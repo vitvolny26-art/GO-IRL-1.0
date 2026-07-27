@@ -8,7 +8,7 @@ type Props = {
 };
 
 export function ActivityIcon({ emoji = "", categoryId, label = "", className = "" }: Props) {
-  const src = categoryId ? getCategoryIconAsset(categoryId) : getActivityIconAsset(emoji);
+  const src = categoryId ? getCategoryIconAsset(categoryId) : getActivityIconAsset(emoji, label);
   const classes = ["activity-3d-icon", className].filter(Boolean).join(" ");
 
   if (!src) {
