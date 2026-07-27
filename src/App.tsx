@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
 import { AppHeader } from "./components/AppHeader";
-import { DevPanel } from "./components/DevPanel";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
 import { getCurrentAuthIdentity, getCurrentStartParam, initializeTrustedAuth, isTrustedAuthReady } from "./authSession";
@@ -452,7 +451,6 @@ function App() {
 
   return (
     <div className="app">
-      <DevPanel />
       <AppHeader
         language={store.language}
         selectedCityId={store.selectedCityId}

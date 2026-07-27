@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DevPanel } from "../components/DevPanel";
 import { adminRedirectForAuthorization, verifyCurrentAdminSession } from "./adminSession";
 import "./admin-login.css";
 
@@ -31,7 +32,7 @@ export function AdminPanelPage() {
     return () => { active = false; };
   }, []);
 
-  return <main className="admin-login-shell"><section className="admin-login-card" aria-live="polite"><div className="admin-login-mark" aria-hidden="true">GO IRL</div><h1>Admin panel</h1>{authorized ? <><p>Серверная авторизация подтверждена.</p><div className="admin-login-status">Protected admin session active</div><a href="/">Открыть GO IRL</a></> : <p>Проверяем доступ…</p>}</section></main>;
+  return <main className="admin-login-shell">{authorized ? <DevPanel /> : null}<section className="admin-login-card" aria-live="polite"><div className="admin-login-mark" aria-hidden="true">GO IRL</div><h1>Admin panel</h1>{authorized ? <><p>Серверная авторизация подтверждена.</p><div className="admin-login-status">Protected admin session active</div><a href="/">Открыть GO IRL</a></> : <p>Проверяем доступ…</p>}</section></main>;
 }
 
 export function AdminAccessDeniedPage() {
