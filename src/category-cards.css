@@ -1,0 +1,137 @@
+.category-grid.module-grid {
+  gap: 10px;
+}
+
+.category-grid.module-grid .category-button {
+  position: relative;
+  isolation: isolate;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-rows: 1fr auto auto;
+  align-items: end;
+  min-height: clamp(126px, 38vw, 154px);
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background-color: #101217;
+  background-position: center;
+  background-size: cover;
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 26px rgba(0, 0, 0, 0.24);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.category-grid.module-grid .category-button::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 7, 10, 0.18) 0%, rgba(5, 7, 10, 0.55) 48%, rgba(5, 7, 10, 0.96) 100%);
+}
+
+.category-grid.module-grid .category-button::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: radial-gradient(circle at 85% 10%, rgba(87, 217, 232, 0.16), transparent 38%);
+  pointer-events: none;
+}
+
+.category-grid.module-grid .category-button:active {
+  transform: scale(0.975);
+}
+
+.category-grid.module-grid .category-button:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+.category-grid.module-grid .category-button > span {
+  display: none;
+}
+
+.category-grid.module-grid .category-button strong {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: clamp(15px, 4.2vw, 18px);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.category-grid.module-grid .category-button small {
+  grid-column: 1;
+  grid-row: 3;
+  color: rgba(246, 247, 247, 0.72);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.category-grid.module-grid .category-button svg {
+  grid-column: 2;
+  grid-row: 2 / 4;
+  width: 36px;
+  height: 36px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  background: rgba(7, 9, 12, 0.62);
+  color: var(--text);
+  backdrop-filter: blur(8px);
+}
+
+.category-grid.module-grid .category-button:nth-child(1) {
+  border-color: rgba(201, 255, 61, 0.46);
+  background-image: url("./assets/event-backgrounds/card-3x4/03-basketball.webp");
+}
+
+.category-grid.module-grid .category-button:nth-child(2) {
+  border-color: rgba(87, 217, 232, 0.46);
+  background-image: url("./assets/event-backgrounds/card-3x4/14-board-games.webp");
+}
+
+.category-grid.module-grid .category-button:nth-child(3) {
+  border-color: rgba(255, 203, 82, 0.44);
+  background-image: url("./assets/event-backgrounds/card-3x4/18-beer.webp");
+}
+
+.category-grid.module-grid .category-button:nth-child(4) {
+  border-color: rgba(120, 214, 103, 0.46);
+  background-image: url("./assets/event-backgrounds/card-3x4/24-hiking.webp");
+}
+
+.category-grid.module-grid .category-button:nth-child(5) {
+  border-color: rgba(255, 111, 97, 0.42);
+  background-image: url("./assets/event-backgrounds/card-3x4/33-language-exchange.webp");
+}
+
+.category-grid.module-grid .category-button:nth-child(6) {
+  border-color: rgba(174, 140, 255, 0.46);
+  background-image: url("./assets/event-backgrounds/card-3x4/36-drawing.webp");
+}
+
+@media (hover: hover) {
+  .category-grid.module-grid .category-button:hover {
+    border-color: rgba(201, 255, 61, 0.68);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 16px 34px rgba(0, 0, 0, 0.32);
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 350px) {
+  .category-grid.module-grid {
+    gap: 8px;
+  }
+
+  .category-grid.module-grid .category-button {
+    min-height: 122px;
+    padding: 11px;
+  }
+
+  .category-grid.module-grid .category-button svg {
+    width: 32px;
+    height: 32px;
+    padding: 8px;
+  }
+}

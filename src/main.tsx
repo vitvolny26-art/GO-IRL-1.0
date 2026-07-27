@@ -13,6 +13,7 @@ import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal"
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import { ProfileHubPortal } from "./components/ProfileHubPortal";
 import "./styles.css";
+import "./category-cards.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
 import "./weather-ui-fixes.css";
