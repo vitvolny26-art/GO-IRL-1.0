@@ -1,7 +1,19 @@
-import { getCurrentAuthSession, initializeTrustedAuth } from "../authSession";
+import { getCurrentAuthSession, initializeTrustedAuth, refreshTrustedAuth } from "../authSession";
 
 export type AdminRoute = "login" | "panel" | "denied" | null;
 type FetchLike = typeof fetch;
+type AuthIdentityLike = { accessToken?: string; source?: string } | null;
+type AdminSessionAuthDependencies = {
+  current: () => AuthIdentityLike;
+  initialize: () => Promise<AuthIdentityLike>;
+  refresh: () => Promise<AuthIdentityLike>;
+};
+
+const productionAuthDependencies: AdminSessionAuthDependencies = {
+  current: getCurrentAuthSession,
+  initialize: initializeTrustedAuth,
+  refresh: refreshTrustedAuth,
+};
 
 export const resolveAdminRoute = (pathname: string): AdminRoute => {
   const normalized = pathname.replace(/\/+$/, "") || "/";
@@ -14,23 +26,37 @@ export const resolveAdminRoute = (pathname: string): AdminRoute => {
 export const adminRedirectForAuthorization = (authorized: boolean) =>
   authorized ? "/admin" : "/admin/access-denied";
 
-export const requestAdminSession = async (accessToken: string, fetcher: FetchLike = fetch) => {
-  if (!accessToken.trim()) return false;
+const requestAdminSessionResponse = async (accessToken: string, fetcher: FetchLike) => {
+  if (!accessToken.trim()) return null;
   try {
-    const response = await fetcher("/api/admin/session", {
+    return await fetcher("/api/admin/session", {
       method: "POST",
       headers: { authorization: `Bearer ${accessToken}` },
     });
-    return response.ok;
   } catch {
-    return false;
+    return null;
   }
 };
 
-export const verifyCurrentAdminSession = async (fetcher: FetchLike = fetch) => {
-  const identity = await initializeTrustedAuth();
+export const requestAdminSession = async (accessToken: string, fetcher: FetchLike = fetch) =>
+  Boolean((await requestAdminSessionResponse(accessToken, fetcher))?.ok);
+
+export const verifyCurrentAdminSession = async (
+  fetcher: FetchLike = fetch,
+  auth: AdminSessionAuthDependencies = productionAuthDependencies,
+) => {
+  const identity = await auth.initialize();
   const session = identity && "source" in identity && identity.source === "trusted-telegram"
     ? identity
-    : getCurrentAuthSession();
-  return session?.accessToken ? requestAdminSession(session.accessToken, fetcher) : false;
+    : auth.current();
+  if (!session?.accessToken) return false;
+
+  const initialResponse = await requestAdminSessionResponse(session.accessToken, fetcher);
+  if (initialResponse?.ok) return true;
+  if (initialResponse?.status !== 401) return false;
+
+  const refreshed = await auth.refresh();
+  return refreshed?.source === "trusted-telegram" && refreshed.accessToken
+    ? requestAdminSession(refreshed.accessToken, fetcher)
+    : false;
 };
