@@ -97,7 +97,7 @@ to authenticated
 using (public.go_irl_is_activity_organizer(activity_id));
 
 grant select, insert, update, delete on public.activity_external_telegram_chats to authenticated;
-grant execute on function public.go_irl_can_access_external_telegram_chat(uuid) to authenticated;
-grant execute on function public.go_irl_is_activity_organizer(uuid) to authenticated;
+revoke execute on function public.go_irl_can_access_external_telegram_chat(uuid) from public, anon, authenticated;
+revoke execute on function public.go_irl_is_activity_organizer(uuid) from public, anon, authenticated;
 
 commit;
