@@ -14,6 +14,18 @@ type AdminJwtClaims = {
   go_irl_user_key?: string;
 };
 
+type AdminJwtVerificationResult =
+  | { ok: true; claims: AdminJwtClaims }
+  | {
+    ok: false;
+    reason:
+      | "malformed_session"
+      | "invalid_jwt_header"
+      | "invalid_jwt_encoding"
+      | "signature_mismatch"
+      | "invalid_jwt_payload";
+  };
+
 export type AdminAuthorizationDependencies = {
   allowedUserKey: string;
   issuer: string;
@@ -48,12 +60,21 @@ const decodeJson = <T>(value: string): T => {
   return JSON.parse(new TextDecoder().decode(bytes)) as T;
 };
 
-async function verifyAdminJwt(token: string, secret: string): Promise<AdminJwtClaims | null> {
+async function verifyAdminJwt(token: string, secret: string): Promise<AdminJwtVerificationResult> {
   const parts = token.split(".");
-  if (parts.length !== 3) return null;
+  if (parts.length !== 3) return { ok: false, reason: "malformed_session" };
+
+  let header: { alg?: string; typ?: string };
   try {
-    const header = decodeJson<{ alg?: string; typ?: string }>(parts[0]);
-    if (header.alg !== "HS256" || header.typ !== "JWT") return null;
+    header = decodeJson<{ alg?: string; typ?: string }>(parts[0]);
+  } catch {
+    return { ok: false, reason: "invalid_jwt_encoding" };
+  }
+  if (header.alg !== "HS256" || header.typ !== "JWT") {
+    return { ok: false, reason: "invalid_jwt_header" };
+  }
+
+  try {
     const key = await crypto.subtle.importKey(
       "raw",
       new TextEncoder().encode(secret),
@@ -67,9 +88,15 @@ async function verifyAdminJwt(token: string, secret: string): Promise<AdminJwtCl
       base64UrlToBytes(parts[2]),
       new TextEncoder().encode(`${parts[0]}.${parts[1]}`),
     );
-    return valid ? decodeJson<AdminJwtClaims>(parts[1]) : null;
+    if (!valid) return { ok: false, reason: "signature_mismatch" };
   } catch {
-    return null;
+    return { ok: false, reason: "invalid_jwt_encoding" };
+  }
+
+  try {
+    return { ok: true, claims: decodeJson<AdminJwtClaims>(parts[1]) };
+  } catch {
+    return { ok: false, reason: "invalid_jwt_payload" };
   }
 }
 
@@ -81,8 +108,9 @@ export async function authorizeAdminRequest(
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
   if (!token) return deny(401, "missing_bearer", dependencies.logger);
 
-  const claims = await verifyAdminJwt(token, dependencies.jwtSecret);
-  if (!claims) return deny(401, "invalid_session", dependencies.logger);
+  const verification = await verifyAdminJwt(token, dependencies.jwtSecret);
+  if (!verification.ok) return deny(401, verification.reason, dependencies.logger);
+  const { claims } = verification;
 
   const now = dependencies.nowSeconds ?? Math.floor(Date.now() / 1000);
   if (!claims.exp || claims.exp <= now) return deny(401, "expired_session", dependencies.logger);

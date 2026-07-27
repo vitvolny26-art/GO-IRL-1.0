@@ -45,6 +45,48 @@ describe("dedicated admin authorization", () => {
     await expect(authorizeAdminRequest(requestWith(await signToken({ iss: "foreign" })), dependencies())).resolves.toEqual({ ok: false, status: 403, error: "access_denied" });
   });
 
+  it("logs safe invalid-session categories without logging the token", async () => {
+    const cases = [
+      { token: "not-a-jwt", reason: "malformed_session" },
+      {
+        token: `${base64Url(JSON.stringify({ alg: "none", typ: "JWT" }))}.${base64Url("{}")}.signature`,
+        reason: "invalid_jwt_header",
+      },
+      { token: `***.${base64Url("{}")}.signature`, reason: "invalid_jwt_encoding" },
+      {
+        token: `${base64Url(JSON.stringify({ alg: "HS256", typ: "JWT" }))}.${base64Url("{}")}.${base64Url("wrong-signature")}`,
+        reason: "signature_mismatch",
+      },
+    ];
+
+    for (const testCase of cases) {
+      const logger = vi.fn();
+      await expect(
+        authorizeAdminRequest(requestWith(testCase.token), dependencies({ logger })),
+      ).resolves.toEqual({ ok: false, status: 401, error: "access_denied" });
+      expect(logger).toHaveBeenCalledWith("admin_login_denied", { reason: testCase.reason });
+      expect(JSON.stringify(logger.mock.calls)).not.toContain(testCase.token);
+    }
+  });
+
+  it("distinguishes a valid signature with an invalid payload without logging the token", async () => {
+    const header = base64Url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const payload = base64Url("not-json");
+    const unsigned = `${header}.${payload}`;
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(unsigned)));
+    const token = `${unsigned}.${base64Url(signature)}`;
+    const logger = vi.fn();
+
+    await expect(authorizeAdminRequest(requestWith(token), dependencies({ logger }))).resolves.toEqual({
+      ok: false,
+      status: 401,
+      error: "access_denied",
+    });
+    expect(logger).toHaveBeenCalledWith("admin_login_denied", { reason: "invalid_jwt_payload" });
+    expect(JSON.stringify(logger.mock.calls)).not.toContain(token);
+  });
+
   it("does not execute an admin action before authorization", async () => {
     const action = vi.fn(async () => "changed");
     await expect(runAuthorizedAdminAction(requestWith(await signToken({ go_irl_user_key: "telegram:other-user" })), dependencies(), action)).resolves.toEqual({ ok: false, status: 403, error: "access_denied" });
