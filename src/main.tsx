@@ -13,8 +13,10 @@ import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import { ProfileHubPortal } from "./components/ProfileHubPortal";
+import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
 import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/AdminLoginPage";
 import { resolveAdminRoute } from "./admin/adminSession";
+import { useAppStore } from "./store";
 import "./styles.css";
 import "./category-cards.css";
 import "./activity-3d-icons.css";
@@ -108,6 +110,11 @@ const adminSurface = adminRoute === "login"
       ? <AdminPanelPage />
       : null;
 
+function AdminDevPanel() {
+  const userRole = useAppStore((state) => state.userRole);
+  return shouldShowAdminDevPanel(userRole) ? <DevPanel /> : null;
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     {adminSurface || (
@@ -121,6 +128,7 @@ createRoot(document.getElementById("root")!).render(
         <ProfilePreferencesPortal />
         <ParticipantIdentityPortal />
         <ProfileHubPortal />
+        <AdminDevPanel />
       </QueryClientProvider>
     )}
   </StrictMode>,
