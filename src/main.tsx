@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
+import { enableActivity3dIcons } from "./enableActivity3dIcons";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
@@ -14,6 +15,7 @@ import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPorta
 import { ProfileHubPortal } from "./components/ProfileHubPortal";
 import "./styles.css";
 import "./category-cards.css";
+import "./activity-3d-icons.css";
 import "./mobile-card-fixes.css";
 import "./coach-panel.css";
 import "./weather-ui-fixes.css";
@@ -132,3 +134,5 @@ createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </StrictMode>,
 );
+
+enableActivity3dIcons();
