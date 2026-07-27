@@ -1,3 +1,4 @@
+import { enableSportEventCardPolicy } from "./sportEventCardPolicy";
 import { stripLeadingEmoji } from "./cardText";
 import { getTranslation } from "./i18n";
 import { useAppStore } from "./store";
@@ -118,6 +119,7 @@ const handleParticipantsClick = (event: Event) => {
 };
 
 export function enableCardParticipantsDropdown() {
+  enableSportEventCardPolicy();
   document.addEventListener("click", handleParticipantsClick, true);
   document.addEventListener("click", (event) => {
     const target = event.target;
