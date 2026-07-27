@@ -93,11 +93,13 @@ Deno.serve(async (request) => {
         expires_at: new Date((verified.authDate + authMaxAgeSeconds) * 1000).toISOString(),
       });
 
-    if (replayResult.error) {
-      if (replayResult.error.code === "23505") return json({ error: "replay_detected" }, 409);
+    if (replayResult.error && replayResult.error.code !== "23505") {
       throw replayResult.error;
     }
 
+    // Telegram keeps one signed initData value for the lifetime of the Mini App.
+    // A duplicate replay row therefore means an idempotent session refresh, not a
+    // second unverified identity. HMAC and auth_date were already validated above.
     const userKey = `telegram:${verified.user.id}`;
     const upsertResult = await supabase
       .from("app_users")
