@@ -25,7 +25,12 @@ security definer
 set search_path to 'public'
 as $$
   select
-    public.go_irl_request_can_moderate()
+    exists (
+      select 1
+      from public.user_roles role_row
+      where role_row.user_key = public.go_irl_request_user_key()
+        and role_row.role in ('moderator', 'admin')
+    )
     or exists (
       select 1
       from public.activities activity
