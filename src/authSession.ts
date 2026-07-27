@@ -1,4 +1,5 @@
 import { resolveDemoIdentity, type DemoIdentityResolution } from "./securityIdentity";
+import { createSingleFlight } from "./singleFlight";
 import { getTelegramInitData, getTelegramWebApp } from "./telegram";
 import type { UserRole } from "./types";
 
@@ -105,7 +106,7 @@ function resolveLegacyDemoIdentity() {
   return legacyIdentity;
 }
 
-export async function initializeTrustedAuth() {
+async function performTrustedAuth(): Promise<AppAuthIdentity | null> {
   if (trustedSession && trustedSession.expiresAt > Math.floor(Date.now() / 1000) + 60) {
     return trustedSession;
   }
@@ -159,6 +160,12 @@ export async function initializeTrustedAuth() {
     authError = "trusted_auth_unavailable";
     return null;
   }
+}
+
+const runTrustedAuth = createSingleFlight(performTrustedAuth);
+
+export function initializeTrustedAuth() {
+  return runTrustedAuth();
 }
 
 export const getTrustedAccessToken = async () => {
