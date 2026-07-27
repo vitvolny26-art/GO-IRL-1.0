@@ -94,6 +94,11 @@ function writeTrustedSession(session: TrustedAuthSession) {
   sessionStorage.setItem(sessionStorageKey, JSON.stringify(session));
 }
 
+export function clearTrustedSession() {
+  trustedSession = null;
+  sessionStorage.removeItem(sessionStorageKey);
+}
+
 function resolveLegacyDemoIdentity() {
   if (!isDemoAuthEnabled()) return null;
   if (!legacyIdentity) {
@@ -165,6 +170,11 @@ async function performTrustedAuth(): Promise<AppAuthIdentity | null> {
 const runTrustedAuth = createSingleFlight(performTrustedAuth);
 
 export function initializeTrustedAuth() {
+  return runTrustedAuth();
+}
+
+export function refreshTrustedAuth() {
+  clearTrustedSession();
   return runTrustedAuth();
 }
 

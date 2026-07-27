@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { adminRedirectForAuthorization, requestAdminSession, resolveAdminRoute } from "./adminSession";
+import {
+  adminRedirectForAuthorization,
+  requestAdminSession,
+  resolveAdminRoute,
+  verifyCurrentAdminSession,
+} from "./adminSession";
 
 describe("admin session routing", () => {
   it("routes and redirects through protected admin surfaces", () => {
@@ -20,5 +25,43 @@ describe("admin session routing", () => {
     await expect(requestAdminSession("signed-session", allowed as typeof fetch)).resolves.toBe(true);
     await expect(requestAdminSession("", allowed as typeof fetch)).resolves.toBe(false);
     await expect(requestAdminSession("signed-session", vi.fn(async () => new Response(null, { status: 403 })) as typeof fetch)).resolves.toBe(false);
+  });
+
+  it("refreshes a cached trusted session once after a server 401", async () => {
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const authorization = new Headers(init?.headers).get("authorization");
+      return new Response(null, { status: authorization === "Bearer fresh-session" ? 200 : 401 });
+    });
+    const refresh = vi.fn(async () => ({
+      accessToken: "fresh-session",
+      source: "trusted-telegram",
+    }));
+
+    await expect(verifyCurrentAdminSession(fetcher as typeof fetch, {
+      current: () => null,
+      initialize: async () => ({ accessToken: "stale-session", source: "trusted-telegram" }),
+      refresh,
+    })).resolves.toBe(true);
+
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not refresh a validly signed but forbidden session", async () => {
+    const refresh = vi.fn(async () => ({
+      accessToken: "fresh-session",
+      source: "trusted-telegram",
+    }));
+
+    await expect(verifyCurrentAdminSession(
+      vi.fn(async () => new Response(null, { status: 403 })) as typeof fetch,
+      {
+        current: () => null,
+        initialize: async () => ({ accessToken: "forbidden-session", source: "trusted-telegram" }),
+        refresh,
+      },
+    )).resolves.toBe(false);
+
+    expect(refresh).not.toHaveBeenCalled();
   });
 });
