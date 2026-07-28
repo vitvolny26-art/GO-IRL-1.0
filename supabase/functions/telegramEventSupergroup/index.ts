@@ -124,20 +124,6 @@ const telegramApi = async <T>(token: string, method: string, body: Record<string
   return payload.result;
 };
 
-type TelegramWebhookInfo = { url: string };
-
-const ensureTelegramWebhook = async (botToken: string, supabaseUrl: string, webhookSecret: string) => {
-  const expectedUrl = `${supabaseUrl.replace(/\/$/, "")}/functions/v1/telegramEventSupergroup`;
-  const current = await telegramApi<TelegramWebhookInfo>(botToken, "getWebhookInfo");
-  if (current.url && current.url !== expectedUrl) throw new Error("telegram_webhook_conflict");
-  await telegramApi<boolean>(botToken, "setWebhook", {
-    url: expectedUrl,
-    secret_token: webhookSecret,
-    allowed_updates: ["message"],
-    drop_pending_updates: false,
-  });
-};
-
 const parseBindingToken = (text: string | undefined, botUsername: string) => {
   if (!text) return null;
   const escaped = botUsername.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -258,8 +244,6 @@ Deno.serve(async (request) => {
     if (!activityResult.data || activityResult.data.organizer_key !== claims.go_irl_user_key) {
       return json({ error: "organizer_required" }, 403);
     }
-
-    await ensureTelegramWebhook(botToken, supabaseUrl, webhookSecret);
 
     const bindingToken = base64UrlEncode(crypto.getRandomValues(new Uint8Array(24)));
     const tokenHash = await sha256(bindingToken);
