@@ -2,21 +2,20 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.108.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": [
-    "authorization",
-    "x-client-info",
-    "x-supabase-api-version",
-    "apikey",
-    "content-type",
-    "x-telegram-bot-api-secret-token",
-  ].join(", "),
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Max-Age": "86400",
 };
 
+const corsResponseHeaders = (request?: Request) => ({
+  ...corsHeaders,
+  "Access-Control-Allow-Headers": request?.headers.get("access-control-request-headers")
+    || "authorization, x-client-info, x-supabase-api-version, apikey, content-type, x-telegram-bot-api-secret-token",
+  Vary: "Access-Control-Request-Headers",
+});
+
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
-  headers: { ...corsHeaders, "Content-Type": "application/json" },
+  headers: { ...corsResponseHeaders(), "Content-Type": "application/json" },
 });
 
 const requiredEnv = (name: string) => {
@@ -128,7 +127,9 @@ const parseBindingToken = (text: string | undefined, botUsername: string) => {
 };
 
 Deno.serve(async (request) => {
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsResponseHeaders(request) });
+  }
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   try {
