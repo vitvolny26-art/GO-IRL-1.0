@@ -27,6 +27,7 @@ type LifecycleInput = {
 const allowedHosts = new Set(["t.me", "telegram.me", "www.t.me", "www.telegram.me"]);
 const validPath = /^\/(?:joinchat\/[-_A-Za-z0-9]+|\+[-_A-Za-z0-9]+|[A-Za-z0-9_]{5,})(?:\/\d+)?\/?$/;
 const eventStoragePrefix = "go-irl:external-telegram-chat:event:";
+const telegramGroupCreationDeepLink = "tg://new/group";
 
 export const normalizeExternalTelegramChatUrl = (value: string) => {
   const trimmed = value.trim();
@@ -123,6 +124,22 @@ export const removeLocalEventTelegramChatLink = (activityId: string) => {
 type OpenDependencies = {
   openTelegramLink?: (url: string) => void;
   openBrowser?: (url: string) => void;
+};
+
+type CreateGroupDependencies = {
+  openDeepLink?: (url: string) => void;
+};
+
+export const openTelegramGroupCreation = (
+  dependencies: CreateGroupDependencies = {},
+) => {
+  const openDeepLink = dependencies.openDeepLink || ((target: string) => {
+    window.location.assign(target);
+  });
+
+  if (!dependencies.openDeepLink && typeof window === "undefined") return false;
+  openDeepLink(telegramGroupCreationDeepLink);
+  return true;
 };
 
 export const openExternalTelegramChat = (
