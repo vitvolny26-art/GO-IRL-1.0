@@ -4,6 +4,7 @@ import {
   loadLocalEventTelegramChatLink,
   normalizeExternalTelegramChatUrl,
   openExternalTelegramChat,
+  openTelegramGroupCreation,
   removeLocalEventTelegramChatLink,
   resolveExternalTelegramChatLifecycle,
   saveLocalEventTelegramChatLink,
@@ -21,6 +22,9 @@ describe("external Telegram chat links", () => {
         setItem: (key: string, value: string) => storage.set(key, value),
         removeItem: (key: string) => storage.delete(key),
         clear: () => storage.clear(),
+      },
+      location: {
+        assign: vi.fn(),
       },
       open: vi.fn(),
     });
@@ -69,6 +73,12 @@ describe("external Telegram chat links", () => {
   it("does not store invalid event links", () => {
     expect(saveLocalEventTelegramChatLink(activityId, "javascript:alert(1)", "user:1")).toBeNull();
     expect(loadLocalEventTelegramChatLink(activityId)).toBeNull();
+  });
+
+  it("opens the official Telegram group creation flow", () => {
+    const openDeepLink = vi.fn();
+    expect(openTelegramGroupCreation({ openDeepLink })).toBe(true);
+    expect(openDeepLink).toHaveBeenCalledWith("tg://new/group");
   });
 
   it("uses Telegram WebApp opening when available", () => {
