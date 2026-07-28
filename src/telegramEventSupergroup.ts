@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { getTelegramWebApp } from "./telegram";
 
 export type EventSupergroupBinding = {
   startGroupUrl: string;
@@ -35,4 +36,23 @@ export const createEventSupergroupBinding = async (
   }
 
   return { startGroupUrl, expiresAt };
+};
+
+export const openEventSupergroupBinding = (
+  startGroupUrl: string,
+  dependencies: {
+    openTelegramLink?: (url: string) => void;
+    openBrowser?: (url: string) => void;
+  } = {},
+) => {
+  if (!isSupportedStartGroupUrl(startGroupUrl)) return false;
+  const telegramOpen = dependencies.openTelegramLink || getTelegramWebApp()?.openTelegramLink;
+  if (telegramOpen) {
+    telegramOpen(startGroupUrl);
+    return true;
+  }
+  if (!dependencies.openBrowser && typeof window === "undefined") return false;
+  const browserOpen = dependencies.openBrowser || ((url: string) => window.open(url, "_blank", "noopener,noreferrer"));
+  browserOpen(startGroupUrl);
+  return true;
 };
