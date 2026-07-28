@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Bell, CircleUserRound, Settings2, ShieldCheck } from "lucide-react";
+import { transitionProfilePanel } from "../profile/profilePanelNavigation";
+import type { ProfilePanelSection, ProfilePanelState } from "../profile/profilePanelTypes";
 import { useAppStore } from "../store";
 import type { Language } from "../types";
 
@@ -12,6 +14,16 @@ export const profileHubSections: readonly ProfileHubSection[] = [
   "my-go-irl",
   "diagnostics",
 ];
+
+const panelToLegacySection: Readonly<Record<ProfilePanelSection, ProfileHubSection>> = {
+  profile: "identity",
+  activities: "my-go-irl",
+  preferences: "preferences",
+  notifications: "my-go-irl",
+  privacy: "identity",
+  support: "diagnostics",
+  diagnostics: "diagnostics",
+};
 
 const copy: Record<Language, {
   title: string;
@@ -83,7 +95,7 @@ const copy: Record<Language, {
 export function ProfileHubPortal() {
   const language = useAppStore((state) => state.language);
   const [target, setTarget] = useState<HTMLElement | null>(null);
-  const [section, setSection] = useState<ProfileHubSection>("identity");
+  const [panelSection, setPanelSection] = useState<ProfilePanelSection>("profile");
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
@@ -103,27 +115,37 @@ export function ProfileHubPortal() {
     return () => observer.disconnect();
   }, [target]);
 
+  const legacySection = panelToLegacySection[panelSection];
+
   useEffect(() => {
     if (!target) return;
     target.classList.add("profile-hub-enabled");
-    target.dataset.profileHubSection = section;
+    target.dataset.profileHubSection = legacySection;
+    target.dataset.profilePanelSection = panelSection;
     return () => {
       target.classList.remove("profile-hub-enabled");
       delete target.dataset.profileHubSection;
+      delete target.dataset.profilePanelSection;
     };
-  }, [section, target]);
+  }, [legacySection, panelSection, target]);
 
   if (!target) return null;
   const labels = copy[language];
-  const items = [
-    { id: "identity" as const, icon: <CircleUserRound />, label: labels.identity, hint: labels.identityHint },
-    { id: "preferences" as const, icon: <Settings2 />, label: labels.preferences, hint: labels.preferencesHint },
-    { id: "my-go-irl" as const, icon: <Bell />, label: labels.myGoIrl, hint: labels.myGoIrlHint },
-    { id: "diagnostics" as const, icon: <ShieldCheck />, label: labels.diagnostics, hint: labels.diagnosticsHint },
+  const items: Array<{ id: ProfilePanelSection; icon: React.ReactNode; label: string; hint: string }> = [
+    { id: "profile", icon: <CircleUserRound />, label: labels.identity, hint: labels.identityHint },
+    { id: "preferences", icon: <Settings2 />, label: labels.preferences, hint: labels.preferencesHint },
+    { id: "activities", icon: <Bell />, label: labels.myGoIrl, hint: labels.myGoIrlHint },
+    { id: "diagnostics", icon: <ShieldCheck />, label: labels.diagnostics, hint: labels.diagnosticsHint },
   ];
 
+  const selectSection = (requested: ProfilePanelSection) => {
+    const current: ProfilePanelState = { activeSection: panelSection, editing };
+    const next = transitionProfilePanel(current, requested, true);
+    setPanelSection(next.activeSection);
+  };
+
   return createPortal(
-    <nav className="profile-hub-navigation" aria-label={labels.title}>
+    <nav className="profile-hub-navigation" aria-label={labels.title} data-profile-panel-bridge="legacy">
       <header>
         <h2>{labels.title}</h2>
         <p>{labels.hint}</p>
@@ -132,12 +154,12 @@ export function ProfileHubPortal() {
         {items.map((item) => (
           <button
             key={item.id}
-            className={section === item.id ? "profile-hub-card is-active" : "profile-hub-card"}
+            className={panelSection === item.id ? "profile-hub-card is-active" : "profile-hub-card"}
             type="button"
-            aria-current={section === item.id ? "page" : undefined}
-            disabled={editing && item.id !== "identity"}
-            title={editing && item.id !== "identity" ? labels.editing : undefined}
-            onClick={() => setSection(item.id)}
+            aria-current={panelSection === item.id ? "page" : undefined}
+            disabled={editing && item.id !== "profile"}
+            title={editing && item.id !== "profile" ? labels.editing : undefined}
+            onClick={() => selectSection(item.id)}
           >
             <span className="profile-hub-card-icon">{item.icon}</span>
             <span><strong>{item.label}</strong><small>{item.hint}</small></span>
