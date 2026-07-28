@@ -2,8 +2,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.108.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-telegram-bot-api-secret-token",
+  "Access-Control-Allow-Headers": [
+    "authorization",
+    "x-client-info",
+    "x-supabase-api-version",
+    "apikey",
+    "content-type",
+    "x-telegram-bot-api-secret-token",
+  ].join(", "),
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Max-Age": "86400",
 };
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
@@ -30,7 +38,6 @@ const base64UrlEncode = (bytes: Uint8Array) => {
 };
 
 const hex = (bytes: Uint8Array) => [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-
 const sha256 = async (value: string) => hex(new Uint8Array(
   await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)),
 ));
@@ -38,9 +45,7 @@ const sha256 = async (value: string) => hex(new Uint8Array(
 const safeEqual = (left: string | null, right: string) => {
   if (!left || left.length !== right.length) return false;
   let mismatch = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
-  }
+  for (let index = 0; index < left.length; index += 1) mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
   return mismatch === 0;
 };
 
@@ -63,7 +68,6 @@ const verifySession = async (authorization: string | null, secret: string): Prom
     const [headerPart, payloadPart, signaturePart] = parts;
     const header = JSON.parse(new TextDecoder().decode(base64UrlDecode(headerPart))) as { alg?: string };
     if (header.alg !== "HS256") return null;
-
     const key = await crypto.subtle.importKey(
       "raw",
       new TextEncoder().encode(secret),
@@ -81,7 +85,7 @@ const verifySession = async (authorization: string | null, secret: string): Prom
 
     const claims = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadPart))) as SessionClaims;
     const now = Math.floor(Date.now() / 1000);
-    if (claims.exp === undefined || claims.exp <= now) return null;
+    if (!claims.exp || claims.exp <= now) return null;
     if (claims.iss !== "go-irl-supabase-edge" || claims.aud !== "authenticated" || claims.role !== "authenticated") return null;
     if (!claims.go_irl_user_key || !claims.go_irl_telegram_id) return null;
     return claims;
@@ -90,11 +94,7 @@ const verifySession = async (authorization: string | null, secret: string): Prom
   }
 };
 
-const telegramApi = async <T>(
-  token: string,
-  method: string,
-  body: Record<string, unknown> = {},
-): Promise<T> => {
+const telegramApi = async <T>(token: string, method: string, body: Record<string, unknown> = {}): Promise<T> => {
   const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -107,45 +107,28 @@ const telegramApi = async <T>(
   return payload.result;
 };
 
-type TelegramWebhookInfo = {
-  url: string;
-};
+type TelegramWebhookInfo = { url: string };
 
-const ensureTelegramWebhook = async ({
-  botToken,
-  supabaseUrl,
-  webhookSecret,
-}: {
-  botToken: string;
-  supabaseUrl: string;
-  webhookSecret: string;
-}) => {
+const ensureTelegramWebhook = async (botToken: string, supabaseUrl: string, webhookSecret: string) => {
   const expectedUrl = `${supabaseUrl.replace(/\/$/, "")}/functions/v1/telegramEventSupergroup`;
   const current = await telegramApi<TelegramWebhookInfo>(botToken, "getWebhookInfo");
-
-  if (current.url && current.url !== expectedUrl) {
-    throw new Error("telegram_webhook_conflict");
-  }
-
+  if (current.url && current.url !== expectedUrl) throw new Error("telegram_webhook_conflict");
   await telegramApi<boolean>(botToken, "setWebhook", {
     url: expectedUrl,
     secret_token: webhookSecret,
     allowed_updates: ["message"],
     drop_pending_updates: false,
   });
-
-  return expectedUrl;
 };
 
 const parseBindingToken = (text: string | undefined, botUsername: string) => {
   if (!text) return null;
   const escaped = botUsername.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = text.trim().match(new RegExp(`^/start(?:@${escaped})?\\s+([A-Za-z0-9_-]{20,64})$`, "i"));
-  return match?.[1] || null;
+  return text.trim().match(new RegExp(`^/start(?:@${escaped})?\\s+([A-Za-z0-9_-]{20,64})$`, "i"))?.[1] || null;
 };
 
 Deno.serve(async (request) => {
-  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   try {
@@ -157,8 +140,7 @@ Deno.serve(async (request) => {
     const botUsername = (Deno.env.get("TELEGRAM_BOT_USERNAME") || "GOirl_bot").replace(/^@/, "");
     const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
-    const suppliedWebhookSecret = request.headers.get("x-telegram-bot-api-secret-token");
-    if (safeEqual(suppliedWebhookSecret, webhookSecret)) {
+    if (safeEqual(request.headers.get("x-telegram-bot-api-secret-token"), webhookSecret)) {
       const update = await request.json() as {
         message?: {
           text?: string;
@@ -215,24 +197,22 @@ Deno.serve(async (request) => {
         chat_id: chatId,
         name: "GO IRL event",
       });
-
-      const saveResult = await supabase
-        .from("activity_external_telegram_chats")
-        .upsert({
-          activity_id: binding.activity_id,
-          url: invite.invite_link,
-          attached_by_user_key: binding.requested_by_user_key,
-          telegram_chat_id: chatId,
-          telegram_chat_type: chatType,
-          telegram_chat_title: message?.chat?.title || null,
-          bound_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: "activity_id" });
+      const now = new Date().toISOString();
+      const saveResult = await supabase.from("activity_external_telegram_chats").upsert({
+        activity_id: binding.activity_id,
+        url: invite.invite_link,
+        attached_by_user_key: binding.requested_by_user_key,
+        telegram_chat_id: chatId,
+        telegram_chat_type: chatType,
+        telegram_chat_title: message?.chat?.title || null,
+        bound_at: now,
+        updated_at: now,
+      }, { onConflict: "activity_id" });
       if (saveResult.error) throw saveResult.error;
 
       const consumeResult = await supabase
         .from("activity_telegram_chat_bindings")
-        .update({ consumed_at: new Date().toISOString() })
+        .update({ consumed_at: now })
         .eq("token_hash", tokenHash)
         .is("consumed_at", null);
       if (consumeResult.error) throw consumeResult.error;
@@ -260,18 +240,18 @@ Deno.serve(async (request) => {
       return json({ error: "organizer_required" }, 403);
     }
 
-    await ensureTelegramWebhook({ botToken, supabaseUrl, webhookSecret });
+    await ensureTelegramWebhook(botToken, supabaseUrl, webhookSecret);
 
-    const random = crypto.getRandomValues(new Uint8Array(24));
-    const bindingToken = base64UrlEncode(random);
+    const bindingToken = base64UrlEncode(crypto.getRandomValues(new Uint8Array(24)));
     const tokenHash = await sha256(bindingToken);
     const expiresAt = new Date(Date.now() + 15 * 60_000).toISOString();
 
-    await supabase
+    const deleteResult = await supabase
       .from("activity_telegram_chat_bindings")
       .delete()
       .eq("activity_id", body.activityId)
       .is("consumed_at", null);
+    if (deleteResult.error) throw deleteResult.error;
 
     const insertResult = await supabase.from("activity_telegram_chat_bindings").insert({
       token_hash: tokenHash,
