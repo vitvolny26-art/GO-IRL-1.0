@@ -39,12 +39,12 @@ server configuration cannot be distinguished during runtime smoke.
 - `pnpm run typecheck` — PASS
 - `pnpm run lint` — PASS (one pre-existing unrelated warning)
 - `pnpm run build` — PASS
-- GitHub Actions — pending
+- GitHub Actions CI #1283 — PASS (Diff check, Test, Typecheck, Lint, Build)
 
 ## Risks
 
-The Edge Function must be deployed before the new diagnostics can identify the current
-production failure.
+Runtime smoke is still required after deployment; diagnostics identify the failing
+Telegram operation but do not repair external bot configuration.
 
 ## Not touched
 
@@ -55,5 +55,6 @@ production failure.
 
 ## Next step
 
-Deploy the merged Edge Function, repeat `create_binding`, and use the returned stable error
+Merged in `0c0ecc89185e87e30fb1dfca087ff635c8730936` and deployed as ACTIVE Edge
+Function version 7 with `verify_jwt=false`. Repeat `create_binding` and use the stable error
 code to complete the runtime fix without exposing credentials.
