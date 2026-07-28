@@ -8,9 +8,9 @@ export const profilePanelSections: readonly ProfilePanelSectionDefinition[] = [
   { id: "profile", betaVisible: true },
   { id: "activities", betaVisible: true, requiresOwnerContext: true },
   { id: "preferences", betaVisible: true, requiresOwnerContext: true },
-  { id: "notifications", betaVisible: true, requiresOwnerContext: true },
-  { id: "privacy", betaVisible: true, requiresOwnerContext: true },
-  { id: "support", betaVisible: true },
+  { id: "notifications", betaVisible: false, requiresOwnerContext: true },
+  { id: "privacy", betaVisible: false, requiresOwnerContext: true },
+  { id: "support", betaVisible: false },
   { id: "diagnostics", betaVisible: true, requiresOwnerContext: true },
 ] as const;
 
