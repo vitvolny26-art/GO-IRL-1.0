@@ -1,4 +1,4 @@
-import { getTelegramWebApp } from "./telegram";
+import { openTelegramExternal } from "./openExternal";
 
 export type ExternalTelegramChatKind = "event" | "team";
 export type ExternalTelegramChatLifecycle = "active" | "locked" | "deletion_due" | "archived";
@@ -132,15 +132,16 @@ export const openExternalTelegramChat = (
   const url = normalizeExternalTelegramChatUrl(value);
   if (!url) return false;
 
-  const telegramOpen = dependencies.openTelegramLink || getTelegramWebApp()?.openTelegramLink;
-  if (telegramOpen) {
-    telegramOpen(url);
+  if (dependencies.openTelegramLink) {
+    dependencies.openTelegramLink(url);
     return true;
   }
 
-  const browserOpen = dependencies.openBrowser || ((target: string) => {
-    window.open(target, "_blank", "noopener,noreferrer");
-  });
-  browserOpen(url);
+  if (dependencies.openBrowser) {
+    dependencies.openBrowser(url);
+    return true;
+  }
+
+  openTelegramExternal(url);
   return true;
 };
