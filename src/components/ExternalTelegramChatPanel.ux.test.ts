@@ -1,11 +1,5 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-
-const panelSource = readFileSync(
-  fileURLToPath(new URL("./ExternalTelegramChatPanel.tsx", import.meta.url)),
-  "utf8",
-);
+import panelSource from "./ExternalTelegramChatPanel.tsx?raw";
 
 describe("external Telegram chat UX", () => {
   it("describes the supported existing-group binding flow", () => {
