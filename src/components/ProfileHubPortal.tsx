@@ -93,6 +93,18 @@ export function ProfileHubPortal() {
     return () => observer.disconnect();
   }, [target]);
 
+  useEffect(() => {
+    if (!target) return;
+    target.classList.add("profile-hub-enabled");
+    target.dataset.profilePanelSection = "profile";
+    target.dataset.profileHubSection = "identity";
+    return () => {
+      target.classList.remove("profile-hub-enabled");
+      delete target.dataset.profilePanelSection;
+      delete target.dataset.profileHubSection;
+    };
+  }, [target]);
+
   if (!target) return null;
 
   return createPortal(
@@ -101,7 +113,6 @@ export function ProfileHubPortal() {
       editing={editing}
       hasOwnerContext
       onSectionChange={(section) => {
-        target.classList.add("profile-hub-enabled");
         target.dataset.profilePanelSection = section;
         target.dataset.profileHubSection = panelToLegacySection[section];
       }}
