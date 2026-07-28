@@ -1,0 +1,68 @@
+/* Restore the legacy participant/chat controls and keep only duration as Sport row four. */
+.unified-event-card .runtime-card-control-stack {
+  display: none !important;
+}
+
+.compact-sport-card .sport-level-chip,
+.compact-sport-card .sport-environment-chip {
+  display: none !important;
+}
+
+.compact-sport-card .sport-chip-row {
+  top: 59px !important;
+  right: 10px !important;
+  display: grid !important;
+  justify-items: end !important;
+  gap: 6px !important;
+}
+
+.compact-sport-card .legacy-sport-participants {
+  display: flex !important;
+  order: 1 !important;
+}
+
+.compact-sport-card .sport-duration-chip {
+  display: inline-flex !important;
+  order: 4 !important;
+  justify-self: end !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 30px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  color: rgba(238, 255, 196, .94) !important;
+}
+
+.compact-sport-card .sport-duration-chip svg {
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0 6px 0 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.compact-sport-card .legacy-sport-members-preview[hidden] {
+  display: none !important;
+}
+
+.compact-sport-card .legacy-sport-members-preview {
+  top: 105px !important;
+  right: 10px !important;
+}
+
+.compact-sport-card .card-share-action > .event-chat-unread-alert,
+.compact-sport-card .sport-card-top-actions > .event-chat-unread-alert {
+  display: inline-flex !important;
+}
+
+@media (max-width: 430px) {
+  .compact-sport-card .sport-chip-row {
+    top: 57px !important;
+    right: 10px !important;
+  }
+}
