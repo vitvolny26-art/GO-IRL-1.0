@@ -71,7 +71,7 @@ describe("external Telegram chat links", () => {
     expect(loadLocalEventTelegramChatLink(activityId)).toBeNull();
   });
 
-  it("uses Telegram WebApp opening when available", () => {
+  it("uses injected Telegram opening when available", () => {
     const openTelegramLink = vi.fn();
     const openBrowser = vi.fn();
 
@@ -79,5 +79,22 @@ describe("external Telegram chat links", () => {
     expect(openTelegramLink).toHaveBeenCalledWith("https://t.me/example_group");
     expect(openBrowser).not.toHaveBeenCalled();
     expect(openExternalTelegramChat("javascript:alert(1)", { openTelegramLink, openBrowser })).toBe(false);
+  });
+
+  it("uses the shared Telegram-aware opener in production mode", () => {
+    const openTelegramLink = vi.fn();
+    vi.stubGlobal("window", {
+      localStorage: {
+        getItem: (key: string) => storage.get(key) || null,
+        setItem: (key: string, value: string) => storage.set(key, value),
+        removeItem: (key: string) => storage.delete(key),
+        clear: () => storage.clear(),
+      },
+      Telegram: { WebApp: { openTelegramLink } },
+      open: vi.fn(),
+    });
+
+    expect(openExternalTelegramChat("https://t.me/example_group")).toBe(true);
+    expect(openTelegramLink).toHaveBeenCalledWith("https://t.me/example_group");
   });
 });
