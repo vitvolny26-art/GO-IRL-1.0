@@ -1,0 +1,68 @@
+.organizer-profile-favorite-wrap {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.organizer-profile-favorite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 16px;
+  border: 1px solid rgba(201, 255, 61, .34);
+  border-radius: 16px;
+  background: rgba(201, 255, 61, .08);
+  color: var(--lime);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.organizer-profile-favorite:hover:not(:disabled),
+.organizer-profile-favorite:focus-visible {
+  background: rgba(201, 255, 61, .14);
+  border-color: rgba(201, 255, 61, .58);
+}
+
+.organizer-profile-favorite:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+.organizer-profile-favorite.is-active {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .2);
+  color: rgba(255, 255, 255, .9);
+}
+
+.organizer-profile-favorite:disabled {
+  cursor: wait;
+  opacity: .66;
+}
+
+.organizer-profile-favorite svg {
+  width: 20px;
+  height: 20px;
+}
+
+.organizer-profile-favorite.is-active svg {
+  fill: currentColor;
+}
+
+.organizer-profile-favorite-spinner {
+  animation: profile011-spin .8s linear infinite;
+}
+
+.organizer-profile-favorite-message {
+  margin: 0;
+  color: rgba(255, 255, 255, .68);
+  font-size: 12px;
+  text-align: center;
+}
+
+@keyframes profile011-spin {
+  to { transform: rotate(360deg); }
+}
