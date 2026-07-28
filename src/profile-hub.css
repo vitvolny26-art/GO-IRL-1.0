@@ -1,38 +1,32 @@
-.profile-page.profile-hub-enabled {
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-hub-navigation {
-  order: -20;
+.profile-panel {
   display: grid;
   gap: 14px;
-  margin-bottom: 18px;
+  width: 100%;
 }
 
-.profile-hub-navigation header {
+.profile-panel-header {
   display: grid;
   gap: 4px;
 }
 
-.profile-hub-navigation h2,
-.profile-hub-navigation p {
+.profile-panel-header h2,
+.profile-panel-header p {
   margin: 0;
 }
 
-.profile-hub-navigation p {
+.profile-panel-header p {
   color: var(--muted, #667085);
   font-size: 14px;
   line-height: 1.45;
 }
 
-.profile-hub-grid {
+.profile-panel-navigation {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.profile-hub-card {
+.profile-panel-card {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
@@ -47,25 +41,19 @@
   cursor: pointer;
 }
 
-.profile-hub-admin-card {
-  border-color: color-mix(in srgb, #2563eb 48%, transparent);
-  background: color-mix(in srgb, #2563eb 14%, var(--surface, #fff));
-  text-decoration: none;
-}
-
-.profile-hub-card:hover,
-.profile-hub-card:focus-visible,
-.profile-hub-card.is-active {
+.profile-panel-card:hover,
+.profile-panel-card:focus-visible,
+.profile-panel-card.is-active {
   border-color: color-mix(in srgb, currentColor 34%, transparent);
   background: color-mix(in srgb, var(--surface, #fff) 84%, currentColor 4%);
 }
 
-.profile-hub-card:disabled {
+.profile-panel-card:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.profile-hub-card-icon {
+.profile-panel-card-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -75,84 +63,75 @@
   background: color-mix(in srgb, currentColor 8%, transparent);
 }
 
-.profile-hub-card-icon svg {
+.profile-panel-card-icon svg {
   width: 20px;
   height: 20px;
 }
 
-.profile-hub-card > span:last-child {
+.profile-panel-card > span:last-child {
   display: grid;
   gap: 3px;
   min-width: 0;
 }
 
-.profile-hub-card strong,
-.profile-hub-card small {
+.profile-panel-card strong,
+.profile-panel-card small {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.profile-hub-card small {
+.profile-panel-card small {
   color: var(--muted, #667085);
   line-height: 1.25;
 }
 
-.profile-page.profile-hub-enabled > :not(.profile-hub-navigation) {
-  display: none !important;
+.profile-panel-content,
+.profile-identity,
+.profile-my-go-irl,
+.profile-diagnostics {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
 }
 
-.profile-page.profile-hub-enabled[data-profile-hub-section="identity"] > .profile-hero,
-.profile-page.profile-hub-enabled[data-profile-hub-section="identity"] > .profile-edit-form,
-.profile-page.profile-hub-enabled[data-profile-hub-section="identity"] > .profile-skeleton,
-.profile-page.profile-hub-enabled[data-profile-hub-section="identity"] > .profile-error {
-  display: flex !important;
+.profile-identity > .profile-hero {
+  position: relative;
+  width: 100%;
+  padding-bottom: 66px;
 }
 
-.profile-page.profile-hub-enabled[data-profile-hub-section="identity"] > .profile-edit-form {
-  display: grid !important;
+.profile-identity .profile-edit-button {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  min-width: 0;
+  max-width: calc(100% - 28px);
+  min-height: 38px;
+  padding: 8px 12px;
+  white-space: nowrap;
 }
 
-.profile-page.profile-hub-enabled[data-profile-hub-section="preferences"] > .profile-preferences {
-  display: block !important;
+.profile-identity .profile-main {
+  min-width: 0;
+  padding-right: 0;
 }
 
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .section-header,
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .profile-interest-list,
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .profile-stats-grid,
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .profile-event-group,
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .empty-state,
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .profile-skeleton,
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .profile-error {
-  display: flex !important;
-}
-
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .profile-stats-grid {
-  display: grid !important;
-}
-
-.profile-page.profile-hub-enabled[data-profile-hub-section="my-go-irl"] > .profile-event-group {
-  display: block !important;
-}
-
-.profile-page.profile-hub-enabled[data-profile-hub-section="diagnostics"] > .profile-error,
-.profile-page.profile-hub-enabled[data-profile-hub-section="diagnostics"] > .telegram-close-button {
-  display: flex !important;
-}
-
-.profile-page.profile-hub-enabled.is-editing > .profile-edit-form {
-  display: grid !important;
+.profile-diagnostics .telegram-close-button,
+.profile-my-go-irl .telegram-close-button {
+  display: flex;
 }
 
 @media (max-width: 640px) {
-  .profile-hub-grid {
+  .profile-panel-navigation {
     grid-template-columns: 1fr;
   }
 
-  .profile-hub-card {
+  .profile-panel-card {
     min-height: 68px;
   }
 }
-
-/* ui-scope-20260727-profile */
-.profile-page.profile-hub-enabled>.profile-hub-navigation{display:contents}.profile-page.profile-hub-enabled .profile-hub-navigation>header{order:-30;margin-bottom:14px}.profile-page.profile-hub-enabled:not(.is-editing)>.profile-hero{position:relative;order:-20;display:flex!important;width:100%;margin-bottom:14px;padding-bottom:66px}.profile-page.profile-hub-enabled .profile-hub-grid{order:-10;width:100%;margin-bottom:18px}
-.profile-page.profile-hub-enabled .profile-edit-button{position:absolute;right:14px;bottom:14px;display:inline-flex!important;width:auto!important;min-width:0!important;max-width:calc(100% - 28px);min-height:38px;padding:8px 12px!important;align-items:center;justify-content:center;gap:6px;white-space:nowrap!important}.profile-page.profile-hub-enabled .profile-main{min-width:0;padding-right:0}

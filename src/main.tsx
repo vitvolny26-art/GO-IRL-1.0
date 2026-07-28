@@ -14,9 +14,7 @@ import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsP
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
 import { EventLocationProviderPortal } from "./components/EventLocationProviderPortal";
 import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
-import { ProfilePreferencesPortal } from "./components/ProfilePreferencesPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
-import { ProfileHubPortal } from "./components/ProfileHubPortal";
 import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
 import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/AdminLoginPage";
 import { resolveAdminRoute } from "./admin/adminSession";
@@ -137,9 +135,7 @@ createRoot(document.getElementById("root")!).render(
         <EventLocationPickerPortal />
         <EventLocationProviderPortal />
         <MapProviderPickerPortal />
-        <ProfilePreferencesPortal />
         <ParticipantIdentityPortal />
-        <ProfileHubPortal />
         <AdminDevPanel />
       </QueryClientProvider>
     )}
