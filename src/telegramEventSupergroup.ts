@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getTrustedAccessToken } from "./authSession";
 import { getTelegramWebApp } from "./telegram";
 
 export type EventSupergroupBinding = {
@@ -24,10 +24,27 @@ export const createEventSupergroupBinding = async (
 ): Promise<EventSupergroupBinding> => {
   if (!activityId) throw new Error("activity_id_required");
 
-  const { data, error } = await supabase.functions.invoke("telegramEventSupergroup", {
-    body: { action: "create_binding", activityId },
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const accessToken = await getTrustedAccessToken();
+  if (!supabaseUrl || !accessToken) throw new Error("trusted_auth_required");
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/telegramEventSupergroup`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ action: "create_binding", activityId }),
   });
-  if (error) throw error;
+  const data = await response.json().catch(() => null) as {
+    startGroupUrl?: unknown;
+    expiresAt?: unknown;
+    error?: string;
+  } | null;
+
+  if (!response.ok) {
+    throw new Error(data?.error || "supergroup_binding_failed");
+  }
 
   const startGroupUrl = data?.startGroupUrl;
   const expiresAt = data?.expiresAt;
