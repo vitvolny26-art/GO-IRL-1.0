@@ -109,7 +109,7 @@ export async function authorizeAdminRequest(
   if (!token) return deny(401, "missing_bearer", dependencies.logger);
 
   const verification = await verifyAdminJwt(token, dependencies.jwtSecret);
-  if (!verification.ok) return deny(401, verification.reason, dependencies.logger);
+  if (verification.ok === false) return deny(401, verification.reason, dependencies.logger);
   const { claims } = verification;
 
   const now = dependencies.nowSeconds ?? Math.floor(Date.now() / 1000);
