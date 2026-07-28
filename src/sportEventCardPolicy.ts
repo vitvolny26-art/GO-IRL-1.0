@@ -29,6 +29,15 @@ export const applySportFormSelection = (activity: NewActivity, selected: Selecti
   return { ...activity, metadata: { ...activity.metadata, sport } };
 };
 
+export const setTextContentIfChanged = (
+  node: { textContent: string | null },
+  text: string,
+) => {
+  if (node.textContent === text) return false;
+  node.textContent = text;
+  return true;
+};
+
 let pending: Selection | null = null;
 let patched = false;
 
@@ -57,7 +66,7 @@ const option = (select: HTMLSelectElement, label: string, disabled = false) => {
     empty.value = "";
     select.prepend(empty);
   }
-  empty.textContent = label;
+  setTextContentIfChanged(empty, label);
   empty.disabled = disabled;
 };
 
@@ -70,7 +79,7 @@ const marker = (select: HTMLSelectElement, text: string, kind: "optional" | "req
     node.className = `sport-policy-field-marker sport-policy-${kind}-marker`;
     host.append(node);
   }
-  node.textContent = text;
+  setTextContentIfChanged(node, text);
 };
 
 const editingActivity = (form: HTMLFormElement, lang: Language) => {
