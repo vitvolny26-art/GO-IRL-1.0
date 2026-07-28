@@ -1,15 +1,6 @@
-/* Legacy control hierarchy shared by generic Event and Sport cards. */
+/* Final card control order: actions, participants, chat, time. */
 .unified-event-card .runtime-card-control-stack {
   display: none !important;
-}
-
-.unified-event-card .sport-chip-row {
-  top: 59px !important;
-  right: 10px !important;
-  display: grid !important;
-  grid-template-columns: 84px !important;
-  justify-items: end !important;
-  gap: 6px !important;
 }
 
 .unified-event-card .sport-level-chip,
@@ -17,15 +8,32 @@
   display: none !important;
 }
 
-.unified-event-card .sport-card-participants-chip,
-.unified-event-card .runtime-participants-chip {
-  order: 1 !important;
+.unified-event-card .sport-card-top-actions {
+  top: 0 !important;
+  right: 16px !important;
+}
+
+.unified-event-card .sport-chip-row {
+  position: absolute !important;
+  top: 64px !important;
+  right: 10px !important;
+  z-index: 7 !important;
+  display: block !important;
+  width: 88px !important;
+  margin: 0 !important;
+}
+
+.unified-event-card .sport-chip-row .sport-card-participants-chip,
+.unified-event-card .sport-chip-row .runtime-participants-chip {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
   display: inline-flex !important;
-  width: 84px !important;
-  min-width: 84px !important;
-  min-height: 38px !important;
-  height: 38px !important;
-  padding: 0 8px !important;
+  width: 88px !important;
+  min-width: 88px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 9px !important;
   align-items: center !important;
   justify-content: flex-end !important;
   gap: 5px !important;
@@ -34,62 +42,24 @@
   background: rgba(10, 14, 16, .34) !important;
   color: #e8ffad !important;
   box-shadow: none !important;
+  backdrop-filter: blur(18px) !important;
 }
 
-.unified-event-card .sport-duration-chip {
+.unified-event-card .sport-card-top-actions > .event-chat-unread-alert {
   position: absolute !important;
-  top: 90px !important;
-  right: 0 !important;
-  order: 4 !important;
+  top: 108px !important;
+  right: -2px !important;
   display: inline-flex !important;
-  width: auto !important;
-  min-width: 0 !important;
-  min-height: 30px !important;
-  height: 30px !important;
+  width: 40px !important;
+  height: 40px !important;
   padding: 0 !important;
   align-items: center !important;
-  justify-content: flex-end !important;
-  gap: 6px !important;
+  justify-content: center !important;
   border: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
-  color: #e8ffad !important;
-  text-align: right !important;
-}
-
-.unified-event-card .sport-duration-chip svg {
-  width: 18px !important;
-  height: 18px !important;
-  margin: 0 !important;
-  background: transparent !important;
-  color: transparent !important;
-  stroke: transparent !important;
-  fill: transparent !important;
-}
-
-.unified-event-card .sport-duration-chip > span,
-.unified-event-card .sport-duration-chip .runtime-chip-label {
-  width: auto !important;
-  max-width: none !important;
-  white-space: nowrap !important;
-  text-align: right !important;
-  line-height: 1 !important;
-}
-
-.unified-event-card .sport-card-top-actions > .event-chat-unread-alert {
-  position: absolute !important;
-  top: 103px !important;
-  right: -2px !important;
-  display: inline-flex !important;
-  width: 38px !important;
-  height: 38px !important;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
   transform: none !important;
 }
 
@@ -104,25 +74,65 @@
   right: -2px !important;
 }
 
+.unified-event-card .sport-duration-chip {
+  position: absolute !important;
+  top: 96px !important;
+  right: 0 !important;
+  display: inline-flex !important;
+  width: 88px !important;
+  min-width: 88px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  color: #e8ffad !important;
+  text-align: right !important;
+}
+
+.unified-event-card .sport-duration-chip svg {
+  display: none !important;
+}
+
+.unified-event-card .sport-duration-chip > span,
+.unified-event-card .sport-duration-chip .runtime-chip-label {
+  display: inline-block !important;
+  width: auto !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  text-align: right !important;
+  line-height: 1 !important;
+}
+
 @media (max-width: 380px) {
-  .unified-event-card .sport-chip-row {
-    top: 57px !important;
-    right: 8px !important;
-    grid-template-columns: 80px !important;
+  .unified-event-card .sport-card-top-actions {
+    right: 14px !important;
   }
 
-  .unified-event-card .sport-card-participants-chip,
-  .unified-event-card .runtime-participants-chip {
-    width: 80px !important;
-    min-width: 80px !important;
+  .unified-event-card .sport-chip-row {
+    top: 62px !important;
+    right: 8px !important;
+    width: 82px !important;
+  }
+
+  .unified-event-card .sport-chip-row .sport-card-participants-chip,
+  .unified-event-card .sport-chip-row .runtime-participants-chip,
+  .unified-event-card .sport-duration-chip {
+    width: 82px !important;
+    min-width: 82px !important;
   }
 
   .unified-event-card .sport-card-top-actions > .event-chat-unread-alert {
-    top: 101px !important;
-    right: -2px !important;
+    top: 106px !important;
   }
 
   .unified-event-card .sport-duration-chip {
-    top: 88px !important;
+    top: 94px !important;
   }
 }
