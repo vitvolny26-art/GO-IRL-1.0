@@ -15,7 +15,7 @@ Road105 — Dedicated admin login for one Telegram account.
 
 - ClickUp task: https://app.clickup.com/t/869e9gchc
 - Final implemented scope: dedicated Telegram admin entry, server-side authorization, admin-only build badge and menu entry, generic denial, and a server-only allowlist for two verified production administrators.
-- Report status is `Partial` because the current ClickUp state could not be reread without authentication and report PR #429 remains unmerged.
+- Report status is `Partial` because the current ClickUp task remains `in progress` and report PR #429 remains unmerged.
 
 ## Role
 
@@ -60,8 +60,9 @@ Skipped roles:
 
 ### ClickUp
 
-- Direct read of Road105 was attempted at `https://app.clickup.com/t/869e9gchc`.
-- The current browser session reached the ClickUp sign-in page, so the current task status was not verified.
+- Direct connector readback of Road105 at `https://app.clickup.com/t/869e9gchc`.
+- Current status: `in progress`.
+- The task description still reports the obsolete 2026-07-26 repository-access blocker and has not been updated with the completed implementation, deployment, or smoke evidence.
 
 ## Files inspected
 
@@ -153,7 +154,7 @@ Skipped roles:
 | Sensitive authentication payloads were absent from inspected logs | Filtered Vercel log snapshot contained no raw initData, bearer token, full JWT, or Telegram user key | Visible `/api/admin/session` log rows |
 | The serverless-function limit was removed | Successful production deployment reported 11 Node functions after test files were moved out of `api/` | Vercel Hobby deployment inventory |
 | Current main CI and production deployment are green | GitHub Actions run `30347497698` concluded `success`; Vercel deployment `dpl_49qNEkMdYWrEVgbznCY9z7KSKcGL` is `READY` with target `production` | Current main `ed5a2c4` |
-| Current ClickUp status is unverified | Direct task navigation reached ClickUp sign-in | ClickUp Road105 status only |
+| Current ClickUp status is `in progress` | Direct ClickUp connector readback returned task `869e9gchc`, status `in progress`, with the 2026-07-26 blocker description still present | ClickUp Road105 state only; no task write was performed |
 | Required Drive report copy is persisted and reread | Native Google Doc `1EcixfNMBHoPOm-ceFc9HuwVmYuPN_VM1i2Db8QCA4EM`; metadata readback confirmed parent folder `1_uOilLinemCski90GU8TuOYQCe0oqUx8`; document readback confirmed two date elements, the Active Index rich link, and no placeholders | `AI Reports/AI Fixer/2026-07-28/` report copy |
 
 ## GitHub
@@ -170,8 +171,8 @@ Skipped roles:
 ## ClickUp
 
 - Task: https://app.clickup.com/t/869e9gchc
-- Last state from the earlier verified task context: `in progress`.
-- Current state: unverified because the current browser session requires ClickUp authentication.
+- Current state from direct connector readback: `in progress`.
+- The task description still contains the superseded 2026-07-26 repository-access blocker.
 - No ClickUp write or status transition is claimed by this report.
 
 ## Google Drive
@@ -185,11 +186,11 @@ Skipped roles:
 
 ## Blockers
 
-1. The current ClickUp state cannot be verified until the owner signs in or a ClickUp connector becomes available.
+1. Road105 remains `in progress` in ClickUp with a stale blocker description.
 2. Draft report PR #429 remains unmerged.
 
 ## Next step
 
-1. Authenticate ClickUp or expose a task-read connector, reread Road105, and update the task only if separately authorized.
+1. Obtain explicit owner approval to update Road105 in ClickUp with the verified completion evidence and transition it to the appropriate completed status.
 2. Merge report PR #429 only after explicit owner approval.
-3. After ClickUp and merged-report evidence are verified, update both report copies from `Partial` to `Completed`.
+3. After the ClickUp transition and merged-report evidence are verified, update both report copies from `Partial` to `Completed`.
