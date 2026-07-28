@@ -46,3 +46,17 @@ export const transitionProfilePanel = (
   if (state.editing && nextSection !== "profile") return state;
   return { ...state, activeSection: nextSection };
 };
+
+/**
+ * Shared Telegram/browser back boundary.
+ *
+ * Returning a state means the panel consumed the back action. Returning null
+ * delegates the action to the parent app, which may leave the profile view.
+ */
+export const resolveProfilePanelBack = (
+  state: ProfilePanelState,
+): ProfilePanelState | null => {
+  if (state.editing) return state;
+  if (state.activeSection === defaultProfilePanelSection) return null;
+  return { ...state, activeSection: defaultProfilePanelSection };
+};
