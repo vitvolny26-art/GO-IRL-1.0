@@ -35,11 +35,11 @@ Skipped roles:
 
 ### GitHub and runtime
 
-- GitHub `main` at `304a669d8380a301908c25c892c3057b7a45e23d`.
-- Road105 merge commit `d006616d4b2747404ecc05da9b48d576c2e457f3`, confirmed as an ancestor of current `main`.
+- GitHub `main` at `ed5a2c4967b80f6443d4128c3f3864f5d803523d`.
+- Road105 merge commit `d006616d4b2747404ecc05da9b48d576c2e457f3` and final PR #426. Current `main` no longer retains that merge commit as an ancestor, but a scoped diff confirmed that the Road105 authorization, session, admin-route, and build-menu files are unchanged from `d006616`.
 - Pull requests #424 and #426, including merged state, base, head, and merge commits.
 - GitHub Actions CI run `30288796976` for `d006616d4b2747404ecc05da9b48d576c2e457f3`.
-- GitHub Actions CI run `30289340779` for current `main`.
+- GitHub Actions CI run `30347497698` for current `main`.
 - Vercel Production deployment for `d006616d4b2747404ecc05da9b48d576c2e457f3`.
 - Production responses from `/api/admin/session`.
 - Vercel runtime logs filtered to `/api/admin/session`.
@@ -91,8 +91,8 @@ Skipped roles:
 3. The final authorization guard accepts a server-only set from `GO_IRL_ADMIN_USER_KEYS`, retains the singular `GO_IRL_ADMIN_USER_KEY` fallback, verifies the signed session role, and rereads the current role from `public.user_roles`.
 4. PR #424 moved administrator access to the build badge menu and removed the profile entry. The badge is admin-only.
 5. PR #426 expanded the server-only allowlist to the two verified production administrators without exposing their keys in the frontend or runtime logs.
-6. Current GitHub `main` includes the final Road105 merge as an ancestor and has green GitHub CI.
-7. The later current-main deployment is Vercel-rate-limited. The last directly verified Road105 production deployment remains the successful `d006616` deployment.
+6. Current GitHub `main` has green GitHub CI and preserves the checked Road105 files byte-for-byte relative to the final `d006616` implementation, although the repository history no longer retains `d006616` as an ancestor.
+7. Current GitHub `main` has a successful Vercel Production deployment. The directly verified Road105 deployment remains valid and the previous rate-limit observation is no longer a blocker.
 
 ## Changes made
 
@@ -133,17 +133,18 @@ Skipped roles:
 
 ### Current main
 
-- Commit: `304a669d8380a301908c25c892c3057b7a45e23d`
-- CI run: `30289340779`
+- Commit: `ed5a2c4967b80f6443d4128c3f3864f5d803523d`
+- CI run: `30347497698`
 - GitHub CI: PASS
-- Vercel status: FAIL, `Deployment rate limited — retry in 24 hours.`
-- Scope: the Vercel failure belongs to a later unrelated current-main commit and does not invalidate the directly verified Road105 production deployment.
+- Vercel Production deployment: `dpl_49qNEkMdYWrEVgbznCY9z7KSKcGL`
+- Vercel status: READY
+- Road105 scoped diff against `d006616`: empty for `api/_shared/admin-authorization.ts`, `api/admin/session.ts`, `src/admin/`, `src/components/DevPanel.tsx`, and `src/components/ProfileHubPortal.tsx`.
 
 ## Evidence ledger
 
 | Claim | Evidence | Scope |
 | --- | --- | --- |
-| The final two-admin change is in GitHub main history | `d006616` is an ancestor of current main `304a669` | Repository history only |
+| The final two-admin implementation remains in current main | Scoped diff between `d006616` and current main `ed5a2c4` is empty for the Road105 authorization, session, admin-route, and build-menu files | Checked Road105 file scope; the old merge SHA is no longer an ancestor |
 | PR #426 was merged | GitHub PR readback: state `MERGED`, merge commit `d006616`, merged at `2026-07-27T17:20:21Z` | PR #426 |
 | Mandatory checks passed on the final Road105 merge | GitHub Actions run `30288796976`, conclusion `success` | Exact commit `d006616` |
 | Road105 was deployed successfully | Vercel deployment for `d006616` reported `READY` and `Production` | Deployment `82dd4A7SN4iKiCW2J9EjznAxRnUe` |
@@ -151,7 +152,7 @@ Skipped roles:
 | The second verified administrator was authorized | Two production `POST 200` events with `reason: 'authorized'` at `19:26:34–19:26:35` | Physical second-admin smoke |
 | Sensitive authentication payloads were absent from inspected logs | Filtered Vercel log snapshot contained no raw initData, bearer token, full JWT, or Telegram user key | Visible `/api/admin/session` log rows |
 | The serverless-function limit was removed | Successful production deployment reported 11 Node functions after test files were moved out of `api/` | Vercel Hobby deployment inventory |
-| Current main CI remains green | GitHub Actions run `30289340779`, conclusion `success` | Current main `304a669` |
+| Current main CI and production deployment are green | GitHub Actions run `30347497698` concluded `success`; Vercel deployment `dpl_49qNEkMdYWrEVgbznCY9z7KSKcGL` is `READY` with target `production` | Current main `ed5a2c4` |
 | Current ClickUp status is unverified | Direct task navigation reached ClickUp sign-in | ClickUp Road105 status only |
 | Required Drive report copy is persisted and reread | Native Google Doc `1EcixfNMBHoPOm-ceFc9HuwVmYuPN_VM1i2Db8QCA4EM`; metadata readback confirmed parent folder `1_uOilLinemCski90GU8TuOYQCe0oqUx8`; document readback confirmed two date elements, the Active Index rich link, and no placeholders | `AI Reports/AI Fixer/2026-07-28/` report copy |
 
@@ -186,7 +187,6 @@ Skipped roles:
 
 1. The current ClickUp state cannot be verified until the owner signs in or a ClickUp connector becomes available.
 2. Draft report PR #429 remains unmerged.
-3. The current-main Vercel deployment is rate-limited. This does not invalidate the verified Road105 deployment, but it prevents claiming that the latest unrelated main commit is deployed.
 
 ## Next step
 
