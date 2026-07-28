@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Link2, Trash2 } from "lucide-react";
+import { ExternalLink, Link2, Trash2, UsersRound } from "lucide-react";
 import { getCurrentChatIdentity } from "../activityChatFeature";
 import {
   canAccessExternalTelegramChat,
   loadLocalEventTelegramChatLink,
   normalizeExternalTelegramChatUrl,
   openExternalTelegramChat,
+  openTelegramGroupCreation,
   removeLocalEventTelegramChatLink,
   resolveExternalTelegramChatLifecycle,
   saveLocalEventTelegramChatLink,
@@ -151,7 +152,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
         <span className="external-telegram-chat-icon" aria-hidden="true"><Link2 size={18} /></span>
         <div>
           <strong>Telegram-чат события</strong>
-          <small>Организатор добавляет ссылку на группу. Доступ получают подтверждённые участники.</small>
+          <small>Организатор создаёт группу или добавляет готовую ссылку. Доступ получают подтверждённые участники.</small>
         </div>
       </div>
 
@@ -176,6 +177,12 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
 
       {!loading && isOrganizer && (!link || editing || !shared) ? (
         <div className="external-telegram-chat-editor">
+          {!link ? (
+            <button type="button" className="secondary" onClick={() => openTelegramGroupCreation()} disabled={saving}>
+              <UsersRound size={17} aria-hidden="true" />
+              Создать чат
+            </button>
+          ) : null}
           <input
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -185,8 +192,9 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
             autoCorrect="off"
             disabled={saving}
           />
-          <button type="button" onClick={() => void save()} disabled={saving}>{saving ? "Сохранение…" : link ? "Сохранить для участников" : "Добавить чат"}</button>
+          <button type="button" onClick={() => void save()} disabled={saving}>{saving ? "Сохранение…" : "Сохранить ссылку"}</button>
           {editing ? <button type="button" className="secondary" disabled={saving} onClick={() => { setEditing(false); setDraft(link?.url || ""); setError(""); }}>Отмена</button> : null}
+          {!link ? <div className="external-telegram-chat-muted">После создания группы скопируйте ссылку-приглашение и сохраните её здесь.</div> : null}
         </div>
       ) : null}
 
