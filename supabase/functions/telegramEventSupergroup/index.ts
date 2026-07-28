@@ -35,6 +35,18 @@ const sha256 = async (value: string) => hex(new Uint8Array(
   await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)),
 ));
 
+const safeEqual = (left: string | null, right: string) => {
+  if (!left || left.length !== right.length) return false;
+  let mismatch = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return mismatch === 0;
+};
+
+const deriveWebhookSecret = (jwtSecret: string) =>
+  sha256(`go-irl:telegram-event-supergroup-webhook:v1:${jwtSecret}`);
+
 type SessionClaims = {
   aud?: string;
   role?: string;
@@ -81,7 +93,11 @@ const verifySession = async (authorization: string | null, secret: string): Prom
   }
 };
 
-const telegramApi = async <T>(token: string, method: string, body: Record<string, unknown>): Promise<T> => {
+const telegramApi = async <T>(
+  token: string,
+  method: string,
+  body: Record<string, unknown> = {},
+): Promise<T> => {
   const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -92,6 +108,36 @@ const telegramApi = async <T>(token: string, method: string, body: Record<string
     throw new Error(`telegram_${method}_failed:${payload.description || response.status}`);
   }
   return payload.result;
+};
+
+type TelegramWebhookInfo = {
+  url: string;
+};
+
+const ensureTelegramWebhook = async ({
+  botToken,
+  supabaseUrl,
+  webhookSecret,
+}: {
+  botToken: string;
+  supabaseUrl: string;
+  webhookSecret: string;
+}) => {
+  const expectedUrl = `${supabaseUrl.replace(/\/$/, "")}/functions/v1/telegramEventSupergroup`;
+  const current = await telegramApi<TelegramWebhookInfo>(botToken, "getWebhookInfo");
+
+  if (current.url && current.url !== expectedUrl) {
+    throw new Error("telegram_webhook_conflict");
+  }
+
+  await telegramApi<boolean>(botToken, "setWebhook", {
+    url: expectedUrl,
+    secret_token: webhookSecret,
+    allowed_updates: ["message"],
+    drop_pending_updates: false,
+  });
+
+  return expectedUrl;
 };
 
 const parseBindingToken = (text: string | undefined, botUsername: string) => {
@@ -110,12 +156,12 @@ Deno.serve(async (request) => {
     const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
     const jwtSecret = requiredEnv("GO_IRL_JWT_SECRET");
     const botToken = requiredEnv("TELEGRAM_BOT_TOKEN");
-    const webhookSecret = requiredEnv("TELEGRAM_WEBHOOK_SECRET");
+    const webhookSecret = await deriveWebhookSecret(jwtSecret);
     const botUsername = (Deno.env.get("TELEGRAM_BOT_USERNAME") || "GOirl_bot").replace(/^@/, "");
     const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
     const suppliedWebhookSecret = request.headers.get("x-telegram-bot-api-secret-token");
-    if (suppliedWebhookSecret === webhookSecret) {
+    if (safeEqual(suppliedWebhookSecret, webhookSecret)) {
       const update = await request.json() as {
         message?: {
           text?: string;
@@ -217,6 +263,8 @@ Deno.serve(async (request) => {
       return json({ error: "organizer_required" }, 403);
     }
 
+    await ensureTelegramWebhook({ botToken, supabaseUrl, webhookSecret });
+
     const random = crypto.getRandomValues(new Uint8Array(24));
     const bindingToken = base64UrlEncode(random);
     const tokenHash = await sha256(bindingToken);
@@ -242,6 +290,9 @@ Deno.serve(async (request) => {
     });
   } catch (error) {
     console.error(error);
+    if (error instanceof Error && error.message === "telegram_webhook_conflict") {
+      return json({ error: "telegram_webhook_conflict" }, 409);
+    }
     return json({ error: "supergroup_handshake_failed" }, 500);
   }
 });
