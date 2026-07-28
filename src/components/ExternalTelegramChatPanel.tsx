@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ClipboardPaste, ExternalLink, Link2, Trash2, UsersRound } from "lucide-react";
+import { ExternalLink, Link2, RefreshCw, Trash2, UsersRound } from "lucide-react";
 import { getCurrentChatIdentity } from "../activityChatFeature";
 import {
   canAccessExternalTelegramChat,
@@ -158,25 +158,6 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
     }
   };
 
-  const pasteAndSave = async () => {
-    if (!navigator.clipboard?.readText) {
-      setError("Вставьте ссылку из буфера в поле вручную");
-      return;
-    }
-    try {
-      const value = await navigator.clipboard.readText();
-      const normalized = normalizeExternalTelegramChatUrl(value);
-      if (!normalized) {
-        setError("В буфере нет корректной ссылки t.me");
-        return;
-      }
-      setDraft(normalized);
-      await save(normalized);
-    } catch {
-      setError("Не удалось прочитать буфер. Вставьте ссылку вручную");
-    }
-  };
-
   const remove = async () => {
     if (!isOrganizer || saving) return;
     setSaving(true);
@@ -202,7 +183,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
         <span className="external-telegram-chat-icon" aria-hidden="true"><Link2 size={18} /></span>
         <div>
           <strong>Telegram-чат события</strong>
-          <small>Организатор создаёт группу, бот привязывает её к событию, а подтверждённые участники получают доступ.</small>
+          <small>Привяжите существующую Telegram-группу, чтобы подтверждённые участники получили доступ.</small>
         </div>
       </div>
 
@@ -228,33 +209,46 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
       {!loading && isOrganizer && (!link || editing || !shared) ? (
         <div className="external-telegram-chat-editor">
           {!link ? (
-            <button type="button" className="secondary" onClick={() => void createGroup()} disabled={saving || awaitingBinding}>
-              <UsersRound size={17} aria-hidden="true" />
-              {awaitingBinding ? "Ожидаем привязку…" : "Создать и привязать чат"}
-            </button>
+            <>
+              <div className="external-telegram-chat-steps">
+                <strong>Если группы ещё нет:</strong>
+                <span>1. Создайте её вручную в Telegram.</span>
+                <span>2. Вернитесь сюда и выберите эту группу.</span>
+                <span>3. Подтвердите добавление GO IRL bot.</span>
+              </div>
+              <button type="button" onClick={() => void createGroup()} disabled={saving}>
+                <UsersRound size={17} aria-hidden="true" />
+                {awaitingBinding ? "Выбрать другую группу" : "Привязать существующую группу"}
+              </button>
+              {awaitingBinding ? (
+                <button type="button" className="secondary" onClick={() => void refresh(true)} disabled={saving}>
+                  <RefreshCw size={17} aria-hidden="true" />
+                  Проверить привязку
+                </button>
+              ) : null}
+              <div className="external-telegram-chat-muted">
+                Telegram покажет только существующие группы. Новую группу нужно сначала создать вручную.
+              </div>
+            </>
           ) : null}
-          <input
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="https://t.me/+..."
-            inputMode="url"
-            autoCapitalize="none"
-            autoCorrect="off"
-            disabled={saving}
-          />
-          <button type="button" onClick={() => void pasteAndSave()} disabled={saving}>
-            <ClipboardPaste size={17} aria-hidden="true" />
-            {saving ? "Сохранение…" : "Вставить и сохранить"}
-          </button>
-          <button type="button" className="secondary" onClick={() => void save()} disabled={saving}>Сохранить введённую</button>
-          {editing ? <button type="button" className="secondary" disabled={saving} onClick={() => { setEditing(false); setDraft(link?.url || ""); setError(""); }}>Отмена</button> : null}
-          {!link ? (
-            <div className="external-telegram-chat-muted">
-              {awaitingBinding
-                ? "Создайте группу в Telegram, назначьте бота администратором и вернитесь — ссылка появится автоматически."
-                : "Telegram откроет создание группы с GO IRL bot. Ручная вставка остаётся резервным способом."}
+          <details className="external-telegram-chat-fallback" open={editing}>
+            <summary>Привязать по пригласительной ссылке</summary>
+            <div className="external-telegram-chat-fallback-controls">
+              <input
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="https://t.me/+..."
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                disabled={saving}
+              />
+              <button type="button" className="secondary" onClick={() => void save()} disabled={saving}>
+                {saving ? "Сохранение…" : "Сохранить ссылку"}
+              </button>
+              {editing ? <button type="button" className="secondary" disabled={saving} onClick={() => { setEditing(false); setDraft(link?.url || ""); setError(""); }}>Отмена</button> : null}
             </div>
-          ) : null}
+          </details>
         </div>
       ) : null}
 
