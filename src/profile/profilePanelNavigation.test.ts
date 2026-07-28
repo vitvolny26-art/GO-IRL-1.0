@@ -8,7 +8,7 @@ import {
 } from "./profilePanelNavigation";
 
 describe("profile panel navigation", () => {
-  it("keeps one ordered closed-beta section registry", () => {
+  it("keeps one ordered canonical section registry", () => {
     expect(profilePanelSections.map((section) => section.id)).toEqual([
       "profile",
       "activities",
@@ -20,15 +20,24 @@ describe("profile panel navigation", () => {
     ]);
   });
 
-  it("hides owner-only sections without owner context", () => {
-    expect(visibleProfilePanelSections(false).map((section) => section.id)).toEqual([
+  it("exposes only the closed-beta owner sections", () => {
+    expect(visibleProfilePanelSections(true).map((section) => section.id)).toEqual([
       "profile",
-      "support",
+      "activities",
+      "preferences",
+      "diagnostics",
     ]);
   });
 
-  it("falls back deterministically for invalid or unavailable sections", () => {
+  it("shows only the public-safe profile section without owner context", () => {
+    expect(visibleProfilePanelSections(false).map((section) => section.id)).toEqual([
+      "profile",
+    ]);
+  });
+
+  it("falls back deterministically for invalid, hidden or unavailable sections", () => {
     expect(resolveProfilePanelSection("unknown", true)).toBe(defaultProfilePanelSection);
+    expect(resolveProfilePanelSection("notifications", true)).toBe(defaultProfilePanelSection);
     expect(resolveProfilePanelSection("preferences", false)).toBe(defaultProfilePanelSection);
   });
 
