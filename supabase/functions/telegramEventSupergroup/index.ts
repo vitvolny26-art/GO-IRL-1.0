@@ -44,9 +44,6 @@ const safeEqual = (left: string | null, right: string) => {
   return mismatch === 0;
 };
 
-const deriveWebhookSecret = (jwtSecret: string) =>
-  sha256(`go-irl:telegram-event-supergroup-webhook:v1:${jwtSecret}`);
-
 type SessionClaims = {
   aud?: string;
   role?: string;
@@ -156,7 +153,7 @@ Deno.serve(async (request) => {
     const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
     const jwtSecret = requiredEnv("GO_IRL_JWT_SECRET");
     const botToken = requiredEnv("TELEGRAM_BOT_TOKEN");
-    const webhookSecret = await deriveWebhookSecret(jwtSecret);
+    const webhookSecret = requiredEnv("TELEGRAM_WEBHOOK_SECRET");
     const botUsername = (Deno.env.get("TELEGRAM_BOT_USERNAME") || "GOirl_bot").replace(/^@/, "");
     const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
 
