@@ -8,7 +8,6 @@ import { enableActivity3dIcons } from "./enableActivity3dIcons";
 import { enableUxRegressionPack } from "./uxRegressionPack";
 import { enableCardParticipantsDropdown } from "./cardParticipantsDropdown";
 import { enableSportEventCardPolicy } from "./sportEventCardPolicy";
-import { enableUnifiedEventPrimaryControls } from "./unifiedEventPrimaryControls";
 import { OrganizerProfilePortal } from "./components/OrganizerProfilePortal";
 import { OrganizerEventDetailsPortal } from "./components/OrganizerEventDetailsPortal";
 import { EventLocationPickerPortal } from "./components/EventLocationPickerPortal";
@@ -56,6 +55,7 @@ import "./ux-regression-pack.css";
 import "./card-participants-dropdown.css";
 import "./sport-event-card-policy.css";
 import "./unified-event-primary-controls.css";
+import "./legacy-card-controls-v2.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 type StoredPreferences = { language?: SupportedLanguage; cityId?: string; mapProvider?: "google" | "apple" | "mapy" };
@@ -108,7 +108,6 @@ enableMapyRuntimeLinks();
 enableUxRegressionPack();
 enableCardParticipantsDropdown();
 enableSportEventCardPolicy();
-enableUnifiedEventPrimaryControls();
 
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => { void navigator.serviceWorker.register("/service-worker.js").catch(() => undefined); });
