@@ -100,6 +100,9 @@ import { isTabSwipeBlockedTarget, resolveAdjacentTab, resolveSwipeDirection } fr
 import { isTemplateCarouselDrag } from "./templateCarousel";
 import { createProfileRepository, type ProfileRepository } from "./profile/profileRepository";
 import type { UserProfile, UserProfileDraft } from "./profile/profileTypes";
+import type { ProfilePanelSection } from "./profile/profilePanelTypes";
+import { ProfilePanel } from "./components/ProfilePanel";
+import { ProfilePreferences } from "./components/ProfilePreferences";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -1169,89 +1172,114 @@ function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: L
     }
   };
 
-  return (
-    <section className={`page-section profile-page${editing ? " is-editing" : ""}`}>
-      {(loading || profileLoading) && <ProfileSkeleton />}
-      {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-      {!editing && <div className="profile-hero">
-        <div className="profile-avatar">{isProfileAvatarImage(profile.avatar) ? <img src={profile.avatar} alt={t.avatar} /> : profile.avatar}</div>
-        <div className="profile-main">
-          <div className="profile-kicker"><MapPin />{city.name[language]}</div>
-          <h1>{profile.name}</h1>
-          <p>{profile.bio || t.profileBioFallback}</p>
-          <small>{t.registeredAt}: {registeredLabel}</small>
-        </div>
-        <button className="profile-edit-button" onClick={() => setEditing(true)} type="button"><Pencil size={18} />{t.editProfile}</button>
-      </div>}
+  const renderProfileSection = (section: ProfilePanelSection) => {
+    if (section === "preferences") return <ProfilePreferences language={language} />;
 
-      {editing && (
-        <form id="profile-edit-form" className="profile-edit-form" onSubmit={saveProfile}>
-          <div className="profile-edit-intro">
-            <h1>{profileCopy.title}</h1>
-            <p>{profileCopy.hint}</p>
-            <label className={`profile-edit-avatar${avatarBusy ? " is-busy" : ""}`}>
-              <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
-                const input = event.currentTarget;
-                void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
-              }} />
-              {isProfileAvatarImage(avatarDraft) ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
-              <i aria-hidden="true"><Camera size={20} /></i>
-            </label>
+    if (section === "diagnostics") {
+      return (
+        <div className="profile-diagnostics">
+          {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
+          <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
+        </div>
+      );
+    }
+
+    if (section === "my-go-irl") {
+      return (
+        <div className="profile-my-go-irl">
+          {(loading || profileLoading) && <ProfileSkeleton />}
+          {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
+          <SectionHeader title={t.favoriteActivities} />
+          {selectedFavorites.length ? (
+            <div className="profile-interest-list">
+              {selectedFavorites.map((option) => <span key={option.id}>{option.label}</span>)}
+            </div>
+          ) : (
+            <EmptyState text={t.noFavoriteActivities} />
+          )}
+          <SectionHeader title={t.profileStats} />
+          <div className="life-grid profile-stats-grid">
+            <Metric icon={<Star />} value={String(organized.length)} label={t.createdEvents} />
+            <Metric icon={<UserRoundCheck />} value={String(joinedCount)} label={t.visitedEvents} />
+            <Metric icon={<Zap />} value={String(activeEvents.length)} label={t.activeEvents} />
+            <Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />
           </div>
-          <label><span>{t.name}</span><input name="profileName" defaultValue={profile.name} required /></label>
-          <label><span>{t.shortBio}</span><textarea name="profileBio" rows={3} defaultValue={profile.bio} placeholder={t.profileBioPlaceholder} /></label>
-          <label><span>{t.city}</span><select name="profileCity" defaultValue={profile.cityId}>{cities.map((item) => <option key={item.id} value={item.id}>{item.name[language]}</option>)}</select></label>
-          <div className="interest-picker">
-            <span>{t.favoriteActivities}</span>
-            <p>{t.favoriteActivitiesHint}</p>
-            <div>
-              {favoriteOptions.map((option) => (
-                <label key={option.id}>
-                  <input name="favoriteActivities" type="checkbox" value={option.id} defaultChecked={profile.favoriteActivities.includes(option.id)} />
-                  <span>{option.label}</span>
+          <SectionHeader title={t.myEvents} />
+          <ProfileEventGroup title={t.organizing} activities={organized} language={language} emptyText={t.noOrganizedEvents} onOpen={onOpen} onJoin={onJoin} />
+          <ProfileEventGroup title={t.participating} activities={participating} language={language} emptyText={t.noJoinedEvents} onOpen={onOpen} onJoin={onJoin} />
+          <ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />
+          <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="profile-identity">
+        {(loading || profileLoading) && <ProfileSkeleton />}
+        {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
+        {!editing && <div className="profile-hero">
+          <div className="profile-avatar">{isProfileAvatarImage(profile.avatar) ? <img src={profile.avatar} alt={t.avatar} /> : profile.avatar}</div>
+          <div className="profile-main">
+            <div className="profile-kicker"><MapPin />{city.name[language]}</div>
+            <h1>{profile.name}</h1>
+            <p>{profile.bio || t.profileBioFallback}</p>
+            <small>{t.registeredAt}: {registeredLabel}</small>
+          </div>
+          <button className="profile-edit-button" onClick={() => setEditing(true)} type="button"><Pencil size={18} />{t.editProfile}</button>
+        </div>}
+        {editing && (
+          <form id="profile-edit-form" className="profile-edit-form" onSubmit={saveProfile}>
+            <div className="profile-edit-intro">
+              <h1>{profileCopy.title}</h1>
+              <p>{profileCopy.hint}</p>
+              <label className={`profile-edit-avatar${avatarBusy ? " is-busy" : ""}`}>
+                <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
+                  const input = event.currentTarget;
+                  void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
+                }} />
+                {isProfileAvatarImage(avatarDraft) ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
+                <i aria-hidden="true"><Camera size={20} /></i>
+              </label>
+            </div>
+            <label><span>{t.name}</span><input name="profileName" defaultValue={profile.name} required /></label>
+            <label><span>{t.shortBio}</span><textarea name="profileBio" rows={3} defaultValue={profile.bio} placeholder={t.profileBioPlaceholder} /></label>
+            <label><span>{t.city}</span><select name="profileCity" defaultValue={profile.cityId}>{cities.map((item) => <option key={item.id} value={item.id}>{item.name[language]}</option>)}</select></label>
+            <div className="interest-picker">
+              <span>{t.favoriteActivities}</span>
+              <p>{t.favoriteActivitiesHint}</p>
+              <div>
+                {favoriteOptions.map((option) => (
+                  <label key={option.id}>
+                    <input name="favoriteActivities" type="checkbox" value={option.id} defaultChecked={profile.favoriteActivities.includes(option.id)} />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="profile-avatar-choice-label">{t.avatar}</div>
+            <div className="avatar-picker" role="radiogroup" aria-label={t.avatar}>
+              {avatarOptions.map((avatar) => (
+                <label key={avatar}>
+                  <input name="profileAvatar" type="radio" value={avatar} defaultChecked={profile.avatarCode === avatar} onChange={() => selectAvatarCode(avatar)} />
+                  <span>{avatar}</span>
                 </label>
               ))}
             </div>
-          </div>
-          <div className="profile-avatar-choice-label">{t.avatar}</div>
-          <div className="avatar-picker" role="radiogroup" aria-label={t.avatar}>
-            {avatarOptions.map((avatar) => (
-              <label key={avatar}>
-                <input name="profileAvatar" type="radio" value={avatar} defaultChecked={profile.avatarCode === avatar} onChange={() => selectAvatarCode(avatar)} />
-                <span>{avatar}</span>
-              </label>
-            ))}
-          </div>
-
-          {avatarError && <div className="profile-avatar-error" role="alert">{avatarError}</div>}
-          <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
-        </form>
-      )}
-
-      {!editing && <>
-        <SectionHeader title={t.favoriteActivities} />
-        {selectedFavorites.length ? (
-          <div className="profile-interest-list">
-            {selectedFavorites.map((option) => <span key={option.id}>{option.label}</span>)}
-          </div>
-        ) : (
-          <EmptyState text={t.noFavoriteActivities} />
+            {avatarError && <div className="profile-avatar-error" role="alert">{avatarError}</div>}
+            <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
+          </form>
         )}
+      </div>
+    );
+  };
 
-        <SectionHeader title={t.profileStats} />
-        <div className="life-grid profile-stats-grid">
-          <Metric icon={<Star />} value={String(organized.length)} label={t.createdEvents} />
-          <Metric icon={<UserRoundCheck />} value={String(joinedCount)} label={t.visitedEvents} />
-          <Metric icon={<Zap />} value={String(activeEvents.length)} label={t.activeEvents} />
-          <Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />
-        </div>
-
-        <SectionHeader title={t.myEvents} />
-        <ProfileEventGroup title={t.organizing} activities={organized} language={language} emptyText={t.noOrganizedEvents} onOpen={onOpen} onJoin={onJoin} />
-        <ProfileEventGroup title={t.participating} activities={participating} language={language} emptyText={t.noJoinedEvents} onOpen={onOpen} onJoin={onJoin} />
-        <ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />
-        <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
-      </>}
+  return (
+    <section className={`page-section profile-page${editing ? " is-editing" : ""}`}>
+      <ProfilePanel
+        language={language}
+        editing={editing}
+        renderSection={renderProfileSection}
+      />
     </section>
   );
 }

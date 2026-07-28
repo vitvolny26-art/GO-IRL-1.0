@@ -1,7 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
 import { Bell, CalendarDays, ChevronDown, MapPin, Share2 } from "lucide-react";
-import { useAppStore } from "../store";
 import { visiblePreferenceOptions, type PreferenceOption } from "../profilePreferenceOptions";
 import {
   readUserPreferences,
@@ -14,7 +12,15 @@ import {
 } from "../userPreferences";
 import type { Language } from "../types";
 
-const copy: Record<Language, { title: string; hint: string; automatic: string; maps: string; calendar: string; share: string; reminders: string }> = {
+const copy: Record<Language, {
+  title: string;
+  hint: string;
+  automatic: string;
+  maps: string;
+  calendar: string;
+  share: string;
+  reminders: string;
+}> = {
   ru: { title: "Предпочтения", hint: "Выберите приложения по умолчанию. Сброс снова включает выбор при использовании.", automatic: "Спрашивать каждый раз", maps: "Карты", calendar: "Календарь", share: "Поделиться", reminders: "Напоминания" },
   uk: { title: "Налаштування", hint: "Оберіть програми за замовчуванням. Скидання знову вмикає вибір під час використання.", automatic: "Запитувати щоразу", maps: "Карти", calendar: "Календар", share: "Поділитися", reminders: "Нагадування" },
   cs: { title: "Předvolby", hint: "Vyberte výchozí aplikace. Reset znovu zobrazí volbu při použití.", automatic: "Vždy se zeptat", maps: "Mapy", calendar: "Kalendář", share: "Sdílení", reminders: "Připomínky" },
@@ -74,18 +80,8 @@ function PreferenceRow({ icon, label, value, options, automatic, onChange }: Pre
   );
 }
 
-export function ProfilePreferencesPortal() {
-  const language = useAppStore((state) => state.language);
-  const [target, setTarget] = useState<Element | null>(null);
+export function ProfilePreferences({ language }: { language: Language }) {
   const [preferences, setPreferences] = useState<UserPreferences>(() => readUserPreferences());
-
-  useEffect(() => {
-    const locate = () => setTarget(document.querySelector(".profile-page"));
-    locate();
-    const observer = new MutationObserver(locate);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const refresh = () => setPreferences(readUserPreferences());
@@ -97,13 +93,12 @@ export function ProfilePreferencesPortal() {
     };
   }, []);
 
-  if (!target) return null;
   const labels = copy[language];
   const change = (key: PreferenceKey, value: string | null) => {
     setPreferences(updateUserPreferences({ [key]: value } as Partial<UserPreferences>));
   };
 
-  return createPortal(
+  return (
     <section className="profile-preferences" aria-labelledby="profile-preferences-title">
       <header><h2 id="profile-preferences-title">{labels.title}</h2><p>{labels.hint}</p></header>
       <div className="profile-preferences-list">
@@ -112,7 +107,6 @@ export function ProfilePreferencesPortal() {
         <PreferenceRow icon={<Share2 />} label={labels.share} value={preferences.shareProvider} options={shareOptions} automatic={labels.automatic} onChange={(value) => change("shareProvider", value)} />
         <PreferenceRow icon={<Bell />} label={labels.reminders} value={preferences.reminderProvider} options={reminderOptions} automatic={labels.automatic} onChange={(value) => change("reminderProvider", value)} />
       </div>
-    </section>,
-    target,
+    </section>
   );
 }
