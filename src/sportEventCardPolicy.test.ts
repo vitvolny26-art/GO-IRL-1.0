@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { NewActivity } from "./types";
-import { applySportFormSelection } from "./sportEventCardPolicy";
+import { applySportFormSelection, setTextContentIfChanged } from "./sportEventCardPolicy";
 
 const baseActivity: NewActivity = {
   type: "sport",
@@ -53,5 +53,14 @@ describe("sport event card policy", () => {
   it("does not alter non-sport events", () => {
     const generic: NewActivity = { ...baseActivity, type: "custom", categoryId: "social" };
     expect(applySportFormSelection(generic, {})).toBe(generic);
+  });
+
+  it("does not rewrite unchanged form copy and retrigger the mutation observer", () => {
+    const node = { textContent: "Optional" };
+
+    expect(setTextContentIfChanged(node, "Optional")).toBe(false);
+    expect(node.textContent).toBe("Optional");
+    expect(setTextContentIfChanged(node, "Required")).toBe(true);
+    expect(node.textContent).toBe("Required");
   });
 });
