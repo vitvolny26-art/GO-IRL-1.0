@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const invoke = vi.fn();
-const openTelegramLink = vi.fn();
+const { invoke, openTelegramLink } = vi.hoisted(() => ({
+  invoke: vi.fn(),
+  openTelegramLink: vi.fn(),
+}));
 
 vi.mock("./supabase", () => ({
   supabase: {
