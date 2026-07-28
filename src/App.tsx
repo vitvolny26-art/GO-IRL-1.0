@@ -385,6 +385,12 @@ function App() {
   const handleJoin = async (activity: Activity) => {
     try {
       const result = await store.toggleJoin(activity.id);
+      if (result === "left") {
+        setSelected(null);
+        setSelectedMembersOpen(false);
+        setSelectedChatRequest(0);
+        store.setView("home");
+      }
       const message = result === "joined"
         ? t.joined
         : result === "pending"
