@@ -18,9 +18,27 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   headers: { ...corsResponseHeaders(), "Content-Type": "application/json" },
 });
 
+class ConfigurationError extends Error {
+  constructor(name: string) {
+    super(`Missing required environment variable: ${name}`);
+    this.name = "ConfigurationError";
+  }
+}
+
+class TelegramApiError extends Error {
+  constructor(
+    readonly method: string,
+    readonly status: number,
+    description: string,
+  ) {
+    super(`telegram_${method}_failed:${description}`);
+    this.name = "TelegramApiError";
+  }
+}
+
 const requiredEnv = (name: string) => {
   const value = Deno.env.get(name);
-  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  if (!value) throw new ConfigurationError(name);
   return value;
 };
 
@@ -101,7 +119,7 @@ const telegramApi = async <T>(token: string, method: string, body: Record<string
   });
   const payload = await response.json() as { ok: boolean; result?: T; description?: string };
   if (!response.ok || !payload.ok || payload.result === undefined) {
-    throw new Error(`telegram_${method}_failed:${payload.description || response.status}`);
+    throw new TelegramApiError(method, response.status, payload.description || String(response.status));
   }
   return payload.result;
 };
@@ -268,8 +286,19 @@ Deno.serve(async (request) => {
     });
   } catch (error) {
     console.error(error);
+    if (error instanceof ConfigurationError) {
+      return json({ error: "server_configuration_missing" }, 500);
+    }
     if (error instanceof Error && error.message === "telegram_webhook_conflict") {
       return json({ error: "telegram_webhook_conflict" }, 409);
+    }
+    if (error instanceof TelegramApiError) {
+      const operation = error.method === "getWebhookInfo"
+        ? "get_webhook_info"
+        : error.method === "setWebhook"
+        ? "set_webhook"
+        : "api";
+      return json({ error: `telegram_${operation}_failed` }, 502);
     }
     return json({ error: "supergroup_handshake_failed" }, 500);
   }
