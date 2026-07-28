@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Bell, CircleUserRound, Settings2, ShieldCheck } from "lucide-react";
 import { transitionProfilePanel } from "../profile/profilePanelNavigation";
@@ -131,7 +131,7 @@ export function ProfileHubPortal() {
 
   if (!target) return null;
   const labels = copy[language];
-  const items: Array<{ id: ProfilePanelSection; icon: React.ReactNode; label: string; hint: string }> = [
+  const items: Array<{ id: ProfilePanelSection; icon: ReactNode; label: string; hint: string }> = [
     { id: "profile", icon: <CircleUserRound />, label: labels.identity, hint: labels.identityHint },
     { id: "preferences", icon: <Settings2 />, label: labels.preferences, hint: labels.preferencesHint },
     { id: "activities", icon: <Bell />, label: labels.myGoIrl, hint: labels.myGoIrlHint },
