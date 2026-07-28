@@ -63,6 +63,23 @@ The Vercel project connected to production must track `vitvolny26-art/GO-IRL-1.0
 
 After the GitHub connection is active, every push to `main` should trigger a production deploy automatically.
 
+### Deployment-volume guardrails
+
+- Vercel Project Settings -> Git -> Production Branch must be `main`.
+- Automatic Git deployments are limited by `vercel.json` to `main` and
+  deliberately named `preview/**` branches.
+- Ordinary feature, fix, docs, automation, and temporary branches must not
+  create Vercel deployments.
+- Docs-only changes are skipped by the repository Ignored Build Step.
+- Merge an approved change to `main` once and let the Git integration create
+  the production deployment.
+- Do not manually redeploy or promote a feature Preview after merging. The
+  `main` deployment is the production artifact.
+- Use manual redeploy only for a verified incident where the existing artifact
+  must be rebuilt, and record the reason in the release report.
+- Vercel Hobby deployment capacity uses a rolling 24-hour window. A quota
+  failure is not cleared by repeatedly pressing Deploy.
+
 ### Vercel status interpretation
 
 | Vercel status | Meaning | Action |
