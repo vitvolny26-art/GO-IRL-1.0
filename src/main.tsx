@@ -41,6 +41,7 @@ import "./avatar-cropper.css";
 import "./participant-notifications.css";
 import "./profile-avatar-proportions.css";
 import "./organizer-event-details.css";
+import "./profile011-organizer-favorites.css";
 import "./event-location-picker.css";
 import "./event-location-provider.css";
 import "./map-provider-picker.css";
