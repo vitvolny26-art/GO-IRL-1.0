@@ -9,7 +9,7 @@ Admin tools exist to protect local communities and keep activities healthy. They
 - `moderator`: reviews reports, unsafe events, and chat moderation holds.
 - `admin`: manages platform configuration and high-risk actions.
 
-Current Sprint 1 admin visibility still uses a temporary frontend allowlist, but backend enforcement now has a forward-compatible `public.user_roles` design in `supabase/migration_v2_backend_foundation.sql`. Production identity enforcement must move to trusted Telegram `initData` validation and backend/RLS claims.
+Current production admin entry uses trusted Telegram session verification, a server-only identity allowlist, and the role source in `public.user_roles`. The frontend shell remains a presentation layer and does not replace server authorization.
 
 ## Admin Capabilities
 
@@ -58,9 +58,20 @@ Migration v2 adds:
 
 `admin_users` remains for backward compatibility and seeds existing admins into `user_roles`.
 
+## Current Runtime Surface
+
+- `/admin/login` verifies the trusted Telegram session through the existing server endpoint.
+- Every `/admin/*` route fails closed through the same server-side session check.
+- Admin104–110 provides a responsive read-only operations shell.
+- Admin105, Admin107, and Admin108 show explicit `Not connected` states instead of demo or production-looking fixtures.
+- Admin106 shows only the documented role boundaries; it does not read or mutate current user roles.
+- Admin109 reports only properties proved by the current authorized UI flow.
+- Admin110 describes integration status and does not read or write production feature flags.
+
 ## Not Implemented Now
 
-- no admin runtime UI
-- no new admin API
-- no moderation dashboard
-- no analytics dashboard
+- no user, event, moderation, audit, or analytics read API
+- no admin mutations
+- no production feature-flag provider
+- no service-role credential in the frontend
+- no moderation or analytics dashboard backed by live data
