@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   defaultProfilePanelSection,
   profilePanelSections,
+  resolveProfilePanelBack,
   resolveProfilePanelSection,
   transitionProfilePanel,
   visibleProfilePanelSections,
@@ -52,5 +53,24 @@ describe("profile panel navigation", () => {
       "activities",
       true,
     )).toEqual({ activeSection: "activities", editing: false });
+  });
+
+  it("consumes Telegram or browser back by returning to profile", () => {
+    expect(resolveProfilePanelBack({
+      activeSection: "activities",
+      editing: false,
+    })).toEqual({ activeSection: "profile", editing: false });
+  });
+
+  it("delegates back to the parent app from the profile root", () => {
+    expect(resolveProfilePanelBack({
+      activeSection: "profile",
+      editing: false,
+    })).toBeNull();
+  });
+
+  it("does not leave an active edit session on back", () => {
+    const state = { activeSection: "profile" as const, editing: true };
+    expect(resolveProfilePanelBack(state)).toEqual(state);
   });
 });
