@@ -1,7 +1,5 @@
-import { getTranslation } from "./i18n";
 import { useAppStore } from "./store";
 import type { Activity, Language, NewActivity, SportEnvironment, SportFormat, SportLevel, SportMetadata } from "./types";
-import { sportEnvironmentLabel, sportFormatLabel, sportLevelLabel } from "./verticals/sport";
 
 type Selection = { level?: SportLevel; format?: SportFormat; environment?: SportEnvironment };
 
@@ -59,13 +57,12 @@ const option = (select: HTMLSelectElement, label: string, disabled = false) => {
     empty.value = "";
     select.prepend(empty);
   }
-  if (empty.textContent !== label) empty.textContent = label;
+  empty.textContent = label;
   empty.disabled = disabled;
 };
 
 const marker = (select: HTMLSelectElement, text: string, kind: "optional" | "required") => {
-  const label = select.closest<HTMLLabelElement>("label");
-  const host = label?.querySelector(":scope > span");
+  const host = select.closest<HTMLLabelElement>("label")?.querySelector(":scope > span");
   if (!host) return;
   let node = host.querySelector<HTMLElement>(`.sport-policy-${kind}-marker`);
   if (!node) {
@@ -73,7 +70,7 @@ const marker = (select: HTMLSelectElement, text: string, kind: "optional" | "req
     node.className = `sport-policy-field-marker sport-policy-${kind}-marker`;
     host.append(node);
   }
-  if (node.textContent !== text) node.textContent = text;
+  node.textContent = text;
 };
 
 const editingActivity = (form: HTMLFormElement, lang: Language) => {
@@ -136,94 +133,33 @@ const activityForCard = (card: HTMLElement, lang: Language) => {
     || null;
 };
 
-const icon = (kind: "participants" | "chat") => {
-  const paths = kind === "participants"
-    ? ["M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8", "M22 21v-2a4 4 0 0 0-3-3.87", "M16 3.13a4 4 0 0 1 0 7.75"]
-    : ["M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"];
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths.map((path) => `<path d="${path}"></path>`).join("")}</svg>`;
+const restoreLegacyControls = (card: HTMLElement) => {
+  card.querySelector<HTMLElement>(".runtime-card-control-stack")?.remove();
+  const participants = card.querySelector<HTMLButtonElement>(".sport-chip-row .runtime-participants-chip");
+  if (participants) {
+    participants.hidden = false;
+    participants.tabIndex = 0;
+    participants.removeAttribute("aria-hidden");
+  }
+  const chat = card.querySelector<HTMLButtonElement>(".sport-card-top-actions > .event-chat-unread-alert");
+  if (chat) {
+    chat.hidden = false;
+    chat.tabIndex = 0;
+    chat.removeAttribute("aria-hidden");
+  }
 };
 
-const content = (button: HTMLElement, kind: "participants" | "chat", text: string) => {
-  if (button.dataset.sportPolicyKind === kind && button.dataset.sportPolicyText === text) return;
-  button.innerHTML = `${icon(kind)}<span>${text}</span>`;
-  button.dataset.sportPolicyKind = kind;
-  button.dataset.sportPolicyText = text;
-};
-
-const cardControls = (card: HTMLElement, activity: Activity, lang: Language) => {
-  let stack = card.querySelector<HTMLElement>(".runtime-card-control-stack");
-  if (!stack) {
-    stack = document.createElement("div");
-    stack.className = "runtime-card-control-stack";
-    card.querySelector(".sport-card-top-actions")?.insertAdjacentElement("afterend", stack);
-  }
-
-  const originalParticipants = card.querySelector<HTMLButtonElement>(".sport-chip-row .runtime-participants-chip");
-  if (originalParticipants) {
-    originalParticipants.hidden = true;
-    originalParticipants.tabIndex = -1;
-    originalParticipants.setAttribute("aria-hidden", "true");
-  }
-
-  let participants = stack.querySelector<HTMLButtonElement>(".runtime-card-participants-control");
-  if (!participants) {
-    participants = document.createElement("button");
-    participants.type = "button";
-    participants.className = "runtime-card-stack-control runtime-card-participants-control runtime-participants-chip";
-    stack.prepend(participants);
-  }
-  participants.setAttribute("aria-label", `${getTranslation(lang).participants}: ${activity.participants} / ${activity.capacity}`);
-  content(participants, "participants", `${activity.participants}/${activity.capacity}`);
-
-  const sourceUnread = card.querySelector<HTMLButtonElement>(".sport-card-top-actions > .event-chat-unread-alert");
-  if (sourceUnread) {
-    sourceUnread.hidden = true;
-    sourceUnread.tabIndex = -1;
-    sourceUnread.setAttribute("aria-hidden", "true");
-  }
-
-  let chat = stack.querySelector<HTMLButtonElement>(".runtime-card-chat-control");
-  if (!useAppStore.getState().joinedIds.includes(activity.id)) {
-    chat?.remove();
-    return;
-  }
-  if (!chat) {
-    chat = document.createElement("button");
-    chat.type = "button";
-    chat.className = "runtime-card-stack-control runtime-card-chat-control";
-    chat.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const unread = card.querySelector<HTMLButtonElement>(".sport-card-top-actions > .event-chat-unread-alert");
-      if (unread) unread.click();
-      else card.querySelector<HTMLButtonElement>(".compact-sport-actions .sport-coach-action")?.click();
-    });
-    stack.append(chat);
-  }
-  const unread = sourceUnread?.querySelector("span")?.textContent?.trim() || "";
-  chat.setAttribute("aria-label", unread ? `${getTranslation(lang).cardOpenChat}: ${unread}` : getTranslation(lang).cardOpenChat);
-  chat.classList.toggle("has-unread", Boolean(unread));
-  content(chat, "chat", unread);
-};
-
-const metadata = (card: HTMLElement, activity: Activity, lang: Language) => {
+const metadata = (card: HTMLElement, activity: Activity) => {
   const row = card.querySelector<HTMLElement>(".sport-chip-row");
   if (!row) return;
   const sport = activity.metadata?.sport || {};
   const level = row.querySelector<HTMLElement>(".sport-level-chip");
   const environment = row.querySelector<HTMLElement>(".sport-environment-chip");
   const duration = row.querySelector<HTMLElement>(".sport-duration-chip");
-  if (level) level.hidden = !sport.level;
-  if (environment) environment.hidden = !sport.environment;
+  if (level) level.hidden = true;
+  if (environment) environment.hidden = true;
   if (duration) duration.hidden = !sport.durationMinutes;
-  row.querySelector<HTMLElement>(".runtime-participants-chip")?.setAttribute("hidden", "");
-  row.classList.add("sport-policy-metadata-row");
-  row.setAttribute("aria-label", [
-    sport.environment ? sportEnvironmentLabel(sport.environment, lang) : "",
-    sport.durationMinutes ? String(sport.durationMinutes) : "",
-    sport.level ? sportLevelLabel(sport.level, lang) : "",
-    sport.format ? sportFormatLabel(sport.format, lang) : "",
-  ].filter(Boolean).join(" | "));
+  row.classList.remove("sport-policy-metadata-row");
 };
 
 const sheet = (lang: Language) => {
@@ -249,8 +185,8 @@ const apply = () => {
   document.querySelectorAll<HTMLElement>(".compact-sport-card").forEach((card) => {
     const activity = activityForCard(card, lang);
     if (!activity) return;
-    cardControls(card, activity, lang);
-    metadata(card, activity, lang);
+    restoreLegacyControls(card);
+    metadata(card, activity);
   });
   sheet(lang);
 };
