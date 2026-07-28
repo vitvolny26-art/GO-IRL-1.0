@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Link2, Trash2, UsersRound } from "lucide-react";
+import { ClipboardPaste, ExternalLink, Link2, Trash2, UsersRound } from "lucide-react";
 import { getCurrentChatIdentity } from "../activityChatFeature";
 import {
   canAccessExternalTelegramChat,
@@ -103,9 +103,9 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
   });
   const canOpen = Boolean(link && canAccess && lifecycle === "active");
 
-  const save = async () => {
+  const save = async (value = draft) => {
     if (!identityKey || !isOrganizer || saving) return;
-    const normalized = normalizeExternalTelegramChatUrl(draft);
+    const normalized = normalizeExternalTelegramChatUrl(value);
     if (!normalized) {
       setError("Добавьте корректную ссылку t.me на группу или приглашение");
       return;
@@ -125,6 +125,26 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
       setError("Не удалось сохранить Telegram-чат для участников");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const pasteAndSave = async () => {
+    if (!navigator.clipboard?.readText) {
+      setError("Вставьте ссылку из буфера в поле вручную");
+      return;
+    }
+
+    try {
+      const value = await navigator.clipboard.readText();
+      const normalized = normalizeExternalTelegramChatUrl(value);
+      if (!normalized) {
+        setError("В буфере нет корректной ссылки t.me");
+        return;
+      }
+      setDraft(normalized);
+      await save(normalized);
+    } catch {
+      setError("Не удалось прочитать буфер. Вставьте ссылку вручную");
     }
   };
 
@@ -192,9 +212,13 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
             autoCorrect="off"
             disabled={saving}
           />
-          <button type="button" onClick={() => void save()} disabled={saving}>{saving ? "Сохранение…" : "Сохранить ссылку"}</button>
+          <button type="button" onClick={() => void pasteAndSave()} disabled={saving}>
+            <ClipboardPaste size={17} aria-hidden="true" />
+            {saving ? "Сохранение…" : "Вставить и сохранить"}
+          </button>
+          <button type="button" className="secondary" onClick={() => void save()} disabled={saving}>Сохранить введённую</button>
           {editing ? <button type="button" className="secondary" disabled={saving} onClick={() => { setEditing(false); setDraft(link?.url || ""); setError(""); }}>Отмена</button> : null}
-          {!link ? <div className="external-telegram-chat-muted">После создания группы скопируйте ссылку-приглашение и сохраните её здесь.</div> : null}
+          {!link ? <div className="external-telegram-chat-muted">После создания группы скопируйте ссылку-приглашение, вернитесь и нажмите «Вставить и сохранить».</div> : null}
         </div>
       ) : null}
 
