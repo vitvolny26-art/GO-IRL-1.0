@@ -23,7 +23,8 @@
 
 .external-telegram-chat-head small,
 .external-telegram-chat-muted,
-.external-telegram-chat-note {
+.external-telegram-chat-note,
+.external-telegram-chat-fallback summary {
   color: rgba(255, 255, 255, 0.64);
   font-size: 12px;
   line-height: 1.35;
@@ -98,4 +99,31 @@
 .external-telegram-chat-note {
   padding-top: 2px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.external-telegram-chat-steps {
+  display: grid;
+  flex: 1 0 100%;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(51, 170, 255, 0.08);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.external-telegram-chat-fallback {
+  flex: 1 0 100%;
+}
+
+.external-telegram-chat-fallback summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.external-telegram-chat-fallback-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 10px;
 }
