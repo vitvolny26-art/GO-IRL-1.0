@@ -27,7 +27,7 @@ type LifecycleInput = {
 const allowedHosts = new Set(["t.me", "telegram.me", "www.t.me", "www.telegram.me"]);
 const validPath = /^\/(?:joinchat\/[-_A-Za-z0-9]+|\+[-_A-Za-z0-9]+|[A-Za-z0-9_]{5,})(?:\/\d+)?\/?$/;
 const eventStoragePrefix = "go-irl:external-telegram-chat:event:";
-const telegramGroupCreationDeepLink = "tg://new/group";
+const telegramGroupCreationLink = "https://t.me/GOirl_bot?startgroup=go_irl_event";
 
 export const normalizeExternalTelegramChatUrl = (value: string) => {
   const trimmed = value.trim();
@@ -126,19 +126,20 @@ type OpenDependencies = {
   openBrowser?: (url: string) => void;
 };
 
-type CreateGroupDependencies = {
-  openDeepLink?: (url: string) => void;
-};
-
 export const openTelegramGroupCreation = (
-  dependencies: CreateGroupDependencies = {},
+  dependencies: OpenDependencies = {},
 ) => {
-  const openDeepLink = dependencies.openDeepLink || ((target: string) => {
-    window.location.assign(target);
-  });
+  const telegramOpen = dependencies.openTelegramLink || getTelegramWebApp()?.openTelegramLink;
+  if (telegramOpen) {
+    telegramOpen(telegramGroupCreationLink);
+    return true;
+  }
 
-  if (!dependencies.openDeepLink && typeof window === "undefined") return false;
-  openDeepLink(telegramGroupCreationDeepLink);
+  if (!dependencies.openBrowser && typeof window === "undefined") return false;
+  const browserOpen = dependencies.openBrowser || ((target: string) => {
+    window.open(target, "_blank", "noopener,noreferrer");
+  });
+  browserOpen(telegramGroupCreationLink);
   return true;
 };
 
