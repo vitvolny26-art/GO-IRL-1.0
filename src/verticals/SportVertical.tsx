@@ -489,6 +489,12 @@ export function SportActivitySheet({
               <strong className="weather-summary-lines">{weather ? weatherSummaryLines(weather) : weatherText}</strong>
             </button>
           )}
+          <button className="detail-members-toggle sport-detail-members-row" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
+            <UsersRound />
+            <span>{t.participants}</span>
+            <strong>{activity.participants} / {activity.capacity}</strong>
+            <ChevronRight className={membersOpen ? "open" : ""} />
+          </button>
         </div>
         {showWeather && weatherDetailsOpen && weatherHours.length > 0 && (
           <section className="weather-detail-card" aria-label={t.weatherDetails}>
@@ -509,13 +515,6 @@ export function SportActivitySheet({
           </section>
         )}
 
-        <section className="sport-community-block">
-        <button className="detail-members-toggle" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
-          <UsersRound />
-          <span>{t.participants}</span>
-          <strong>{activity.participants} / {activity.capacity}</strong>
-          <ChevronRight className={membersOpen ? "open" : ""} />
-        </button>
         {membersOpen && (
           <div className="members-section">
             <div className="members-list">
@@ -550,7 +549,8 @@ export function SportActivitySheet({
           </div>
         )}
 
-        <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={false} />
+        <section className="sport-community-block">
+          <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={false} />
         </section>
 
         {interaction.showHelperAction ? <CoachRequestPanel activity={activity} userRole={userRole} /> : null}
