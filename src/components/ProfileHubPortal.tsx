@@ -1,8 +1,7 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Bell, CircleUserRound, Settings2, ShieldCheck } from "lucide-react";
-import { transitionProfilePanel } from "../profile/profilePanelNavigation";
-import type { ProfilePanelSection, ProfilePanelState } from "../profile/profilePanelTypes";
+import { ProfilePanel, type ProfilePanelLabels } from "./ProfilePanel";
+import type { ProfilePanelSection } from "../profile/profilePanelTypes";
 import { useAppStore } from "../store";
 import type { Language } from "../types";
 
@@ -25,77 +24,56 @@ const panelToLegacySection: Readonly<Record<ProfilePanelSection, ProfileHubSecti
   diagnostics: "diagnostics",
 };
 
-const copy: Record<Language, {
-  title: string;
-  hint: string;
-  identity: string;
-  identityHint: string;
-  preferences: string;
-  preferencesHint: string;
-  myGoIrl: string;
-  myGoIrlHint: string;
-  diagnostics: string;
-  diagnosticsHint: string;
-  editing: string;
-}> = {
+const copy: Record<Language, ProfilePanelLabels> = {
   ru: {
-    title: "Мой профиль",
-    hint: "Управляйте личностью, приложениями по умолчанию и своей активностью GO IRL.",
-    identity: "Личность",
-    identityHint: "Имя, фото, город и интересы",
+    navigationLabel: "Разделы профиля",
+    editingBlockedLabel: "Сначала завершите редактирование профиля",
+    profile: "Личность",
+    activities: "Мой GO IRL",
     preferences: "Предпочтения",
-    preferencesHint: "Карты, календарь, отправка и напоминания",
-    myGoIrl: "Мой GO IRL",
-    myGoIrlHint: "Статистика, события и заявки",
+    notifications: "Уведомления",
+    privacy: "Приватность",
+    support: "Поддержка",
     diagnostics: "Диагностика",
-    diagnosticsHint: "Состояние синхронизации и выход в Telegram",
-    editing: "Сначала завершите редактирование профиля",
   },
   uk: {
-    title: "Мій профіль",
-    hint: "Керуйте особистістю, типовими застосунками та своєю активністю GO IRL.",
-    identity: "Особистість",
-    identityHint: "Ім’я, фото, місто та інтереси",
+    navigationLabel: "Розділи профілю",
+    editingBlockedLabel: "Спочатку завершіть редагування профілю",
+    profile: "Особистість",
+    activities: "Мій GO IRL",
     preferences: "Налаштування",
-    preferencesHint: "Карти, календар, поширення та нагадування",
-    myGoIrl: "Мій GO IRL",
-    myGoIrlHint: "Статистика, події та заявки",
+    notifications: "Сповіщення",
+    privacy: "Приватність",
+    support: "Підтримка",
     diagnostics: "Діагностика",
-    diagnosticsHint: "Стан синхронізації та повернення до Telegram",
-    editing: "Спочатку завершіть редагування профілю",
   },
   cs: {
-    title: "Můj profil",
-    hint: "Spravujte identitu, výchozí aplikace a svou aktivitu v GO IRL.",
-    identity: "Identita",
-    identityHint: "Jméno, fotografie, město a zájmy",
+    navigationLabel: "Sekce profilu",
+    editingBlockedLabel: "Nejprve dokončete úpravu profilu",
+    profile: "Identita",
+    activities: "Moje GO IRL",
     preferences: "Předvolby",
-    preferencesHint: "Mapy, kalendář, sdílení a připomínky",
-    myGoIrl: "Moje GO IRL",
-    myGoIrlHint: "Statistiky, události a žádosti",
+    notifications: "Oznámení",
+    privacy: "Soukromí",
+    support: "Podpora",
     diagnostics: "Diagnostika",
-    diagnosticsHint: "Stav synchronizace a návrat do Telegramu",
-    editing: "Nejprve dokončete úpravu profilu",
   },
   en: {
-    title: "My profile",
-    hint: "Manage identity, default apps and your GO IRL activity.",
-    identity: "Identity",
-    identityHint: "Name, photo, city and interests",
+    navigationLabel: "Profile sections",
+    editingBlockedLabel: "Finish editing your profile first",
+    profile: "Identity",
+    activities: "My GO IRL",
     preferences: "Preferences",
-    preferencesHint: "Maps, calendar, sharing and reminders",
-    myGoIrl: "My GO IRL",
-    myGoIrlHint: "Stats, events and requests",
+    notifications: "Notifications",
+    privacy: "Privacy",
+    support: "Support",
     diagnostics: "Diagnostics",
-    diagnosticsHint: "Sync state and return to Telegram",
-    editing: "Finish editing your profile first",
   },
 };
 
 export function ProfileHubPortal() {
   const language = useAppStore((state) => state.language);
   const [target, setTarget] = useState<HTMLElement | null>(null);
-  const [panelSection, setPanelSection] = useState<ProfilePanelSection>("profile");
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
@@ -115,58 +93,20 @@ export function ProfileHubPortal() {
     return () => observer.disconnect();
   }, [target]);
 
-  const legacySection = panelToLegacySection[panelSection];
-
-  useEffect(() => {
-    if (!target) return;
-    target.classList.add("profile-hub-enabled");
-    target.dataset.profileHubSection = legacySection;
-    target.dataset.profilePanelSection = panelSection;
-    return () => {
-      target.classList.remove("profile-hub-enabled");
-      delete target.dataset.profileHubSection;
-      delete target.dataset.profilePanelSection;
-    };
-  }, [legacySection, panelSection, target]);
-
   if (!target) return null;
-  const labels = copy[language];
-  const items: Array<{ id: ProfilePanelSection; icon: ReactNode; label: string; hint: string }> = [
-    { id: "profile", icon: <CircleUserRound />, label: labels.identity, hint: labels.identityHint },
-    { id: "preferences", icon: <Settings2 />, label: labels.preferences, hint: labels.preferencesHint },
-    { id: "activities", icon: <Bell />, label: labels.myGoIrl, hint: labels.myGoIrlHint },
-    { id: "diagnostics", icon: <ShieldCheck />, label: labels.diagnostics, hint: labels.diagnosticsHint },
-  ];
-
-  const selectSection = (requested: ProfilePanelSection) => {
-    const current: ProfilePanelState = { activeSection: panelSection, editing };
-    const next = transitionProfilePanel(current, requested, true);
-    setPanelSection(next.activeSection);
-  };
 
   return createPortal(
-    <nav className="profile-hub-navigation" aria-label={labels.title} data-profile-panel-bridge="legacy">
-      <header>
-        <h2>{labels.title}</h2>
-        <p>{labels.hint}</p>
-      </header>
-      <div className="profile-hub-grid">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            className={panelSection === item.id ? "profile-hub-card is-active" : "profile-hub-card"}
-            type="button"
-            aria-current={panelSection === item.id ? "page" : undefined}
-            disabled={editing && item.id !== "profile"}
-            title={editing && item.id !== "profile" ? labels.editing : undefined}
-            onClick={() => selectSection(item.id)}
-          >
-            <span className="profile-hub-card-icon">{item.icon}</span>
-            <span><strong>{item.label}</strong><small>{item.hint}</small></span>
-          </button>
-        ))}
-      </div>
-    </nav>,
+    <ProfilePanel
+      labels={copy[language]}
+      editing={editing}
+      hasOwnerContext
+      onSectionChange={(section) => {
+        target.classList.add("profile-hub-enabled");
+        target.dataset.profilePanelSection = section;
+        target.dataset.profileHubSection = panelToLegacySection[section];
+      }}
+      renderSection={() => null}
+    />,
     target,
   );
 }
