@@ -1,0 +1,86 @@
+/* Restore the pre-runtime participant and chat controls on every event card. */
+.unified-event-card .runtime-card-control-stack {
+  display: none !important;
+}
+
+.unified-event-card .sport-chip-row .sport-card-participants-chip,
+.unified-event-card .sport-chip-row .runtime-participants-chip {
+  display: inline-flex !important;
+  visibility: visible !important;
+}
+
+/* Sport keeps the same legacy participant pill used by generic Event cards. */
+.compact-sport-card .sport-chip-row {
+  top: 57px !important;
+  right: 10px !important;
+  justify-items: end !important;
+}
+
+.compact-sport-card .sport-level-chip,
+.compact-sport-card .sport-environment-chip {
+  display: none !important;
+}
+
+.compact-sport-card .sport-card-participants-chip,
+.compact-sport-card .runtime-participants-chip {
+  order: 1 !important;
+  width: 90px !important;
+  min-width: 90px !important;
+  min-height: 44px !important;
+  padding: 0 10px !important;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: 999px !important;
+  background: rgba(10, 14, 16, .34) !important;
+  color: rgba(255, 255, 255, .9) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+/* Keep the legacy unread-chat button instead of the generated runtime control. */
+.compact-sport-card .card-share-action > .event-chat-unread-alert,
+.compact-sport-card .sport-card-top-actions .event-chat-unread-alert {
+  display: inline-flex !important;
+  visibility: visible !important;
+  top: 118px !important;
+  right: -3px !important;
+  width: 84px !important;
+  height: 31px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Fourth row: duration aligned right, without a frame or filled icon container. */
+.compact-sport-card .sport-duration-chip {
+  position: absolute !important;
+  top: 100px !important;
+  right: 0 !important;
+  order: 4 !important;
+  display: inline-flex !important;
+  width: 90px !important;
+  min-width: 90px !important;
+  min-height: 31px !important;
+  justify-content: flex-end !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  color: rgba(255, 255, 255, .88) !important;
+}
+
+.compact-sport-card .sport-duration-chip svg,
+.compact-sport-card .sport-duration-chip .runtime-chip-icon {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--lime) !important;
+}
+
+@media (max-width: 380px) {
+  .compact-sport-card .sport-chip-row {
+    top: 55px !important;
+    right: 8px !important;
+  }
+}
