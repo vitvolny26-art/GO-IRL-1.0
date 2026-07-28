@@ -23,9 +23,6 @@ describe("external Telegram chat links", () => {
         removeItem: (key: string) => storage.delete(key),
         clear: () => storage.clear(),
       },
-      location: {
-        assign: vi.fn(),
-      },
       open: vi.fn(),
     });
   });
@@ -75,10 +72,13 @@ describe("external Telegram chat links", () => {
     expect(loadLocalEventTelegramChatLink(activityId)).toBeNull();
   });
 
-  it("opens the official Telegram group creation flow", () => {
-    const openDeepLink = vi.fn();
-    expect(openTelegramGroupCreation({ openDeepLink })).toBe(true);
-    expect(openDeepLink).toHaveBeenCalledWith("tg://new/group");
+  it("opens the supported Telegram startgroup flow", () => {
+    const openTelegramLink = vi.fn();
+    const openBrowser = vi.fn();
+
+    expect(openTelegramGroupCreation({ openTelegramLink, openBrowser })).toBe(true);
+    expect(openTelegramLink).toHaveBeenCalledWith("https://t.me/GOirl_bot?startgroup=go_irl_event");
+    expect(openBrowser).not.toHaveBeenCalled();
   });
 
   it("uses Telegram WebApp opening when available", () => {
