@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Bell, CircleUserRound, LockKeyhole, Settings2, ShieldCheck } from "lucide-react";
 import { ProfileLayout } from "./ProfileLayout";
+import { ProfileInterestsGoalsSection } from "./ProfileInterestsGoalsSection";
+import { MyGoIrlLifecycleSummary } from "./MyGoIrlLifecycleSummary";
+import { OwnedProfilePrivacySection } from "./OwnedProfilePrivacySection";
 import {
   defaultProfilePanelSection,
   profilePanelSections,
@@ -111,7 +114,15 @@ export function ProfilePanel({ language, editing, renderSection, onSectionChange
     applySection(next.activeSection);
   };
 
-  const content = <div className="profile-panel-content" data-profile-panel-content={activeSection}>{renderSection(activeSection)}</div>;
+  const baseContent = activeSection === "privacy" ? null : renderSection(activeSection);
+  const sectionContent = activeSection === "identity"
+    ? <>{baseContent}<ProfileInterestsGoalsSection language={language} /></>
+    : activeSection === "my-go-irl"
+      ? <><MyGoIrlLifecycleSummary language={language} />{baseContent}</>
+      : activeSection === "privacy"
+        ? <OwnedProfilePrivacySection language={language} />
+        : baseContent;
+  const content = <div className="profile-panel-content" data-profile-panel-content={activeSection}>{sectionContent}</div>;
 
   return (
     <ProfileLayout activeSection={activeSection} editing={editing} onSectionChange={applySection}>
