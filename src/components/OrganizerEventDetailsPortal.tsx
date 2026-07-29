@@ -34,7 +34,7 @@ export function OrganizerEventDetailsPortal() {
 
   useEffect(() => {
     const refresh = () => {
-      const sheet = document.querySelector<HTMLElement>(".activity-sheet:not(.sport-sheet)");
+      const sheet = document.querySelector<HTMLElement>(".activity-sheet.sport-sheet");
       const detailList = sheet?.querySelector<HTMLElement>(".sport-detail-list");
       const title = sheet?.querySelector("h2")?.textContent || "";
       const description = sheet?.querySelector(".sport-sheet-hero p")?.textContent || "";
