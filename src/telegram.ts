@@ -50,14 +50,43 @@ export const closeMiniApp = () => {
   return true;
 };
 
-export const showBackButton = (onClick: () => void) => {
+type BackButtonHandler = () => void;
+
+const backButtonHandlers: BackButtonHandler[] = [];
+let backButtonDispatcherAttached = false;
+
+const dispatchBackButton = () => {
+  backButtonHandlers.at(-1)?.();
+};
+
+const syncBackButton = () => {
   const backButton = getTelegramWebApp()?.BackButton;
-  if (!backButton) return () => undefined;
-  backButton.onClick(onClick);
-  backButton.show();
-  return () => {
-    backButton.offClick(onClick);
+  if (!backButton) return;
+
+  if (backButtonHandlers.length === 0) {
+    if (backButtonDispatcherAttached) {
+      backButton.offClick(dispatchBackButton);
+      backButtonDispatcherAttached = false;
+    }
     backButton.hide();
+    return;
+  }
+
+  if (!backButtonDispatcherAttached) {
+    backButton.onClick(dispatchBackButton);
+    backButtonDispatcherAttached = true;
+  }
+  backButton.show();
+};
+
+export const showBackButton = (onClick: () => void) => {
+  backButtonHandlers.push(onClick);
+  syncBackButton();
+
+  return () => {
+    const index = backButtonHandlers.lastIndexOf(onClick);
+    if (index >= 0) backButtonHandlers.splice(index, 1);
+    syncBackButton();
   };
 };
 

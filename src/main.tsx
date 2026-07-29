@@ -18,6 +18,7 @@ import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPorta
 import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
 import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/AdminLoginPage";
 import { resolveAdminRoute } from "./admin/adminSession";
+import { isProfilePath } from "./profile/profileRoute";
 import { useAppStore } from "./store";
 import "./styles.css";
 import "./category-cards.css";
@@ -100,6 +101,10 @@ initializeLanguagePreference();
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 const adminRoute = resolveAdminRoute(window.location.pathname);
+
+if (!adminRoute && isProfilePath(window.location.pathname)) {
+  useAppStore.setState({ view: "profile" });
+}
 
 enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();

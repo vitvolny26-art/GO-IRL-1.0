@@ -1,10 +1,15 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Bell, CircleUserRound, Settings2, ShieldCheck } from "lucide-react";
+import { ProfileLayout } from "./ProfileLayout";
 import {
   defaultProfilePanelSection,
   profilePanelSections,
   transitionProfilePanel,
 } from "../profile/profilePanelNavigation";
+import {
+  profilePathForSection,
+  resolveProfileSectionFromPath,
+} from "../profile/profileRoute";
 import type { ProfilePanelSection, ProfilePanelState } from "../profile/profilePanelTypes";
 import type { Language } from "../types";
 
@@ -82,57 +87,70 @@ export function ProfilePanel({
   renderSection,
   onSectionChange,
 }: ProfilePanelProps) {
-  const [activeSection, setActiveSection] = useState<ProfilePanelSection>(
-    defaultProfilePanelSection,
-  );
+  const [activeSection, setActiveSection] = useState<ProfilePanelSection>(() => (
+    typeof window === "undefined"
+      ? defaultProfilePanelSection
+      : resolveProfileSectionFromPath(window.location.pathname)
+  ));
   const labels = copy[language];
+
+  const applySection = useCallback((section: ProfilePanelSection) => {
+    setActiveSection(section);
+    onSectionChange?.(section);
+  }, [onSectionChange]);
 
   useEffect(() => {
     if (editing && activeSection !== defaultProfilePanelSection) {
-      setActiveSection(defaultProfilePanelSection);
-      onSectionChange?.(defaultProfilePanelSection);
+      window.history.replaceState({}, "", profilePathForSection(defaultProfilePanelSection));
+      applySection(defaultProfilePanelSection);
     }
-  }, [activeSection, editing, onSectionChange]);
+  }, [activeSection, applySection, editing]);
 
   const selectSection = (requested: ProfilePanelSection) => {
     const current: ProfilePanelState = { activeSection, editing };
     const next = transitionProfilePanel(current, requested);
     if (next.activeSection === activeSection) return;
-    setActiveSection(next.activeSection);
-    onSectionChange?.(next.activeSection);
+    window.history.pushState({}, "", profilePathForSection(next.activeSection));
+    applySection(next.activeSection);
   };
 
   return (
-    <div className="profile-panel" data-profile-panel-section={activeSection}>
-      <header className="profile-panel-header">
-        <h2>{labels.title}</h2>
-        <p>{labels.hint}</p>
-      </header>
-      <nav className="profile-panel-navigation" aria-label={labels.title}>
-        {profilePanelSections.map(({ id }) => {
-          const blocked = editing && id !== defaultProfilePanelSection;
-          return (
-            <button
-              key={id}
-              className={activeSection === id ? "profile-panel-card is-active" : "profile-panel-card"}
-              type="button"
-              aria-current={activeSection === id ? "page" : undefined}
-              disabled={blocked}
-              title={blocked ? labels.editing : undefined}
-              onClick={() => selectSection(id)}
-            >
-              <span className="profile-panel-card-icon">{icons[id]}</span>
-              <span>
-                <strong>{labels.sections[id].label}</strong>
-                <small>{labels.sections[id].hint}</small>
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-      <div className="profile-panel-content" data-profile-panel-content={activeSection}>
-        {renderSection(activeSection)}
+    <ProfileLayout
+      activeSection={activeSection}
+      editing={editing}
+      onSectionChange={applySection}
+    >
+      <div className="profile-panel" data-profile-panel-section={activeSection}>
+        <header className="profile-panel-header">
+          <h2>{labels.title}</h2>
+          <p>{labels.hint}</p>
+        </header>
+        <nav className="profile-panel-navigation" aria-label={labels.title}>
+          {profilePanelSections.map(({ id }) => {
+            const blocked = editing && id !== defaultProfilePanelSection;
+            return (
+              <button
+                key={id}
+                className={activeSection === id ? "profile-panel-card is-active" : "profile-panel-card"}
+                type="button"
+                aria-current={activeSection === id ? "page" : undefined}
+                disabled={blocked}
+                title={blocked ? labels.editing : undefined}
+                onClick={() => selectSection(id)}
+              >
+                <span className="profile-panel-card-icon">{icons[id]}</span>
+                <span>
+                  <strong>{labels.sections[id].label}</strong>
+                  <small>{labels.sections[id].hint}</small>
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+        <div className="profile-panel-content" data-profile-panel-content={activeSection}>
+          {renderSection(activeSection)}
+        </div>
       </div>
-    </div>
+    </ProfileLayout>
   );
 }
