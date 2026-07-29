@@ -52,11 +52,33 @@ export const closeMiniApp = () => {
 
 type BackButtonHandler = () => void;
 
-const backButtonHandlers: BackButtonHandler[] = [];
+type BackButtonRegistration = {
+  id: number;
+  onClick: BackButtonHandler;
+  priority: number;
+};
+
+export type BackButtonOptions = {
+  priority?: number;
+};
+
+const backButtonHandlers: BackButtonRegistration[] = [];
 let backButtonDispatcherAttached = false;
+let nextBackButtonHandlerId = 0;
 
 const dispatchBackButton = () => {
-  backButtonHandlers.at(-1)?.();
+  let activeRegistration: BackButtonRegistration | undefined;
+
+  for (const registration of backButtonHandlers) {
+    const hasHigherPriority = !activeRegistration || registration.priority > activeRegistration.priority;
+    const isNewerAtSamePriority = activeRegistration
+      && registration.priority === activeRegistration.priority
+      && registration.id > activeRegistration.id;
+
+    if (hasHigherPriority || isNewerAtSamePriority) activeRegistration = registration;
+  }
+
+  activeRegistration?.onClick();
 };
 
 const syncBackButton = () => {
@@ -79,12 +101,17 @@ const syncBackButton = () => {
   backButton.show();
 };
 
-export const showBackButton = (onClick: () => void) => {
-  backButtonHandlers.push(onClick);
+export const showBackButton = (onClick: () => void, options: BackButtonOptions = {}) => {
+  const registration: BackButtonRegistration = {
+    id: ++nextBackButtonHandlerId,
+    onClick,
+    priority: options.priority ?? 0,
+  };
+  backButtonHandlers.push(registration);
   syncBackButton();
 
   return () => {
-    const index = backButtonHandlers.lastIndexOf(onClick);
+    const index = backButtonHandlers.findIndex((item) => item.id === registration.id);
     if (index >= 0) backButtonHandlers.splice(index, 1);
     syncBackButton();
   };
