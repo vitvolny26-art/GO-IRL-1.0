@@ -4,7 +4,7 @@ import { buildMyGoIrlProjection } from "./myGoIrlProjection";
 
 const activity = (id: string, organizerKey: string, date: string, time = "18:00"): Activity => ({
   id,
-  type: "generic",
+  type: "custom",
   categoryId: "social",
   activity: { ru: "Прогулка", uk: "Прогулянка", cs: "Procházka", en: "Walk" },
   title: { ru: id, uk: id, cs: id, en: id },
