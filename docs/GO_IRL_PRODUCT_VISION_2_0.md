@@ -38,7 +38,7 @@ Current authority remains:
 - `ROADMAP.md` for current sequencing, gates, and implementation authorization;
 - verified `main` and runtime evidence for the current product state.
 
-The current product remains an Activities-first, Telegram-first local meetup layer in Release Preparation and Stabilization. Services and Beauty do not override that release priority.
+The current product remains an Activities-first, Telegram-first local meetup layer in Release Preparation and Stabilization. Services, Beauty, and monetization do not override that release priority.
 
 ## Product structure
 
@@ -120,14 +120,12 @@ create or discover
 - Location;
 - Activity Status.
 
-### Current and future vertical status
-
-#### Current reference and fallback
+### Current reference and fallback
 
 - `Generic Activity` — fallback flow for activities without a dedicated vertical.
 - `Sport` — current reference vertical for specialized fields, Coach validation, recommendations, and trust support.
 
-#### Constitution-listed future verticals
+### Constitution-listed future verticals
 
 The current Constitution describes the following intended future verticals. Their presence in the long-term vision is not implementation authorization:
 
@@ -335,6 +333,96 @@ Platform-level success means:
 
 > A person had an intention, used GO IRL to coordinate it, and completed a real-life activity or appointment.
 
+## Offline Enabler monetization
+
+### Principle
+
+GO IRL may use a low-fee business model for people and organizations that create, organize, schedule, guide, teach, host, or otherwise make real-world participation happen.
+
+The common product category is:
+
+> `Offline Enabler` — a person or organization whose work converts online intent into a real activity, appointment, trip, lesson, training session, or other completed offline experience.
+
+This is an approved future monetization direction. It does not authorize pricing, billing, payments, subscriptions, provider onboarding, production configuration, or public commercial commitments.
+
+### Potential payer groups
+
+Potential Offline Enablers include:
+
+- beauty professionals and other service providers;
+- recurring or professional activity organizers;
+- tour operators and guides;
+- trainers, coaches, and instructors;
+- teachers, tutors, mentors, and workshop leaders;
+- studios, clubs, local communities, and small venues when they actively organize attendance;
+- wellness and personal-service professionals;
+- other future roles that reliably bring people into real-world participation.
+
+The category is based on product behavior, not job title. A payer should receive direct operational or commercial value from GO IRL.
+
+### User-side principle
+
+The recommended future default is:
+
+- participants and clients can discover, join, or book with minimal or no platform fee;
+- casual non-commercial organizers should not be forced into a professional plan merely for creating an occasional activity;
+- professional, recurring, or revenue-generating Offline Enablers may pay a small fee for operational capabilities.
+
+This recommendation requires validation and is not yet an approved pricing policy.
+
+### Value exchange
+
+A future fee must correspond to measurable value, such as:
+
+- public professional or organizer page;
+- scheduling and availability management;
+- appointment or participant management;
+- reminders and notifications;
+- secure cancellation and rescheduling;
+- repeat-event or repeat-client tools;
+- calendar integration;
+- attendance and completion analytics;
+- trust, verification, support, and moderation capabilities;
+- reduced manual coordination;
+- higher conversion from online interest to completed offline participation.
+
+GO IRL should not charge merely for visibility or create a pay-to-win ranking system.
+
+### Candidate models for validation
+
+Possible future models:
+
+1. low monthly subscription per active Offline Enabler;
+2. free basic tier with a low-cost professional tier;
+3. usage-based fee after a bounded number of completed appointments or activities;
+4. optional paid operational modules;
+5. transaction fee only if GO IRL later processes payments directly.
+
+No model or price is selected by this vision. Pricing must be tested against retention, provider value, support cost, local purchasing power, and legal and accounting requirements.
+
+### Monetization guardrails
+
+- Monetization must not increase passive screen time.
+- Ordinary participants must not become the primary payer merely for joining real life.
+- Payment must not buy public trust, ranking, reviews, or safety exceptions.
+- Free community activity must remain possible.
+- The platform must distinguish commercial professionals from casual community organizers.
+- Fees must be transparent and proportionate to delivered value.
+- Activities and Services may use different pricing mechanics because their value delivery and operating models differ.
+- No subscription, payment, or billing implementation may begin without a separate approved product, legal, finance, and technical task.
+
+### Validation requirements
+
+Before pricing is approved, GO IRL should verify:
+
+- which Offline Enablers receive repeat measurable value;
+- how much coordination time or operational cost is saved;
+- whether they earn revenue or achieve another important outcome through the platform;
+- willingness to pay after real usage, not only interview interest;
+- whether a subscription, usage fee, or optional module is easier to understand;
+- whether the model preserves free community participation;
+- support, tax, invoicing, refund, consumer-protection, and payment-provider implications.
+
 ## Delivery and sequencing
 
 The current canonical delivery sequence remains controlled by `ROADMAP.md`.
@@ -347,7 +435,14 @@ For Services:
 - BEAUTY004 may be a local or mock-data prototype only;
 - BEAUTY005 production pilot requires an explicit roadmap insertion, pilot acceptance criteria, and all protected-change approvals.
 
-No date or production priority for Services is authorized by this vision. Beauty work must not silently displace unresolved release blockers or the current Activities release gate.
+For monetization:
+
+- MONETIZATION001 records the approved direction only;
+- no pricing, plan, payment, subscription, tax, invoicing, or billing work is authorized;
+- a later validation track must prove repeat value and willingness to pay before commercial implementation;
+- any public price or production payment system requires separate Product Owner, legal, finance, security, and technical approval.
+
+No date or production priority for Services or monetization is authorized by this vision. This work must not silently displace unresolved release blockers or the current Activities release gate.
 
 ## Governance review findings
 
@@ -365,11 +460,12 @@ VISION002 is aligned with the current source-of-truth documents on:
 
 ### Governance conflicts requiring reconciliation
 
-VISION002 intentionally extends three current canonical boundaries:
+VISION002 intentionally extends current canonical boundaries:
 
 1. `docs/PRODUCT_PHILOSOPHY.md` says the main product question is what a person can do today "with other people" and defines Activity as the heart of the platform.
 2. `docs/GO_IRL_CONSTITUTION.md` defines Activity as the main entity and positions GO IRL as a platform for organizing offline activities.
 3. `docs/MARKET_POSITIONING.md` and `ROADMAP.md` currently position GO IRL as a Telegram-first local meetup layer and do not contain a Services delivery phase.
+4. The current roadmap treats payments, subscriptions, premium plans, and paid growth as gated future scope and contains no monetization phase.
 
 These are real governance differences, not wording-only differences.
 
@@ -380,15 +476,15 @@ Before VISION002 can become a source-of-truth document or be treated as fully re
 - Product Philosophy — broaden the main product question without weakening the anti-feed mission;
 - Constitution — define `Activities` and `Services` as separate top-level domains and clarify that Activity is the main entity of the Activities domain, not necessarily the entire future platform;
 - Market Positioning — preserve current release positioning while separating it from long-term platform positioning;
-- Roadmap — add a gated Services/Beauty track without changing current release priorities by implication.
+- Roadmap — add gated Services/Beauty and monetization tracks without changing current release priorities by implication.
 
 Until that reconciliation is reviewed and merged, VISION002 remains an approved future-direction draft and not canonical current product governance.
 
 ## Governance effect
 
-This document consolidates the intended future product structure after Product Owner approval of Beauty and Services terminology.
+This document consolidates the intended future product structure after Product Owner approval of Beauty, Services terminology, and the Offline Enabler monetization direction.
 
-It does not override current canonical governance, release gates, or runtime evidence. It does not authorize schema, SQL, migrations, RLS, authentication, secrets, provider credentials, production configuration, deployment, or production-data changes.
+It does not override current canonical governance, release gates, or runtime evidence. It does not authorize schema, SQL, migrations, RLS, authentication, secrets, provider credentials, production configuration, deployment, production-data changes, billing, subscriptions, prices, or public commercial commitments.
 
 ## Evidence ledger
 
@@ -401,3 +497,4 @@ GO IRL supports vertical experiences with separate UX, rules, recommendations, p
 Beauty is approved as a permanent future GO IRL vertical | GH:docs/decisions/2026-07-29-beauty-inclusion.md@de71be392f608fce9d2ebc9696c40a7eb76e9ec9 | Approved branch decision
 Services is the approved domain name; Booking is a process and Appointment is the resulting entity | GH:docs/decisions/2026-07-29-beauty-inclusion.md@de71be392f608fce9d2ebc9696c40a7eb76e9ec9 | Approved terminology decision
 Only Beauty is currently approved inside Services | USER:conversation-2026-07-29 | Current Product Owner decision scope
+GO IRL may later charge a small fee to professional or recurring Offline Enablers who receive repeat operational or commercial value | GH:docs/decisions/2026-07-29-offline-enabler-monetization.md@5421dac03e1c77d68fd7a57537e7036aaed26343 | Approved future monetization direction only
