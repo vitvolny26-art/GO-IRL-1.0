@@ -19,19 +19,8 @@ type Props = {
 };
 
 const copy: Record<Language, {
-  title: string;
-  hint: string;
-  publicProfile: string;
-  publicHint: string;
-  favorites: string;
-  favoritesHint: string;
-  preview: string;
-  hidden: string;
-  notice: string;
-  terms: string;
-  rights: string;
-  rightsUnavailable: string;
-  adult: string;
+  title: string; hint: string; publicProfile: string; publicHint: string; favorites: string; favoritesHint: string;
+  preview: string; hidden: string; notice: string; terms: string; rights: string; rightsUnavailable: string; adult: string;
 }> = {
   ru: { title: "Приватность и безопасность", hint: "Управляйте тем, что видно другим участникам.", publicProfile: "Публичный профиль", publicHint: "Имя, фото, город и короткое описание могут отображаться в событиях.", favorites: "Показывать избранные интересы", favoritesHint: "Личная цель и скрытые интересы никогда не публикуются.", preview: "Публичный предпросмотр", hidden: "Профиль скрыт", notice: "Уведомление о конфиденциальности", terms: "Условия использования", rights: "Запросы по данным", rightsUnavailable: "Запрос доступа, исправления или удаления будет подключён после запуска support backend.", adult: "GO IRL предназначен для пользователей 18+. Возраст указывается пользователем самостоятельно и не считается проверенным." },
   uk: { title: "Приватність і безпека", hint: "Керуйте тим, що бачать інші учасники.", publicProfile: "Публічний профіль", publicHint: "Ім’я, фото, місто та короткий опис можуть відображатися у подіях.", favorites: "Показувати улюблені інтереси", favoritesHint: "Приватна мета та приховані інтереси ніколи не публікуються.", preview: "Публічний перегляд", hidden: "Профіль приховано", notice: "Повідомлення про конфіденційність", terms: "Умови використання", rights: "Запити щодо даних", rightsUnavailable: "Запити доступу, виправлення або видалення буде підключено після запуску support backend.", adult: "GO IRL призначений для користувачів 18+. Вік вказується користувачем самостійно і не вважається перевіреним." },
@@ -46,32 +35,10 @@ export function ProfilePrivacyCenter({ language, snapshot, saving, onChange }: P
   return (
     <section className="profile-privacy-center" aria-labelledby="profile-privacy-title">
       <header><h2 id="profile-privacy-title">{labels.title}</h2><p>{labels.hint}</p></header>
-      <label className="profile-privacy-toggle">
-        <span>{snapshot.isPublic ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}</span>
-        <span><strong>{labels.publicProfile}</strong><small>{labels.publicHint}</small></span>
-        <input type="checkbox" checked={snapshot.isPublic} disabled={saving} onChange={(event) => onChange({ isPublic: event.target.checked, showFavorites: snapshot.showFavorites })} />
-      </label>
-      <label className="profile-privacy-toggle">
-        <span><ShieldCheck aria-hidden="true" /></span>
-        <span><strong>{labels.favorites}</strong><small>{labels.favoritesHint}</small></span>
-        <input type="checkbox" checked={snapshot.showFavorites} disabled={saving || !snapshot.isPublic} onChange={(event) => onChange({ isPublic: snapshot.isPublic, showFavorites: event.target.checked })} />
-      </label>
-      <section className="profile-public-preview" aria-label={labels.preview}>
-        <h3>{labels.preview}</h3>
-        {snapshot.isPublic ? (
-          <div>
-            <span className="profile-public-preview-avatar">{isImageAvatar(snapshot.avatar) ? <img src={snapshot.avatar} alt="" /> : snapshot.avatar}</span>
-            <strong>{snapshot.displayName}</strong>
-            <small>{snapshot.cityLabel}</small>
-            <p>{snapshot.bio}</p>
-            {snapshot.showFavorites && snapshot.favoriteLabels.length > 0 ? <div className="profile-interest-list">{snapshot.favoriteLabels.map((label) => <span key={label}>{label}</span>)}</div> : null}
-          </div>
-        ) : <p>{labels.hidden}</p>}
-      </section>
-      <div className="profile-privacy-links">
-        <a href="/privacy" target="_blank" rel="noreferrer"><FileText aria-hidden="true" />{labels.notice}</a>
-        <a href="/terms" target="_blank" rel="noreferrer"><FileText aria-hidden="true" />{labels.terms}</a>
-      </div>
+      <label className="profile-privacy-toggle"><span>{snapshot.isPublic ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}</span><span><strong>{labels.publicProfile}</strong><small>{labels.publicHint}</small></span><input type="checkbox" checked={snapshot.isPublic} disabled={saving} onChange={(event) => onChange({ isPublic: event.target.checked, showFavorites: snapshot.showFavorites })} /></label>
+      <label className="profile-privacy-toggle"><span><ShieldCheck aria-hidden="true" /></span><span><strong>{labels.favorites}</strong><small>{labels.favoritesHint}</small></span><input type="checkbox" checked={snapshot.showFavorites} disabled={saving || !snapshot.isPublic} onChange={(event) => onChange({ isPublic: snapshot.isPublic, showFavorites: event.target.checked })} /></label>
+      <section className="profile-public-preview" aria-label={labels.preview}><h3>{labels.preview}</h3>{snapshot.isPublic ? <div><span className="profile-public-preview-avatar">{isImageAvatar(snapshot.avatar) ? <img src={snapshot.avatar} alt="" /> : snapshot.avatar}</span><strong>{snapshot.displayName}</strong><small>{snapshot.cityLabel}</small><p>{snapshot.bio}</p>{snapshot.showFavorites && snapshot.favoriteLabels.length > 0 ? <div className="profile-interest-list">{snapshot.favoriteLabels.map((label) => <span key={label}>{label}</span>)}</div> : null}</div> : <p>{labels.hidden}</p>}</section>
+      <div className="profile-privacy-links"><a href="/privacy" target="_blank" rel="noreferrer"><FileText aria-hidden="true" />{labels.notice}</a><a href="/terms.html" target="_blank" rel="noreferrer"><FileText aria-hidden="true" />{labels.terms}</a></div>
       <section className="profile-rights-status"><h3>{labels.rights}</h3><p>{labels.rightsUnavailable}</p></section>
       <p className="profile-age-notice">{labels.adult}</p>
     </section>
