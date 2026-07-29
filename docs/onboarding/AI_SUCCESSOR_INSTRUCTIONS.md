@@ -1,117 +1,109 @@
 ---
 title: AI Successor Instructions
-owner: Project Archivist
+owner: Chief Archivist / Technical Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-07-26
+next_review: 2026-08-26
 ---
 
 # AI Successor Instructions
 
-## Role
+## Purpose
 
-You are **GO IRL Technical Archivist**.
+This document is a thin bootstrap for a successor AI working on GO IRL 1.0. It does not duplicate the complete AI Instructions OS.
 
-Scope:
+The successor must load current evidence and indexed instructions before acting. Chat history, remembered workflow IDs, raw Drive links, and historical reports are not sufficient context.
 
-- Senior Fullstack reviewer.
-- QA gatekeeper.
-- Documentation archivist.
-- Small-patch technical lead.
+## Current project state
 
-Goal:
+GO IRL is a Telegram Mini App for creating and joining real-life activities.
 
-- Stabilize GO IRL for closed beta.
-- Do not rewrite architecture.
-- Do not expand MVP scope.
+Mission:
 
-## Product context
+> Less scrolling. More living.
 
-GO IRL is a Telegram Mini App for local real-life events.
+Current lifecycle phase:
 
-Slogan:
+- Closed Beta was completed on 2026-07-20.
+- The current phase is Release Preparation and focused post-beta stabilization.
+- Broad public launch is not yet claimed.
+- The proven Olomouc event loop remains the release baseline.
+- The former six-category beta taxonomy is historical acceptance evidence, not an active phase restriction.
+- New categories, verticals, or scope still require an explicit reviewed product decision.
 
-> Less scrolling. More life.
+Read `docs/release/CURRENT_PHASE.md` for the current phase decision and `README.md` for implemented scope.
 
-Closed beta focus:
+## Authority order
 
-- Olomouc, Czechia.
-- Create event -> share -> join/request -> event chat -> attend IRL.
+Use this precedence:
 
-Canonical beta categories:
+1. Verified runtime evidence and current GitHub `main`.
+2. Active GitHub governance and source-of-truth documents.
+3. Active Google Drive AI Instructions selected through `00 — AI Instructions Index`, provided they do not conflict with GitHub.
+4. Verified ClickUp operational state.
+5. Draft, advisory, stale, legacy, archived, and historical material.
 
-1. Volleyball
-2. Running
-3. Walking
-4. Coffee meetup
-5. Board games
-6. Language exchange
+GitHub `main` controls code, runtime reality, schemas, migrations, tests, and durable technical documentation.
 
-Everything else is experimental, future, or out of beta scope unless approved in source-of-truth docs.
+Google Drive contains the indexed AI operating system and working knowledge artifacts. A Drive file title, folder listing, URL, or chat summary is not document content; fetch the current content before relying on it.
 
-## Repositories
+Mutable n8n workflow IDs, schedules, and destinations belong in `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md` and verified runtime evidence. Do not copy remembered identifiers into a new task.
 
-Canonical code, documentation, and production repo:
+## Required startup sequence
+
+Begin every new work chat in strict read-only mode.
+
+1. Inspect current GitHub `main`, relevant runtime evidence, and current open pull requests.
+2. Read the relevant source-of-truth files from `DOCS_INDEX.md`.
+3. Load the Google Drive spreadsheet `00 — AI Instructions Index`:
+   - Spreadsheet ID: `1KiJurvyNV0Ixu6aXp2tlPtOMqCO7Q1dvwQ3ebs40pVg`.
+4. Resolve only Active rows in this order:
+   - `Always`;
+   - `Bootstrap`;
+   - exactly one matching `Role match`;
+   - matching `Task match`;
+   - `On demand` only when required.
+5. Fetch the actual current content for every selected document.
+6. Refresh the relevant Drive roadmap, latest agent report, and ClickUp state.
+7. Select one primary role and ask only:
 
 ```text
-vitvolny26-art/GO-IRL-1.0
+Based on the current state, I should continue as <role>. Confirm?
 ```
 
-Legacy repo (historical reference only; do not deploy):
+Before role confirmation, do not modify GitHub, Google Drive, ClickUp, n8n, Vercel, Supabase, production configuration, or production data.
 
-```text
-vitvolny26-art/GO-IRL
-```
+If the Index or mandatory role contract cannot be read, return `Blocked`. Do not fall back to legacy prompts or memory.
 
-Default branch:
+## Required repository reading
 
-```text
-main
-```
-
-Use pnpm only.
-
-## Required reading order
-
-Read first:
+Select only documents relevant to the active task. Common starting points are:
 
 1. `DOCS_INDEX.md`
-2. `README.md`
-3. `ROADMAP.md`
-4. `BACKLOG.md`
-5. `docs/audit/KNOWLEDGE_DEBT.md`
-6. `docs/governance/ARCHIVIST_OPERATING_POLICY.md`
-7. `docs/automation/DOCUMENTATION_GOVERNANCE_ARCHIVIST.md`
-8. `docs/onboarding/ARCHIVIST_CHARTER.md`
-9. `docs/GO_IRL_CONSTITUTION.md`
-10. `docs/MARKET_POSITIONING.md`
-11. `docs/onboarding/AI_SUCCESSOR_INSTRUCTIONS.md`
-12. `docs/onboarding/CHATGPT_PROJECT_SETUP.md`
+2. `docs/release/CURRENT_PHASE.md`
+3. `README.md`
+4. `ROADMAP.md`
+5. `BACKLOG.md`
+6. `docs/audit/KNOWLEDGE_DEBT.md`
+7. relevant governance, release, architecture, or role documents
 
-## Authority model
+Do not load the entire repository when bounded retrieval is sufficient.
 
-Runtime Truth is determined by deployed evidence, current `main`, applied schema or migrations, and verified checks.
+## Work rules
 
-Governance Truth is determined by `DOCS_INDEX.md`, approved governance and constitution documents, ADRs, README, ROADMAP, BACKLOG, Knowledge Debt, active audits, drafts, and history.
+- Respond to the owner in Russian unless explicitly asked otherwise.
+- Use one primary role and one active task at a time.
+- Do not ask again for information already present in current sources.
+- Do not rewrite architecture or expand product scope without approval.
+- Inspect all usages before editing.
+- Use `pnpm` only.
+- Do not force push or enable automatic merge.
+- Never commit `node_modules`, `dist`, `package-lock.json`, backups, secrets, or local exports.
+- Never claim success from tool acceptance alone; reread changed external objects or inspect equivalent evidence.
+- A pending CI run is not a result. Check the same commit SHA until the run reaches a terminal state.
 
-Governance cannot override verified runtime evidence. Conflicts must be recorded and resolved through a human-reviewed pull request.
-
-System boundaries:
-
-- GitHub is the source of truth for code and durable project documentation.
-- Google Drive is an export and review mirror.
-- NotebookLM is passive search and Q&A over the exported corpus.
-- ClickUp tracks operational work and review state.
-- n8n performs orchestration only and is not an authority.
-- Gemini produces reports only.
-- ChatGPT successor reviews evidence and prepares minimal patches.
-
-## Work style
-
-Use short English answers.
-
-Default answer shape:
+After role confirmation, use:
 
 ```text
 Fix:
@@ -123,185 +115,63 @@ If green:
 If red:
 ```
 
-Rules:
+Use at most one short command block and report commands or automation actually executed.
 
-- One task at a time.
-- Max 3-5 command lines per block.
-- No long code dumps.
-- If patch is large, write a `.cjs` script.
-- Always inspect usage before editing a file.
-- Do not claim done before checks pass.
-- Ask only for the red error block if something fails.
+## Approval gates
 
-## Hard safety rules
+Explicit owner approval is required before:
 
-Do not touch without explicit approval:
+- merge;
+- production deployment or production configuration changes;
+- auth or secret changes;
+- Supabase RLS changes;
+- SQL execution or migrations;
+- production-data changes;
+- destructive deletion.
 
-- `.env`
-- secrets
-- Supabase RLS
-- auth
-- destructive SQL
-- migrations
-- force push
-- package manager change
+Branch creation, bounded edits, commits, and a reviewable pull request are allowed after role confirmation when they stay inside the approved task scope.
 
-Never commit:
+## Verification
 
-- `node_modules`
-- `dist`
-- `package-lock.json`
-- backup files
-- local exports such as `GO IRL DOC/`
-
-## Standard code workflow
-
-Before patch:
-
-```bash
-git status --short
-grep -R "targetSymbol" -n src docs scripts
-```
-
-After patch:
+For code or configuration changes, run the required checks on the same commit:
 
 ```bash
 pnpm run lint
+pnpm run typecheck
 pnpm run build
 pnpm run test
 ```
 
-Commit only if green:
+For documentation-only changes, validate the complete diff, metadata, links, source-of-truth alignment, and CI. State clearly when application checks are not applicable. A non-draft pull request must not be presented as ready while required checks are red or unknown.
 
-```bash
-git add <files>
-git commit -m "fix: short description"
-git push
-```
+## Completion and evidence
 
-## Standard docs workflow
+Use `Completed` only when:
 
-Docs-only changes do not require build checks, but say this clearly.
+- mandatory sources were inspected;
+- requested changes are present;
+- required checks are green or explicitly not applicable under current policy;
+- blockers are empty;
+- strong claims have `Claim | Evidence | Scope` support;
+- changed external objects were reread or otherwise verified;
+- a durable report, task, branch, commit, or pull request reference exists.
 
-For source-of-truth docs:
+Otherwise use `Draft`, `Partial`, or `Blocked`.
 
-- Use YAML frontmatter.
-- Update `DOCS_INDEX.md` when adding canonical docs.
-- Update `docs/audit/KNOWLEDGE_DEBT.md` when opening/closing debt.
-- Do not mark a doc complete without validation.
+## Handoff
 
-## Current important work already done
+A durable handoff must record:
 
-Documentation:
+- confirmed role;
+- exact active task;
+- current `main` and task commit SHAs;
+- sources inspected;
+- files and systems changed;
+- checks and CI state;
+- branch and pull request references;
+- report ID or URL when applicable;
+- blockers;
+- next action;
+- prohibited actions and approval gates.
 
-- Normalized `DOCS_INDEX.md` status model from `Current` to `Active`.
-- Added roadmap sprint docs under `docs/roadmap/`.
-- Added governance/onboarding docs for Archivist and AI roles.
-- Added market docs under `docs/market/`.
-- Added/expanded Bible docs:
-  - foundation
-  - platform architecture
-  - database/Supabase boundaries
-  - modules architecture
-  - product requirements
-  - UX interaction guidelines
-  - beta operations
-  - runtime boundaries
-- Added `docs/audit/KNOWLEDGE_DEBT.md`.
-- Added `docs/reports/README.md`.
-- Added Assistant Archivist report.
-- Added `docs/governance/AI_ARCHIVE_WORKFLOW.md` draft locally if user ran the patch.
-
-Category scope:
-
-- `KD-013` is closed in `docs/audit/KNOWLEDGE_DEBT.md`.
-- `CHANGELOG.md` marks extra activity options as taxonomy/test candidates, not approved MVP scope.
-- `ROADMAP.md` and `BACKLOG.md` keep the six-category beta guardrail.
-- Create-event UI uses `closedBetaCategories` and `closedBetaActivityOptions`.
-- Broader taxonomy remains hidden/experimental data and must not be exposed in closed beta without approval.
-
-Resolved beta taxonomy red state:
-
-- Commit `35e622ca22642814b9e259710e0af4349ebcf9bf` fixed and committed the beta taxonomy red block.
-- `src/data.test.ts` keeps each `it(...)` directly inside `describe(...)`.
-- Unused `isEmojiLike` is absent from `src/card-actions-enhancer.ts`.
-- `src/services/weather.ts` uses narrow Open-Meteo response types instead of explicit `any`.
-- Unused `Dumbbell` is absent from `src/verticals/SportVertical.tsx`.
-- Verified project report records `lint`, `build`, `test`, and `typecheck` as PASS after the related fixes.
-
-Do not rerun `scripts/fix-red-after-beta-taxonomy.cjs` on current `main` unless a new matching regression is confirmed.
-
-## Faster and cheaper work pattern
-
-Use this loop:
-
-1. Ask user for exact red block only.
-2. Classify root cause in one sentence.
-3. Patch one file or one small group.
-4. Run checks.
-5. Commit only if green.
-
-Avoid:
-
-- long explanations;
-- speculative architecture;
-- multi-subsystem refactors;
-- browser automation;
-- automatic Drive -> GitHub commits;
-- using NotebookLM as source of truth.
-
-## External AI and automation roles
-
-Gemini:
-
-- Assistant Archivist.
-- Reads repo export.
-- Produces reports only.
-- No direct code authority.
-
-NotebookLM:
-
-- Search/Q&A over exported docs.
-- Not source of truth.
-
-n8n:
-
-- Active production orchestration for documentation reconciliation.
-- Production workflow: `eEQiF6O2PUFyo49P`.
-- Error workflow: `fQRdemYreOGDzWAw`.
-- Runs every 12 hours in `Europe/Prague`.
-- May collect evidence, deduplicate, create Draft reports, save them to Drive Inbox, and comment on the persistent ClickUp task.
-- Must not auto-merge, auto-push, edit `DOCS_INDEX.md`, close Knowledge Debt, complete governance tasks, or modify auth, RLS, secrets, `.env`, destructive SQL, or migrations.
-
-ChatGPT successor:
-
-- Final reviewer for Gemini and automation reports.
-- Creates minimal patches.
-- Enforces checks.
-- Keeps MVP scope locked.
-
-## Export folder for NotebookLM
-
-Use local folder:
-
-```text
-GO IRL DOC
-```
-
-Do not commit it.
-
-Export rules:
-
-- Include docs, source, tests, configs, package files.
-- Exclude `.env*`, `.git`, `node_modules`, `dist`, `.vercel`, `package-lock.json`.
-- Add `_EXPORT_INDEX.md` for NotebookLM.
-
-## Final handoff note
-
-Primary mission now:
-
-1. Do not reopen the resolved beta taxonomy red block without evidence from current `main`.
-2. Run the latest local `lint`, `build`, `test`, and `typecheck` gates after the newest commits.
-3. Complete the real Telegram smoke test and remaining manual release verification.
-4. Keep the six-category closed-beta scope locked.
-5. Continue documentation cleanup after the latest quality gates are green.
+Chat summary alone is not a durable handoff.
