@@ -1,7 +1,7 @@
 ---
 title: UProfile004-009 Combined Profile Slice
 owner: Chief Archivist / Technical Lead
-status: Draft
+status: Ready for Review
 source_of_truth: false
 last_review: 2026-07-29
 next_review: 2026-08-05
@@ -52,10 +52,13 @@ Combine the safe, non-migration parts of UProfile004 through UProfile009 into on
 
 ## Checks
 
-- GitHub Actions Test: PENDING on final exact head.
-- GitHub Actions Typecheck: PENDING on final exact head.
-- GitHub Actions Lint: PENDING on final exact head.
-- GitHub Actions Build: PENDING on final exact head.
+- GitHub Actions CI #1317: RED only because the existing ProfilePanel test expected three disabled neighbour sections; Privacy correctly increased the count to four.
+- Exact code head `ae83af099de9328d1281f81a9bf73f3590e30d7f`, GitHub Actions CI #1318:
+  - Test: PASS — 120 files, 570 tests.
+  - Typecheck: PASS.
+  - Lint: PASS.
+  - Build: PASS.
+- Final docs-only head requires one confirming GitHub Actions run.
 - Production deployment: NOT RUN.
 
 ## Risks
@@ -75,4 +78,4 @@ Combine the safe, non-migration parts of UProfile004 through UProfile009 into on
 
 ## Next step
 
-Run GitHub Actions on the exact head, fix only exact red blocks, update this report with final evidence, then request separate production merge approval.
+Confirm the final docs-only head with GitHub Actions, complete PR review, and request separate production merge approval. Merge only with squash.
