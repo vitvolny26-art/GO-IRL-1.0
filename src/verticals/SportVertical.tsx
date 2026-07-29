@@ -475,7 +475,7 @@ export function SportActivitySheet({
           <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
         </div>
         <div className="detail-list sport-detail-list" style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
-          <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
+          <div className="sport-date-row"><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
           <button className="detail-members-toggle sport-detail-members-row" style={{ gridColumn: "auto", borderTop: 0 }} onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
             <UsersRound />
             <span>{t.participants}</span>
@@ -488,14 +488,13 @@ export function SportActivitySheet({
               <strong className="weather-summary-lines">{weather ? weatherSummaryLines(weather) : weatherText}</strong>
             </button>
           ) : <div aria-hidden="true" />}
-          <div style={{ gridColumn: "1 / -1" }}><CircleUserRound /><span>{t.organizer}</span><strong>{activity.organizer}</strong></div>
           {meta.format && <div><ShieldCheck /><span>{t.sportFormat}</span><strong>{sportFormatLabel(meta.format, language)}</strong></div>}
           {activity.price > 0 && <div><Ticket /><span>{t.price}</span><strong>{activity.price} Kč</strong></div>}
           {meta.equipmentNeeded && <div><ShieldCheck /><span>{t.sportEquipmentNeeded}</span><strong>{t.yes}</strong></div>}
           {meta.equipment && <div><Sparkles /><span>{t.sportEquipment}</span><strong>{meta.equipment}</strong></div>}
-          {meta.bring && <div><Sparkles /><span>{t.sportBring}</span><strong>{meta.bring}</strong></div>}
+          {meta.bring && <div className="sport-bring-row"><Sparkles /><span>{t.sportBring}</span><strong>{meta.bring}</strong></div>}
           {meta.requirements && <div><ShieldCheck /><span>{t.sportRequirements}</span><strong>{meta.requirements}</strong></div>}
-          {meta.organizerTips && <div><CircleUserRound /><span>{t.sportOrganizerTips}</span><strong>{meta.organizerTips}</strong></div>}
+          {meta.organizerTips && <div className="sport-organizer-tips-row"><CircleUserRound /><span>{t.sportOrganizerTips}</span><strong>{meta.organizerTips}</strong></div>}
         </div>
         {showWeather && weatherDetailsOpen && weatherHours.length > 0 && (
           <section className="weather-detail-card" aria-label={t.weatherDetails}>
