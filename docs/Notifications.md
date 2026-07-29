@@ -1,109 +1,151 @@
-# Notifications and Evening Digest
+# Notifications and Messaging Delivery
 
-GO IRL notifications must be server-side. The Telegram Mini App must not stay alive in the background for notifications.
+GO IRL notifications are server-side. The Telegram Mini App must not stay alive in the background, hold provider credentials, or run notification workers.
 
-## Notification Platform
+`ROADMAP.md` remains the canonical product roadmap. Detailed Com-Rev sequencing and verification gates are maintained in `docs/roadmap/COM_REV_IMPLEMENTATION_ROADMAP.md`. Current GitHub `main` and verified runtime readback override historical status statements in this document.
 
-All notification channels are backend/n8n driven.
+## Current bounded status
 
-Supported/planned channels:
+The messaging and reminders platform is substantially implemented, but the overall Com-Rev track remains **Partial** until current production deployment and end-to-end Telegram binding are proven.
 
-- Telegram: primary MVP channel.
-- Email: later transactional/digest channel.
-- WhatsApp: future channel, only after compliance and opt-in review.
-- Push: future Android/iOS/web channel, not part of the current Mini App.
+Recorded implemented capabilities include:
 
-The frontend must not hold service credentials or run background notification workers.
+- server-side reminder processing;
+- protected reminder storage;
+- transactional outbox delivery for event lifecycle messages;
+- retry and idempotency controls;
+- per-channel opt-in, opt-out, and suppression behavior;
+- delivery monitoring and structured status;
+- organizer approval and participant decision messages;
+- event update and cancellation messages;
+- calendar, map, and event-open actions in supported outbound messages.
 
-## User Preferences
+Recorded channel state at the inspected completion checkpoint:
 
-Preferences live in `notification_preferences`:
+- Telegram: reported production-green;
+- Facebook Messenger: reported production-green;
+- Instagram Direct: functionally advanced but disabled behind a credential-rotation and security gate;
+- WhatsApp: webhook and adapter work recorded, but production outbound disabled pending Meta business verification, production number registration, and template approval.
 
-- city
-- language
-- interests
-- preferred days
-- preferred time window
-- maximum price
-- radius or district
-- evening digest opt-in
-- quiet hours
-- notification channel:
-  - Telegram
-  - email
-  - later: push
-  - later: Viber
-  - later: WhatsApp
+These channel claims require fresh smoke evidence before being presented as current production status.
 
-Quiet hours should be enabled by default when notification preferences are created.
+## Delivery architecture
 
-## Evening Digest Pipeline
+A domain event or reminder creates durable delivery work before provider delivery. A worker claims eligible records, sends through the selected provider, applies retry policy, and persists the result. Idempotency prevents repeated worker execution from producing duplicate user messages.
 
-1. n8n runs in the evening.
-2. Select users with `evening_digest_enabled = true`.
-3. Respect quiet hours.
-4. Respect working hours and never send late-night digest batches.
-5. Load user city, language, interests, price limit, preferred days/time.
-6. Select matching published `events`.
-7. Exclude expired, completed, cancelled, private, and already sent events.
-8. Exclude events already sent using `notification_digest_log`.
-9. Rank events by relevance, freshness, source trust, free spots, and interest match.
-10. Render a short digest in the user's language.
-11. Send through the selected channel.
-12. Save result in `notification_digest_log`.
+The frontend must not:
 
-## Duplicate Send Prevention
+- store service credentials;
+- send provider messages directly;
+- run background notification workers;
+- treat Mini App lifetime as a scheduler.
 
-Use:
+## Event lifecycle coverage
 
-- `notification_digest_log.user_id`
-- `digest_date`
-- `channel`
-- `event_ids`
+Recorded delivery coverage includes:
 
-Do not send the same event repeatedly to the same user in the same digest window.
+- join confirmation;
+- pending request state;
+- waitlist state;
+- request approval;
+- request rejection;
+- event changes;
+- event cancellation;
+- reminders before event start.
 
-## Privacy Rules
+Delivery must preserve recipients needed for cancellation or lifecycle messages before destructive event changes.
 
-- Digest is opt-in.
-- Digest must not expose private user data.
-- Delivery logs should be retained for a limited period.
-- Disable all notifications with one preference update.
-- No sensitive event participant data in notification content.
-- AI digest ranking uses anonymized interests, not Telegram IDs, emails, phones, or private profiles.
-- n8n should store only delivery status and event IDs needed to prevent duplicate sends.
-- The Mini App is not a background notification worker.
+## Consent and suppression
 
-## Activity Chat Notifications
+- Delivery is opt-in where required by channel and product rules.
+- Users must be able to disable notifications through one bounded preference change.
+- STOP/СТОП suppression behavior must prevent unwanted Meta-channel responses.
+- Quiet-hours and working-hours behavior must be stated only where current runtime evidence exists.
+- Private participant data and sensitive message content must not be copied into delivery logs or reports.
+- Provider identifiers and credentials must remain server-side.
 
-Activity Chat notifications are future server-side notifications for optional Activity Chat.
+## Event-bound Telegram chat
 
-Rules:
+Com-Rev027 introduced a short-lived, single-use binding handshake for associating a GO IRL event with a Telegram group or supergroup.
 
-- Send only to organizer and confirmed participants who are active chat members.
-- Do not notify guests, pending users, rejected users, blocked users, or users who left the chat.
-- Allow users to mute or disable chat notifications.
-- Respect quiet hours and working hours.
-- Do not send chat notifications at night.
-- Do not send chat notifications after the Activity ends if the chat is archived.
-- Stop all chat notifications after `activity_chats.status = archived`.
-- Do not include sensitive chat content in notification logs.
+The intended flow is:
 
-## Source Safety
+1. organizer requests a binding;
+2. server validates the GO IRL identity and organizer ownership;
+3. server returns a Telegram `startgroup` link backed by a hashed, expiring token;
+4. Telegram sends a webhook when the bot is added;
+5. server validates the webhook secret, token, requester identity, chat type, organizer admin status, and bot permissions;
+6. bot creates an invite link;
+7. chat metadata and invite URL are persisted against the event;
+8. the token is consumed;
+9. the Mini App reads back the server-side binding.
 
-Digest content comes from published events only.
+The code and CORS follow-up were merged, but complete current production E2E remains unverified. Required evidence includes preflight success, organizer request success, binding row creation, webhook processing, `consumed_at`, persisted chat metadata, invite link, and Mini App readback.
 
-Do not include events from:
+## Authorization rules
 
-- unreviewed `discovered_events`
-- private/restricted sources
-- unsafe Facebook scraping
-- personal-account browser automation
+Current verification must cover:
 
-## Not Implemented Now
+- organizer can create and read the binding;
+- confirmed participant can access the bound chat as intended;
+- pending, rejected, blocked, removed, and unrelated users are denied;
+- non-organizers cannot create or replace the binding;
+- expired and consumed tokens cannot be reused;
+- no authorization path depends on demo-only identity.
 
-- real Telegram bot sends
-- email delivery
-- Viber/WhatsApp delivery
-- push notifications
-- real digest ranking model
+## Reliability requirements
+
+- Repeated worker runs must not duplicate messages.
+- Empty queues must complete without false failures.
+- Retryable provider errors must follow the configured retry policy.
+- Permanent failures must remain visible to operators.
+- Webhook conflicts must remain non-destructive.
+- Monitoring must expose overdue and failed work without leaking credentials, provider payloads, or private message content.
+
+## Channel gates
+
+### Telegram and Messenger
+
+Retain production-green status only after current deployment and live smoke evidence support it.
+
+### Instagram Direct
+
+Keep disabled until:
+
+- exposed credentials are rotated through an explicitly approved process;
+- server-only token refresh is verified;
+- a short lifecycle smoke passes using fresh credentials;
+- the security gate is explicitly closed.
+
+### WhatsApp
+
+Keep production outbound disabled until:
+
+- Meta business verification is complete;
+- a production number is registered;
+- required templates are approved;
+- opt-in and the 24-hour messaging window are verified;
+- production outbound smoke passes.
+
+### Email, push, and other channels
+
+Email and push remain future channels unless separately implemented and verified. Viber and other provider references are planning input, not current implementation claims.
+
+## Evening digest
+
+Evening digest remains deferred unless separately approved and implemented. Its intended safety rules include opt-in, quiet hours, exclusion of private or expired events, duplicate prevention, bounded delivery logs, and no use of sensitive identifiers in ranking.
+
+No document should claim a real digest ranking model, current digest delivery, or broad n8n engagement automation without direct runtime evidence.
+
+## Completion boundary
+
+This notification and messaging track may be marked complete only when:
+
+- exact production commit is known;
+- required checks are green on the reviewed commit;
+- Telegram event-chat binding passes full E2E;
+- authorization and membership matrix passes;
+- lifecycle and reminder delivery remain idempotent and observable;
+- channel release gates are accurately stated;
+- Drive and ClickUp are synchronized from fresh readback;
+- no required production, secret, auth, RLS, SQL, migration, or destructive-data approval is bypassed.
