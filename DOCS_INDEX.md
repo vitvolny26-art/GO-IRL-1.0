@@ -72,7 +72,18 @@ next_review:
 |---|---|---|---|---|
 | `README.md` | Core / Code Scope | Active | Да | Must stay aligned with `RELEASE_NOTES.md` on Trusted Auth and release blockers. |
 | `DOCS_INDEX.md` | Registry | Active | Да | Must be updated after every doc move/status change. |
-| `ROADMAP.md` | Product Planning | Active | Да | Release Preparation is current; broad platform work remains future. Sprint structure is mirrored under `docs/roadmap/`. |
+| `ROADMAP.md` | Product Planning / Canonical Index | Active | Да | Short current-state index. Detailed scope is delegated to the five canonical roadmap parts and loaded selectively. |
+| `docs/roadmap/ROADMAP_PART_01_FOUNDATION_MVP.md` | Product Planning / Roadmap Part | Active | Да | Foundation, MVP, thesis, and product guardrails. Canonical index: `ROADMAP.md`. |
+| `docs/roadmap/ROADMAP_PART_02_RELEASE_PREPARATION.md` | Product Planning / Roadmap Part | Active | Да | Current Release Preparation and Stabilization scope. Canonical index: `ROADMAP.md`. |
+| `docs/roadmap/ROADMAP_PART_03_TELEGRAM_NOTIFICATIONS.md` | Product Planning / Roadmap Part | Active | Да | Gated Telegram and notifications scope. Canonical index: `ROADMAP.md`. |
+| `docs/roadmap/ROADMAP_PART_04_TRUST_MODULES.md` | Product Planning / Roadmap Part | Active | Да | Gated trust, attendance, modules, discovery, and Sport Coach scope. Canonical index: `ROADMAP.md`. |
+| `docs/roadmap/ROADMAP_PART_05_GROWTH_DECISION_GATES.md` | Product Planning / Roadmap Part | Active | Да | Gated production growth, decision gates, dependencies, and sprint traceability. Canonical index: `ROADMAP.md`. |
+| `docs/product-roadmap/PRODUCT_ROADMAP.md` | Drive Mirror / Selective Index | Active | Нет | Short index of the owner-designated Drive mirror. GitHub `ROADMAP.md` remains authoritative. |
+| `docs/product-roadmap/PRODUCT_ROADMAP_PART_01_AUTHORITY_FOUNDATION.md` | Drive Mirror / Roadmap Part | Active | Нет | Authority, executive state, guardrails, overview, and historical foundation. |
+| `docs/product-roadmap/PRODUCT_ROADMAP_PART_02_RELEASE_PREPARATION.md` | Drive Mirror / Roadmap Part | Active | Нет | Active Release Preparation and Stabilization mirror content. |
+| `docs/product-roadmap/PRODUCT_ROADMAP_PART_03_FUTURE_PHASES_GATES.md` | Drive Mirror / Roadmap Part | Active | Нет | Future phases and decision gates. |
+| `docs/product-roadmap/PRODUCT_ROADMAP_PART_04_REGISTERS_EVIDENCE.md` | Drive Mirror / Roadmap Part | Active | Нет | Registers, synchronization notes, conflicts, priorities, dependencies, evidence, and update rules. |
+| `docs/product-roadmap/PRODUCT_ROADMAP_PART_05_RMAP_MAINTENANCE.md` | Drive Mirror / Roadmap Part | Active | Нет | RMap maintenance records through RMap115. |
 | `BACKLOG.md` | Product Planning | Draft | Нет | Future items must remain tagged. |
 | `CHANGELOG.md` | Release History | Draft | Нет | Needs quality-gate verification before release claims. |
 | `docs/release/CURRENT_PHASE.md` | Release / Current Phase | Active | Да | Lifecycle-phase authority; must stay aligned with README, ROADMAP, and RELEASE_NOTES. |
@@ -105,6 +116,7 @@ next_review:
 | `docs/onboarding/AI_FIXER_AGENT.md` | Onboarding / AI Agent Prompt | Active | Да | Source of truth for small bug, QA, and UX polish agent behavior and safety limits. |
 | `docs/reports/README.md` | Reports / AI Work Logs | Active | Нет | Defines report location and format for AI Fixer task reports. |
 | `docs/reports/2026-07-16-agent-report-archivist-finalization.md` | Reports / Agent Work Log | Draft | Нет | Durable record of the Archivist governance rollout; not runtime or governance authority. |
+| `docs/reports/2026-07-29-agent-report-roadmap-selective-retrieval.md` | Reports / Agent Work Log | Draft | Нет | Bounded evidence record for roadmap chunking and the unpublished selective-retrieval n8n draft. |
 | `docs/governance/AI_ORGANIZATION.md` | Governance / AI Councils | Draft | Да | Working source for AI councils, role assignment commands, escalation, and Coordinator interaction. |
 | `docs/governance/KNOWLEDGE_PLATFORM.md` | Governance / Knowledge Platform | Active | Да | Source of truth for Knowledge Status Model, metadata, Knowledge Debt, KPIs, reviews, and Project Memory Bus. |
 | `docs/governance/ARCHIVIST_OPERATING_POLICY.md` | Governance / Archivist Policy | Active | Да | Canonical authority, lifecycle, human-gate, and automation-boundary rules. |
@@ -168,8 +180,11 @@ Preferred Documentation 2.0 structure:
 
 ```text
 docs/roadmap/
-├── ROADMAP.md
-├── BACKLOG.md
+├── ROADMAP_PART_01_FOUNDATION_MVP.md
+├── ROADMAP_PART_02_RELEASE_PREPARATION.md
+├── ROADMAP_PART_03_TELEGRAM_NOTIFICATIONS.md
+├── ROADMAP_PART_04_TRUST_MODULES.md
+├── ROADMAP_PART_05_GROWTH_DECISION_GATES.md
 ├── SPRINTS.md
 ├── SPRINT_0.md
 ├── SPRINT_1.md
@@ -181,7 +196,8 @@ docs/roadmap/
 
 Rules:
 
-- `ROADMAP.md` remains the living roadmap.
+- Root `ROADMAP.md` remains the living canonical index and current-state summary.
+- The five `ROADMAP_PART_*` files hold canonical detailed scope and are loaded selectively by mission.
 - `BACKLOG.md` remains the controlled work queue.
 - Sprint 0-5 files become historical execution records and decision logs.
 - Root `SPRINT0_STATUS.md` stays deprecated until links are checked and migration is complete.
@@ -244,12 +260,18 @@ GO IRL Documentation
 ├── Reports
 │   └── docs/reports/
 │       ├── README.md
-│       └── 2026-07-16-agent-report-archivist-finalization.md
+│       ├── 2026-07-16-agent-report-archivist-finalization.md
+│       └── 2026-07-29-agent-report-roadmap-selective-retrieval.md
 ├── Roadmap / Sprints
 │   ├── ROADMAP.md
 │   ├── BACKLOG.md
 │   ├── SPRINTS.md
 │   └── docs/roadmap/
+│       ├── ROADMAP_PART_01_FOUNDATION_MVP.md
+│       ├── ROADMAP_PART_02_RELEASE_PREPARATION.md
+│       ├── ROADMAP_PART_03_TELEGRAM_NOTIFICATIONS.md
+│       ├── ROADMAP_PART_04_TRUST_MODULES.md
+│       ├── ROADMAP_PART_05_GROWTH_DECISION_GATES.md
 │       ├── SPRINTS.md
 │       ├── SPRINT_0.md
 │       ├── SPRINT_1.md
@@ -257,6 +279,13 @@ GO IRL Documentation
 │       ├── SPRINT_3.md
 │       ├── SPRINT_4.md
 │       └── SPRINT_5.md
+│   └── docs/product-roadmap/
+│       ├── PRODUCT_ROADMAP.md
+│       ├── PRODUCT_ROADMAP_PART_01_AUTHORITY_FOUNDATION.md
+│       ├── PRODUCT_ROADMAP_PART_02_RELEASE_PREPARATION.md
+│       ├── PRODUCT_ROADMAP_PART_03_FUTURE_PHASES_GATES.md
+│       ├── PRODUCT_ROADMAP_PART_04_REGISTERS_EVIDENCE.md
+│       └── PRODUCT_ROADMAP_PART_05_RMAP_MAINTENANCE.md
 └── Deprecated / Snapshot Candidates
     ├── SETUP.md
     ├── SETUP_RU.md

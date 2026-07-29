@@ -177,7 +177,9 @@ The build command runs `tsc -b` and then creates the production Vite bundle.
 - `docs/SPORT_COACH_MVP.md` - Sport Coach MVP 1.1 scope, beta metrics, roadmap, and Event Roles guardrails
 - `docs/COACH_CHAT_TRUST_LAYER.md` - trust layer concept for keeping role/helper support next to Activity Chat
 - `CHANGELOG.md` - shipped changes
-- `ROADMAP.md` - product and engineering direction
+- `ROADMAP.md` - canonical roadmap index and current-state summary
+- `docs/roadmap/ROADMAP_PART_*.md` - selectively loaded canonical roadmap details
+- `docs/product-roadmap/PRODUCT_ROADMAP.md` - selective index for the owner-designated Drive mirror
 - `docs/roadmap/SPRINTS.md` - sprint-by-sprint delivery plan
 - `docs/roadmap/SPRINT_0.md` - historical Sprint 0 record, not current deployment source of truth
 - `BACKLOG.md` - confirmed work queue
