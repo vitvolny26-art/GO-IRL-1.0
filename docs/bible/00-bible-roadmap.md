@@ -1,30 +1,55 @@
 ---
-title: GO IRL Bible Completion Roadmap
+title: GO IRL Bible Completion and Maintenance Roadmap
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+authority_scope: bible_structure_and_maintenance
+canonical_product_roadmap_document_id: 12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw
+last_review: 2026-07-26
+next_review: 2026-08-09
 ---
 
-# GO IRL Bible Completion Roadmap
+# GO IRL Bible Completion and Maintenance Roadmap
 
 ## Purpose
 
-This file defines how to finish and maintain the GO IRL Bible without rewriting it from scratch.
+This file defines how to maintain the GO IRL Bible without allowing preserved product vision to override the canonical Product Roadmap, current lifecycle phase, or verified implementation evidence.
 
-Current rule: preserve existing material, classify it, compare it with the actual MVP and market positioning, then complete only missing parts.
+The Bible preserves product philosophy, boundaries, requirements, architecture principles, UX rules, governance, and release doctrine.
 
-Market scope is controlled by:
+It does not independently authorize roadmap sequencing or implementation work.
 
-- `docs/MARKET_POSITIONING.md`
-- `docs/COMPETITOR_WATCH.md`
-- `docs/market/README.md`
-- `docs/market/CONTINUOUS_COMPETITOR_INTELLIGENCE.md`
+## Authority hierarchy
 
-These files prevent competitor-inspired or future-platform ideas from entering MVP scope without passing the beta guardrail.
+1. Verified runtime evidence and GitHub `main` control code, implementation state, tests, schemas, auth, RLS, migrations, deployment, and production configuration.
+2. The canonical Product Roadmap controls product sequencing, phase definitions, product gates, and authorization of future scope.
+3. `docs/release/CURRENT_PHASE.md` controls the current lifecycle-phase statement.
+4. Bible chapters define durable product principles and domain boundaries within those higher-authority constraints.
+5. Sprint 0–5 files preserve historical execution records and gated planning inputs; they do not authorize implementation by themselves.
+
+Canonical Product Roadmap:
+
+https://docs.google.com/document/d/12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw/edit
+
+Stable Document ID: `12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw`.
+
+Root GitHub `ROADMAP.md` is a delegating locator only.
+
+## Current project state
+
+Closed Beta completed on 2026-07-20.
+
+The current phase is:
+
+**Release Preparation and focused post-beta stabilization**.
+
+Broad public launch is not yet claimed.
+
+Bible references to closed beta remain valid as historical acceptance criteria and preserved MVP boundaries. They must not be read as the current lifecycle phase.
 
 ## Current Bible state
+
+The Bible is structurally complete for MVP 1.0 / MVP 1.1 boundaries and remains under active reconciliation.
 
 Confirmed active Bible files:
 
@@ -49,134 +74,106 @@ docs/bible/09-governance-and-ai-organization.md
 docs/bible/10-operations-and-release.md
 ```
 
-No current Bible 1.0 MVP boundary chapter is missing.
+No current Bible 1.0 boundary chapter is missing.
 
-## Completed target chapters
+## Roadmap-to-Bible mapping
 
-The former remaining target chapters are now created and registered:
+| Canonical roadmap area | Primary Bible support | Bible responsibility |
+|---|---|---|
+| Product thesis and guardrails | `01-foundation/*`, `03-mvp-scope-and-market-positioning.md` | Preserve the real-life meetup thesis, Olomouc evidence baseline, non-goals, and market filter. |
+| Foundation and MVP Core | `02-platform-architecture.md`, `05-product-requirements-mvp-split.md`, `06-ux-interaction-guidelines.md` | Define durable product and UX boundaries without claiming current implementation proof. |
+| Release Preparation and Stabilization | `07-beta-readiness-and-operations.md`, `08-runtime-boundaries.md`, `10-operations-and-release.md` | Define release discipline, runtime safety, smoke checks, and post-beta stabilization rules. |
+| Telegram and Notifications | `08-runtime-boundaries.md`, notification-related PRD classifications | Preserve Mini App constraints and keep advanced automation gated. |
+| Trust and Real Attendance | `05-product-requirements-mvp-split.md`, trust/reputation boundary material | Keep RLI, attendance, reviews, ratings, and public trust systems future until explicitly approved. |
+| Modules and Discovery | `04-modules-architecture.md`, `04-modules-mvp-audit.md` | Preserve modular architecture while preventing automatic scope expansion. |
+| Production Growth | `10-operations-and-release.md`, governance chapters | Define safety, moderation, analytics, support, and operational prerequisites. |
 
-```text
-docs/bible/09-governance-and-ai-organization.md
-docs/bible/10-operations-and-release.md
-```
+## Sprint-to-Bible mapping
 
-`03-database-design.md` is treated as replaced for current Bible 1.0 by:
+- Sprint 0 and Sprint 1 are historical records. Bible chapters preserve their durable lessons, not their old deployment evidence.
+- The active Release Preparation bridge is supported by Bible operations/runtime chapters and is not a replacement numbered sprint.
+- Sprint 2 maps to Telegram/runtime boundaries.
+- Sprint 3 maps to trust and attendance boundaries.
+- Sprint 4 maps to module architecture and market-positioning guardrails.
+- Sprint 5 maps to release operations, moderation, analytics, and public-safety doctrine.
 
-```text
-docs/bible/03-database-and-supabase-boundaries.md
-```
+The canonical detailed mapping is maintained in `docs/roadmap/SPRINTS.md`.
 
-## Completion strategy
+## Maintenance strategy
 
-### Step 1 — Preserve
+### 1. Preserve
 
-Status: done.
+Do not delete useful historical Bible content merely because the lifecycle phase changed.
 
-Existing useful Bible content must not be deleted blindly.
+### 2. Classify
 
-### Step 2 — Correct actual file state
+Every statement must be understood as one of:
 
-Status: done for current pass.
+- durable product principle;
+- current boundary;
+- historical beta criterion;
+- future vision;
+- verified implementation fact owned elsewhere.
 
-The completion audit separates confirmed files from missing/not-confirmed files.
+### 3. Reconcile
 
-### Step 3 — Complete Bible 1.0 target chapters
+Periodically compare Bible chapters against:
 
-Status: done for current pass.
-
-Completed chapters:
-
-1. `docs/bible/09-governance-and-ai-organization.md`
-2. `docs/bible/10-operations-and-release.md`
-
-### Step 4 — Maintain and reconcile
-
-Status: active.
-
-The Bible is now structurally complete for MVP 1.0 / MVP 1.1 beta boundaries, but it still needs periodic reconciliation against:
-
-- current code;
-- Supabase schema and migrations;
+- the canonical Drive Product Roadmap;
+- `docs/release/CURRENT_PHASE.md`;
 - `README.md`;
-- `ROADMAP.md`;
-- `BACKLOG.md`;
 - `RELEASE_NOTES.md`;
 - `DOCS_INDEX.md`;
+- current Supabase and runtime evidence;
+- `docs/roadmap/SPRINTS.md`;
 - Knowledge Debt.
 
-## Bible 1.0 target structure
+### 4. Do not overclaim
 
-```text
-docs/bible/
-├── 00-completion-audit.md
-├── 00-bible-roadmap.md
-├── 01-foundation/
-│   ├── 00-foundation-overview.md
-│   ├── 01-product-philosophy.md
-│   ├── 01-why-we-exist.md
-│   ├── 02-core-principles.md
-│   └── 03-mvp-scope-and-market-positioning.md
-├── 02-platform-architecture.md
-├── 03-database-and-supabase-boundaries.md
-├── 04-modules-architecture.md
-├── 04-modules-mvp-audit.md
-├── 05-product-requirements.md
-├── 05-product-requirements-mvp-split.md
-├── 06-ux-interaction-guidelines.md
-├── 07-beta-readiness-and-operations.md
-├── 08-runtime-boundaries.md
-├── 09-governance-and-ai-organization.md
-└── 10-operations-and-release.md
-```
+Bible chapters must not claim that a feature, migration, deployment, check, or production configuration is current merely because it exists in a preserved requirement or architecture section.
 
-## Naming decision
+## Durable Product Bible boundaries
 
-Use current-scope names for newly written Bible files.
+The Bible must continue to cover:
 
-Current replacement name:
+- GO IRL as a Telegram-first local meetup layer;
+- the create-share-join-chat-meet loop;
+- the proven Olomouc baseline;
+- historical six-category beta evidence;
+- Browser Demo Mode safety;
+- Telegram Mini App constraints;
+- trusted Telegram auth principles;
+- Supabase and RLS boundaries;
+- Sport Coach as a bounded validation track;
+- Activity Chat boundaries;
+- share and join behavior;
+- weather as a non-blocking helper;
+- QA and release gates;
+- AI roles and governance boundaries;
+- explicit MVP and platform non-goals.
 
-```text
-docs/bible/03-database-and-supabase-boundaries.md
-```
+## Future-only material
 
-instead of restoring future-only:
-
-```text
-docs/bible/03-database-design.md
-```
-
-Reason: current Bible 1.0 must describe actual Supabase boundaries, trusted auth, demo safety, and RLS constraints, not only future database vision.
-
-## Bible 1.0 must explicitly cover
-
-- GO IRL as Telegram-first local meetup layer.
-- Olomouc closed beta.
-- Six beta categories: Volleyball, Running, Walking, Coffee meetup, Board games, Language exchange.
-- Core event loop: create, share, join, chat, attend.
-- Browser Demo Mode.
-- Telegram Mini App constraints.
-- Trusted Telegram auth reality.
-- Supabase current schema boundary.
-- Sport Coach MVP 1.1.
-- Activity Chat boundaries.
-- Share / join boundaries.
-- Weather widget boundaries.
-- QA and release gates.
-- AI roles, councils, Archivist, and external AI tool boundaries.
-- What is not included in MVP.
-
-## Bible 1.1+ scope
-
-Future material must be clearly marked as future vision.
-
-Future-only topics include:
+The following remain future unless the canonical Product Roadmap explicitly authorizes them and required gates are proven:
 
 - universal Event Roles;
 - paid coach marketplace;
-- ticketing;
+- ticketing or payments;
 - subscriptions;
-- public ratings;
+- public ratings or leaderboards;
 - direct messages;
-- AI recommendations;
-- AI event discovery;
-- multi-city catalog.
+- public RLI or Trust Score;
+- AI recommendations or AI event discovery;
+- broad multi-city catalog;
+- Friends, Travel, or Dating verticals;
+- large-scale growth mechanics.
+
+## Synchronization rule
+
+When the canonical Product Roadmap changes:
+
+1. Update Bible chapters only if a durable principle, boundary, or doctrine changed.
+2. Do not duplicate the full roadmap inside the Bible.
+3. Update `docs/roadmap/SPRINTS.md` if phase-to-sprint interpretation changed.
+4. Preserve historical beta evidence and mark it as historical rather than rewriting it.
+5. Open Knowledge Debt when a contradiction cannot be safely resolved in the same change.

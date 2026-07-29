@@ -1,95 +1,147 @@
 ---
-title: Sprint Plan
+title: Sprint Records Index
 owner: Sprint Planner
-status: Draft
+status: Active
 source_of_truth: false
-last_review: 2026-07-09
+canonical_roadmap_document_id: 12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw
+last_review: 2026-07-26
 next_review: 2026-08-09
 ---
 
-# Sprint Plan
+# Sprint Records Index
 
-GO IRL is developed as a platform, not as a one-off Telegram Mini App. Every sprint should move the product closer to real offline meetings while keeping future Web, Android, and iOS clients in mind.
+This file maps retained Sprint 0–5 records to the canonical GO IRL Product Roadmap.
 
-## Sync note
+Canonical Product Roadmap:
 
-This file is the roadmap-folder copy of the historical root `SPRINTS.md` plan.
+https://docs.google.com/document/d/12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw/edit
 
-Use `ROADMAP.md`, `BACKLOG.md`, `DOCS_INDEX.md`, and `docs/governance/KNOWLEDGE_PLATFORM.md` before treating any sprint item as current MVP scope.
+Stable Document ID: `12VOnDP32ZmXKGWuytICZ06XUr5lOEmnt0gE4lERNKDw`.
 
-## Sprint 0 - Foundation
+## Authority rule
 
-Status: **Complete / Historical**
+- The Drive Product Roadmap controls sequencing, product gates, phase state, and authorization of future scope.
+- `docs/release/CURRENT_PHASE.md` controls the current lifecycle-phase statement.
+- Sprint files preserve historical execution context and gated planning inputs.
+- Sprint files do not authorize implementation by themselves.
+- GitHub `main` and verified runtime evidence remain authoritative for code, tests, schemas, auth, RLS, migrations, deployment, and production configuration.
 
-Goal: make the project safe to develop and release.
+## Current lifecycle state
 
-- GitHub repository connected.
-- Build and TypeScript checks pass.
-- Lint and tests are configured.
-- CI runs test, lint, and build.
-- Supabase schema and RLS are documented.
-- Deployment checklist exists.
-- No secrets are committed.
+Closed Beta completed on 2026-07-20.
 
-Completed:
+Current phase:
 
-- Latest `supabase/schema.sql` is applied in production Supabase.
-- Production RLS hides unrelated private activities.
-- Invite/startapp access to a specific private activity is verified.
-- GitHub Actions CI passes on `main`.
-- Netlify production URL responds successfully.
+**Release Preparation and focused post-beta stabilization**.
 
-Manual release smoke-test:
+Broad public launch is not yet claimed.
 
-- Run the final Telegram two-account flow before public announcement.
+## Roadmap-to-sprint mapping
 
-## Sprint 1 - MVP Core
+| Canonical roadmap section | Sprint record | Record status | Interpretation |
+|---|---|---|---|
+| Phase 0 — Foundation | `docs/roadmap/SPRINT_0.md` | Archived | Historical foundation evidence; not current release proof. |
+| Phase 1 — MVP Core | `docs/roadmap/SPRINT_1.md` | Archived | Historical core-loop scope that must be preserved and verified. |
+| Active bridge — Release Preparation and Stabilization | No numbered replacement sprint | Active in canonical Roadmap | Current work: stabilize core loop, infrastructure, Sport Coach, quality, and release operations. |
+| Phase 2 — Telegram and Notifications | `docs/roadmap/SPRINT_2.md` | Draft / Gated | May start only after Release Preparation exit criteria are green. |
+| Phase 3 — Trust and Real Attendance | `docs/roadmap/SPRINT_3.md` | Draft / Gated | Requires stable attendance evidence and explicit privacy/moderation approval. |
+| Phase 4 — Modules and Discovery | `docs/roadmap/SPRINT_4.md` | Draft / Gated | Requires Olomouc and Sport evidence plus explicit expansion approval. |
+| Phase 5 — Production Growth | `docs/roadmap/SPRINT_5.md` | Draft / Gated | Requires operational, moderation, analytics, and public-safety readiness. |
 
-Goal: make the main user journey feel clear, fast, and useful.
+## Sprint 0 — Foundation
 
-- Premium event cards that answer what, when, where, who, price, and join status.
-- Redesigned home screen around discovery and categories.
-- Activity creation in under 30 seconds.
-- Join/request flow in under 15 seconds.
-- Organizer edit and private request review.
-- Strong empty, loading, success, and error states.
+Status: **Complete / Historical**.
 
-## Sprint 2 - Telegram And Notifications
+Preserved outcome: safe development and release foundation.
 
-Goal: make the app feel native inside Telegram.
+Current caution: historical Netlify, CI, schema, or RLS notes are not current runtime evidence. Vercel and current approved Supabase verification procedures control present release decisions.
 
-- BotFather menu button and Mini App URL verified.
-- Telegram `startapp` share links verified.
-- n8n or backend-triggered Telegram notifications.
-- Organizer notification for private join requests.
-- Participant notification for approve/reject decisions.
-- Activity reminders before start time.
+## Sprint 1 — MVP Core
 
-## Sprint 3 - Trust, Verification, RLI
+Status: **Complete / Historical**.
 
-Goal: start building the platform's unique trust layer.
+Preserved product loop:
 
-- Attendance confirmation.
-- Organizer participant verification.
-- Participant-to-participant verification.
-- RLI history and basic profile reputation.
-- Achievements tied to real participation.
+```text
+create event -> share through Telegram -> participants join -> event chat -> people meet in real life
+```
 
-## Sprint 4 - Modules And Discovery
+Current responsibility: preserve and verify this loop during Release Preparation.
 
-Goal: evolve from a generic event list into a modular platform.
+## Active bridge — Release Preparation and Stabilization
 
-- Sport as the first strong module.
-- Module-specific cards, filters, and creation fields.
-- Activities, Nature, Parties, Creative, and Learning prepared as independent modules.
-- City expansion through configuration.
+Status: **Active**.
 
-## Sprint 5 - Production Growth
+This bridge is not renamed to Sprint 2. It sits between historical Sprint 1 and gated future Sprint 2.
 
-Goal: prepare for broader public usage.
+Primary workstreams:
 
-- Analytics for activation, joins, shares, and completed activities.
-- Reporting and moderation.
-- Abuse protection.
-- Referral loop.
-- Web parity with Telegram Mini App behavior.
+1. Core-loop stability.
+2. Infrastructure hardening.
+3. Sport Coach MVP 1.1 validation.
+4. Product quality and performance.
+5. Release operations and real Telegram smoke verification.
+
+Exit criteria are defined only in the canonical Drive Product Roadmap.
+
+## Sprint 2 — Telegram and Notifications
+
+Status: **Draft / Gated**.
+
+Allowed direction:
+
+- BotFather and Mini App URL verification;
+- Telegram `startapp` verification;
+- backend-triggered notifications;
+- private-request decision notifications;
+- reminders before activity start.
+
+Not authorized before the entry gate:
+
+- broad n8n engagement automation;
+- autonomous campaigns;
+- background Mini App polling;
+- production configuration changes without approval.
+
+## Sprint 3 — Trust and Real Attendance
+
+Status: **Draft / Gated**.
+
+Allowed direction after approval:
+
+- attendance confirmation;
+- bounded organizer verification;
+- reviewed trust signals based on real participation.
+
+Not authorized by the sprint record:
+
+- public Trust Score;
+- ratings or leaderboards;
+- token/reward mechanics;
+- geolocation attendance confirmation;
+- complex public reputation UI.
+
+## Sprint 4 — Modules and Discovery
+
+Status: **Draft / Gated**.
+
+Sport remains the reference vertical. New modules, categories, cities, or verticals require explicit reviewed product approval and evidence from the current loop.
+
+Friends, Travel, Dating, broad lifestyle expansion, and unvalidated AI recommendations remain outside authorized scope.
+
+## Sprint 5 — Production Growth
+
+Status: **Draft / Gated**.
+
+Production-growth work requires verified release operations, moderation, analytics, support, abuse protection, and public-safety readiness.
+
+Referral incentives, paid growth, large-scale city expansion, and analytics-driven growth loops remain unauthorized until reviewed.
+
+## Maintenance rule
+
+When the canonical Drive Product Roadmap changes:
+
+1. Update this mapping only when sprint interpretation changes.
+2. Do not rewrite historical evidence.
+3. Keep future sprint records Draft / Gated until their entry gates are proven.
+4. Record implementation and runtime facts in GitHub release/runtime sources, not in sprint planning records.
