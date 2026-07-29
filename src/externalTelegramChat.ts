@@ -2,6 +2,7 @@ import { getTelegramWebApp } from "./telegram";
 
 export type ExternalTelegramChatKind = "event" | "team";
 export type ExternalTelegramChatLifecycle = "active" | "locked" | "deletion_due" | "archived";
+export type ExternalTelegramChatVerificationState = "manual" | "verified";
 
 export type ExternalTelegramChatLink = {
   kind: ExternalTelegramChatKind;
@@ -9,6 +10,9 @@ export type ExternalTelegramChatLink = {
   attachedByUserKey: string;
   attachedAt: string;
   keepArchive?: boolean;
+  verificationState: ExternalTelegramChatVerificationState;
+  boundAt?: string;
+  telegramChatTitle?: string;
 };
 
 type ChatAccessInput = {
@@ -93,6 +97,9 @@ export const loadLocalEventTelegramChatLink = (activityId: string): ExternalTele
       attachedByUserKey: String(parsed.attachedByUserKey),
       attachedAt: String(parsed.attachedAt),
       keepArchive: Boolean(parsed.keepArchive),
+      verificationState: parsed.verificationState === "verified" ? "verified" : "manual",
+      boundAt: parsed.boundAt ? String(parsed.boundAt) : undefined,
+      telegramChatTitle: parsed.telegramChatTitle ? String(parsed.telegramChatTitle) : undefined,
     };
   } catch {
     return null;
@@ -111,6 +118,7 @@ export const saveLocalEventTelegramChatLink = (
     url,
     attachedByUserKey,
     attachedAt: new Date().toISOString(),
+    verificationState: "manual",
   };
   window.localStorage.setItem(eventStorageKey(activityId), JSON.stringify(link));
   return link;
