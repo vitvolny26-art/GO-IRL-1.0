@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type TouchEvent as ReactTouchEvent } from "react";
 import {
   ArrowLeft,
-  Send,
   BellDot,
   CalendarDays,
   CalendarPlus,
@@ -1727,7 +1726,7 @@ function CompletionBar({
     <div className="completion-bar post-save-actions" aria-label={t.createdSuccess}>
       <CardShareAction title={shareTitle} date={shareDate} address={activity.address} url={activityInviteUrl(activity)} label={t.share} onTelegramShare={() => sharePreparedTelegramEvent(activity, language)} />
       <button className="secondary" onClick={onCalendar} type="button"><CalendarPlus /><span>{t.addToGoogleCalendar}</span></button>
-      <button className="secondary post-save-telegram-action" onClick={onCloseMiniApp} type="button" aria-label={t.backToTelegram} title={t.backToTelegram}><ArrowLeft aria-hidden="true" /><Send aria-hidden="true" /></button>
+      <button className="secondary" onClick={onCloseMiniApp} type="button"><ArrowLeft /><span>{t.backToTelegram}</span></button>
     </div>
   );
 }
