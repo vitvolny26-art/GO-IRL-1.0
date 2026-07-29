@@ -256,6 +256,14 @@ function App() {
   };
 
   useEffect(() => {
+    if (!completionActivityId) return;
+    const activity = store.activities.find((item) => item.id === completionActivityId);
+    if (!activity || selected?.id === activity.id) return;
+    store.setView("home");
+    openActivity(activity);
+  }, [completionActivityId, selected?.id, store.activities]);
+
+  useEffect(() => {
   readyMiniApp();
   expandMiniApp();
   const init = async () => {
@@ -487,10 +495,11 @@ function App() {
           setEditingActivity(null);
           store.setView("home");
         }} onCreated={(id) => {
-          flash(editingActivity ? t.updatedSuccess : t.createdSuccess);
+          const message = editingActivity ? t.updatedSuccess : t.createdSuccess;
+          flash(message);
           setEditingActivity(null);
           setCompletionActivityId(id);
-          setCompletion(editingActivity ? t.updatedSuccess : t.createdSuccess);
+          setCompletion(message);
         }} />}
         {store.view === "profile" && <ProfileView language={store.language} onOpen={openActivity} onJoin={handleJoin} onCloseMiniApp={requestCloseMiniApp} />}
       </main>
@@ -508,6 +517,8 @@ function App() {
             setSelected(null);
             setSelectedMembersOpen(false);
             setSelectedChatRequest(0);
+            setCompletion("");
+            setCompletionActivityId(null);
           }}
           onJoin={handleJoin}
           onShare={shareActivity}
@@ -525,27 +536,26 @@ function App() {
           initialChatRequest={selectedChatRequest}
         />
       )}
-      {completion && (
+      {completion && selected?.id === completionActivityId && (
         <CompletionBar
-          message={completion}
           language={store.language}
-          onDismiss={() => {
-            setCompletion("");
-            setCompletionActivityId(null);
-          }}
-          onOpen={() => {
-            const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
-            if (activity) openActivity(activity);
-          }}
           onShare={() => {
             const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
+            setCompletion("");
+            setCompletionActivityId(null);
             if (activity) void shareActivity(activity);
           }}
           onCalendar={() => {
             const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
+            setCompletion("");
+            setCompletionActivityId(null);
             if (activity) saveToGoogleCalendar(activity);
           }}
-          onCloseMiniApp={requestCloseMiniApp}
+          onCloseMiniApp={() => {
+            setCompletion("");
+            setCompletionActivityId(null);
+            requestCloseMiniApp();
+          }}
         />
       )}
       {notice && <div className="toast">{notice}</div>}
@@ -1704,34 +1714,22 @@ function GenericActivitySheet({
 }
 
 function CompletionBar({
-  message,
   language,
-  onDismiss,
-  onOpen,
   onShare,
   onCalendar,
   onCloseMiniApp,
 }: {
-  message: string;
   language: Language;
-  onDismiss: () => void;
-  onOpen: () => void;
   onShare: () => void;
   onCalendar: () => void;
   onCloseMiniApp: () => void;
 }) {
   const t = getTranslation(language);
   return (
-    <div className="completion-bar">
-      <div>
-        <strong>{message}</strong>
-        <span>{t.closeAfterDoneHint}</span>
-      </div>
-      <button onClick={onOpen} type="button">{t.openCreatedEvent}</button>
-      <button onClick={onCalendar} type="button">{t.addToGoogleCalendar}</button>
-      <button onClick={onShare} type="button">{t.share}</button>
-      <button onClick={onCloseMiniApp} type="button">{t.done}</button>
-      <button className="secondary" onClick={onDismiss} type="button">{t.close}</button>
+    <div className="completion-bar post-save-actions" aria-label={t.createdSuccess}>
+      <button className="secondary" onClick={onShare} type="button"><Share2 /><span>{t.share}</span></button>
+      <button className="secondary" onClick={onCalendar} type="button"><CalendarPlus /><span>{t.addToGoogleCalendar}</span></button>
+      <button className="secondary" onClick={onCloseMiniApp} type="button"><ArrowLeft /><span>{t.backToTelegram}</span></button>
     </div>
   );
 }
