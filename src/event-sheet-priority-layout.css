@@ -1,0 +1,15 @@
+/* Final priority layout for event details and post-save actions. */
+.sport-detail-list.sport-priority-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch!important}
+.sport-priority-grid>.sport-date-row,.sport-priority-grid>.sport-detail-members-row,.sport-priority-grid>.sport-location-row,.sport-priority-grid>.weather-summary-toggle,.sport-priority-grid>.sport-priority-organizer{grid-column:auto!important;width:100%!important;min-width:0!important;min-height:86px!important;margin:0!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important;background:rgba(255,255,255,.035)!important}
+.sport-priority-grid>.sport-detail-members-row{grid-template-columns:22px minmax(0,1fr) auto 18px!important;grid-template-areas:"icon label value arrow"!important;padding:12px!important}
+.sport-priority-grid>.sport-location-row{min-height:118px!important}
+.sport-priority-grid .sport-location-block{grid-template-rows:repeat(3,minmax(0,1.25em))!important}
+.sport-priority-grid .sport-location-city,.sport-priority-grid .sport-location-address{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:1!important;overflow:hidden!important}
+.sport-priority-organizer .organizer-detail-action{width:100%!important;min-height:100%!important;border:0!important;background:transparent!important}
+.sport-priority-organizer-below{grid-column:1!important}
+.post-save-actions{left:calc(50% - 10px)!important;bottom:calc(30px + env(safe-area-inset-bottom))!important;width:min(calc(100% - 116px),370px)!important;align-items:center!important;background:transparent!important}
+.post-save-actions>.card-share-action{width:40px!important;height:40px!important;justify-self:center!important}
+.post-save-actions>.card-share-action .sport-card-icon-action,.post-save-actions>button{background:transparent!important;box-shadow:none!important;backdrop-filter:none!important}
+.post-save-actions>.card-share-action .sport-card-icon-action{width:40px!important;height:40px!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:12px!important}
+.post-save-actions .card-share-channel-list{bottom:46px!important;top:auto!important;right:auto!important;left:0!important}
+.sport-card-top-actions{transform:translateX(-10px)!important}

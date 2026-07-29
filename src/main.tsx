@@ -56,6 +56,7 @@ import "./ux-regression-pack.css";
 import "./card-participants-dropdown.css";
 import "./sport-event-card-policy.css";
 import "./unified-event-primary-controls.css";
+import "./event-sheet-priority-layout.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 type StoredPreferences = { language?: SupportedLanguage; cityId?: string; mapProvider?: "google" | "apple" | "mapy" };
