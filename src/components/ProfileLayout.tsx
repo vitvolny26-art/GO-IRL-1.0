@@ -1,6 +1,8 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { showBackButton } from "../telegram";
+import { useAppStore } from "../store";
 import {
+  isProfilePath,
   profilePathForSection,
   resolveProfileSectionFromPath,
 } from "../profile/profileRoute";
@@ -24,25 +26,42 @@ export function ProfileLayout({
   children,
 }: ProfileLayoutProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const sectionChangeRef = useRef(onSectionChange);
 
   useEffect(() => {
-    const pathSection = resolveProfileSectionFromPath(window.location.pathname);
-    if (pathSection !== activeSection && !editing) onSectionChange(pathSection);
-  }, [activeSection, editing, onSectionChange]);
+    sectionChangeRef.current = onSectionChange;
+  }, [onSectionChange]);
+
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    if (!isProfilePath(pathname)) return;
+    const pathSection = resolveProfileSectionFromPath(pathname);
+    if (pathSection !== activeSection && !editing) sectionChangeRef.current(pathSection);
+  }, [activeSection, editing]);
 
   useEffect(() => {
     const onPopState = () => {
-      const nextSection = resolveProfileSectionFromPath(window.location.pathname);
+      const pathname = window.location.pathname;
+      if (!isProfilePath(pathname)) {
+        if (editing) {
+          window.history.pushState({}, "", profilePathForSection(activeSection));
+          return;
+        }
+        useAppStore.getState().setView("home");
+        return;
+      }
+
+      const nextSection = resolveProfileSectionFromPath(pathname);
       if (editing && nextSection !== defaultProfilePanelSection) {
         window.history.replaceState({}, "", profilePathForSection(defaultProfilePanelSection));
         return;
       }
-      onSectionChange(nextSection);
+      sectionChangeRef.current(nextSection);
     };
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [editing, onSectionChange]);
+  }, [activeSection, editing]);
 
   useEffect(() => {
     if (!editing) return undefined;
@@ -55,10 +74,12 @@ export function ProfileLayout({
   }, [editing]);
 
   useEffect(() => {
-    if (editing) return showBackButton(() => undefined);
     const backTarget = resolveProfilePanelBackTarget(activeSection);
     if (!backTarget) return undefined;
-    return showBackButton(() => window.history.back());
+    return showBackButton(() => {
+      if (editing) return;
+      window.history.back();
+    });
   }, [activeSection, editing]);
 
   useEffect(() => {
