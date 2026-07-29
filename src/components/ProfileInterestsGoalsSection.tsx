@@ -1,3 +1,4 @@
+import "../profile-roadmap-004-009.css";
 import { useEffect, useMemo, useState } from "react";
 import { getCurrentAuthIdentity } from "../authSession";
 import {
@@ -68,37 +69,16 @@ export function ProfileInterestsGoalsSection({ language }: { language: Language 
     if (!profile) return;
     setError("");
     try {
-      const saved = await repository.saveOwnProfile({
-        displayName: profile.displayName,
-        bio: profile.bio,
-        cityId: profile.cityId,
-        avatarPath: profile.avatarPath,
-        avatarCode: profile.avatarCode,
-        isPublic: profile.isPublic,
-        showFavorites: profile.showFavorites,
-        favoriteActivityIds: favoriteLegacyInterestIds(next),
-      });
+      const saved = await repository.saveOwnProfile({ displayName: profile.displayName, bio: profile.bio, cityId: profile.cityId, avatarPath: profile.avatarPath, avatarCode: profile.avatarCode, isPublic: profile.isPublic, showFavorites: profile.showFavorites, favoriteActivityIds: favoriteLegacyInterestIds(next) });
       setProfile(saved);
-    } catch {
-      setError(text.saveError);
-    }
+    } catch { setError(text.saveError); }
   };
 
   return (
     <section className="profile-interests-goals" aria-labelledby="profile-interests-title">
       <header><h3 id="profile-interests-title">{text.title}</h3><p>{text.hint}</p></header>
       <div className="profile-interest-state-list">
-        {betaProfileInterestIds.map((id) => (
-          <label key={id}>
-            <span>{labels[language][id]}</span>
-            <select value={state.interests[id] || "none"} onChange={(event) => {
-              const value = event.target.value === "none" ? null : event.target.value as ProfileInterestState;
-              try { void persist(setProfileInterestState(state, id, value)); } catch { setError(text.saveError); }
-            }}>
-              {(Object.keys(stateLabels[language]) as Array<ProfileInterestState | "none">).map((value) => <option key={value} value={value}>{stateLabels[language][value]}</option>)}
-            </select>
-          </label>
-        ))}
+        {betaProfileInterestIds.map((id) => <label key={id}><span>{labels[language][id]}</span><select value={state.interests[id] || "none"} onChange={(event) => { const value = event.target.value === "none" ? null : event.target.value as ProfileInterestState; try { void persist(setProfileInterestState(state, id, value)); } catch { setError(text.saveError); } }}>{(Object.keys(stateLabels[language]) as Array<ProfileInterestState | "none">).map((value) => <option key={value} value={value}>{stateLabels[language][value]}</option>)}</select></label>)}
       </div>
       <label className="profile-private-goal"><span>{text.goal}</span><textarea maxLength={maxPrivateGoalLength} rows={3} value={state.privateGoal} placeholder={text.goalHint} onChange={(event) => setState(updatePrivateProfileGoal(state, event.target.value))} onBlur={() => { void persist(state); }} /><small>{text.local}</small></label>
       {error ? <div className="details-error profile-error" role="alert">{error}</div> : null}
