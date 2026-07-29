@@ -125,6 +125,9 @@ export function ProfilePanel({
           <h2>{labels.title}</h2>
           <p>{labels.hint}</p>
         </header>
+        <div className="profile-panel-content" data-profile-panel-content={activeSection}>
+          {renderSection(activeSection)}
+        </div>
         <nav className="profile-panel-navigation" aria-label={labels.title}>
           {profilePanelSections.map(({ id }) => {
             const blocked = editing && id !== defaultProfilePanelSection;
@@ -147,9 +150,6 @@ export function ProfilePanel({
             );
           })}
         </nav>
-        <div className="profile-panel-content" data-profile-panel-content={activeSection}>
-          {renderSection(activeSection)}
-        </div>
       </div>
     </ProfileLayout>
   );
