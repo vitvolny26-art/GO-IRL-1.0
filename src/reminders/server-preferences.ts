@@ -16,10 +16,14 @@ type ReminderRow = {
 
 const reminderColumns =
   "activity_id,provider,lead_minutes,event_starts_at,updated_at";
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+let linkedReminderChannelsRequest: Promise<Set<ReminderChannel>> | null = null;
 
+export const isServerActivityId = (activityId: string) => uuidPattern.test(activityId);
 export const usesServerReminderPersistence = () => isTrustedAuthReady();
 
 export async function readServerEventReminder(activityId: string) {
+  if (!isServerActivityId(activityId)) return null;
   const { data, error } = await supabase
     .from("event_reminders")
     .select(reminderColumns)
@@ -38,17 +42,25 @@ export async function readServerEventReminder(activityId: string) {
 }
 
 export async function readLinkedReminderChannels() {
-  const { data, error } = await supabase
-    .from("user_provider_identities")
-    .select("provider")
-    .eq("status", "active");
-  if (error) throw error;
-  return new Set(
-    (data || [])
-      .map((row) => row.provider)
-      .filter((provider): provider is ReminderChannel =>
-        ["telegram", "whatsapp", "instagram", "messenger"].includes(provider)),
-  );
+  if (!linkedReminderChannelsRequest) {
+    linkedReminderChannelsRequest = (async () => {
+      const { data, error } = await supabase
+        .from("user_provider_identities")
+        .select("provider")
+        .eq("status", "active");
+      if (error) throw error;
+      return new Set(
+        (data || [])
+          .map((row) => row.provider)
+          .filter((provider): provider is ReminderChannel =>
+            ["telegram", "whatsapp", "instagram", "messenger"].includes(provider)),
+      );
+    })().catch((error) => {
+      linkedReminderChannelsRequest = null;
+      throw error;
+    });
+  }
+  return linkedReminderChannelsRequest;
 }
 
 export async function saveServerEventReminder(
@@ -56,6 +68,7 @@ export async function saveServerEventReminder(
   provider: ReminderChannel,
   leadMinutes: ReminderLeadMinutes,
 ) {
+  if (!isServerActivityId(activityId)) throw new Error("invalid_activity_id");
   const { error } = await supabase.rpc("go_irl_upsert_event_reminder", {
     p_activity_id: activityId,
     p_provider: provider,
@@ -65,6 +78,7 @@ export async function saveServerEventReminder(
 }
 
 export async function removeServerEventReminder(activityId: string) {
+  if (!isServerActivityId(activityId)) return;
   const { error } = await supabase
     .from("event_reminders")
     .delete()
