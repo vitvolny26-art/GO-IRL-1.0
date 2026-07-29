@@ -15,8 +15,8 @@ describe("ProfilePanel", () => {
     expect(html).toContain("data-profile-panel-section=\"identity\"");
     expect(html).toContain(">Preferences<");
     expect(html).toContain(">My GO IRL<");
+    expect(html).toContain(">Privacy<");
     expect(html).toContain(">Diagnostics<");
-    expect(html).not.toContain("privacy");
     expect(html).not.toContain("profile-page");
   });
 
@@ -30,6 +30,6 @@ describe("ProfilePanel", () => {
     );
 
     expect(html).toContain("title=\"Finish editing your profile first\"");
-    expect(html.match(/disabled=""/g)).toHaveLength(3);
+    expect(html.match(/disabled=""/g)).toHaveLength(4);
   });
 });

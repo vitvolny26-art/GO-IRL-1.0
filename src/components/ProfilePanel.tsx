@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { Bell, CircleUserRound, Settings2, ShieldCheck } from "lucide-react";
+import { Bell, CircleUserRound, LockKeyhole, Settings2, ShieldCheck } from "lucide-react";
 import { ProfileLayout } from "./ProfileLayout";
+import { ProfileInterestsGoalsSection } from "./ProfileInterestsGoalsSection";
+import { MyGoIrlLifecycleSummary } from "./MyGoIrlLifecycleSummary";
+import { OwnedProfilePrivacySection } from "./OwnedProfilePrivacySection";
 import {
   defaultProfilePanelSection,
   profilePanelSections,
@@ -28,7 +31,8 @@ const copy: Record<Language, ProfilePanelCopy> = {
     sections: {
       identity: { label: "Личность", hint: "Имя, фото, город и интересы" },
       preferences: { label: "Предпочтения", hint: "Карты, календарь, отправка и напоминания" },
-      "my-go-irl": { label: "Мой GO IRL", hint: "Статистика, события и заявки" },
+      "my-go-irl": { label: "Мой GO IRL", hint: "Будущие, созданные, заявки и прошлые события" },
+      privacy: { label: "Приватность", hint: "Видимость, публичный предпросмотр и права" },
       diagnostics: { label: "Диагностика", hint: "Состояние синхронизации и выход в Telegram" },
     },
   },
@@ -39,7 +43,8 @@ const copy: Record<Language, ProfilePanelCopy> = {
     sections: {
       identity: { label: "Особистість", hint: "Ім’я, фото, місто та інтереси" },
       preferences: { label: "Налаштування", hint: "Карти, календар, поширення та нагадування" },
-      "my-go-irl": { label: "Мій GO IRL", hint: "Статистика, події та заявки" },
+      "my-go-irl": { label: "Мій GO IRL", hint: "Майбутні, створені, заявки та минулі події" },
+      privacy: { label: "Приватність", hint: "Видимість, публічний перегляд і права" },
       diagnostics: { label: "Діагностика", hint: "Стан синхронізації та повернення до Telegram" },
     },
   },
@@ -50,7 +55,8 @@ const copy: Record<Language, ProfilePanelCopy> = {
     sections: {
       identity: { label: "Identita", hint: "Jméno, fotografie, město a zájmy" },
       preferences: { label: "Předvolby", hint: "Mapy, kalendář, sdílení a připomínky" },
-      "my-go-irl": { label: "Moje GO IRL", hint: "Statistiky, události a žádosti" },
+      "my-go-irl": { label: "Moje GO IRL", hint: "Budoucí, vytvořené, žádosti a minulé události" },
+      privacy: { label: "Soukromí", hint: "Viditelnost, veřejný náhled a práva" },
       diagnostics: { label: "Diagnostika", hint: "Stav synchronizace a návrat do Telegramu" },
     },
   },
@@ -61,7 +67,8 @@ const copy: Record<Language, ProfilePanelCopy> = {
     sections: {
       identity: { label: "Identity", hint: "Name, photo, city and interests" },
       preferences: { label: "Preferences", hint: "Maps, calendar, sharing and reminders" },
-      "my-go-irl": { label: "My GO IRL", hint: "Stats, events and requests" },
+      "my-go-irl": { label: "My GO IRL", hint: "Upcoming, created, requests and past events" },
+      privacy: { label: "Privacy", hint: "Visibility, public preview and rights" },
       diagnostics: { label: "Diagnostics", hint: "Sync state and return to Telegram" },
     },
   },
@@ -71,6 +78,7 @@ const icons: Record<ProfilePanelSection, ReactNode> = {
   identity: <CircleUserRound />,
   preferences: <Settings2 />,
   "my-go-irl": <Bell />,
+  privacy: <LockKeyhole />,
   diagnostics: <ShieldCheck />,
 };
 
@@ -81,19 +89,11 @@ type ProfilePanelProps = {
   onSectionChange?: (section: ProfilePanelSection) => void;
 };
 
-export function ProfilePanel({
-  language,
-  editing,
-  renderSection,
-  onSectionChange,
-}: ProfilePanelProps) {
+export function ProfilePanel({ language, editing, renderSection, onSectionChange }: ProfilePanelProps) {
   const [activeSection, setActiveSection] = useState<ProfilePanelSection>(() => (
-    typeof window === "undefined"
-      ? defaultProfilePanelSection
-      : resolveProfileSectionFromPath(window.location.pathname)
+    typeof window === "undefined" ? defaultProfilePanelSection : resolveProfileSectionFromPath(window.location.pathname)
   ));
   const labels = copy[language];
-
   const applySection = useCallback((section: ProfilePanelSection) => {
     setActiveSection(section);
     onSectionChange?.(section);
@@ -114,42 +114,33 @@ export function ProfilePanel({
     applySection(next.activeSection);
   };
 
+  const baseContent = activeSection === "privacy" ? null : renderSection(activeSection);
+  const sectionContent = activeSection === "identity"
+    ? <>{baseContent}<ProfileInterestsGoalsSection language={language} /></>
+    : activeSection === "my-go-irl"
+      ? <><MyGoIrlLifecycleSummary language={language} />{baseContent}</>
+      : activeSection === "privacy"
+        ? <OwnedProfilePrivacySection language={language} />
+        : baseContent;
+  const content = <div className="profile-panel-content" data-profile-panel-content={activeSection}>{sectionContent}</div>;
+
   return (
-    <ProfileLayout
-      activeSection={activeSection}
-      editing={editing}
-      onSectionChange={applySection}
-    >
+    <ProfileLayout activeSection={activeSection} editing={editing} onSectionChange={applySection}>
       <div className="profile-panel" data-profile-panel-section={activeSection}>
-        <header className="profile-panel-header">
-          <h2>{labels.title}</h2>
-          <p>{labels.hint}</p>
-        </header>
-        <div className="profile-panel-content" data-profile-panel-content={activeSection}>
-          {renderSection(activeSection)}
-        </div>
+        <header className="profile-panel-header"><h2>{labels.title}</h2><p>{labels.hint}</p></header>
+        {activeSection === defaultProfilePanelSection ? content : null}
         <nav className="profile-panel-navigation" aria-label={labels.title}>
           {profilePanelSections.map(({ id }) => {
             const blocked = editing && id !== defaultProfilePanelSection;
             return (
-              <button
-                key={id}
-                className={activeSection === id ? "profile-panel-card is-active" : "profile-panel-card"}
-                type="button"
-                aria-current={activeSection === id ? "page" : undefined}
-                disabled={blocked}
-                title={blocked ? labels.editing : undefined}
-                onClick={() => selectSection(id)}
-              >
+              <button key={id} className={activeSection === id ? "profile-panel-card is-active" : "profile-panel-card"} type="button" aria-current={activeSection === id ? "page" : undefined} disabled={blocked} title={blocked ? labels.editing : undefined} onClick={() => selectSection(id)}>
                 <span className="profile-panel-card-icon">{icons[id]}</span>
-                <span>
-                  <strong>{labels.sections[id].label}</strong>
-                  <small>{labels.sections[id].hint}</small>
-                </span>
+                <span><strong>{labels.sections[id].label}</strong><small>{labels.sections[id].hint}</small></span>
               </button>
             );
           })}
         </nav>
+        {activeSection !== defaultProfilePanelSection ? content : null}
       </div>
     </ProfileLayout>
   );

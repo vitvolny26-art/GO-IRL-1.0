@@ -8,24 +8,25 @@ import {
 } from "./profilePanelNavigation";
 
 describe("profile panel navigation", () => {
-  it("exposes only the four implemented owner sections", () => {
+  it("exposes the implemented owner sections", () => {
     expect(profilePanelSections.map((section) => section.id)).toEqual([
       "identity",
       "preferences",
       "my-go-irl",
+      "privacy",
       "diagnostics",
     ]);
     expect(profilePanelSections.every((section) => section.ownerOnly)).toBe(true);
   });
 
   it("falls back deterministically for an unknown section", () => {
-    expect(resolveProfilePanelSection("privacy")).toBe(defaultProfilePanelSection);
+    expect(resolveProfilePanelSection("unknown")).toBe(defaultProfilePanelSection);
     expect(resolveProfilePanelSection(null)).toBe(defaultProfilePanelSection);
   });
 
   it("keeps identity active while profile editing is in progress", () => {
     const state = { activeSection: "identity" as const, editing: true };
-    expect(transitionProfilePanel(state, "preferences")).toEqual(state);
+    expect(transitionProfilePanel(state, "privacy")).toEqual(state);
   });
 
   it("allows navigation after editing ends", () => {
@@ -36,7 +37,7 @@ describe("profile panel navigation", () => {
   });
 
   it("returns to identity before leaving the profile view", () => {
-    expect(resolveProfilePanelBackTarget("preferences")).toBe("identity");
+    expect(resolveProfilePanelBackTarget("privacy")).toBe("identity");
     expect(resolveProfilePanelBackTarget("identity")).toBeNull();
   });
 });
