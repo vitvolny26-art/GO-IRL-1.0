@@ -87,3 +87,77 @@
 .sport-card-top-actions {
   transform: translateX(-10px) !important;
 }
+
+/* Final event-sheet hierarchy: 50/50 first row, 65/35 location row. */
+.sport-detail-list.sport-priority-grid {
+  grid-template-columns: repeat(20, minmax(0, 1fr)) !important;
+}
+.sport-priority-grid > * {
+  grid-column: span 10 !important;
+}
+.sport-priority-grid > .sport-date-row,
+.sport-priority-grid > .sport-detail-members-row {
+  align-items: center !important;
+  min-height: 90px !important;
+  padding-top: 15px !important;
+  padding-bottom: 9px !important;
+}
+.sport-priority-grid > .sport-detail-members-row {
+  grid-template-columns: 18px minmax(0, 1fr) auto 15px !important;
+  column-gap: 4px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+.sport-priority-grid > .sport-detail-members-row > span {
+  margin-left: -4px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.sport-priority-grid > .sport-location-row {
+  grid-column: span 13 !important;
+}
+.sport-priority-grid > .weather-summary-toggle,
+.sport-priority-grid > .sport-priority-organizer-inline {
+  grid-column: span 7 !important;
+}
+.sport-priority-grid > .sport-priority-organizer-below {
+  grid-column: span 10 !important;
+}
+.sport-priority-grid > .sport-location-row,
+.sport-priority-grid > .weather-summary-toggle,
+.sport-priority-grid > .sport-priority-organizer-inline {
+  min-height: 122px !important;
+}
+.post-save-actions {
+  min-height: 50px !important;
+  gap: 10px !important;
+}
+.post-save-actions > .card-share-action,
+.post-save-actions > button {
+  width: 46px !important;
+  min-width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+}
+.post-save-actions > .card-share-action .sport-card-icon-action {
+  width: 46px !important;
+  height: 46px !important;
+}
+.post-save-actions > button,
+.post-save-actions > button svg,
+.post-save-actions > .card-share-action .sport-card-icon-action,
+.post-save-actions > .card-share-action .sport-card-icon-action svg {
+  color: var(--lime) !important;
+  stroke: currentColor !important;
+}
+.post-save-telegram-action {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+}
+.post-save-telegram-action svg {
+  width: 17px !important;
+  height: 17px !important;
+}
