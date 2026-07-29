@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Bell, CircleUserRound, Settings2, ShieldCheck } from "lucide-react";
 import { ProfileLayout } from "./ProfileLayout";
 import {
@@ -94,17 +94,17 @@ export function ProfilePanel({
   ));
   const labels = copy[language];
 
-  const applySection = (section: ProfilePanelSection) => {
+  const applySection = useCallback((section: ProfilePanelSection) => {
     setActiveSection(section);
     onSectionChange?.(section);
-  };
+  }, [onSectionChange]);
 
   useEffect(() => {
     if (editing && activeSection !== defaultProfilePanelSection) {
       window.history.replaceState({}, "", profilePathForSection(defaultProfilePanelSection));
       applySection(defaultProfilePanelSection);
     }
-  }, [activeSection, editing]);
+  }, [activeSection, applySection, editing]);
 
   const selectSection = (requested: ProfilePanelSection) => {
     const current: ProfilePanelState = { activeSection, editing };
