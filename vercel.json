@@ -1,7 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
-    "deploymentEnabled": true
+    "deploymentEnabled": {
+      "UProfile003/profile-layout-routing-v3": false
+    }
   },
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist",
