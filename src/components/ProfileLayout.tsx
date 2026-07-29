@@ -55,12 +55,10 @@ export function ProfileLayout({
   }, [editing]);
 
   useEffect(() => {
+    if (editing) return showBackButton(() => undefined);
     const backTarget = resolveProfilePanelBackTarget(activeSection);
     if (!backTarget) return undefined;
-    return showBackButton(() => {
-      if (editing) return;
-      window.history.back();
-    });
+    return showBackButton(() => window.history.back());
   }, [activeSection, editing]);
 
   useEffect(() => {
