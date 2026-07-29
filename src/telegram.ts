@@ -50,14 +50,70 @@ export const closeMiniApp = () => {
   return true;
 };
 
-export const showBackButton = (onClick: () => void) => {
+type BackButtonHandler = () => void;
+
+type BackButtonRegistration = {
+  id: number;
+  onClick: BackButtonHandler;
+  priority: number;
+};
+
+export type BackButtonOptions = {
+  priority?: number;
+};
+
+const backButtonHandlers: BackButtonRegistration[] = [];
+let backButtonDispatcherAttached = false;
+let nextBackButtonHandlerId = 0;
+
+const dispatchBackButton = () => {
+  let activeRegistration: BackButtonRegistration | undefined;
+
+  for (const registration of backButtonHandlers) {
+    const hasHigherPriority = !activeRegistration || registration.priority > activeRegistration.priority;
+    const isNewerAtSamePriority = activeRegistration
+      && registration.priority === activeRegistration.priority
+      && registration.id > activeRegistration.id;
+
+    if (hasHigherPriority || isNewerAtSamePriority) activeRegistration = registration;
+  }
+
+  activeRegistration?.onClick();
+};
+
+const syncBackButton = () => {
   const backButton = getTelegramWebApp()?.BackButton;
-  if (!backButton) return () => undefined;
-  backButton.onClick(onClick);
-  backButton.show();
-  return () => {
-    backButton.offClick(onClick);
+  if (!backButton) return;
+
+  if (backButtonHandlers.length === 0) {
+    if (backButtonDispatcherAttached) {
+      backButton.offClick(dispatchBackButton);
+      backButtonDispatcherAttached = false;
+    }
     backButton.hide();
+    return;
+  }
+
+  if (!backButtonDispatcherAttached) {
+    backButton.onClick(dispatchBackButton);
+    backButtonDispatcherAttached = true;
+  }
+  backButton.show();
+};
+
+export const showBackButton = (onClick: () => void, options: BackButtonOptions = {}) => {
+  const registration: BackButtonRegistration = {
+    id: ++nextBackButtonHandlerId,
+    onClick,
+    priority: options.priority ?? 0,
+  };
+  backButtonHandlers.push(registration);
+  syncBackButton();
+
+  return () => {
+    const index = backButtonHandlers.findIndex((item) => item.id === registration.id);
+    if (index >= 0) backButtonHandlers.splice(index, 1);
+    syncBackButton();
   };
 };
 
