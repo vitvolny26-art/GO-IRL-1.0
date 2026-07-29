@@ -538,13 +538,8 @@ function App() {
       )}
       {completion && selected?.id === completionActivityId && (
         <CompletionBar
+          activity={store.activities.find((item) => item.id === completionActivityId) || selected}
           language={store.language}
-          onShare={() => {
-            const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
-            setCompletion("");
-            setCompletionActivityId(null);
-            if (activity) void shareActivity(activity);
-          }}
           onCalendar={() => {
             const activity = useAppStore.getState().activities.find((item) => item.id === completionActivityId);
             setCompletion("");
@@ -1714,20 +1709,22 @@ function GenericActivitySheet({
 }
 
 function CompletionBar({
+  activity,
   language,
-  onShare,
   onCalendar,
   onCloseMiniApp,
 }: {
+  activity: Activity;
   language: Language;
-  onShare: () => void;
   onCalendar: () => void;
   onCloseMiniApp: () => void;
 }) {
   const t = getTranslation(language);
+  const shareTitle = stripLeadingEmoji(activity.activity[language]);
+  const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
   return (
     <div className="completion-bar post-save-actions" aria-label={t.createdSuccess}>
-      <button className="secondary" onClick={onShare} type="button"><Share2 /><span>{t.share}</span></button>
+      <CardShareAction title={shareTitle} date={shareDate} address={activity.address} url={activityInviteUrl(activity)} label={t.share} onTelegramShare={() => sharePreparedTelegramEvent(activity, language)} />
       <button className="secondary" onClick={onCalendar} type="button"><CalendarPlus /><span>{t.addToGoogleCalendar}</span></button>
       <button className="secondary" onClick={onCloseMiniApp} type="button"><ArrowLeft /><span>{t.backToTelegram}</span></button>
     </div>

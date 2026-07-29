@@ -9,7 +9,7 @@ import { getUserKey } from "../supabase";
 import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
-import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction } from "../components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction, OrganizerDetailAction } from "../components/EventCardPrimitives";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
 import { getOrganizerRoleRequestState } from "../coachFeature";
 import { getCity } from "../config/cities";
@@ -474,9 +474,9 @@ export function SportActivitySheet({
           <span>{sportEnvironmentLabel(meta.environment, language)}</span>
           <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
         </div>
-        <div className="detail-list sport-detail-list" style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
+        <div className="detail-list sport-detail-list sport-priority-grid" style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
           <div className="sport-date-row"><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
-          <button className="detail-members-toggle sport-detail-members-row" style={{ gridColumn: "auto", borderTop: 0 }} onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
+          <button className="detail-members-toggle sport-detail-members-row" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
             <UsersRound />
             <span>{t.participants}</span>
             <strong>{activity.participants} / {activity.capacity}</strong>
@@ -487,7 +487,16 @@ export function SportActivitySheet({
             <button className="weather-detail-toggle weather-summary-toggle" onClick={() => setWeatherDetailsOpen((open) => !open)} type="button" aria-label={t.weatherHint}>
               <strong className="weather-summary-lines">{weather ? weatherSummaryLines(weather) : weatherText}</strong>
             </button>
-          ) : <div aria-hidden="true" />}
+          ) : (
+            <div className="sport-priority-organizer sport-priority-organizer-inline">
+              <OrganizerDetailAction organizerKey={activity.organizerKey} organizerName={activity.organizer} label={t.organizer} />
+            </div>
+          )}
+          {showWeather && (
+            <div className="sport-priority-organizer sport-priority-organizer-below">
+              <OrganizerDetailAction organizerKey={activity.organizerKey} organizerName={activity.organizer} label={t.organizer} />
+            </div>
+          )}
           {meta.format && <div><ShieldCheck /><span>{t.sportFormat}</span><strong>{sportFormatLabel(meta.format, language)}</strong></div>}
           {activity.price > 0 && <div><Ticket /><span>{t.price}</span><strong>{activity.price} Kč</strong></div>}
           {meta.equipmentNeeded && <div><ShieldCheck /><span>{t.sportEquipmentNeeded}</span><strong>{t.yes}</strong></div>}
