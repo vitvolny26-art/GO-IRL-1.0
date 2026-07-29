@@ -59,8 +59,8 @@
 
 .external-telegram-chat-actions button:not(.secondary):not(.danger),
 .external-telegram-chat-editor button:not(.secondary) {
-  background: #2aabee;
-  color: #06131b;
+  background: var(--accent, #bfff2e);
+  color: #10140d;
 }
 
 .external-telegram-chat-actions button.secondary,
