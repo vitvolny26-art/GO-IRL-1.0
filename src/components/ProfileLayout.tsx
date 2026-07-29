@@ -19,6 +19,8 @@ export type ProfileLayoutProps = {
   children: ReactNode;
 };
 
+const profileBackButtonPriority = 100;
+
 export function ProfileLayout({
   activeSection,
   editing,
@@ -81,11 +83,12 @@ export function ProfileLayout({
 
   useEffect(() => {
     const backTarget = resolveProfilePanelBackTarget(activeSection);
-    if (!backTarget) return undefined;
+    if (!editing && !backTarget) return undefined;
+
     return showBackButton(() => {
       if (editing) return;
       window.history.back();
-    });
+    }, { priority: profileBackButtonPriority });
   }, [activeSection, editing]);
 
   useEffect(() => {
