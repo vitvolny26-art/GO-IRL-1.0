@@ -6,6 +6,7 @@ import {
   mapUserProfileToPublicProfile,
 } from "./profileMappers";
 import type { ProfileRepository, PublicProfileMap } from "./profileRepository";
+import { assertProfileSaveResponseOwner, verifySavedProfile } from "./profileSaveVerification";
 import type {
   PublicProfile,
   UserProfile,
@@ -123,11 +124,12 @@ export class SupabaseProfileRepository implements ProfileRepository {
     const data = Array.isArray(result.data) ? result.data[0] : result.data;
     if (!data) throw new Error("profile_save_empty_response");
 
+    assertProfileSaveResponseOwner(this.userKey, (data as UserProfileRow).user_key);
     this.publicProfileCache.delete(this.userKey);
-    return mapUserProfileRow(
-      data as UserProfileRow,
-      input.favoriteActivityIds.map((interest_slug) => ({ interest_slug })),
-    );
+
+    const confirmed = await this.loadOwnProfile();
+    if (!confirmed) throw new Error("profile_save_refetch_missing");
+    return verifySavedProfile(input, confirmed, this.userKey);
   }
 
   async uploadAvatar(file: File): Promise<string> {
