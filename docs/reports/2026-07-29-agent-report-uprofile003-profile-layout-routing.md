@@ -48,12 +48,11 @@ Implement `UProfile003` as a bounded profile navigation slice: stable profile pa
 
 ## Checks
 
-- Diff check: pending on final exact head.
-- Tests: pending on final exact head.
-- Typecheck: pending on final exact head.
-- Lint: pending on final exact head.
-- Build: pending on final exact head.
-- Previous exact-head GitHub Actions run `1304`: PASS before the BackButton review fixes.
+- Diff check: PASS — GitHub Actions run `1305`.
+- Tests: PASS — GitHub Actions run `1305`.
+- Typecheck: PASS — GitHub Actions run `1305`.
+- Lint: PASS — GitHub Actions run `1305`.
+- Build: PASS — GitHub Actions run `1305`.
 - Telegram physical-device smoke: pending after production deployment.
 
 ## Risks
@@ -70,4 +69,4 @@ Implement `UProfile003` as a bounded profile navigation slice: stable profile pa
 
 ## Next step
 
-Run GitHub Actions on the final exact head, record the final statuses, resolve review threads and merge only after all required checks pass.
+Resolve review threads and merge the exact green head into `main` after explicit production approval.
