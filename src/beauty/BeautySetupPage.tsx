@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, Eye, RotateCcw, Save, Share2, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, Eye, House, RotateCcw, Save, Share2, Sparkles } from "lucide-react";
 import {
   beautySetupSteps,
   buildBeautyPublicProfile,
@@ -56,6 +56,7 @@ export function BeautySetupPage() {
   const progress = getBeautyStepProgress(workspace.currentStep);
   const update = (fn: (current: BeautyWorkspace) => BeautyWorkspace) => { setWorkspace(fn); setErrors([]); };
   const goTo = (step: BeautySetupStep) => update((current) => ({ ...current, currentStep: step }));
+  const goHome = () => window.location.assign("/");
 
   const next = () => {
     const validation = validateBeautyStep(workspace, workspace.currentStep);
@@ -66,10 +67,10 @@ export function BeautySetupPage() {
 
   const back = () => {
     if (workspace.currentStep === "pro_public_preview") return goTo("pro_setup_published");
-    if (workspace.currentStep === "pro_setup_published") return goTo("pro_setup_review");
+    if (workspace.currentStep === "pro_setup_published") return goHome();
     const index = stepIndex(workspace.currentStep);
     if (index > 0) goTo(beautySetupSteps[index - 1]);
-    else window.location.assign("/");
+    else goHome();
   };
 
   const publish = () => {
@@ -139,6 +140,7 @@ export function BeautySetupPage() {
     <div className="beauty-public-link"><span>{workspace.publicLink}</span><button type="button" onClick={copyLink}><Share2 size={18} />{text.copyLink}</button></div>
     <button className="beauty-primary" type="button" onClick={() => goTo("pro_public_preview")}><Eye size={19} />{text.openPreview}</button>
     <button className="beauty-secondary" type="button" onClick={() => goTo("pro_setup_review")}>{text.editSetup}</button>
+    <button className="beauty-home-button" type="button" onClick={goHome}><House size={19} />{text.home}</button>
   </div>;
 
   const preview = <div className="beauty-public-preview" aria-label={text.previewTitle}>
@@ -148,6 +150,7 @@ export function BeautySetupPage() {
     <div className="beauty-preview-card"><strong>{text.available}</strong><span>{publicProfile.weekdays.map((day) => text.weekdays[day]).join(", ")}</span><span>{publicProfile.startTime}–{publicProfile.endTime}</span></div>
     <div className="beauty-note"><strong>{text.privacy}</strong><span>{text.privacyHint}</span></div>
     <button className="beauty-primary" type="button" disabled>{text.chooseTime}</button>
+    <button className="beauty-home-button" type="button" onClick={goHome}><House size={19} />{text.home}</button>
   </div>;
 
   const content = workspace.currentStep === "pro_setup_profile" ? profile : workspace.currentStep === "pro_setup_service" ? service : workspace.currentStep === "pro_setup_availability" ? availability : workspace.currentStep === "pro_setup_review" ? review : workspace.currentStep === "pro_setup_published" ? published : preview;
