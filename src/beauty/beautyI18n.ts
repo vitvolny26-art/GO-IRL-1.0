@@ -29,6 +29,7 @@ const errors: Record<Language, Record<BeautyValidationCode, string>> = {
     availability_time_order_invalid: "Конец доступности должен быть позже начала.",
     availability_break_required: "Укажите начало и конец перерыва.",
     availability_break_order_invalid: "Конец перерыва должен быть позже начала.",
+    availability_break_outside_working_hours: "Перерыв должен быть внутри рабочих часов.",
   },
   uk: {
     profile_display_name_required: "Вкажіть публічне ім’я.",
@@ -45,6 +46,7 @@ const errors: Record<Language, Record<BeautyValidationCode, string>> = {
     availability_time_order_invalid: "Кінець доступності має бути пізніше початку.",
     availability_break_required: "Вкажіть початок і кінець перерви.",
     availability_break_order_invalid: "Кінець перерви має бути пізніше початку.",
+    availability_break_outside_working_hours: "Перерва має бути в межах робочих годин.",
   },
   cs: {
     profile_display_name_required: "Vyplňte veřejné jméno.",
@@ -61,6 +63,7 @@ const errors: Record<Language, Record<BeautyValidationCode, string>> = {
     availability_time_order_invalid: "Konec dostupnosti musí být později než začátek.",
     availability_break_required: "Vyplňte začátek a konec pauzy.",
     availability_break_order_invalid: "Konec pauzy musí být později než začátek.",
+    availability_break_outside_working_hours: "Pauza musí být uvnitř pracovní doby.",
   },
   en: {
     profile_display_name_required: "Enter a public name.",
@@ -77,6 +80,7 @@ const errors: Record<Language, Record<BeautyValidationCode, string>> = {
     availability_time_order_invalid: "Availability end must be later than start.",
     availability_break_required: "Enter break start and end.",
     availability_break_order_invalid: "Break end must be later than start.",
+    availability_break_outside_working_hours: "The break must stay inside working hours.",
   },
 };
 

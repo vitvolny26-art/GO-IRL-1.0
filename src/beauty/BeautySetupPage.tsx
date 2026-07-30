@@ -13,6 +13,7 @@ import {
 } from "./beautySetupModel";
 import { getBeautyCopy, readBeautyLanguage } from "./beautyI18n";
 import { loadBeautyWorkspace, resetBeautyWorkspace, saveBeautyWorkspace } from "./beautyWorkspaceStorage";
+import { BeautyPilotWorkspace, resetBeautyPilotWorkspace } from "./BeautyPilotWorkspace";
 import "./beauty-setup.css";
 
 const stepIndex = (step: BeautySetupStep) => beautySetupSteps.indexOf(step as (typeof beautySetupSteps)[number]);
@@ -34,22 +35,19 @@ export function BeautySetupPage() {
 
   useEffect(() => {
     let active = true;
-    void loadBeautyWorkspace()
+    void loadBeautyWorkspace(language)
       .then((loaded) => { if (active) setWorkspace(loaded); })
       .catch(() => { if (active) setNotice(text.loadError); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [text.loadError]);
+  }, [language, text.loadError]);
 
   useEffect(() => {
     if (loading) return;
-    const timer = window.setTimeout(() => {
-      setSaving(true);
-      void saveBeautyWorkspace({ ...workspace, updatedAt: new Date().toISOString() })
-        .catch(() => setNotice(text.saveError))
-        .finally(() => setSaving(false));
-    }, 180);
-    return () => window.clearTimeout(timer);
+    setSaving(true);
+    void saveBeautyWorkspace(workspace)
+      .catch(() => setNotice(text.saveError))
+      .finally(() => setSaving(false));
   }, [loading, text.saveError, workspace]);
 
   const publicProfile = useMemo(() => buildBeautyPublicProfile(workspace), [workspace]);
@@ -66,6 +64,7 @@ export function BeautySetupPage() {
   };
 
   const back = () => {
+    if (workspace.currentStep === "pro_workspace") return goTo("pro_setup_published");
     if (workspace.currentStep === "pro_public_preview") return goTo("pro_setup_published");
     if (workspace.currentStep === "pro_setup_published") return goHome();
     const index = stepIndex(workspace.currentStep);
@@ -82,6 +81,7 @@ export function BeautySetupPage() {
   const reset = async () => {
     if (!window.confirm(text.reset)) return;
     await resetBeautyWorkspace();
+    resetBeautyPilotWorkspace();
     setWorkspace(createDefaultBeautyWorkspace(language));
     setErrors([]);
     setNotice(text.resetDone);
@@ -139,6 +139,7 @@ export function BeautySetupPage() {
     <div className="beauty-success"><Check /><div><strong>{text.published}</strong><span>{text.publishedHint}</span></div></div>
     <div className="beauty-public-link"><span>{workspace.publicLink}</span><button type="button" onClick={copyLink}><Share2 size={18} />{text.copyLink}</button></div>
     <button className="beauty-primary" type="button" onClick={() => goTo("pro_public_preview")}><Eye size={19} />{text.openPreview}</button>
+    <button className="beauty-primary" type="button" onClick={() => goTo("pro_workspace")}>Открыть кабинет и Booking</button>
     <button className="beauty-secondary" type="button" onClick={() => goTo("pro_setup_review")}>{text.editSetup}</button>
     <button className="beauty-home-button" type="button" onClick={goHome}><House size={19} />{text.home}</button>
   </div>;
@@ -153,11 +154,11 @@ export function BeautySetupPage() {
     <button className="beauty-home-button" type="button" onClick={goHome}><House size={19} />{text.home}</button>
   </div>;
 
-  const content = workspace.currentStep === "pro_setup_profile" ? profile : workspace.currentStep === "pro_setup_service" ? service : workspace.currentStep === "pro_setup_availability" ? availability : workspace.currentStep === "pro_setup_review" ? review : workspace.currentStep === "pro_setup_published" ? published : preview;
+  const content = workspace.currentStep === "pro_setup_profile" ? profile : workspace.currentStep === "pro_setup_service" ? service : workspace.currentStep === "pro_setup_availability" ? availability : workspace.currentStep === "pro_setup_review" ? review : workspace.currentStep === "pro_setup_published" ? published : workspace.currentStep === "pro_workspace" ? <BeautyPilotWorkspace setup={workspace} onEdit={() => goTo("pro_setup_profile")} /> : preview;
   if (loading) return <main className="beauty-shell"><div className="beauty-loading">{text.loading}</div></main>;
 
   return <main className="beauty-shell">
-    <header className="beauty-topbar"><button className="beauty-icon-button" type="button" onClick={back} aria-label={text.back}><ArrowLeft /></button><div><span>GO IRL Beauty · {text.localFirst}</span><h1>{workspace.currentStep === "pro_public_preview" ? text.previewTitle : text.title}</h1></div><button className="beauty-icon-button" type="button" onClick={reset} aria-label={text.reset}><RotateCcw /></button></header>
+    <header className="beauty-topbar"><button className="beauty-icon-button" type="button" onClick={back} aria-label={text.back}><ArrowLeft /></button><div><span>GO IRL Beauty · {text.localFirst}</span><h1>{workspace.currentStep === "pro_public_preview" ? text.previewTitle : workspace.currentStep === "pro_workspace" ? "Beauty workspace" : text.title}</h1></div><button className="beauty-icon-button" type="button" onClick={reset} aria-label={text.reset}><RotateCcw /></button></header>
     {progress && <div className="beauty-progress" aria-label={`${text.step} ${progress.current}`}><div>{beautySetupSteps.map((step, index) => <span key={step} className={index < progress.current ? "is-active" : ""} />)}</div><p>{text.step} {progress.current}/{progress.total} · {stepLabels[workspace.currentStep as (typeof beautySetupSteps)[number]]}</p></div>}
     <section className="beauty-card">{content}{errors.length > 0 && <div className="beauty-errors" role="alert">{errors.map((code) => <p key={code}>{text.error(code)}</p>)}</div>}{notice && <div className="beauty-notice" role="status">{notice}</div>}</section>
     {progress && <footer className="beauty-actions"><button className="beauty-secondary" type="button" onClick={back}>{text.back}</button>{workspace.currentStep === "pro_setup_review" ? <button className="beauty-primary" type="button" onClick={publish}><Sparkles size={19} />{text.publish}</button> : <button className="beauty-primary" type="button" onClick={next}>{text.continue}</button>}</footer>}

@@ -1,8 +1,11 @@
+import type { Language } from "../types";
 import { BEAUTY_SCHEMA_VERSION, createDefaultBeautyWorkspace, type BeautyWorkspace } from "./beautySetupModel";
 
 const databaseName = "go-irl-beauty";
 const storeName = "workspace";
 const workspaceKey = "primary";
+const recoveryStorageKey = "go-irl-beauty-workspace-v2";
+let saveQueue: Promise<unknown> = Promise.resolve();
 
 const openDatabase = (): Promise<IDBDatabase> => new Promise((resolve, reject) => {
   const request = indexedDB.open(databaseName, BEAUTY_SCHEMA_VERSION);
@@ -40,19 +43,50 @@ const isBeautyWorkspace = (value: unknown): value is BeautyWorkspace => {
     && Boolean(candidate.availability);
 };
 
-export const loadBeautyWorkspace = async (): Promise<BeautyWorkspace> => {
-  if (typeof indexedDB === "undefined") return createDefaultBeautyWorkspace();
+const readRecoverySnapshot = (): BeautyWorkspace | undefined => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(recoveryStorageKey) || "null") as unknown;
+    return isBeautyWorkspace(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const newestWorkspace = (first?: BeautyWorkspace, second?: BeautyWorkspace) => {
+  if (!first) return second;
+  if (!second) return first;
+  return first.updatedAt >= second.updatedAt ? first : second;
+};
+
+export const loadBeautyWorkspace = async (language: Language = "en"): Promise<BeautyWorkspace> => {
+  const recovery = readRecoverySnapshot();
+  if (typeof indexedDB === "undefined") return recovery || createDefaultBeautyWorkspace(language);
   const stored = await runTransaction<BeautyWorkspace | undefined>("readonly", (store) => store.get(workspaceKey));
-  return isBeautyWorkspace(stored) ? stored : createDefaultBeautyWorkspace();
+  return newestWorkspace(stored, recovery) || createDefaultBeautyWorkspace(language);
 };
 
 export const saveBeautyWorkspace = async (workspace: BeautyWorkspace) => {
+  const snapshot = { ...workspace, updatedAt: new Date().toISOString() };
+  try {
+    localStorage.setItem(recoveryStorageKey, JSON.stringify(snapshot));
+  } catch {
+    // IndexedDB remains the primary store when synchronous recovery is unavailable.
+  }
   if (typeof indexedDB === "undefined") return;
-  await runTransaction<IDBValidKey>("readwrite", (store) => store.put(workspace, workspaceKey));
+  saveQueue = saveQueue
+    .catch(() => undefined)
+    .then(() => runTransaction<IDBValidKey>("readwrite", (store) => store.put(snapshot, workspaceKey)));
+  await saveQueue;
 };
 
 export const resetBeautyWorkspace = async () => {
+  try {
+    localStorage.removeItem(recoveryStorageKey);
+  } catch {
+    // Continue with IndexedDB reset when localStorage is unavailable.
+  }
   if (typeof indexedDB === "undefined") return;
+  await saveQueue;
   await runTransaction<undefined>("readwrite", (store) => store.delete(workspaceKey));
 };
 
@@ -60,5 +94,6 @@ export const beautyStorageMetadata = {
   databaseName,
   storeName,
   workspaceKey,
+  recoveryStorageKey,
   schemaVersion: BEAUTY_SCHEMA_VERSION,
 } as const;
