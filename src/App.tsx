@@ -30,7 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
-import { homeCategoriesForPath, serviceNavigationLabels } from "./domainHomeCategories";
+import { clientNavigationLabels, domainCabinetForPath, homeCategoriesForPath } from "./domainHomeCategories";
 import { AppHeader } from "./components/AppHeader";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
@@ -471,10 +471,12 @@ function App() {
             language={store.language}
             onOpen={openActivity}
             onJoin={handleJoin}
+            onOpenOrganizerCabinet={() => store.setView("create")}
           />
         )}
         {store.view === "discover" && <DiscoverView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
         {store.view === "explore" && <ExploreView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
+        {store.view === "bookings" && <BookingsView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
         {store.view === "create" && <CreateView key={editingActivity?.id || "new-event"} language={store.language} initialActivity={editingActivity} onCancel={() => {
           setEditingActivity(null);
           store.setView("home");
@@ -542,17 +544,23 @@ function App() {
   );
 }
 
-function HomeView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
-  const { activities, loading, setCategory } = useAppStore();
+function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onOpenOrganizerCabinet: () => void }) {
+  const { activities, loading, setCategory, userRole } = useAppStore();
   const t = getTranslation(language);
   const today = new Date().toISOString().slice(0, 10);
   const nearby = activities.filter((item) => item.date >= today).slice(0, 4);
   const popular = activities.filter((item) => item.popular);
   const urgent = activities.filter((item) => item.urgent);
   const homeCategories = homeCategoriesForPath(window.location.pathname, language);
+  const cabinet = domainCabinetForPath(window.location.pathname, userRole, language);
 
   return (
     <>
+      {cabinet && (
+        cabinet.kind === "professional"
+          ? <a className="domain-cabinet-entry" href="/beauty"><Sparkles /><strong>{cabinet.label}</strong><ChevronRight /></a>
+          : <button className="domain-cabinet-entry" onClick={onOpenOrganizerCabinet} type="button"><UsersRound /><strong>{cabinet.label}</strong><ChevronRight /></button>
+      )}
       <SectionHeader title={t.chooseDirection} />
       <div className={homeCategories.length === 1 ? "category-grid module-grid services-category-grid" : "category-grid module-grid"}>
         {homeCategories.map((category) => (
@@ -569,6 +577,23 @@ function HomeView({ language, onOpen, onJoin }: { language: Language; onOpen: Op
       {urgent.length > 0 && <ActivitySection title={t.urgent} icon={<Zap size={18} />} activities={urgent} language={language} onOpen={onOpen} onJoin={onJoin} urgent />}
       <ActivitySection title={t.popular} activities={popular} language={language} onOpen={onOpen} onJoin={onJoin} />
     </>
+  );
+}
+
+function BookingsView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
+  const { activities, joinedIds, waitingIds, pendingIds } = useAppStore();
+  const serviceDomain = window.location.pathname.replace(/\/+$/, "") === "/services";
+  const relevantIds = new Set([...joinedIds, ...waitingIds, ...pendingIds]);
+  const bookings = activities.filter((activity) => relevantIds.has(activity.id) && (!serviceDomain || activity.categoryId === "creativity"));
+  const title = clientNavigationLabels[language][3];
+
+  return (
+    <section>
+      <SectionHeader title={title} icon={<CalendarDays />} />
+      {bookings.length
+        ? <ActivitySection title={title} activities={bookings} language={language} onOpen={onOpen} onJoin={onJoin} />
+        : <EmptyState text={language === "ru" ? "У вас пока нет записей" : language === "uk" ? "У вас поки немає записів" : language === "cs" ? "Zatím nemáte žádné rezervace" : "You have no bookings yet"} />}
+    </section>
   );
 }
 
@@ -1706,16 +1731,13 @@ function EventDetailsSkeleton() {
 }
 
 function BottomNav({ view, setView, language }: { view: AppView; setView: (view: AppView) => void; language: Language }) {
-  const t = getTranslation(language);
-  const serviceLabels = window.location.pathname.replace(/\/+$/, "") === "/services"
-    ? serviceNavigationLabels[language]
-    : null;
+  const labels = clientNavigationLabels[language];
   const items: Array<{ id: AppView; label: string; icon: React.ReactNode }> = [
-    { id: "home", label: serviceLabels?.[0] || t.navHome, icon: <Home /> },
-    { id: "discover", label: serviceLabels?.[1] || t.navDiscover, icon: <Sparkles /> },
-    { id: "explore", label: serviceLabels?.[2] || t.navExplore, icon: <Compass /> },
-    { id: "create", label: serviceLabels?.[3] || t.navCreate, icon: <Plus /> },
-    { id: "profile", label: serviceLabels?.[4] || t.navProfile, icon: <CircleUserRound /> },
+    { id: "home", label: labels[0], icon: <Home /> },
+    { id: "discover", label: labels[1], icon: <Sparkles /> },
+    { id: "explore", label: labels[2], icon: <Compass /> },
+    { id: "bookings", label: labels[3], icon: <CalendarDays /> },
+    { id: "profile", label: labels[4], icon: <CircleUserRound /> },
   ];
   return <nav className="bottom-nav">{items.map((item) => <button className={view === item.id ? "active" : ""} key={item.id} onClick={() => setView(item.id)} type="button">{item.icon}<span>{item.label}</span></button>)}</nav>;
 }

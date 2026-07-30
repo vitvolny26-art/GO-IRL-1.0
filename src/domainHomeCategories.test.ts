@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { categories } from "./data";
-import { homeCategoriesForPath, serviceNavigationLabels } from "./domainHomeCategories";
+import { clientNavigationLabels, domainCabinetForPath, homeCategoriesForPath } from "./domainHomeCategories";
 
 describe("homeCategoriesForPath", () => {
   it("keeps the activities category grid unchanged", () => {
@@ -16,6 +16,15 @@ describe("homeCategoriesForPath", () => {
   });
 
   it("defines the service-specific Russian navigation", () => {
-    expect(serviceNavigationLabels.ru).toEqual(["Главная", "Для вас", "Каталог", "Записаться", "Профиль"]);
+    expect(clientNavigationLabels.ru).toEqual(["Главная", "Для вас", "Каталог", "Мои записи", "Профиль"]);
+  });
+
+  it("keeps role cabinets inside their respective root domains", () => {
+    expect(domainCabinetForPath("/activities", "organizer")?.kind).toBe("organizer");
+    expect(domainCabinetForPath("/services", "professional")?.kind).toBe("professional");
+    expect(domainCabinetForPath("/services", "organizer")).toBeNull();
+    expect(domainCabinetForPath("/activities", "professional")).toBeNull();
+    expect(domainCabinetForPath("/activities", "user")).toBeNull();
+    expect(domainCabinetForPath("/services", "user")).toBeNull();
   });
 });

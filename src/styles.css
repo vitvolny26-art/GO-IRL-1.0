@@ -109,6 +109,10 @@ button, input, textarea, select { letter-spacing: 0; }
 .home-stats strong { font-size: 22px; line-height: 1; }
 .home-stats span { color: var(--muted); font-size: 10px; font-weight: 750; line-height: 1.2; overflow-wrap: anywhere; }
 .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.domain-cabinet-entry { display: grid; grid-template-columns: 38px 1fr 20px; align-items: center; gap: 10px; width: 100%; margin: 0 0 16px; padding: 13px 14px; border: 1px solid var(--lime); border-radius: 10px; background: rgba(201,255,61,.1); color: var(--text); text-align: left; text-decoration: none; }
+.domain-cabinet-entry > svg:first-child { width: 22px; color: var(--lime); }
+.domain-cabinet-entry > svg:last-child { width: 18px; color: var(--muted); }
+.domain-cabinet-entry strong { font-size: 15px; }
 .quick { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 64px; padding: 10px; border: 0; border-radius: 8px; font-size: 15px; font-weight: 850; }
 .quick.primary { background: var(--lime); color: var(--lime-text); }
 .quick.secondary {
