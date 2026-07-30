@@ -61,18 +61,33 @@ The repository includes `vercel.json`, so Vercel should pick up the SPA fallback
 
 The Vercel project connected to production must track `vitvolny26-art/GO-IRL-1.0`. The legacy `vitvolny26-art/GO-IRL` repository and its Vercel project must not be used for the current Telegram Mini App URL.
 
-After the GitHub connection is active, every push to `main` should trigger a production deploy automatically.
+### Manual release gate
+
+Automatic Git deployments are disabled in `vercel.json`. A push or merge to `main` must not create a Preview or production deployment.
+
+Merge and production deployment are separate approval gates:
+
+1. Merge only after explicit owner approval and green required checks on the exact commit.
+2. After merge, verify the intended `main` commit SHA and release scope.
+3. Obtain separate explicit owner approval for production deployment.
+4. Start exactly one production deployment for that approved SHA.
+5. Do not redeploy, promote a Preview, create empty commits, or open retry PRs merely to consume another Vercel attempt.
+6. Record deployment ID, commit SHA, environment, result, smoke evidence, and rollback condition.
+
+Preview deployment is exceptional. It requires a specific QA need, a declared push/deployment budget, and explicit approval before the deployment is started.
+
+A Vercel quota or build-rate-limit failure is operational evidence, not an application regression. Do not retry until capacity is available and the release candidate remains unchanged.
 
 ### Vercel status interpretation
 
 | Vercel status | Meaning | Action |
 |---|---|---|
 | `success` | Deployment/build passed. | Continue release smoke tests. |
-| `pending` | Deployment/build is still running. | Wait and re-check. |
+| `pending` | Deployment/build is still running. | Re-check the same deployment; do not create another one. |
 | `failure` with app/build logs | Possible app/build regression. | Inspect first red build error before changing code. |
-| `failure` with `upgradeToPro=build-rate-limit` | Vercel quota/build-rate limit. | Treat as operational quota issue, not app regression. Do not change code for this. |
+| `failure` with `upgradeToPro=build-rate-limit` | Vercel quota/build-rate limit. | Treat as operational quota issue, not app regression. Do not change code or retry repeatedly. |
 
-If Vercel is blocked by build-rate limit, keep local `pnpm run lint`, `pnpm run build`, and `pnpm run test` as the temporary quality gate until Vercel builds are available again.
+If Vercel is blocked by build-rate limit, keep local `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`, and `pnpm run test` as quality evidence. Local checks do not prove production deployment or runtime behavior.
 
 ## 3a. Historical / Secondary Netlify Notes
 
