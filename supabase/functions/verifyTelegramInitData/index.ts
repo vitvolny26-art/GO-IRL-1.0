@@ -126,7 +126,6 @@ Deno.serve(async (request) => {
         provider: "telegram",
         provider_user_id: String(verified.user.id),
         status: "active",
-        last_inbound_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: "provider,provider_user_id" });
 
