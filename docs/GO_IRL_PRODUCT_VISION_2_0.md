@@ -4,8 +4,8 @@ owner: Product Owner / Product Lead
 status: Draft — Reviewed
 source_of_truth: false
 work_id: VISION002
-review_state: Reviewed with governance reconciliation required
-last_review: 2026-07-29
+review_state: Reviewed with governance reconciliation proposed
+last_review: 2026-07-30
 next_review: 2026-08-12
 ---
 
@@ -32,7 +32,7 @@ This document records an approved future product direction, not the current ship
 
 Current authority remains:
 
-- `docs/PRODUCT_PHILOSOPHY.md` for the existing product philosophy;
+- `docs/bible/01-foundation/01-product-philosophy.md` for the canonical product philosophy;
 - `docs/GO_IRL_CONSTITUTION.md` for current product and architecture governance;
 - `docs/MARKET_POSITIONING.md` for current release positioning;
 - `ROADMAP.md` for current sequencing, gates, and implementation authorization;
@@ -462,10 +462,10 @@ VISION002 is aligned with the current source-of-truth documents on:
 
 VISION002 intentionally extends current canonical boundaries:
 
-1. `docs/PRODUCT_PHILOSOPHY.md` says the main product question is what a person can do today "with other people" and defines Activity as the heart of the platform.
-2. `docs/GO_IRL_CONSTITUTION.md` defines Activity as the main entity and positions GO IRL as a platform for organizing offline activities.
-3. `docs/MARKET_POSITIONING.md` and `ROADMAP.md` currently position GO IRL as a Telegram-first local meetup layer and do not contain a Services delivery phase.
-4. The current roadmap treats payments, subscriptions, premium plans, and paid growth as gated future scope and contains no monetization phase.
+1. `docs/bible/01-foundation/01-product-philosophy.md` says the current concrete product question is what a person can do today "with other people" and keeps the release Activities-first.
+2. `docs/GO_IRL_CONSTITUTION.md` defines Activity as the main entity of the Activities domain while keeping Services separately gated.
+3. `docs/MARKET_POSITIONING.md` and `ROADMAP.md` currently position GO IRL as a Telegram-first local meetup layer; Services remains a separately gated future track rather than current release positioning.
+4. The current roadmap treats payments, subscriptions, premium plans, and paid growth as gated future scope and contains no authorized monetization implementation phase.
 
 These are real governance differences, not wording-only differences.
 
@@ -490,11 +490,11 @@ It does not override current canonical governance, release gates, or runtime evi
 
 Claim | Evidence | Scope
 --- | --- | ---
-GO IRL is governed by real-life outcomes, anti-feed principles, and Activity-centered current philosophy | GH:docs/PRODUCT_PHILOSOPHY.md@main; GH:docs/GO_IRL_CONSTITUTION.md@main | Current canonical philosophy and constitution reviewed 2026-07-29
-Current market positioning is a Telegram-first local meetup layer for small real-life activities | GH:docs/MARKET_POSITIONING.md@main | Current release positioning reviewed 2026-07-29
-Activities remain the current proven product core and release priority | GH:ROADMAP.md@main | Current canonical sequencing reviewed 2026-07-29
+GO IRL is governed by real-life outcomes, anti-feed principles, and Activities-first current release boundaries | GH:docs/bible/01-foundation/01-product-philosophy.md@main; GH:docs/GO_IRL_CONSTITUTION.md@main | Current canonical philosophy and constitution reviewed 2026-07-30
+Current market positioning is a Telegram-first local meetup layer for small real-life activities | GH:docs/MARKET_POSITIONING.md@main | Current release positioning reviewed 2026-07-30
+Activities remain the current proven product core and release priority | GH:ROADMAP.md@main | Current canonical sequencing reviewed 2026-07-30
 GO IRL supports vertical experiences with separate UX, rules, recommendations, privacy, and safety models | GH:docs/GO_IRL_CONSTITUTION.md@main | Architectural compatibility
-Beauty is approved as a permanent future GO IRL vertical | GH:docs/decisions/2026-07-29-beauty-inclusion.md@de71be392f608fce9d2ebc9696c40a7eb76e9ec9 | Approved branch decision
-Services is the approved domain name; Booking is a process and Appointment is the resulting entity | GH:docs/decisions/2026-07-29-beauty-inclusion.md@de71be392f608fce9d2ebc9696c40a7eb76e9ec9 | Approved terminology decision
+Beauty is approved as a permanent future GO IRL vertical | GH:docs/decisions/2026-07-29-beauty-inclusion.md@a4423b2b077445ef71397c06ae5a661d4f382158 | Approved branch decision
+Services is the approved domain name; Booking is a process and Appointment is the resulting entity | GH:docs/decisions/2026-07-29-beauty-inclusion.md@a4423b2b077445ef71397c06ae5a661d4f382158 | Approved terminology decision
 Only Beauty is currently approved inside Services | USER:conversation-2026-07-29 | Current Product Owner decision scope
-GO IRL may later charge a small fee to professional or recurring Offline Enablers who receive repeat operational or commercial value | GH:docs/decisions/2026-07-29-offline-enabler-monetization.md@5421dac03e1c77d68fd7a57537e7036aaed26343 | Approved future monetization direction only
+GO IRL may later charge a small fee to professional or recurring Offline Enablers who receive repeat operational or commercial value | GH:docs/decisions/2026-07-29-offline-enabler-monetization.md@a2a7296fafb35b87bafd5814c9c27fd803b70ff9 | Approved future monetization direction only
