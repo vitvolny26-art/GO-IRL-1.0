@@ -1,4 +1,6 @@
-export const BEAUTY_SCHEMA_VERSION = 1 as const;
+import type { Language } from "../types";
+
+export const BEAUTY_SCHEMA_VERSION = 2 as const;
 
 export const beautySetupSteps = [
   "pro_setup_profile",
@@ -13,6 +15,22 @@ export type BeautySetupStep =
   | "pro_public_preview";
 
 export type BeautyWeekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
+export type BeautyValidationCode =
+  | "profile_display_name_required"
+  | "profile_city_required"
+  | "profile_public_location_required"
+  | "profile_contact_required"
+  | "profile_exact_address_required"
+  | "service_name_required"
+  | "service_duration_invalid"
+  | "service_price_invalid"
+  | "service_buffer_invalid"
+  | "availability_weekday_required"
+  | "availability_time_required"
+  | "availability_time_order_invalid"
+  | "availability_break_required"
+  | "availability_break_order_invalid";
 
 export type BeautyWorkspace = {
   schemaVersion: typeof BEAUTY_SCHEMA_VERSION;
@@ -56,35 +74,77 @@ export type BeautyPublicProfile = {
   publicLink: string;
 };
 
-export const beautyWeekdayLabels: Record<BeautyWeekday, string> = {
-  mon: "Po",
-  tue: "Út",
-  wed: "St",
-  thu: "Čt",
-  fri: "Pá",
-  sat: "So",
-  sun: "Ne",
+const localizedDefaults: Record<Language, Pick<BeautyWorkspace, "profile" | "service">> = {
+  ru: {
+    profile: {
+      displayName: "Студия Анна",
+      city: "Оломоуц",
+      publicLocation: "Центр, Оломоуц",
+      contact: "+420 777 000 111",
+      exactAddress: "Horní náměstí 1, Olomouc",
+    },
+    service: {
+      name: "Маникюр с гель-лаком",
+      durationMinutes: 75,
+      priceCzk: 890,
+      bufferMinutes: 15,
+    },
+  },
+  uk: {
+    profile: {
+      displayName: "Студія Анна",
+      city: "Оломоуц",
+      publicLocation: "Центр, Оломоуц",
+      contact: "+420 777 000 111",
+      exactAddress: "Horní náměstí 1, Olomouc",
+    },
+    service: {
+      name: "Манікюр з гель-лаком",
+      durationMinutes: 75,
+      priceCzk: 890,
+      bufferMinutes: 15,
+    },
+  },
+  cs: {
+    profile: {
+      displayName: "Studio Anna",
+      city: "Olomouc",
+      publicLocation: "Centrum, Olomouc",
+      contact: "+420 777 000 111",
+      exactAddress: "Horní náměstí 1, Olomouc",
+    },
+    service: {
+      name: "Manikúra s gel lakem",
+      durationMinutes: 75,
+      priceCzk: 890,
+      bufferMinutes: 15,
+    },
+  },
+  en: {
+    profile: {
+      displayName: "Anna Studio",
+      city: "Olomouc",
+      publicLocation: "City centre, Olomouc",
+      contact: "+420 777 000 111",
+      exactAddress: "Horní náměstí 1, Olomouc",
+    },
+    service: {
+      name: "Gel manicure",
+      durationMinutes: 75,
+      priceCzk: 890,
+      bufferMinutes: 15,
+    },
+  },
 };
 
-export const createDefaultBeautyWorkspace = (): BeautyWorkspace => ({
+export const createDefaultBeautyWorkspace = (language: Language = "en"): BeautyWorkspace => ({
   schemaVersion: BEAUTY_SCHEMA_VERSION,
   currentStep: "pro_setup_profile",
   published: false,
   updatedAt: new Date().toISOString(),
-  publicLink: "https://goirl.local/beauty/studio-anna",
-  profile: {
-    displayName: "Studio Anna",
-    city: "Olomouc",
-    publicLocation: "Centrum, Olomouc",
-    contact: "+420 777 000 111",
-    exactAddress: "Horní náměstí 1, Olomouc",
-  },
-  service: {
-    name: "Manikúra s gel lakem",
-    durationMinutes: 75,
-    priceCzk: 890,
-    bufferMinutes: 15,
-  },
+  publicLink: "https://goirl.local/beauty/anna",
+  profile: { ...localizedDefaults[language].profile },
+  service: { ...localizedDefaults[language].service },
   availability: {
     weekdays: ["mon", "tue", "wed", "thu", "fri"],
     startTime: "09:00",
@@ -115,34 +175,34 @@ export const buildBeautyPublicProfile = (workspace: BeautyWorkspace): BeautyPubl
 
 const isBlank = (value: string) => value.trim().length === 0;
 
-export const validateBeautyStep = (workspace: BeautyWorkspace, step: BeautySetupStep): string[] => {
+export const validateBeautyStep = (workspace: BeautyWorkspace, step: BeautySetupStep): BeautyValidationCode[] => {
   if (step === "pro_setup_profile") {
-    const errors: string[] = [];
-    if (isBlank(workspace.profile.displayName)) errors.push("Vyplňte veřejné jméno.");
-    if (isBlank(workspace.profile.city)) errors.push("Vyplňte město.");
-    if (isBlank(workspace.profile.publicLocation)) errors.push("Vyplňte veřejnou oblast.");
-    if (isBlank(workspace.profile.contact)) errors.push("Vyplňte kontaktní údaj.");
-    if (isBlank(workspace.profile.exactAddress)) errors.push("Vyplňte přesnou adresu pro potvrzené rezervace.");
+    const errors: BeautyValidationCode[] = [];
+    if (isBlank(workspace.profile.displayName)) errors.push("profile_display_name_required");
+    if (isBlank(workspace.profile.city)) errors.push("profile_city_required");
+    if (isBlank(workspace.profile.publicLocation)) errors.push("profile_public_location_required");
+    if (isBlank(workspace.profile.contact)) errors.push("profile_contact_required");
+    if (isBlank(workspace.profile.exactAddress)) errors.push("profile_exact_address_required");
     return errors;
   }
 
   if (step === "pro_setup_service") {
-    const errors: string[] = [];
-    if (isBlank(workspace.service.name)) errors.push("Vyplňte název služby.");
-    if (workspace.service.durationMinutes <= 0) errors.push("Délka služby musí být větší než nula.");
-    if (workspace.service.priceCzk < 0) errors.push("Cena nemůže být záporná.");
-    if (workspace.service.bufferMinutes < 0) errors.push("Buffer nemůže být záporný.");
+    const errors: BeautyValidationCode[] = [];
+    if (isBlank(workspace.service.name)) errors.push("service_name_required");
+    if (workspace.service.durationMinutes <= 0) errors.push("service_duration_invalid");
+    if (workspace.service.priceCzk < 0) errors.push("service_price_invalid");
+    if (workspace.service.bufferMinutes < 0) errors.push("service_buffer_invalid");
     return errors;
   }
 
   if (step === "pro_setup_availability") {
-    const errors: string[] = [];
-    if (!workspace.availability.weekdays.length) errors.push("Vyberte alespoň jeden pracovní den.");
-    if (!workspace.availability.startTime || !workspace.availability.endTime) errors.push("Vyplňte začátek a konec dostupnosti.");
-    if (workspace.availability.startTime >= workspace.availability.endTime) errors.push("Konec dostupnosti musí být později než začátek.");
+    const errors: BeautyValidationCode[] = [];
+    if (!workspace.availability.weekdays.length) errors.push("availability_weekday_required");
+    if (!workspace.availability.startTime || !workspace.availability.endTime) errors.push("availability_time_required");
+    if (workspace.availability.startTime >= workspace.availability.endTime) errors.push("availability_time_order_invalid");
     if (workspace.availability.breakEnabled) {
-      if (!workspace.availability.breakStart || !workspace.availability.breakEnd) errors.push("Vyplňte začátek a konec pauzy.");
-      if (workspace.availability.breakStart >= workspace.availability.breakEnd) errors.push("Konec pauzy musí být později než začátek.");
+      if (!workspace.availability.breakStart || !workspace.availability.breakEnd) errors.push("availability_break_required");
+      if (workspace.availability.breakStart >= workspace.availability.breakEnd) errors.push("availability_break_order_invalid");
     }
     return errors;
   }
