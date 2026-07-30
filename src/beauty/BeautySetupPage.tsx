@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, Eye, RotateCcw, Save, Share2, Sparkles } from "lucide-react";
 import {
   beautySetupSteps,
