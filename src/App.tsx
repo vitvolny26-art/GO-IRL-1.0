@@ -39,7 +39,6 @@ import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
 import {
   applyDiscoverFilters,
-  actionableSurpriseActivities,
   matchesActivityInterest,
   searchActivities,
   simpleRecommendationEngine,
@@ -376,20 +375,6 @@ function App() {
     }
   };
 
-  const openRandom = () => {
-    const eligible = actionableSurpriseActivities(store.activities, {
-      userKey: getUserKey(),
-      joinedIds: store.joinedIds,
-      waitingIds: store.waitingIds,
-      pendingIds: store.pendingIds,
-      now: new Date(),
-    });
-    const random = eligible[Math.floor(Math.random() * eligible.length)];
-    if (random) openActivity(random);
-    else flash(t.noEvents);
-    impactTelegram("medium");
-  };
-
   const handleJoin = async (activity: Activity) => {
     try {
       const result = await store.toggleJoin(activity.id);
@@ -485,8 +470,6 @@ function App() {
             language={store.language}
             onOpen={openActivity}
             onJoin={handleJoin}
-            onRandom={openRandom}
-            onCreate={() => store.setView("create")}
           />
         )}
         {store.view === "discover" && <DiscoverView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
@@ -558,37 +541,16 @@ function App() {
   );
 }
 
-function HomeView({ language, onOpen, onJoin, onRandom, onCreate }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onRandom: () => void; onCreate: () => void }) {
-  const { activities, loading, selectedCityId, setCategory } = useAppStore();
+function HomeView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
+  const { activities, loading, setCategory } = useAppStore();
   const t = getTranslation(language);
-  const city = getCity(selectedCityId);
   const today = new Date().toISOString().slice(0, 10);
   const nearby = activities.filter((item) => item.date >= today).slice(0, 4);
   const popular = activities.filter((item) => item.popular);
   const urgent = activities.filter((item) => item.urgent);
-  const activeCategoryCount = new Set(activities.map((item) => item.categoryId)).size;
 
   return (
     <>
-      <section className="home-hero">
-        <div className="go-irl-hero-logo-frame">
-          <img className="go-irl-hero-logo-img" src="/brand/logo-wide.png?v=logo-fix-2" alt="GO IRL" />
-        </div>
-        <div className="home-kicker"><MapPin />{t.liveInCity} · {city.name[language]}</div>
-        <h1>{t.homeTitle}</h1>
-        <p>{t.homeSubtitle}</p>
-        <div className="home-stats" aria-label={t.categories}>
-          <div><strong>{nearby.length}</strong><span>{t.upcomingCount}</span></div>
-          <div><strong>{activeCategoryCount || categories.length}</strong><span>{t.activeDirections}</span></div>
-          <div><strong>{urgent.length}</strong><span>{t.urgentShort}</span></div>
-        </div>
-      </section>
-
-      <div className="quick-actions">
-        <button className="quick primary" onClick={onRandom} type="button"><Dices size={25} /><span>{t.surprise}</span></button>
-        <button className="quick secondary" onClick={onCreate} type="button"><Plus size={25} /><span>{t.create}</span></button>
-      </div>
-
       <SectionHeader title={t.chooseDirection} />
       <div className="category-grid module-grid">
         {categories.map((category) => (

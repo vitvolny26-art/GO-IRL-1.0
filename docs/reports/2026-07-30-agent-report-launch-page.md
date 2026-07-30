@@ -35,6 +35,7 @@ Add a new root launch page to GO IRL 1.1 without moving or duplicating the exist
 - `/services` opens the same existing application as the initial routing foundation.
 - Existing routes and Telegram invitations bypass the launch page.
 - Added routing unit tests.
+- Simplified the shared application home so the category direction grid begins immediately below the top header.
 
 ## Checks
 
