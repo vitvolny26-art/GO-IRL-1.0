@@ -14,7 +14,7 @@ describe("Beauty setup model", () => {
   });
 
   it("keeps private fields out of the public profile", () => {
-    const workspace = createDefaultBeautyWorkspace();
+    const workspace = createDefaultBeautyWorkspace("ru");
     const publicProfile = buildBeautyPublicProfile(workspace);
 
     expect(publicProfile.displayName).toBe(workspace.profile.displayName);
@@ -22,14 +22,19 @@ describe("Beauty setup model", () => {
     expect(publicProfile).not.toHaveProperty("exactAddress");
   });
 
-  it("validates each editable stage independently", () => {
+  it("creates defaults in the selected app language", () => {
+    expect(createDefaultBeautyWorkspace("ru").service.name).toBe("Маникюр с гель-лаком");
+    expect(createDefaultBeautyWorkspace("en").service.name).toBe("Gel manicure");
+  });
+
+  it("returns language-neutral validation codes", () => {
     const workspace = createDefaultBeautyWorkspace();
     workspace.profile.displayName = "";
     workspace.service.durationMinutes = 0;
     workspace.availability.weekdays = [];
 
-    expect(validateBeautyStep(workspace, "pro_setup_profile")).toContain("Vyplňte veřejné jméno.");
-    expect(validateBeautyStep(workspace, "pro_setup_service")).toContain("Délka služby musí být větší než nula.");
-    expect(validateBeautyStep(workspace, "pro_setup_availability")).toContain("Vyberte alespoň jeden pracovní den.");
+    expect(validateBeautyStep(workspace, "pro_setup_profile")).toContain("profile_display_name_required");
+    expect(validateBeautyStep(workspace, "pro_setup_service")).toContain("service_duration_invalid");
+    expect(validateBeautyStep(workspace, "pro_setup_availability")).toContain("availability_weekday_required");
   });
 });
