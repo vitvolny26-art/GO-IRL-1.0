@@ -19,6 +19,8 @@ import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
 import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/AdminLoginPage";
 import { resolveAdminRoute } from "./admin/adminSession";
 import { isProfilePath } from "./profile/profileRoute";
+import { BeautySetupPage } from "./beauty/BeautySetupPage";
+import { BeautyHomeEntryPortal } from "./beauty/BeautyHomeEntryPortal";
 import { useAppStore } from "./store";
 import "./styles.css";
 import "./category-cards.css";
@@ -89,6 +91,7 @@ const initializeLanguagePreference = () => {
   if (storedLanguage) {
     localStorage.setItem(legacyLanguageStorageKey, storedLanguage);
     if (preferences.language !== storedLanguage) localStorage.setItem(preferencesStorageKey, JSON.stringify({ ...preferences, language: storedLanguage }));
+    useAppStore.setState({ language: storedLanguage });
     return;
   }
   const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user as TelegramUserWithLanguage | undefined;
@@ -97,14 +100,16 @@ const initializeLanguagePreference = () => {
   const language = telegramLanguage || browserLanguage || "en";
   localStorage.setItem(legacyLanguageStorageKey, language);
   localStorage.setItem(preferencesStorageKey, JSON.stringify({ ...preferences, language }));
+  useAppStore.setState({ language });
 };
 
 initializeLanguagePreference();
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 const adminRoute = resolveAdminRoute(window.location.pathname);
+const beautyRoute = window.location.pathname.replace(/\/+$/, "") === "/beauty";
 
-if (!adminRoute && isProfilePath(window.location.pathname)) {
+if (!adminRoute && !beautyRoute && isProfilePath(window.location.pathname)) {
   useAppStore.setState({ view: "profile" });
 }
 
@@ -135,9 +140,10 @@ function AdminDevPanel() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {adminSurface || (
+    {adminSurface || (beautyRoute ? <BeautySetupPage /> : (
       <QueryClientProvider client={queryClient}>
         <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}><App /></Suspense>
+        <BeautyHomeEntryPortal />
         <OrganizerProfilePortal />
         <OrganizerEventDetailsPortal />
         <EventLocationPickerPortal />
@@ -146,7 +152,7 @@ createRoot(document.getElementById("root")!).render(
         <ParticipantIdentityPortal />
         <AdminDevPanel />
       </QueryClientProvider>
-    )}
+    ))}
   </StrictMode>,
 );
 
