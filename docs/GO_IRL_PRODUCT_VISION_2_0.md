@@ -4,7 +4,7 @@ owner: Product Owner / Product Lead
 status: Draft — Reviewed
 source_of_truth: false
 work_id: VISION002
-review_state: Reviewed with governance reconciliation proposed
+review_state: Governance reconciliation included in PR #477
 last_review: 2026-07-30
 next_review: 2026-08-12
 ---
@@ -444,41 +444,19 @@ For monetization:
 
 No date or production priority for Services or monetization is authorized by this vision. This work must not silently displace unresolved release blockers or the current Activities release gate.
 
-## Governance review findings
+## Governance reconciliation in PR #477
 
-### Aligned with current governance
+PR #477 performs the governance reconciliation required to place the approved future direction alongside the current Activities-first release boundary.
 
-VISION002 is aligned with the current source-of-truth documents on:
+The proposed reconciliation:
 
-- real-life outcomes over screen time;
-- anti-feed and anti-generic-messenger principles;
-- vertical-specific UX, rules, privacy, and safety;
-- API-first and backend-owned business rules;
-- shared platform capabilities across Telegram, web, and future mobile clients;
-- privacy, consent, data minimization, moderation, and safety;
-- evidence and approval gates before implementation.
+- broadens the canonical Product Philosophy to cover completed Activities and future Appointments without weakening the anti-feed mission;
+- defines `Activities` and `Services` as separate top-level domains in the Constitution;
+- preserves current Telegram-first Activities release positioning while recording long-term platform positioning separately;
+- adds gated Services/Beauty and Offline Enabler monetization tracks to the canonical roadmap structure;
+- keeps Product Vision 2.0 non-canonical with `source_of_truth: false`.
 
-### Governance conflicts requiring reconciliation
-
-VISION002 intentionally extends current canonical boundaries:
-
-1. `docs/bible/01-foundation/01-product-philosophy.md` says the current concrete product question is what a person can do today "with other people" and keeps the release Activities-first.
-2. `docs/GO_IRL_CONSTITUTION.md` defines Activity as the main entity of the Activities domain while keeping Services separately gated.
-3. `docs/MARKET_POSITIONING.md` and `ROADMAP.md` currently position GO IRL as a Telegram-first local meetup layer; Services remains a separately gated future track rather than current release positioning.
-4. The current roadmap treats payments, subscriptions, premium plans, and paid growth as gated future scope and contains no authorized monetization implementation phase.
-
-These are real governance differences, not wording-only differences.
-
-### Required reconciliation before canonical adoption
-
-Before VISION002 can become a source-of-truth document or be treated as fully reconciled on `main`, a dedicated governance change must review and, if approved, amend:
-
-- Product Philosophy — broaden the main product question without weakening the anti-feed mission;
-- Constitution — define `Activities` and `Services` as separate top-level domains and clarify that Activity is the main entity of the Activities domain, not necessarily the entire future platform;
-- Market Positioning — preserve current release positioning while separating it from long-term platform positioning;
-- Roadmap — add gated Services/Beauty and monetization tracks without changing current release priorities by implication.
-
-Until that reconciliation is reviewed and merged, VISION002 remains an approved future-direction draft and not canonical current product governance.
+This reconciliation becomes active governance only if PR #477 is reviewed and merged. Until then, current `main` and runtime evidence remain authoritative.
 
 ## Governance effect
 
