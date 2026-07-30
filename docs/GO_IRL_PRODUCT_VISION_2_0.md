@@ -4,7 +4,7 @@ owner: Product Owner / Product Lead
 status: Draft — Reviewed
 source_of_truth: false
 work_id: VISION002
-review_state: Governance reconciliation included in PR #477
+review_state: Governance reconciliation active via merged PR #477
 last_review: 2026-07-30
 next_review: 2026-08-12
 ---
@@ -444,11 +444,11 @@ For monetization:
 
 No date or production priority for Services or monetization is authorized by this vision. This work must not silently displace unresolved release blockers or the current Activities release gate.
 
-## Governance reconciliation in PR #477
+## Governance reconciliation
 
-PR #477 performs the governance reconciliation required to place the approved future direction alongside the current Activities-first release boundary.
+PR #477 merged the governance reconciliation required to place the approved future direction alongside the current Activities-first release boundary.
 
-The proposed reconciliation:
+The merged reconciliation:
 
 - broadens the canonical Product Philosophy to cover completed Activities and future Appointments without weakening the anti-feed mission;
 - defines `Activities` and `Services` as separate top-level domains in the Constitution;
@@ -456,7 +456,7 @@ The proposed reconciliation:
 - adds gated Services/Beauty and Offline Enabler monetization tracks to the canonical roadmap structure;
 - keeps Product Vision 2.0 non-canonical with `source_of_truth: false`.
 
-This reconciliation becomes active governance only if PR #477 is reviewed and merged. Until then, current `main` and runtime evidence remain authoritative.
+The reconciliation is active in canonical governance on `main`. This Product Vision remains supporting and non-canonical with `source_of_truth: false`; verified `main` and runtime evidence remain authoritative.
 
 ## Governance effect
 
