@@ -44,7 +44,7 @@ Not authorized before review:
 - large-scale city expansion;
 - paid growth experiments.
 
-Source record: [`docs/roadmap/SPRINT_5.md`](docs/roadmap/SPRINT_5.md).
+Source record: [`SPRINT_5.md`](SPRINT_5.md).
 
 ## Future Track A — Services and Beauty
 
@@ -216,11 +216,11 @@ Evidence required:
 
 The following retained files preserve planning history and source traceability:
 
-- [`docs/roadmap/SPRINT_0.md`](docs/roadmap/SPRINT_0.md) — Archived.
-- [`docs/roadmap/SPRINT_1.md`](docs/roadmap/SPRINT_1.md) — Archived.
-- [`docs/roadmap/SPRINT_2.md`](docs/roadmap/SPRINT_2.md) — Draft historical input.
-- [`docs/roadmap/SPRINT_3.md`](docs/roadmap/SPRINT_3.md) — Draft historical input.
-- [`docs/roadmap/SPRINT_4.md`](docs/roadmap/SPRINT_4.md) — Draft historical input.
-- [`docs/roadmap/SPRINT_5.md`](docs/roadmap/SPRINT_5.md) — Draft historical input.
+- [`SPRINT_0.md`](SPRINT_0.md) — Archived.
+- [`SPRINT_1.md`](SPRINT_1.md) — Archived.
+- [`SPRINT_2.md`](SPRINT_2.md) — Draft historical input.
+- [`SPRINT_3.md`](SPRINT_3.md) — Draft historical input.
+- [`SPRINT_4.md`](SPRINT_4.md) — Draft historical input.
+- [`SPRINT_5.md`](SPRINT_5.md) — Draft historical input.
 
 They remain available for audit and context, but this file controls current growth, future Services and monetization sequencing, decision gates, dependencies, and scope.
