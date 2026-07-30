@@ -24,10 +24,10 @@ const cabinetLabels: Record<Language, { organizer: string; professional: string 
 
 export const domainCabinetForPath = (pathname: string, role: import("./types").UserRole, language: Language = "ru") => {
   const domain = pathname.replace(/\/+$/, "");
-  if (domain === "/activities" && role === "organizer") {
+  if (domain === "/activities" && (role === "organizer" || role === "admin")) {
     return { label: cabinetLabels[language].organizer, kind: "organizer" as const };
   }
-  if (domain === "/services" && role === "professional") {
+  if (domain === "/services" && (role === "professional" || role === "admin")) {
     return { label: cabinetLabels[language].professional, kind: "professional" as const };
   }
   return null;

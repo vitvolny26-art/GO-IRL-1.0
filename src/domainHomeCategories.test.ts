@@ -22,6 +22,8 @@ describe("homeCategoriesForPath", () => {
   it("keeps role cabinets inside their respective root domains", () => {
     expect(domainCabinetForPath("/activities", "organizer")?.kind).toBe("organizer");
     expect(domainCabinetForPath("/services", "professional")?.kind).toBe("professional");
+    expect(domainCabinetForPath("/activities", "admin")?.kind).toBe("organizer");
+    expect(domainCabinetForPath("/services", "admin")?.kind).toBe("professional");
     expect(domainCabinetForPath("/services", "organizer")).toBeNull();
     expect(domainCabinetForPath("/activities", "professional")).toBeNull();
     expect(domainCabinetForPath("/activities", "user")).toBeNull();

@@ -25,6 +25,7 @@ The professional setup already exists at `/beauty`. The organizer's current flow
 
 - Added the `professional` frontend role.
 - Added role-gated organizer and professional cabinet entries at `/activities` and `/services`.
+- Treated `admin` as a super-role that can enter both domain cabinets without granting admin rights to either domain role.
 - Added the shared client navigation and a separate `Мои записи` view.
 - Kept the Beauty setup and organizer flow outside category cards.
 
