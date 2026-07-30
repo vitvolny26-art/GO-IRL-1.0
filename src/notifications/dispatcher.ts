@@ -19,6 +19,7 @@ export type EventNotificationDispatcherOptions = {
 
 type ApiPayload = {
   ok?: boolean;
+  description?: string;
   result?: { message_id?: number };
   messages?: Array<{ id?: string }>;
   message_id?: string;
@@ -31,6 +32,17 @@ const withinWindow = (delivery: EventNotificationDelivery, now: Date) => {
   const inbound = new Date(delivery.recipientLastInboundAt).getTime();
   return Number.isFinite(inbound) && now.getTime() - inbound >= 0
     && now.getTime() - inbound <= 24 * 60 * 60_000;
+};
+
+const normalizeTelegramFailure = (description: string | undefined, status: number) => {
+  const normalized = description?.trim().toLowerCase() || "";
+  if (normalized.includes("chat not found")) return "telegram_chat_not_found";
+  if (normalized.includes("bot was blocked by the user")) return "telegram_bot_blocked";
+  if (normalized.includes("user is deactivated")) return "telegram_user_deactivated";
+  if (normalized.includes("bot can't initiate conversation with a user")) {
+    return "telegram_conversation_not_started";
+  }
+  return `telegram_${status}`;
 };
 
 export class EventNotificationDispatcher {
@@ -127,12 +139,22 @@ export class EventNotificationDispatcher {
     if (response.ok && (delivery.provider !== "telegram" || payload.ok)) {
       return { status: "sent", ...(messageId ? { providerMessageId: String(messageId) } : {}) };
     }
-    const code = `${delivery.provider}_${payload.error?.code || response.status}`
-      + (payload.error?.error_subcode ? `_${payload.error.error_subcode}` : "");
+    const code = delivery.provider === "telegram"
+      ? normalizeTelegramFailure(payload.description, response.status)
+      : `${delivery.provider}_${payload.error?.code || response.status}`
+        + (payload.error?.error_subcode ? `_${payload.error.error_subcode}` : "");
     if (response.status === 429 || response.status >= 500 || payload.error?.is_transient) {
       throw new Error(code);
     }
-    if (response.status === 403 || payload.error?.code === 10 || payload.error?.code === 200) {
+    if (
+      response.status === 403
+      || payload.error?.code === 10
+      || payload.error?.code === 200
+      || code === "telegram_chat_not_found"
+      || code === "telegram_bot_blocked"
+      || code === "telegram_user_deactivated"
+      || code === "telegram_conversation_not_started"
+    ) {
       return { status: "cancelled", reason: code };
     }
     return { status: "failed", errorCode: code };

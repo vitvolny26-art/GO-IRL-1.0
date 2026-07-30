@@ -23,20 +23,27 @@ const telegramDelivery: EventNotificationDelivery = {
   openUrl: `https://go-irl-1-0.vercel.app/join/${eventId}`,
 };
 
-describe("EventNotificationDispatcher Telegram links", () => {
-  it("opens lifecycle notifications in the Telegram Mini App", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      ok: true,
-      result: { message_id: 42 },
-    }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    }));
-    const dispatcher = new EventNotificationDispatcher({
+const createDispatcher = (payload: unknown, status: number) => {
+  const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify(payload), {
+    status,
+    headers: { "content-type": "application/json" },
+  }));
+  return {
+    dispatcher: new EventNotificationDispatcher({
       telegramBotToken: "test-token",
       graphVersion: "v23.0",
       fetchImpl,
-    });
+    }),
+    fetchImpl,
+  };
+};
+
+describe("EventNotificationDispatcher Telegram", () => {
+  it("opens lifecycle notifications in the Telegram Mini App", async () => {
+    const { dispatcher, fetchImpl } = createDispatcher({
+      ok: true,
+      result: { message_id: 42 },
+    }, 200);
 
     await dispatcher.send(telegramDelivery);
 
@@ -46,5 +53,44 @@ describe("EventNotificationDispatcher Telegram links", () => {
       `https://t.me/GOirl_bot?startapp=${eventId}`,
     );
     expect(body.reply_markup.inline_keyboard[0][0].url).not.toContain("/join/");
+  });
+
+  it("cancels delivery when Telegram reports chat not found", async () => {
+    const { dispatcher } = createDispatcher({
+      ok: false,
+      error_code: 400,
+      description: "Bad Request: chat not found",
+    }, 400);
+
+    await expect(dispatcher.send(telegramDelivery)).resolves.toEqual({
+      status: "cancelled",
+      reason: "telegram_chat_not_found",
+    });
+  });
+
+  it("cancels delivery when the user blocked the bot", async () => {
+    const { dispatcher } = createDispatcher({
+      ok: false,
+      error_code: 403,
+      description: "Forbidden: bot was blocked by the user",
+    }, 403);
+
+    await expect(dispatcher.send(telegramDelivery)).resolves.toEqual({
+      status: "cancelled",
+      reason: "telegram_bot_blocked",
+    });
+  });
+
+  it("keeps unknown Telegram 400 responses diagnosable", async () => {
+    const { dispatcher } = createDispatcher({
+      ok: false,
+      error_code: 400,
+      description: "Bad Request: unexpected payload",
+    }, 400);
+
+    await expect(dispatcher.send(telegramDelivery)).resolves.toEqual({
+      status: "failed",
+      errorCode: "telegram_400",
+    });
   });
 });
