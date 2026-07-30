@@ -12,7 +12,8 @@ export const beautySetupSteps = [
 export type BeautySetupStep =
   | (typeof beautySetupSteps)[number]
   | "pro_setup_published"
-  | "pro_public_preview";
+  | "pro_public_preview"
+  | "pro_workspace";
 
 export type BeautyWeekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
@@ -30,7 +31,8 @@ export type BeautyValidationCode =
   | "availability_time_required"
   | "availability_time_order_invalid"
   | "availability_break_required"
-  | "availability_break_order_invalid";
+  | "availability_break_order_invalid"
+  | "availability_break_outside_working_hours";
 
 export type BeautyWorkspace = {
   schemaVersion: typeof BEAUTY_SCHEMA_VERSION;
@@ -203,6 +205,12 @@ export const validateBeautyStep = (workspace: BeautyWorkspace, step: BeautySetup
     if (workspace.availability.breakEnabled) {
       if (!workspace.availability.breakStart || !workspace.availability.breakEnd) errors.push("availability_break_required");
       if (workspace.availability.breakStart >= workspace.availability.breakEnd) errors.push("availability_break_order_invalid");
+      if (
+        workspace.availability.breakStart
+        && workspace.availability.breakEnd
+        && (workspace.availability.breakStart < workspace.availability.startTime
+          || workspace.availability.breakEnd > workspace.availability.endTime)
+      ) errors.push("availability_break_outside_working_hours");
     }
     return errors;
   }

@@ -6,6 +6,7 @@
   --beauty-text: #fff7fb;
   --beauty-muted: #c8b8cf;
   --beauty-rose: #ff6fae;
+  --beauty-gold: #d8b15a;
   --beauty-rose-strong: #ff4f9a;
   --beauty-lavender: #b9a7ff;
   --beauty-mint: #7ee2c1;
@@ -47,7 +48,7 @@
 .beauty-icon-button {
   width: 48px;
   height: 48px;
-  border: 1px solid var(--beauty-line);
+  border: 1px solid rgba(185, 167, 255, 0.4);
   border-radius: 14px;
   background: rgba(29, 21, 40, 0.92);
   color: var(--beauty-text);
@@ -69,7 +70,7 @@
   max-width: 760px;
   margin: 0 auto;
   padding: clamp(18px, 4vw, 30px);
-  border: 1px solid var(--beauty-line);
+  border: 1px solid var(--beauty-gold);
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(34, 24, 47, 0.96), rgba(25, 18, 35, 0.98));
   box-shadow: 0 24px 70px rgba(5, 2, 10, 0.38);
@@ -106,7 +107,7 @@
   display: grid;
   gap: 5px;
   padding: 14px;
-  border: 1px solid rgba(185, 167, 255, 0.25);
+  border: 1px solid var(--beauty-gold);
   border-radius: 14px;
   background: rgba(185, 167, 255, 0.08);
 }
@@ -236,7 +237,7 @@
   display: grid;
   gap: 10px;
   padding: 14px;
-  border: 1px solid var(--beauty-line);
+  border: 1px solid var(--beauty-gold);
   border-radius: 14px;
   background: var(--beauty-surface-2);
 }
@@ -274,7 +275,7 @@
   display: grid;
   gap: 5px;
   padding: 16px;
-  border: 1px solid var(--beauty-line);
+  border: 1px solid var(--beauty-gold);
   border-radius: 14px;
   background: var(--beauty-surface-2);
 }
@@ -282,6 +283,40 @@
 .beauty-preview-card span { color: var(--beauty-muted); }
 .beauty-preview-card b { color: var(--beauty-rose); font-size: 20px; }
 .beauty-loading { max-width: 760px; margin: 30vh auto; text-align: center; color: var(--beauty-rose); font-weight: 800; }
+
+.beauty-pilot { display: grid; gap: 18px; }
+.beauty-pilot-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.beauty-pilot-nav button { min-height: 54px; border: 1px solid var(--beauty-line); border-radius: 13px; background: #17101f; color: var(--beauty-muted); display: grid; place-items: center; gap: 3px; cursor: pointer; }
+.beauty-pilot-nav button.is-active { border-color: var(--beauty-rose); color: #ffe7a8; background: linear-gradient(145deg, #302116, #211620); }
+.beauty-pilot-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.beauty-pilot-heading h2 { margin: 10px 0 0; font-size: 30px; }
+.beauty-pilot-heading > div:last-child { display: flex; gap: 8px; }
+.beauty-pilot-list, .beauty-pilot-public { display: grid; gap: 10px; }
+.beauty-pilot-public h2 { margin: 0; font-size: 32px; }
+.beauty-muted { color: var(--beauty-muted); }
+.beauty-appointment-card { width: 100%; min-height: 76px; padding: 13px; border: 1px solid var(--beauty-gold); border-radius: 14px; background: #21172c; color: var(--beauty-text); display: grid; grid-template-columns: 62px 1fr auto; align-items: center; gap: 12px; text-align: left; cursor: pointer; }
+.beauty-appointment-card span { display: grid; gap: 3px; }
+.beauty-appointment-card small { color: var(--beauty-muted); }
+.beauty-appointment-card i { padding: 6px 9px; border-radius: 999px; background: #332440; color: #eadff0; font-size: 11px; font-style: normal; font-weight: 850; }
+.beauty-appointment-card i.status-confirmed, .status-confirmed { color: #a5f2d7; }
+.beauty-appointment-card i.status-pending, .status-pending { color: #ffe0a0; }
+.beauty-appointment-card i.status-cancelled, .beauty-appointment-card i.status-declined { color: #ffb1bd; }
+.beauty-time-block { min-height: 54px; padding: 12px 14px; border: 1px dashed var(--beauty-gold); border-radius: 13px; background: rgba(216,177,90,.08); color: #f6d996; display: flex; align-items: center; gap: 10px; }
+.beauty-time-block span { flex: 1; }
+.beauty-time-block button, .beauty-dialog-close { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.beauty-dialog-backdrop { position: fixed; inset: 0; z-index: 100; padding: 18px; background: rgba(4,2,7,.78); display: grid; place-items: center; backdrop-filter: blur(8px); }
+.beauty-dialog { position: relative; width: min(520px, 100%); max-height: calc(100vh - 36px); overflow: auto; padding: 24px; border: 1px solid var(--beauty-gold); border-radius: 22px; background: linear-gradient(180deg, #21162c, #120d19); box-shadow: 0 30px 90px #000; display: grid; gap: 14px; }
+.beauty-dialog h2, .beauty-dialog p { margin: 0; }
+.beauty-dialog p { display: flex; align-items: center; gap: 7px; color: var(--beauty-muted); }
+.beauty-dialog label { display: grid; gap: 6px; font-weight: 750; }
+.beauty-dialog input { min-height: 48px; padding: 11px; border: 1px solid var(--beauty-line); border-radius: 12px; background: #2a1d36; color: white; font: inherit; }
+.beauty-dialog-close { position: absolute; top: 13px; right: 13px; }
+.beauty-dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.beauty-danger { min-height: 48px; border: 1px solid rgba(255,95,118,.52); border-radius: 12px; background: rgba(255,95,118,.12); color: #ffb8c3; font-weight: 850; cursor: pointer; }
+.beauty-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.beauty-slots button { min-height: 44px; border: 1px solid var(--beauty-line); border-radius: 11px; background: #2a1d36; color: white; cursor: pointer; }
+.beauty-slots button.is-selected { border-color: var(--beauty-rose); background: #5a4324; color: #fff0ba; }
+.beauty-slots button:disabled { opacity: .35; text-decoration: line-through; cursor: not-allowed; }
 
 .profile-panel-beauty-entry {
   display: flex;
@@ -291,7 +326,7 @@
   width: 100%;
   margin: 0 0 14px;
   padding: 14px 16px;
-  border: 1px solid rgba(255, 111, 174, 0.3);
+  border: 1px solid var(--beauty-gold);
   border-radius: 12px;
   background: linear-gradient(135deg, rgba(255, 111, 174, 0.12), rgba(185, 167, 255, 0.1));
   color: inherit;
@@ -302,7 +337,7 @@
 .profile-panel-beauty-entry small { color: #bcaec5; }
 
 .app .beauty-home-entry {
-  border-color: rgba(255, 111, 174, 0.34);
+  border-color: var(--beauty-gold);
   background: linear-gradient(135deg, rgba(255, 111, 174, 0.15), rgba(185, 167, 255, 0.11));
 }
 
@@ -320,5 +355,10 @@
   .beauty-actions { grid-template-columns: 1fr; }
   .beauty-topbar { grid-template-columns: 44px 1fr 44px; }
   .beauty-icon-button { width: 44px; height: 44px; }
-  .beauty-card { padding: 18px; border-radius: 18px; }
+  .beauty-card { padding: 14px; border-radius: 18px; }
+  .beauty-pilot-heading { align-items: stretch; flex-direction: column; }
+  .beauty-pilot-heading > div:last-child { display: grid; grid-template-columns: 1fr 1fr; }
+  .beauty-appointment-card { grid-template-columns: 52px 1fr; }
+  .beauty-appointment-card i { grid-column: 2; justify-self: start; }
+  .beauty-dialog-actions { grid-template-columns: 1fr; }
 }

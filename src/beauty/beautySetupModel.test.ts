@@ -37,4 +37,12 @@ describe("Beauty setup model", () => {
     expect(validateBeautyStep(workspace, "pro_setup_service")).toContain("service_duration_invalid");
     expect(validateBeautyStep(workspace, "pro_setup_availability")).toContain("availability_weekday_required");
   });
+
+  it("requires a recurring break to stay inside working hours", () => {
+    const workspace = createDefaultBeautyWorkspace();
+    workspace.availability.breakStart = "08:30";
+
+    expect(validateBeautyStep(workspace, "pro_setup_availability"))
+      .toContain("availability_break_outside_working_hours");
+  });
 });
