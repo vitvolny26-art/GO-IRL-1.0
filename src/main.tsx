@@ -149,9 +149,6 @@ const readLaunchSurface = () => resolveLaunchSurface({
 
 function MainSurface() {
   const language = useAppStore((state) => state.language);
-  const selectedCityId = useAppStore((state) => state.selectedCityId);
-  const setLanguage = useAppStore((state) => state.setLanguage);
-  const setSelectedCity = useAppStore((state) => state.setSelectedCity);
   const [surface, setSurface] = useState<LaunchSurface>(readLaunchSurface);
 
   useEffect(() => {
@@ -176,10 +173,7 @@ function MainSurface() {
     return (
       <LaunchPage
         language={language}
-        selectedCityId={selectedCityId}
         surface={surface}
-        onLanguageChange={setLanguage}
-        onCityChange={setSelectedCity}
         onOpenActivities={() => openSurface("activities")}
         onOpenServices={() => openSurface("services")}
         onBack={openLaunch}

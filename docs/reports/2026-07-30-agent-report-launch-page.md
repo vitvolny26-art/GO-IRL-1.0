@@ -30,7 +30,6 @@ Add a new root launch page to GO IRL 1.1 without moving or duplicating the exist
 ## Changes made
 
 - Added a localized mobile-first launch page with Activities and Services choices.
-- Restored the original entry-shell visual design, copy, city/language selectors, statistics, and illustrated domain cards after production review.
 - Activities opens the complete existing application at `#activities`.
 - Services opens a localized coming-soon screen at `#services`.
 - Existing routes and Telegram invitations bypass the launch page.
