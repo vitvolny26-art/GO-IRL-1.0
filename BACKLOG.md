@@ -3,7 +3,7 @@ title: Backlog
 owner: Product Lead
 status: Draft
 source_of_truth: false
-last_review: 2026-07-09
+last_review: 2026-07-31
 next_review: 2026-08-09
 ---
 
@@ -114,26 +114,27 @@ Do not move these into beta implementation:
 ### Build Blocker
 
 - None confirmed.
-- Latest local quality gates are pending after the newest commits.
+- Latest local and VPS production builds passed at commit `70841bf`.
 
 ### Typecheck Blocker
 
 - None confirmed.
-- Verify with `pnpm run build` in the source repo.
+- Latest `pnpm run typecheck` passed locally and during VPS deployment.
 
 ### Lint Blocker
 
 - None confirmed.
-- Verify with `pnpm run lint` in the source repo.
+- Latest `pnpm run lint` passed with one pre-existing warning in `api/_shared/admin-authorization.ts`.
 
 ### Test Blocker
 
 - None confirmed.
-- Verify with `pnpm run test` in the source repo.
+- Latest full run passed: 123 test files and 585 tests, plus Staff OS checks.
 - Add deeper tests for activity creation, join/leave, waiting list, private pending requests, organizer approvals, and edit permissions.
 
 ### Runtime Bug
 
+- Verify the Vercel production artifact matches the current reviewed `main` and VPS production commit.
 - Verify deployed Vercel environment variables match `.env.example`.
 - Verify Supabase realtime is enabled for `activities` and `activity_members` in production.
 - Verify Telegram `startapp` links open the exact shared activity from a second account.

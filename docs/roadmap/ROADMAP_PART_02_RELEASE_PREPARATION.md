@@ -5,7 +5,7 @@ status: Active
 source_of_truth: true
 canonical_index: ROADMAP.md
 scope: Active Release Preparation and Stabilization bridge
-last_review: 2026-07-30
+last_review: 2026-07-31
 next_review: 2026-08-09
 ---
 
@@ -24,13 +24,15 @@ Current proven baseline:
 - Sport details include Coach and Event Chat.
 - Event cards, time rendering, support flow, weather, and Telegram `startapp` sharing have working implementations.
 - The core product loop is present: create event, share, join, chat, and meet in real life.
+- The root launch page routes into separately governed Activities and Services client shells.
+- The VPS production build is verified at commit `70841bf`; Vercel parity is a current release-operations task.
 
 Current release gate:
 
 - `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`, `pnpm run test`, and `git diff --check` must pass on reviewed changes.
 - Real Telegram smoke verification is required before broad public launch.
 - Supabase production tables, authentication, migrations, and RLS require manual production-sensitive verification.
-- Vercel deployment, support, monitoring, analytics, and moderation readiness must be verified.
+- VPS production health and Vercel artifact parity, support, monitoring, analytics, and moderation readiness must be verified.
 - Production must not depend on demo-only identity.
 - Operational provider limits must be distinguished from code failures.
 
@@ -111,7 +113,8 @@ Authentication completion gate:
    - Add lazy loading, code splitting, bundle optimization, and Telegram startup improvements where evidence shows value.
 
 6. **Release operations**
-   - Verify Vercel deployment and environment configuration.
+   - Keep VPS production and the Vercel production deployment on the same reviewed `main` artifact.
+   - Verify Vercel deployment and environment configuration before relying on it as a fallback.
    - Verify support, monitoring, analytics, moderation, and incident readiness.
    - Run real Telegram smoke checks, including a second-account share/join flow.
 

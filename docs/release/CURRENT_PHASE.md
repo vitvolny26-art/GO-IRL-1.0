@@ -3,7 +3,7 @@ title: Current Project Phase
 owner: Chief Archivist / Technical Lead
 status: Active
 source_of_truth: true
-last_review: 2026-07-20
+last_review: 2026-07-31
 next_review: 2026-08-20
 ---
 
@@ -22,8 +22,10 @@ GO IRL 1.0 has completed Closed Beta and is now in Release Preparation.
 1. Preserve the proven Olomouc event loop.
 2. Fix release blockers one task at a time.
 3. Keep current quality gates green.
-4. Verify Telegram, Vercel, Supabase, support, monitoring, analytics, and moderation readiness before a public-launch decision.
-5. Avoid architecture rewrites and uncontrolled scope expansion.
+4. Keep the VPS production artifact and Vercel production deployment aligned with reviewed `main`.
+5. Verify Telegram, Supabase, support, monitoring, analytics, and moderation readiness before a public-launch decision.
+6. Treat the deployed Services shell as a bounded prototype; do not infer production-pilot approval.
+7. Avoid architecture rewrites and uncontrolled scope expansion.
 
 ## Taxonomy decision
 

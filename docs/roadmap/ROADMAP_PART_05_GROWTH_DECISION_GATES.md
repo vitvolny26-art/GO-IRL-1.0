@@ -5,7 +5,7 @@ status: Active
 source_of_truth: true
 canonical_index: ROADMAP.md
 scope: Production growth, future Services and monetization tracks, decision gates, dependency chain, and historical sprint references
-last_review: 2026-07-30
+last_review: 2026-07-31
 next_review: 2026-08-12
 ---
 
@@ -48,7 +48,7 @@ Source record: [`SPRINT_5.md`](SPRINT_5.md).
 
 ## Future Track A — Services and Beauty
 
-**State:** Draft / Gated
+**State:** Local/Mock Prototype Implemented / Production Pilot Gated
 
 **Product outcome:** Prove that GO IRL can reduce coordination friction for real-world service appointments without weakening the Activities product or displacing unresolved release blockers.
 
@@ -59,8 +59,17 @@ Proposed sequence:
 1. `BEAUTY001` — product definition and boundaries.
 2. `BEAUTY002` — UX and information architecture specification.
 3. `BEAUTY003` — architecture, privacy, safety, retention, and data-boundary review.
-4. `BEAUTY004` — local or mock-data prototype.
+4. `BEAUTY004` — local or mock-data prototype. **Implemented on `main` and deployed as a bounded UI prototype; evidence requires review.**
 5. `BEAUTY005` — bounded production pilot after explicit roadmap approval and protected-change approvals.
+
+Current prototype evidence:
+
+- root entry separates `/activities` and `/services`;
+- Services has independent Home, For You, Catalog, My Bookings, and Client Profile tabs;
+- Beauty Professional setup and local workspace exist at `/beauty`;
+- professional data, preferences, and appointments remain local/mock and do not establish a shared production directory;
+- `professional` is not yet an approved production database role;
+- the deployed shell is not evidence that Gate F is green.
 
 Entry gate:
 
@@ -186,7 +195,7 @@ Evidence required:
 - privacy, consent, retention, deletion, moderation, and safety model;
 - support and operational ownership;
 - protected production changes approved individually;
-- local or mock prototype evidence reviewed before production authorization.
+- local or mock prototype evidence, including commit `70841bf`, reviewed before production authorization.
 
 ### Gate G — Monetization validation
 
@@ -207,7 +216,7 @@ Evidence required:
 4. Introduce trust features only after explicit approval and stable attendance evidence.
 5. Expand Activities modules and cities only after release and product evidence.
 6. Start production-growth mechanics only after operational and public-safety readiness.
-7. Run Services documentation, review, and mock prototyping only as a non-displacing gated track.
+7. Review and harden the implemented Services mock prototype only as a non-displacing gated track.
 8. Start a Beauty production pilot only after Gate F and all protected-change approvals are green.
 9. Validate Offline Enabler value and willingness to pay before selecting pricing.
 10. Implement or publicly announce monetization only after Gate G and separate implementation approval.
