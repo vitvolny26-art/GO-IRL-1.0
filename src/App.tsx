@@ -30,6 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
+import { homeCategoriesForPath } from "./domainHomeCategories";
 import { AppHeader } from "./components/AppHeader";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
@@ -548,13 +549,14 @@ function HomeView({ language, onOpen, onJoin }: { language: Language; onOpen: Op
   const nearby = activities.filter((item) => item.date >= today).slice(0, 4);
   const popular = activities.filter((item) => item.popular);
   const urgent = activities.filter((item) => item.urgent);
+  const homeCategories = homeCategoriesForPath(window.location.pathname, language);
 
   return (
     <>
       <SectionHeader title={t.chooseDirection} />
-      <div className="category-grid module-grid">
-        {categories.map((category) => (
-          <button className="category-button" key={category.id} onClick={() => setCategory(category.id)} type="button">
+      <div className={homeCategories.length === 1 ? "category-grid module-grid services-category-grid" : "category-grid module-grid"}>
+        {homeCategories.map((category) => (
+          <button className="category-button" data-category={category.id} key={category.id} onClick={() => setCategory(category.id)} type="button">
             <span>{category.icon}</span>
             <strong>{category.name[language]}</strong>
             <small>{activities.filter((activity) => activity.categoryId === category.id).length} {t.eventCountLabel}</small>

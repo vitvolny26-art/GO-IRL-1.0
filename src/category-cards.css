@@ -2,6 +2,10 @@
   gap: 10px;
 }
 
+.category-grid.module-grid.services-category-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .category-grid.module-grid .category-button {
   position: relative;
   isolation: isolate;
@@ -72,27 +76,27 @@
   backdrop-filter: blur(8px);
 }
 
-.category-grid.module-grid .category-button:nth-child(1) {
+.category-grid.module-grid .category-button[data-category="sport"] {
   border-color: rgba(201, 255, 61, 0.46);
   background-image: url("./assets/category-backgrounds/sport.webp");
 }
-.category-grid.module-grid .category-button:nth-child(2) {
+.category-grid.module-grid .category-button[data-category="activities"] {
   border-color: rgba(87, 217, 232, 0.46);
   background-image: url("./assets/category-backgrounds/activities.webp");
 }
-.category-grid.module-grid .category-button:nth-child(3) {
+.category-grid.module-grid .category-button[data-category="party"] {
   border-color: rgba(255, 203, 82, 0.44);
   background-image: url("./assets/category-backgrounds/party.webp");
 }
-.category-grid.module-grid .category-button:nth-child(4) {
+.category-grid.module-grid .category-button[data-category="nature"] {
   border-color: rgba(120, 214, 103, 0.46);
   background-image: url("./assets/category-backgrounds/nature.webp");
 }
-.category-grid.module-grid .category-button:nth-child(5) {
+.category-grid.module-grid .category-button[data-category="social"] {
   border-color: rgba(255, 111, 97, 0.42);
   background-image: url("./assets/category-backgrounds/social.webp");
 }
-.category-grid.module-grid .category-button:nth-child(6) {
+.category-grid.module-grid .category-button[data-category="creativity"] {
   border-color: rgba(174, 140, 255, 0.46);
   background-image: url("./assets/category-backgrounds/creativity.webp");
 }
