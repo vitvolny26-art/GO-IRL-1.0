@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { Bell, CircleUserRound, LockKeyhole, Settings2, ShieldCheck } from "lucide-react";
+import { Bell, CircleUserRound, LockKeyhole, Settings2, ShieldCheck, Sparkles } from "lucide-react";
 import { ProfileLayout } from "./ProfileLayout";
 import { ProfileInterestsGoalsSection } from "./ProfileInterestsGoalsSection";
 import { MyGoIrlLifecycleSummary } from "./MyGoIrlLifecycleSummary";
@@ -20,6 +20,7 @@ type ProfilePanelCopy = {
   title: string;
   hint: string;
   editing: string;
+  beautyHint: string;
   sections: Record<ProfilePanelSection, { label: string; hint: string }>;
 };
 
@@ -28,6 +29,7 @@ const copy: Record<Language, ProfilePanelCopy> = {
     title: "Мой профиль",
     hint: "Управляйте личностью, приложениями по умолчанию и своей активностью GO IRL.",
     editing: "Сначала завершите редактирование профиля",
+    beautyHint: "Локальная настройка страницы записи для мастера",
     sections: {
       identity: { label: "Личность", hint: "Имя, фото, город и интересы" },
       preferences: { label: "Предпочтения", hint: "Карты, календарь, отправка и напоминания" },
@@ -40,6 +42,7 @@ const copy: Record<Language, ProfilePanelCopy> = {
     title: "Мій профіль",
     hint: "Керуйте особистістю, типовими застосунками та своєю активністю GO IRL.",
     editing: "Спочатку завершіть редагування профілю",
+    beautyHint: "Локальне налаштування сторінки запису для майстра",
     sections: {
       identity: { label: "Особистість", hint: "Ім’я, фото, місто та інтереси" },
       preferences: { label: "Налаштування", hint: "Карти, календар, поширення та нагадування" },
@@ -52,6 +55,7 @@ const copy: Record<Language, ProfilePanelCopy> = {
     title: "Můj profil",
     hint: "Spravujte identitu, výchozí aplikace a svou aktivitu v GO IRL.",
     editing: "Nejprve dokončete úpravu profilu",
+    beautyHint: "Lokální nastavení rezervační stránky pro profesionálku",
     sections: {
       identity: { label: "Identita", hint: "Jméno, fotografie, město a zájmy" },
       preferences: { label: "Předvolby", hint: "Mapy, kalendář, sdílení a připomínky" },
@@ -64,6 +68,7 @@ const copy: Record<Language, ProfilePanelCopy> = {
     title: "My profile",
     hint: "Manage identity, default apps and your GO IRL activity.",
     editing: "Finish editing your profile first",
+    beautyHint: "Local booking-page setup for a professional",
     sections: {
       identity: { label: "Identity", hint: "Name, photo, city and interests" },
       preferences: { label: "Preferences", hint: "Maps, calendar, sharing and reminders" },
@@ -128,6 +133,7 @@ export function ProfilePanel({ language, editing, renderSection, onSectionChange
     <ProfileLayout activeSection={activeSection} editing={editing} onSectionChange={applySection}>
       <div className="profile-panel" data-profile-panel-section={activeSection}>
         <header className="profile-panel-header"><h2>{labels.title}</h2><p>{labels.hint}</p></header>
+        <a className="profile-panel-beauty-entry" href="/beauty"><Sparkles /><span><strong>GO IRL Beauty</strong><small>{labels.beautyHint}</small></span></a>
         {activeSection === defaultProfilePanelSection ? content : null}
         <nav className="profile-panel-navigation" aria-label={labels.title}>
           {profilePanelSections.map(({ id }) => {
