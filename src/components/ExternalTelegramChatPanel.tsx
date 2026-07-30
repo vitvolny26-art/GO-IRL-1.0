@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink, Link2, RefreshCw, Trash2, UsersRound } from "lucide-react";
 import { getCurrentChatIdentity } from "../activityChatFeature";
 import {
@@ -43,7 +43,9 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
   const [saving, setSaving] = useState(false);
   const [shared, setShared] = useState(false);
   const [awaitingBinding, setAwaitingBinding] = useState(false);
+  const [bindingExpiresAt, setBindingExpiresAt] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const refreshInFlight = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -60,6 +62,8 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
   }, []);
 
   const refresh = useCallback(async (showLoading = false) => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
     if (showLoading) setLoading(true);
     try {
       const next = await loadSharedEventTelegramChatLink(activity.id);
@@ -67,8 +71,9 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
       setLink(fallback);
       setDraft(fallback?.url || "");
       setShared(Boolean(next));
-      if (next) {
+      if (next?.verificationState === "verified") {
         setAwaitingBinding(false);
+        setBindingExpiresAt(null);
         setError("");
       }
     } catch {
@@ -78,6 +83,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
       setShared(false);
       setError("Общая синхронизация Telegram-чата пока недоступна");
     } finally {
+      refreshInFlight.current = false;
       if (showLoading) setLoading(false);
     }
   }, [activity.id]);
@@ -86,19 +92,30 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
     setEditing(false);
     setError("");
     setAwaitingBinding(false);
+    setBindingExpiresAt(null);
     void refresh(true);
   }, [refresh]);
 
   useEffect(() => {
     if (!awaitingBinding) return;
-    const onFocus = () => void refresh(false);
+    const expiresAt = bindingExpiresAt ? new Date(bindingExpiresAt).getTime() : Number.POSITIVE_INFINITY;
+    const check = () => {
+      if (Date.now() >= expiresAt) {
+        setAwaitingBinding(false);
+        setBindingExpiresAt(null);
+        setError("Время привязки истекло. Запустите привязку ещё раз.");
+        return;
+      }
+      void refresh(false);
+    };
+    const onFocus = () => check();
     window.addEventListener("focus", onFocus);
-    const interval = window.setInterval(() => void refresh(false), 4_000);
+    const interval = window.setInterval(check, 5_000);
     return () => {
       window.removeEventListener("focus", onFocus);
       window.clearInterval(interval);
     };
-  }, [awaitingBinding, refresh]);
+  }, [awaitingBinding, bindingExpiresAt, refresh]);
 
   const membershipStatus = useMemo(
     () => activity.members.find((member) => member.userKey === identityKey)?.status || null,
@@ -116,6 +133,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
     keepArchive: link?.keepArchive,
   });
   const canOpen = Boolean(link && canAccess && lifecycle === "active");
+  const verified = link?.verificationState === "verified";
 
   const createGroup = async () => {
     if (!isOrganizer || saving) return;
@@ -124,6 +142,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
     try {
       const binding = await createEventSupergroupBinding(activity.id);
       if (!openEventSupergroupBinding(binding.startGroupUrl)) throw new Error("telegram_not_opened");
+      setBindingExpiresAt(binding.expiresAt);
       setAwaitingBinding(true);
     } catch {
       setError("Не удалось подготовить автоматическую привязку Telegram-группы");
@@ -151,6 +170,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
       setShared(true);
       setEditing(false);
       setAwaitingBinding(false);
+      setBindingExpiresAt(null);
     } catch {
       setError("Не удалось сохранить Telegram-чат для участников");
     } finally {
@@ -170,6 +190,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
       setShared(false);
       setEditing(false);
       setAwaitingBinding(false);
+      setBindingExpiresAt(null);
     } catch {
       setError("Не удалось удалить Telegram-чат");
     } finally {
@@ -244,7 +265,7 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
                 disabled={saving}
               />
               <button type="button" className="secondary" onClick={() => void save()} disabled={saving}>
-                {saving ? "Сохранение…" : "Сохранить ссылку"}
+                {saving ? "Сохранение…" : "Сохранить ручную ссылку"}
               </button>
               {editing ? <button type="button" className="secondary" disabled={saving} onClick={() => { setEditing(false); setDraft(link?.url || ""); setError(""); }}>Отмена</button> : null}
             </div>
@@ -256,7 +277,11 @@ export function ExternalTelegramChatPanel({ activity }: ExternalTelegramChatPane
       {!loading && link && !canAccess ? <div className="external-telegram-chat-muted">Telegram-чат доступен организатору и подтверждённым участникам.</div> : null}
       {error ? <div className="external-telegram-chat-error">{error}</div> : null}
       <div className="external-telegram-chat-note">
-        {shared ? "Ссылка синхронизирована и защищена правилами доступа." : "Локальная ссылка видна только на этом устройстве, пока организатор не сохранит её для участников."}
+        {verified
+          ? "Группа проверена GO IRL bot и синхронизирована для участников."
+          : shared
+            ? "Ручная ссылка синхронизирована, но Telegram-группа не проверена GO IRL bot."
+            : "Локальная ссылка видна только на этом устройстве, пока организатор не сохранит её для участников."}
       </div>
     </section>
   );

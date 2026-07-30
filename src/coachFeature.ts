@@ -16,6 +16,8 @@ import { supabase } from "./supabase";
 import type { Activity, CoachRequest, CoachRequestType } from "./types";
 
 const demoCoachStorageKey = "go-irl-demo-coach-requests-v1";
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const isServerActivityId = (activityId: string) => uuidPattern.test(activityId);
 
 const isCoachDemoMode = () =>
   typeof window !== "undefined" &&
@@ -49,7 +51,7 @@ export async function getCurrentCoachUserKey() {
 }
 
 export async function loadCoachRequestsForActivity(activityId: string) {
-  if (isCoachDemoMode()) {
+  if (isCoachDemoMode() || !isServerActivityId(activityId)) {
     return readDemoCoachRequests().filter((request) => request.activityId === activityId);
   }
 
@@ -113,7 +115,7 @@ export async function requestCoachForActivity(
     throw new Error("auth_required");
   }
 
-  if (isCoachDemoMode()) {
+  if (isCoachDemoMode() || !isServerActivityId(activity.id)) {
     const requests = readDemoCoachRequests();
     const now = new Date().toISOString();
     const id = `demo-coach-${activity.id}-${userKey}-${requestType}`;
@@ -160,7 +162,7 @@ export async function requestCoachForActivity(
 }
 
 export async function cancelCoachRequest(requestId: string) {
-  if (isCoachDemoMode()) {
+  if (isCoachDemoMode() || requestId.startsWith("demo-coach-")) {
     const requests = readDemoCoachRequests();
     writeDemoCoachRequests(requests.map((request) =>
       request.id === requestId ? { ...request, status: "cancelled", updatedAt: new Date().toISOString() } : request,
