@@ -1,9 +1,3 @@
-const iconModules = import.meta.glob("./assets/activity-icons/*.webp", {
-  eager: true,
-  import: "default",
-  query: "?url",
-}) as Record<string, string>;
-
 const emojiFiles: Readonly<Record<string, string>> = {
   "🏐": "01-volleyball.webp",
   "⚽": "02-football.webp",
@@ -59,9 +53,7 @@ const categoryFiles: Readonly<Record<string, string>> = {
   creativity: "36-drawing.webp",
 };
 
-const resolveFile = (file?: string) => file
-  ? iconModules[`./assets/activity-icons/${file}`] || null
-  : null;
+const resolveFile = (file?: string) => file ? `/activity-icons/${file}` : null;
 
 const cityWalkPattern = /^(?:прогулка|прогулянка|procházka|walk)$/iu;
 

@@ -1,5 +1,5 @@
-import activityCardImage from "./assets/activity-card.svg";
-import servicesCardImage from "./assets/services-card.svg";
+const activityCardImage = "/launch/activity-card.svg";
+const servicesCardImage = "/launch/services-card.svg";
 import { AppHeader } from "./components/AppHeader";
 import { getTranslation } from "./i18n";
 import type { Language } from "./types";

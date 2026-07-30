@@ -52,7 +52,7 @@ Generate **three separate compositions**. Do not resize one crop into all format
 - preferred generation/master dimensions: `2160 x 2880 px`;
 - format: WebP;
 - recommended quality: `82-88`;
-- runtime directory: `src/assets/event-backgrounds/card-3x4/`.
+- runtime directory: `images/events/cards-3x4/`.
 
 Composition:
 
@@ -68,7 +68,7 @@ Composition:
 - preferred generation/master dimensions: `2160 x 3840 px`;
 - format: WebP;
 - recommended quality: `82-88`;
-- runtime directory: `src/assets/event-backgrounds/sheet-9x16/`.
+- runtime directory: `images/events/sheets-9x16/`.
 
 Composition:
 
@@ -97,7 +97,7 @@ Composition:
 - preserve the complete subject where possible;
 - use outpainting or background extension instead of stretching.
 
-Before adding the Share file, inspect the active Share resolver because legacy documentation may reference `assets/event-backgrounds/share-6x5/` while runtime paths can change.
+Before adding the Share file, inspect the active Share resolver because legacy documentation may reference `images/events/share-6x5/` while runtime paths can change.
 
 ## Generation prompt template
 
@@ -131,8 +131,8 @@ For a new category:
 4. Add matching files with the exact same filename:
 
 ```text
-src/assets/event-backgrounds/card-3x4/41-street-basketball.webp
-src/assets/event-backgrounds/sheet-9x16/41-street-basketball.webp
+images/events/cards-3x4/41-street-basketball.webp
+images/events/sheets-9x16/41-street-basketball.webp
 ```
 
 5. Add the matching Share asset to the active Share asset directory and registry.

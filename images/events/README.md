@@ -44,7 +44,7 @@ Each approved category requires two independent outputs.
 - preferred master size: `2160 x 2880 px`
 - format: WebP
 - recommended quality: 82-88
-- target directory: `assets/event-backgrounds/card-3x4/`
+- target directory: `images/events/cards-3x4/`
 
 ### Telegram and Meta Share
 
@@ -53,7 +53,7 @@ Each approved category requires two independent outputs.
 - preferred master size: `2160 x 1800 px`
 - format: WebP
 - recommended quality: 82-90
-- target directory: `assets/event-backgrounds/share-6x5/`
+- target directory: `images/events/share-6x5/`
 
 Do not reuse one physical image for both formats. They have different compositions and safe areas.
 
@@ -161,7 +161,7 @@ Source or review files may carry a version suffix outside runtime folders.
 Approved target structure:
 
 ```text
-assets/event-backgrounds/
+images/events/
   README.md
   manifest.ts
   card-3x4/

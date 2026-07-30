@@ -1,9 +1,3 @@
-const legacyWebpModules = import.meta.glob("./assets/event-backgrounds/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
-const cardWebpModules = import.meta.glob("./assets/event-backgrounds/card-3x4/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
-const sheetWebpModules = import.meta.glob("./assets/event-backgrounds/sheet-9x16/*.webp", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
-const svgModules = import.meta.glob("./assets/event-backgrounds/*.svg", { eager:true, import:"default", query:"?url" }) as Record<string,string>;
-const cardModules: Readonly<Record<string,string>> = { ...legacyWebpModules, ...cardWebpModules, ...svgModules };
-
 const files: Readonly<Record<string,string>> = {
   "VB": "01-volleyball.webp",
   "FB": "02-football.webp",
@@ -47,23 +41,12 @@ const files: Readonly<Record<string,string>> = {
   "WS": "40-workshop.webp"
 };
 
-const resolveAsset = (modules: Readonly<Record<string,string>>, path: string, fragment?: string) => {
-  const url = modules[path];
-  return url ? `${url}${fragment ? `#${fragment}` : ""}` : null;
-};
-
 export const getEventBackground = (code:string) => {
   const file = files[code];
-  if (!file) return null;
-  const [asset, fragment] = file.split("#");
-  return resolveAsset(cardModules, `./assets/event-backgrounds/card-3x4/${asset}`, fragment)
-    || resolveAsset(cardModules, `./assets/event-backgrounds/${asset}`, fragment);
+  return file ? `/events/cards-3x4/${file.split("#")[0]}` : null;
 };
 
 export const getEventSheetBackground = (code:string) => {
   const file = files[code];
-  if (!file) return null;
-  const [asset, fragment] = file.split("#");
-  return resolveAsset(sheetWebpModules, `./assets/event-backgrounds/sheet-9x16/${asset}`, fragment)
-    || getEventBackground(code);
+  return file ? `/events/sheets-9x16/${file.split("#")[0]}` : null;
 };

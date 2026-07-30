@@ -9,7 +9,7 @@
   "framework": "vite",
   "functions": {
     "api/**/*.ts": {
-      "includeFiles": "{assets/share-backgrounds/webp/**,assets/event-backgrounds/share-6x5/**}"
+      "includeFiles": "images/events/share-6x5/**"
     }
   },
   "rewrites": [
