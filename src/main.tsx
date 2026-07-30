@@ -1,4 +1,4 @@
-import { lazy, StrictMode, Suspense } from "react";
+import { lazy, StrictMode, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
@@ -22,6 +22,8 @@ import { isProfilePath } from "./profile/profileRoute";
 import { BeautySetupPage } from "./beauty/BeautySetupPage";
 import { BeautyHomeEntryPortal } from "./beauty/BeautyHomeEntryPortal";
 import { useAppStore } from "./store";
+import { LaunchPage } from "./LaunchPage";
+import { resolveLaunchSurface, type LaunchSurface } from "./launchSurface";
 import "./styles.css";
 import "./category-cards.css";
 import "./activity-3d-icons.css";
@@ -138,20 +140,66 @@ function AdminDevPanel() {
   return shouldShowAdminDevPanel(userRole) ? <DevPanel /> : null;
 }
 
+const readLaunchSurface = () => resolveLaunchSurface({
+  pathname: window.location.pathname,
+  hash: window.location.hash,
+  search: window.location.search,
+  telegramStartParam: window.Telegram?.WebApp?.initDataUnsafe?.start_param,
+});
+
+function MainSurface() {
+  const language = useAppStore((state) => state.language);
+  const [surface, setSurface] = useState<LaunchSurface>(readLaunchSurface);
+
+  useEffect(() => {
+    const syncSurface = () => setSurface(readLaunchSurface());
+    window.addEventListener("hashchange", syncSurface);
+    window.addEventListener("popstate", syncSurface);
+    return () => {
+      window.removeEventListener("hashchange", syncSurface);
+      window.removeEventListener("popstate", syncSurface);
+    };
+  }, []);
+
+  const openSurface = (nextSurface: Exclude<LaunchSurface, "launch">) => {
+    window.location.hash = nextSurface;
+  };
+  const openLaunch = () => {
+    window.history.pushState(null, "", `${window.location.pathname}${window.location.search}`);
+    setSurface("launch");
+  };
+
+  if (surface !== "activities") {
+    return (
+      <LaunchPage
+        language={language}
+        surface={surface}
+        onOpenActivities={() => openSurface("activities")}
+        onOpenServices={() => openSurface("services")}
+        onBack={openLaunch}
+      />
+    );
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}><App /></Suspense>
+      <BeautyHomeEntryPortal />
+      <OrganizerProfilePortal />
+      <OrganizerEventDetailsPortal />
+      <EventLocationPickerPortal />
+      <EventLocationProviderPortal />
+      <MapProviderPickerPortal />
+      <ParticipantIdentityPortal />
+      <AdminDevPanel />
+    </QueryClientProvider>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     {adminSurface || (beautyRoute ? <BeautySetupPage /> : (
-      <QueryClientProvider client={queryClient}>
-        <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}><App /></Suspense>
-        <BeautyHomeEntryPortal />
-        <OrganizerProfilePortal />
-        <OrganizerEventDetailsPortal />
-        <EventLocationPickerPortal />
-        <EventLocationProviderPortal />
-        <MapProviderPickerPortal />
-        <ParticipantIdentityPortal />
-        <AdminDevPanel />
-      </QueryClientProvider>
+      <MainSurface />
     ))}
   </StrictMode>,
 );
