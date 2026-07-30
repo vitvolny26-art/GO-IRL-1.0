@@ -19,6 +19,7 @@ import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
 import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/AdminLoginPage";
 import { resolveAdminRoute } from "./admin/adminSession";
 import { isProfilePath } from "./profile/profileRoute";
+import { BeautySetupPage } from "./beauty/BeautySetupPage";
 import { useAppStore } from "./store";
 import "./styles.css";
 import "./category-cards.css";
@@ -103,8 +104,9 @@ initializeLanguagePreference();
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 const adminRoute = resolveAdminRoute(window.location.pathname);
+const beautyRoute = window.location.pathname.replace(/\/+$/, "") === "/beauty";
 
-if (!adminRoute && isProfilePath(window.location.pathname)) {
+if (!adminRoute && !beautyRoute && isProfilePath(window.location.pathname)) {
   useAppStore.setState({ view: "profile" });
 }
 
@@ -135,7 +137,7 @@ function AdminDevPanel() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {adminSurface || (
+    {adminSurface || (beautyRoute ? <BeautySetupPage /> : (
       <QueryClientProvider client={queryClient}>
         <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}><App /></Suspense>
         <OrganizerProfilePortal />
@@ -146,7 +148,7 @@ createRoot(document.getElementById("root")!).render(
         <ParticipantIdentityPortal />
         <AdminDevPanel />
       </QueryClientProvider>
-    )}
+    ))}
   </StrictMode>,
 );
 
