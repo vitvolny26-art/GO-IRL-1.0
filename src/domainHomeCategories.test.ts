@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { categories } from "./data";
-import { homeCategoriesForPath } from "./domainHomeCategories";
+import { homeCategoriesForPath, serviceNavigationLabels } from "./domainHomeCategories";
 
 describe("homeCategoriesForPath", () => {
   it("keeps the activities category grid unchanged", () => {
@@ -12,7 +12,10 @@ describe("homeCategoriesForPath", () => {
 
     expect(serviceCategories).toHaveLength(1);
     expect(serviceCategories[0]?.id).toBe("creativity");
-    expect(serviceCategories[0]?.name.ru).toBe("Красота");
+    expect(serviceCategories[0]?.name.ru).toBe("Красота и здоровье");
+  });
+
+  it("defines the service-specific Russian navigation", () => {
+    expect(serviceNavigationLabels.ru).toEqual(["Главная", "Для вас", "Каталог", "Записаться", "Профиль"]);
   });
 });
-

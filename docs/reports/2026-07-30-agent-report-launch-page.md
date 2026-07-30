@@ -37,6 +37,8 @@ Add a new root launch page to GO IRL 1.1 without moving or duplicating the exist
 - Added routing unit tests.
 - Simplified the shared application home so the category direction grid begins immediately below the top header.
 - Kept all Activities categories unchanged while limiting `/services` to the renamed Beauty category.
+- Renamed the service category to Beauty & health and gave it a square card with the supplied artwork.
+- Added service-specific bottom navigation labels without changing the Activities navigation.
 
 ## Checks
 

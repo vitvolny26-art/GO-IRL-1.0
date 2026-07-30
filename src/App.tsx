@@ -30,7 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
-import { homeCategoriesForPath } from "./domainHomeCategories";
+import { homeCategoriesForPath, serviceNavigationLabels } from "./domainHomeCategories";
 import { AppHeader } from "./components/AppHeader";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
@@ -1707,12 +1707,15 @@ function EventDetailsSkeleton() {
 
 function BottomNav({ view, setView, language }: { view: AppView; setView: (view: AppView) => void; language: Language }) {
   const t = getTranslation(language);
+  const serviceLabels = window.location.pathname.replace(/\/+$/, "") === "/services"
+    ? serviceNavigationLabels[language]
+    : null;
   const items: Array<{ id: AppView; label: string; icon: React.ReactNode }> = [
-    { id: "home", label: t.navHome, icon: <Home /> },
-    { id: "discover", label: t.navDiscover, icon: <Sparkles /> },
-    { id: "explore", label: t.navExplore, icon: <Compass /> },
-    { id: "create", label: t.navCreate, icon: <Plus /> },
-    { id: "profile", label: t.navProfile, icon: <CircleUserRound /> },
+    { id: "home", label: serviceLabels?.[0] || t.navHome, icon: <Home /> },
+    { id: "discover", label: serviceLabels?.[1] || t.navDiscover, icon: <Sparkles /> },
+    { id: "explore", label: serviceLabels?.[2] || t.navExplore, icon: <Compass /> },
+    { id: "create", label: serviceLabels?.[3] || t.navCreate, icon: <Plus /> },
+    { id: "profile", label: serviceLabels?.[4] || t.navProfile, icon: <CircleUserRound /> },
   ];
   return <nav className="bottom-nav">{items.map((item) => <button className={view === item.id ? "active" : ""} key={item.id} onClick={() => setView(item.id)} type="button">{item.icon}<span>{item.label}</span></button>)}</nav>;
 }
