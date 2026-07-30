@@ -88,6 +88,7 @@ import {
 import { EventWeatherStrip } from "./components/EventWeatherStrip";
 import { isOutdoorGenericActivity } from "./eventWeather";
 import { getEventSheetBackgroundStyle } from "./eventSheetBackground";
+import { ServicesCatalogView, ServicesClientProfileView, ServicesForYouView } from "./services/ServicesClientViews";
 import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
 import {
   eventActionTranslationKey,
@@ -451,6 +452,7 @@ function App() {
     }
     window.open(url, "_blank", "noopener,noreferrer");
   };
+  const isServicesDomain = window.location.pathname.replace(/\/+$/, "") === "/services";
 
   return (
     <div className="app">
@@ -458,7 +460,10 @@ function App() {
         language={store.language}
         selectedCityId={store.selectedCityId}
         translation={t}
-        onBrandClick={() => store.setView("home")}
+        onBrandClick={() => {
+          window.history.pushState(null, "", "/");
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }}
         onCityChange={store.setSelectedCity}
         onLanguageChange={store.setLanguage}
       />
@@ -474,8 +479,12 @@ function App() {
             onOpenOrganizerCabinet={() => store.setView("create")}
           />
         )}
-        {store.view === "discover" && <DiscoverView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
-        {store.view === "explore" && <ExploreView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
+        {store.view === "discover" && (isServicesDomain
+          ? <ServicesForYouView language={store.language} selectedCityId={store.selectedCityId} />
+          : <DiscoverView language={store.language} onOpen={openActivity} onJoin={handleJoin} />)}
+        {store.view === "explore" && (isServicesDomain
+          ? <ServicesCatalogView language={store.language} selectedCityId={store.selectedCityId} />
+          : <ExploreView language={store.language} onOpen={openActivity} onJoin={handleJoin} />)}
         {store.view === "bookings" && <BookingsView language={store.language} onOpen={openActivity} onJoin={handleJoin} />}
         {store.view === "create" && <CreateView key={editingActivity?.id || "new-event"} language={store.language} initialActivity={editingActivity} onCancel={() => {
           setEditingActivity(null);
@@ -487,7 +496,9 @@ function App() {
           setCompletionActivityId(id);
           setCompletion(message);
         }} />}
-        {store.view === "profile" && <ProfileView language={store.language} onOpen={openActivity} onJoin={handleJoin} onCloseMiniApp={requestCloseMiniApp} />}
+        {store.view === "profile" && (isServicesDomain
+          ? <ServicesClientProfileView language={store.language} selectedCityId={store.selectedCityId} />
+          : <ProfileView language={store.language} onOpen={openActivity} onJoin={handleJoin} onCloseMiniApp={requestCloseMiniApp} />)}
       </main>
 
       <BottomNav view={store.view} setView={store.setView} language={store.language} />

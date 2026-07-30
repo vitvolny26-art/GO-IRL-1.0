@@ -1,6 +1,7 @@
 import activityCardImage from "./assets/activity-card.svg";
 import servicesCardImage from "./assets/services-card.svg";
-import { cities, getCity } from "./config/cities";
+import { AppHeader } from "./components/AppHeader";
+import { getTranslation } from "./i18n";
 import type { Language } from "./types";
 import "./launch-page.css";
 
@@ -12,8 +13,6 @@ type LaunchPageProps = {
   onOpenActivities: () => void;
   onOpenServices: () => void;
 };
-
-const languageNames: Record<Language, string> = { ru: "RU", uk: "UA", cs: "CS", en: "EN" };
 
 const copy = {
   ru: {
@@ -90,15 +89,6 @@ const copy = {
   },
 } satisfies Record<Language, Record<string, string>>;
 
-function Brand() {
-  return (
-    <div className="launch-brand" aria-label="GO IRL">
-      <span className="launch-brand-mark" aria-hidden="true"><span>GO</span><strong>IRL</strong></span>
-      <span className="launch-brand-copy"><strong>GO IRL</strong><small>Less scrolling. More life.</small></span>
-    </div>
-  );
-}
-
 export function LaunchPage({
   language,
   selectedCityId,
@@ -108,42 +98,17 @@ export function LaunchPage({
   onOpenServices,
 }: LaunchPageProps) {
   const t = copy[language];
-  const currentCity = getCity(selectedCityId);
-
   return (
-    <main className="launch-root launch-home">
-      <header className="launch-topbar">
-        <Brand />
-        <div className="launch-selectors" aria-label="Application preferences">
-          <label className="launch-select-control">
-            <span className="launch-control-icon" aria-hidden="true">⌖</span>
-            <span className="launch-sr-only">{t.city}</span>
-            <select aria-label={t.city} value={selectedCityId} onChange={(event) => onCityChange(event.target.value)}>
-              {cities.map((city) => <option key={city.id} value={city.id}>{city.name[language]}</option>)}
-            </select>
-          </label>
-          <label className="launch-select-control launch-language-control">
-            <span className="launch-control-icon" aria-hidden="true">◎</span>
-            <span className="launch-sr-only">{t.language}</span>
-            <select aria-label={t.language} value={language} onChange={(event) => onLanguageChange(event.target.value as Language)}>
-              {(Object.keys(languageNames) as Language[]).map((id) => <option key={id} value={id}>{languageNames[id]}</option>)}
-            </select>
-          </label>
-        </div>
-      </header>
-
-      <section className="launch-intro" aria-labelledby="launch-home-title">
-        <p className="launch-city-status"><span aria-hidden="true">⌖</span>{t.cityStatus} · {currentCity.name[language]}</p>
-        <h1 id="launch-home-title">{t.today}</h1>
-        <p className="launch-description">{t.description}</p>
-        <p className="launch-slogan">{t.slogan}</p>
-        <div className="launch-stats" aria-label="Current overview">
-          <div><strong>0</strong><span>{t.nearby}</span></div>
-          <div><strong>2</strong><span>{t.directions}</span></div>
-          <div><strong>0</strong><span>{t.urgent}</span></div>
-        </div>
-      </section>
-
+    <div className="launch-root launch-home">
+      <AppHeader
+        language={language}
+        selectedCityId={selectedCityId}
+        translation={getTranslation(language)}
+        onBrandClick={() => undefined}
+        onCityChange={onCityChange}
+        onLanguageChange={onLanguageChange}
+      />
+      <main className="launch-content">
       <section className="launch-domain-section" aria-labelledby="launch-domain-title">
         <h2 id="launch-domain-title">{t.choose}</h2>
         <div className="launch-domain-grid">
@@ -161,7 +126,8 @@ export function LaunchPage({
           </button>
         </div>
       </section>
-    </main>
+      </main>
+    </div>
   );
 }
 
