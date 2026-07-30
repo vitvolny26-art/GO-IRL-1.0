@@ -1,16 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
-    "deploymentEnabled": {
-      "UProfile003/profile-layout-routing-v3": false,
-      "UProfile004/verified-identity-save": false
-    }
+    "deploymentEnabled": false
   },
   "buildCommand": "pnpm run build",
   "outputDirectory": "dist",
   "installCommand": "corepack enable pnpm && pnpm install --frozen-lockfile",
   "framework": "vite",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)docs/**' ':(exclude)**/*.md'",
   "functions": {
     "api/**/*.ts": {
       "includeFiles": "{assets/share-backgrounds/webp/**,assets/event-backgrounds/share-6x5/**}"
