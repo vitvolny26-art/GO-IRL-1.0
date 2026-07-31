@@ -20,6 +20,7 @@ import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/A
 import { resolveAdminRoute } from "./admin/adminSession";
 import { isProfilePath } from "./profile/profileRoute";
 import { BeautySetupPage } from "./beauty/BeautySetupPage";
+import { BeautyRouteGuard } from "./beauty/BeautyRouteGuard";
 import { BeautyHomeEntryPortal } from "./beauty/BeautyHomeEntryPortal";
 import { useAppStore } from "./store";
 import { LaunchPage } from "./LaunchPage";
@@ -199,7 +200,7 @@ function MainSurface() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {adminSurface || (beautyRoute ? <BeautySetupPage /> : (
+    {adminSurface || (beautyRoute ? <BeautyRouteGuard><BeautySetupPage /></BeautyRouteGuard> : (
       <MainSurface />
     ))}
   </StrictMode>,
