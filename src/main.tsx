@@ -110,7 +110,8 @@ initializeLanguagePreference();
 const App = lazy(() => import("./App"));
 const queryClient = new QueryClient();
 const adminRoute = resolveAdminRoute(window.location.pathname);
-const beautyRoute = window.location.pathname.replace(/\/+$/, "") === "/beauty";
+const beautyPath = window.location.pathname.replace(/\/+$/, "");
+const beautyRoute = beautyPath === "/beauty" || beautyPath === "/beauty/workspace";
 
 if (!adminRoute && !beautyRoute && isProfilePath(window.location.pathname)) {
   useAppStore.setState({ view: "profile" });

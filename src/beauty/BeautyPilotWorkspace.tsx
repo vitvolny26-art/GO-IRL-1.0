@@ -77,7 +77,7 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
   };
 
   return <div className="beauty-pilot">
-    <nav className="beauty-pilot-nav">
+    <nav className="beauty-pilot-nav" aria-label="Разделы кабинета мастера">
       <NavButton active={view === "today"} icon={Clock3} label="Сегодня" onClick={() => setView("today")} />
       <NavButton active={view === "week"} icon={CalendarDays} label="Неделя" onClick={() => setView("week")} />
       <NavButton active={view === "client"} icon={UserRound} label="Клиент" onClick={() => setView("client")} />

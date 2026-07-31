@@ -89,6 +89,7 @@ import { EventWeatherStrip } from "./components/EventWeatherStrip";
 import { isOutdoorGenericActivity } from "./eventWeather";
 import { getEventSheetBackgroundStyle } from "./eventSheetBackground";
 import { ServicesCatalogView, ServicesClientProfileView, ServicesForYouView } from "./services/ServicesClientViews";
+import { professionalCountLabel, professionalsForCity } from "./services/servicesProfessionalDirectory";
 import { sharePreparedTelegramEvent } from "./telegramPreparedShare";
 import {
   eventActionTranslationKey,
@@ -556,7 +557,7 @@ function App() {
 }
 
 function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onOpenOrganizerCabinet: () => void }) {
-  const { activities, loading, setCategory, userRole } = useAppStore();
+  const { activities, loading, selectedCityId, setCategory, userRole } = useAppStore();
   const t = getTranslation(language);
   const today = new Date().toISOString().slice(0, 10);
   const nearby = activities.filter((item) => item.date >= today).slice(0, 4);
@@ -564,12 +565,14 @@ function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { langua
   const urgent = activities.filter((item) => item.urgent);
   const homeCategories = homeCategoriesForPath(window.location.pathname, language);
   const cabinet = domainCabinetForPath(window.location.pathname, userRole, language);
+  const servicesDomain = window.location.pathname.replace(/\/+$/, "") === "/services";
+  const professionalCount = servicesDomain ? professionalsForCity(selectedCityId).length : 0;
 
   return (
     <>
       {cabinet && (
         cabinet.kind === "professional"
-          ? <a className="domain-cabinet-entry" href="/beauty"><Sparkles /><strong>{cabinet.label}</strong><ChevronRight /></a>
+          ? <a className="domain-cabinet-entry" href="/beauty/workspace"><Sparkles /><strong>{cabinet.label}</strong><ChevronRight /></a>
           : <button className="domain-cabinet-entry" onClick={onOpenOrganizerCabinet} type="button"><UsersRound /><strong>{cabinet.label}</strong><ChevronRight /></button>
       )}
       <SectionHeader title={t.chooseDirection} />
@@ -578,7 +581,7 @@ function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { langua
           <button className="category-button" data-category={category.id} key={category.id} onClick={() => setCategory(category.id)} type="button">
             <span>{category.icon}</span>
             <strong>{category.name[language]}</strong>
-            <small>{activities.filter((activity) => activity.categoryId === category.id).length} {t.eventCountLabel}</small>
+            <small>{servicesDomain ? professionalCount + " " + professionalCountLabel(language, professionalCount) : activities.filter((activity) => activity.categoryId === category.id).length + " " + t.eventCountLabel}</small>
             <ChevronRight size={16} />
           </button>
         ))}
