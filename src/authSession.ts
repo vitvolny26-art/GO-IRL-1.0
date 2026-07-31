@@ -2,7 +2,7 @@ import { resolveDemoIdentity, type DemoIdentityResolution } from "./securityIden
 import { createSingleFlight } from "./singleFlight";
 import { getTelegramInitData, getTelegramWebApp } from "./telegram";
 import type { UserRole } from "./types";
-import { isRoleInvitationStartParam, type RoleInvitationTargetRole } from "./admin/roleInvitations";
+import type { RoleInvitationTargetRole } from "./admin/roleInvitations";
 import {
   fingerprintRoleInvitationStartParam,
   shouldProcessRoleInvitation,
