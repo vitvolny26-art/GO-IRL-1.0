@@ -122,6 +122,12 @@ Organizer status comes from the event `organizer_key`. Database role status come
 - `moderator`: can review and moderate scoped records.
 - `admin`: can manage high-risk platform actions and receives both domain cabinet entries in the client shell.
 
+### Admin-issued role invitations
+
+Admin005 adds a repository-level design for single-use Telegram role invitations. The link is an unbound bearer credential until it is redeemed, so it must be sent privately. The server verifies Telegram `initData`, resolves the recipient as `telegram:<numeric_id>`, and permits only `user` to `organizer` or `user` to `professional` promotion. It never introduces a separate `master` database role.
+
+The token expires after 24 hours, is consumed atomically, and is stored only as a SHA-256 hash. Creation checks the administrator against the current `public.user_roles` row. Existing elevated roles cannot be overwritten through an invitation. Migration application, Edge Function deployment, production configuration, merge, and production smoke remain separately approved gates.
+
 The legacy Sprint 1 allowlist exists only for dev/demo UI visibility and migration compatibility:
 
 - frontend: `VITE_GO_IRL_ADMIN_KEYS=telegram:<numeric_id>,telegram_username:<username>`

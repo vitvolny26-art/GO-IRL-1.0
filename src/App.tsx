@@ -34,7 +34,7 @@ import { clientNavigationLabels, domainCabinetForPath, homeCategoriesForPath } f
 import { AppHeader } from "./components/AppHeader";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
-import { getCurrentAuthIdentity, getCurrentStartParam, initializeTrustedAuth, isTrustedAuthReady } from "./authSession";
+import { getCurrentAuthIdentity, getCurrentRoleInvitationResult, getCurrentStartParam, initializeTrustedAuth, isTrustedAuthReady } from "./authSession";
 import { cities, getCity } from "./config/cities";
 import { getTranslation, localeByLanguage } from "./i18n";
 import { formatEventTime } from "./eventTime";
@@ -105,6 +105,7 @@ import type { UserProfile, UserProfileDraft } from "./profile/profileTypes";
 import type { ProfilePanelSection } from "./profile/profilePanelTypes";
 import { ProfilePanel } from "./components/ProfilePanel";
 import { ProfilePreferences } from "./components/ProfilePreferences";
+import { isRoleInvitationStartParam } from "./admin/roleInvitations";
 
 
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot").replace(/^@/, "");
@@ -314,6 +315,20 @@ function App() {
   useEffect(() => {
     if (invitationHandled.current) return;
     const startParam = getCurrentStartParam();
+    if (isRoleInvitationStartParam(startParam)) {
+      invitationHandled.current = true;
+      void initializeTrustedAuth().then(() => {
+        const result = getCurrentRoleInvitationResult();
+        if (result?.status === "accepted") {
+          showNotice(result.targetRole === "professional" ? t.roleInvitationProfessionalAccepted : t.roleInvitationOrganizerAccepted);
+          notifyTelegram("success");
+          return;
+        }
+        showNotice(result?.status === "role_conflict" ? t.roleInvitationConflict : t.roleInvitationInvalid);
+        notifyTelegram("error");
+      });
+      return;
+    }
     const pathId = activityIdFromJoinPath(window.location.pathname);
     const parsedStartParam = startParam ? parseInvitationStartParam(startParam) : null;
     if (parsedStartParam && !parsedStartParam.valid) {
@@ -343,7 +358,17 @@ function App() {
         showNotice(t.invitationEventNotFound);
       }
     }
-  }, [store.activities, store.language, store.loading, t.invalidInvitationLink, t.invitationEventNotFound]);
+  }, [
+    store.activities,
+    store.language,
+    store.loading,
+    t.invalidInvitationLink,
+    t.invitationEventNotFound,
+    t.roleInvitationConflict,
+    t.roleInvitationInvalid,
+    t.roleInvitationOrganizerAccepted,
+    t.roleInvitationProfessionalAccepted,
+  ]);
 
   const flash = (message: string) => {
     setNotice(message);
