@@ -2,6 +2,11 @@ import { resolveDemoIdentity, type DemoIdentityResolution } from "./securityIden
 import { createSingleFlight } from "./singleFlight";
 import { getTelegramInitData, getTelegramWebApp } from "./telegram";
 import type { UserRole } from "./types";
+import type { RoleInvitationTargetRole } from "./admin/roleInvitations";
+import {
+  fingerprintRoleInvitationStartParam,
+  shouldProcessRoleInvitation,
+} from "./admin/roleInvitationSession";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -46,6 +51,11 @@ export type TrustedAuthSession = {
   expiresAt: number;
   user: TrustedAuthUser;
   startParam?: string;
+  processedRoleInvitationFingerprint?: string | null;
+  roleInvitation?: {
+    status: "accepted" | "invalid" | "role_conflict";
+    targetRole: RoleInvitationTargetRole | null;
+  } | null;
   source: "trusted-telegram";
 };
 
@@ -112,7 +122,18 @@ function resolveLegacyDemoIdentity() {
 }
 
 async function performTrustedAuth(): Promise<AppAuthIdentity | null> {
-  if (trustedSession && trustedSession.expiresAt > Math.floor(Date.now() / 1000) + 60) {
+  const liveStartParam = getTelegramWebApp()?.initDataUnsafe?.start_param;
+  const liveRoleInvitationFingerprint = await fingerprintRoleInvitationStartParam(liveStartParam);
+  const hasUnprocessedRoleInvitation = shouldProcessRoleInvitation(
+    liveRoleInvitationFingerprint,
+    trustedSession?.processedRoleInvitationFingerprint,
+  );
+
+  if (
+    !hasUnprocessedRoleInvitation
+    && trustedSession
+    && trustedSession.expiresAt > Math.floor(Date.now() / 1000) + 60
+  ) {
     return trustedSession;
   }
 
@@ -144,6 +165,7 @@ async function performTrustedAuth(): Promise<AppAuthIdentity | null> {
       session?: { access_token: string; expires_at: number };
       user?: TrustedAuthUser;
       startParam?: string;
+      roleInvitation?: TrustedAuthSession["roleInvitation"];
     };
 
     if (!response.ok || !payload.session?.access_token || !payload.user) {
@@ -156,6 +178,10 @@ async function performTrustedAuth(): Promise<AppAuthIdentity | null> {
       expiresAt: payload.session.expires_at,
       user: payload.user,
       startParam: payload.startParam,
+      processedRoleInvitationFingerprint: payload.roleInvitation
+        ? liveRoleInvitationFingerprint
+        : trustedSession?.processedRoleInvitationFingerprint,
+      roleInvitation: payload.roleInvitation,
       source: "trusted-telegram",
     };
     writeTrustedSession(session);
@@ -215,7 +241,11 @@ export function getCurrentUserRole() {
 }
 
 export function getCurrentStartParam() {
-  return trustedSession?.startParam || getTelegramWebApp()?.initDataUnsafe?.start_param;
+  return getTelegramWebApp()?.initDataUnsafe?.start_param || trustedSession?.startParam;
+}
+
+export function getCurrentRoleInvitationResult() {
+  return trustedSession?.roleInvitation || null;
 }
 
 export function getCurrentDisplayName(fallback: string) {

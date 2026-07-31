@@ -4,6 +4,15 @@ import {
   TelegramInitDataValidationError,
   validateTelegramInitData,
 } from "../_shared/telegramInitData.ts";
+import {
+  createRoleInvitationToken,
+  hashRoleInvitationToken,
+  isRoleInvitationTargetRole,
+  parseRoleInvitationStartParam,
+  roleInvitationLifetimeSeconds,
+  type RoleInvitationRedemptionStatus,
+  type RoleInvitationTargetRole,
+} from "../_shared/roleInvitations.ts";
 
 type AppUserRow = {
   id: string;
@@ -12,6 +21,16 @@ type AppUserRow = {
   first_name: string | null;
   last_name: string | null;
   username: string | null;
+};
+
+type RoleInvitationCreateRow = {
+  id: string;
+  expires_at: string;
+};
+
+type RoleInvitationRedeemRow = {
+  status: RoleInvitationRedemptionStatus;
+  target_role: RoleInvitationTargetRole | null;
 };
 
 const corsHeaders = {
@@ -61,10 +80,19 @@ Deno.serve(async (request) => {
 
   try {
     const {
+      action = "session",
       initData,
-    } = await request.json() as { initData?: string };
+      targetRole,
+    } = await request.json() as {
+      action?: "session" | "create_role_invitation";
+      initData?: string;
+      targetRole?: string;
+    };
 
     if (!initData) return json({ error: "init_data_required" }, 400);
+    if (action !== "session" && action !== "create_role_invitation") {
+      return json({ error: "invalid_action" }, 400);
+    }
 
     const supabaseUrl = requiredEnv("SUPABASE_URL");
     const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -132,11 +160,75 @@ Deno.serve(async (request) => {
 
     if (identityResult.error) throw identityResult.error;
 
-    const roleResult = await supabase
+    const roleBeforeAction = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_key", userKey)
       .maybeSingle<{ role: string }>();
+
+    if (roleBeforeAction.error) throw roleBeforeAction.error;
+
+    if (action === "create_role_invitation") {
+      if (roleBeforeAction.data?.role !== "admin") {
+        return json({ error: "access_denied" }, 403);
+      }
+      if (!isRoleInvitationTargetRole(targetRole)) {
+        return json({ error: "invalid_target_role" }, 400);
+      }
+
+      const token = createRoleInvitationToken();
+      const tokenHash = await hashRoleInvitationToken(token);
+      const expiresAt = new Date(Date.now() + roleInvitationLifetimeSeconds * 1000).toISOString();
+      const invitationResult = await supabase
+        .rpc("go_irl_create_role_invitation", {
+          p_token_hash: tokenHash,
+          p_target_role: targetRole,
+          p_created_by_user_key: userKey,
+          p_expires_at: expiresAt,
+        })
+        .single<RoleInvitationCreateRow>();
+
+      if (invitationResult.error || !invitationResult.data) {
+        throw invitationResult.error || new Error("Role invitation creation failed");
+      }
+
+      return json({
+        invitation: {
+          id: invitationResult.data.id,
+          startParam: token,
+          targetRole,
+          expiresAt: invitationResult.data.expires_at,
+        },
+      }, 201);
+    }
+
+    const roleInvitationToken = parseRoleInvitationStartParam(verified.startParam);
+    let roleInvitation: RoleInvitationRedeemRow | null = null;
+
+    if (roleInvitationToken) {
+      const tokenHash = await hashRoleInvitationToken(roleInvitationToken);
+      const redemptionResult = await supabase
+        .rpc("go_irl_redeem_role_invitation", {
+          p_token_hash: tokenHash,
+          p_user_key: userKey,
+        })
+        .single<RoleInvitationRedeemRow>();
+
+      if (redemptionResult.error || !redemptionResult.data) {
+        throw redemptionResult.error || new Error("Role invitation redemption failed");
+      }
+      roleInvitation = redemptionResult.data;
+    }
+
+    const roleResult = roleInvitation
+      ? await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_key", userKey)
+        .maybeSingle<{ role: string }>()
+      : roleBeforeAction;
+
+    if (roleResult.error) throw roleResult.error;
 
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = now + sessionTtlSeconds;
@@ -149,7 +241,7 @@ Deno.serve(async (request) => {
       iss: "go-irl-supabase-edge",
       go_irl_user_key: userKey,
       go_irl_telegram_id: verified.user.id,
-      go_irl_start_param: verified.startParam || null,
+      go_irl_start_param: roleInvitationToken ? null : verified.startParam || null,
       go_irl_role: roleResult.data?.role || "user",
     }, jwtSecret);
 
@@ -169,7 +261,8 @@ Deno.serve(async (request) => {
         username: upsertResult.data.username,
         role: roleResult.data?.role || "user",
       },
-      startParam: verified.startParam,
+      startParam: roleInvitationToken ? undefined : verified.startParam,
+      roleInvitation,
     });
   } catch (error) {
     console.error(error);

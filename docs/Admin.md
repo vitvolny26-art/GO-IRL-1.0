@@ -46,6 +46,29 @@ Admin permissions must be least-privilege:
 - Service-role operations stay on backend/n8n only.
 - Admin panel must not expose unnecessary personal data.
 
+## Admin005 Role Invitations
+
+The repository implementation supports admin-created bearer invitations for two bounded role promotions:
+
+- `user` to `organizer`;
+- `user` to `professional` (shown as `Мастер` in the Services UI).
+
+The administrator selects only the target role. Telegram supplies the recipient identity when the link is opened inside the Mini App. Invitations are deliberately not bound to an identity in advance, so the first verified Telegram account to redeem a link receives the role.
+
+Security boundaries:
+
+- one use only;
+- maximum lifetime of 24 hours;
+- 256-bit random bearer token;
+- only the SHA-256 token hash is stored;
+- creation requires a freshly verified Telegram identity whose current database role is `admin`;
+- redemption accepts only a current `user` role and does not overwrite organizer, professional, moderator, or admin roles;
+- role assignment and token consumption occur atomically;
+- raw token, Telegram `initData`, bearer session, and JWT are excluded from audit metadata;
+- role invitation parameters are not treated as Activity invitation claims.
+
+Repository presence does not prove that the migration or Edge Function is deployed. Production application remains a separate approval and verification gate.
+
 ## Backend Foundation
 
 Migration v2 adds:
