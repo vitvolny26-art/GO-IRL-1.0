@@ -3,8 +3,8 @@ title: AI Successor Instructions
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-08-01
+next_review: 2026-08-15
 ---
 
 # AI Successor Instructions
@@ -22,7 +22,7 @@ Scope:
 
 Goal:
 
-- Stabilize GO IRL for closed beta.
+- Stabilize GO IRL during Release Preparation and focused post-beta stabilization.
 - Do not rewrite architecture.
 - Do not expand MVP scope.
 
@@ -34,7 +34,7 @@ Slogan:
 
 > Less scrolling. More life.
 
-Closed beta focus:
+Historical closed-beta baseline:
 
 - Olomouc, Czechia.
 - Create event -> share -> join/request -> event chat -> attend IRL.
@@ -48,14 +48,14 @@ Canonical beta categories:
 5. Board games
 6. Language exchange
 
-Everything else is experimental, future, or out of beta scope unless approved in source-of-truth docs.
+These six categories remain historical acceptance and regression evidence. Current release scope follows README.md, ROADMAP.md, and the active lifecycle authority.
 
 ## Repositories
 
 Canonical code, documentation, and production repo:
 
 ```text
-vitvolny26-art/GO-IRL-1.0
+vitvolny26-art/Go-IRL-1.1
 ```
 
 Legacy repo (historical reference only; do not deploy):
