@@ -362,3 +362,41 @@
   .beauty-appointment-card i { grid-column: 2; justify-self: start; }
   .beauty-dialog-actions { grid-template-columns: 1fr; }
 }
+
+
+.beauty-workspace-shell {
+  padding-bottom: calc(118px + env(safe-area-inset-bottom));
+}
+
+.beauty-workspace-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 26px);
+  border: 1px solid var(--beauty-gold);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(34, 24, 47, 0.96), rgba(25, 18, 35, 0.98));
+  box-shadow: 0 24px 70px rgba(5, 2, 10, 0.38);
+}
+
+.beauty-workspace-shell .beauty-pilot {
+  padding-bottom: 84px;
+}
+
+.beauty-workspace-shell .beauty-pilot-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 60;
+  width: min(100%, 760px);
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  border-top: 1px solid rgba(216, 177, 90, 0.34);
+  background: rgba(14, 10, 21, 0.96);
+  box-shadow: 0 -14px 36px rgba(3, 2, 7, 0.48);
+  backdrop-filter: blur(18px);
+}
+
+@media (max-width: 620px) {
+  .beauty-workspace-page { padding: 14px; border-radius: 18px; }
+  .beauty-workspace-shell .beauty-pilot-nav { width: 100%; }
+}

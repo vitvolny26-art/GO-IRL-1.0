@@ -4,6 +4,7 @@ import { getCity } from "../config/cities";
 import type { Language } from "../types";
 import { buildBeautyPublicProfile, type BeautyPublicProfile } from "../beauty/beautySetupModel";
 import { loadBeautyWorkspace } from "../beauty/beautyWorkspaceStorage";
+import { mergeProfessionalDirectory, professionalsForCity } from "./servicesProfessionalDirectory";
 import "./services-client.css";
 
 type ClientProfile = { name: string; preferences: string[] };
@@ -36,12 +37,16 @@ function useServicesClientData(language: Language, selectedCityId: string) {
   const city = getCity(selectedCityId);
 
   useEffect(() => {
+    const shared = professionalsForCity(selectedCityId);
     void loadBeautyWorkspace(language).then((workspace) => {
       const professional = buildBeautyPublicProfile(workspace);
       const selectedNames = Object.values(city.name).map((name) => name.toLocaleLowerCase());
-      setProfessionals(workspace.published && selectedNames.includes(professional.city.toLocaleLowerCase()) ? [professional] : []);
-    }).catch(() => setProfessionals([]));
-  }, [city.name, language]);
+      const local = workspace.published && selectedNames.includes(professional.city.toLocaleLowerCase())
+        ? professional
+        : undefined;
+      setProfessionals(mergeProfessionalDirectory(shared, local));
+    }).catch(() => setProfessionals(shared));
+  }, [city.name, language, selectedCityId]);
 
   return { profile, setProfile, professionals, city };
 }
