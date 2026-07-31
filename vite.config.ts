@@ -6,6 +6,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
 
   return {
+    publicDir: "images",
     plugins: [react()],
     define: {
       __GO_IRL_COMMIT__: JSON.stringify(env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || env.VITE_GIT_COMMIT || "unknown"),

@@ -9,7 +9,7 @@ next_review: 2026-08-20
 
 # GO IRL Telegram Mini App
 
-![GO IRL logo](public/brand/logo-wide.png)
+![GO IRL logo](images/branding/logo-wide.png)
 
 Before contributing or implementing new features, read:
 
@@ -54,7 +54,7 @@ The Coach/Role + Chat trust layer is documented separately. Its purpose is to pl
 - Telegram WebApp bootstrap with trusted `initData` verification through Supabase Edge Functions
 - Telegram Mini App lifecycle helpers for ready, expand, back, and explicit close actions
 - Dark mobile-first UI with safe-area aware header
-- Brand assets in `public/brand/`
+- Brand assets in `images/branding/`
 
 ## Setup
 
