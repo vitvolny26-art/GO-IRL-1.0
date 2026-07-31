@@ -85,6 +85,11 @@ const isVisualDemoMode = () =>
   typeof window !== "undefined" &&
   !isTrustedAuthReady();
 
+export const resolveCurrentUserRole = (): UserRole => {
+  const trustedRole = getTrustedUserRole();
+  return trustedRole === "user" ? getCurrentUserRole(getUserKey()) : trustedRole;
+};
+
 const demoLocalized = (value: string) => ({ ru: value, uk: value, cs: value, en: value });
 
 const createSeedDemoActivities = (): Activity[] => {
@@ -481,12 +486,12 @@ export const useAppStore = create<AppState>((set, get) => {
     selectedCategory: null,
     loading: true,
     syncError: null,
-    userRole: getTrustedUserRole() === "user" ? getCurrentUserRole(getUserKey()) : getTrustedUserRole(),
+    userRole: resolveCurrentUserRole(),
 
     initialize: async () => {
       set({ loading: true });
       try {
-        set({ userRole: getTrustedUserRole() === "user" ? getCurrentUserRole(getUserKey()) : getTrustedUserRole() });
+        set({ userRole: resolveCurrentUserRole() });
         await reload();
         if (!isVisualDemoMode() && !realtimeChannel && !(typeof document !== "undefined" && document.hidden)) {
           realtimeChannel = supabase
