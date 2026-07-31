@@ -50,7 +50,7 @@ Admin permissions must be least-privilege:
 
 Migration v2 adds:
 
-- `user_roles` for `user`, `organizer`, `moderator`, and `admin`.
+- `user_roles` for `user`, `organizer`, `professional`, `moderator`, and `admin`.
 - role-aware Supabase helper functions.
 - `audit_log`.
 - database audit triggers for activity and membership changes.

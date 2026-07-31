@@ -94,7 +94,7 @@ The app currently keeps a local fallback for `city_id`, `metadata`, `participant
 
 It adds:
 
-- `public.user_roles` with roles: `user`, `organizer`, `moderator`, `admin`
+- `public.user_roles` with roles: `user`, `organizer`, `professional`, `moderator`, `admin`
 - role-aware helpers:
   - `go_irl_request_role()`
   - `go_irl_request_has_role(text[])`

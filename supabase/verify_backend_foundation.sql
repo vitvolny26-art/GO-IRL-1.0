@@ -97,3 +97,16 @@ union all
 select object_type, table_name as object_name, case when exists_ok then 'ok' else 'missing' end as status
 from trigger_checks
 order by object_type, object_name;
+
+select
+  'constraint' as object_type,
+  'user_roles_role_check' as object_name,
+  case
+    when pg_get_constraintdef(oid) like '%organizer%'
+      and pg_get_constraintdef(oid) like '%professional%'
+    then 'ok'
+    else 'missing'
+  end as status
+from pg_constraint
+where conrelid = 'public.user_roles'::regclass
+  and conname = 'user_roles_role_check';

@@ -60,7 +60,8 @@ Current implementation phase:
 
 `supabase/migration_v2_backend_foundation.sql` adds the production role foundation without replacing the current Activity MVP:
 
-- `user_roles` stores `user`, `organizer`, `moderator`, and `admin`.
+- `user_roles` stores `user`, `organizer`, `professional`, `moderator`, and `admin`.
+- Role assignment remains admin-controlled; `organizer` and `professional` do not inherit moderator or admin permissions.
 - `admin_users` is kept as backward compatibility and migration seed input.
 - `go_irl_request_role()` reads the caller role from trusted request headers plus database state.
 - `go_irl_request_can_moderate()` grants moderator/admin access for review flows.

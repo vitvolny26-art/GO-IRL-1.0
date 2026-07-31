@@ -68,7 +68,7 @@ Current prototype evidence:
 - Services has independent Home, For You, Catalog, My Bookings, and Client Profile tabs;
 - Beauty Professional setup and local workspace exist at `/beauty`;
 - professional data, preferences, and appointments remain local/mock and do not establish a shared production directory;
-- `professional` is not yet an approved production database role;
+- `professional` is an admin-assigned production identity role, but it grants no production Services data model or pilot authorization by itself;
 - the deployed shell is not evidence that Gate F is green.
 
 Entry gate:

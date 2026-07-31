@@ -110,15 +110,17 @@ Current roles:
 
 - `user`
 - `organizer`
+- `professional`
 - `moderator`
 - `admin`
 
 Organizer status comes from the event `organizer_key`. Database role status comes from `public.user_roles`:
 
 - `user`: normal participant.
-- `organizer`: reserved explicit role for future organizer capabilities; current ownership still comes from `activities.organizer_key`.
+- `organizer`: enables the Activities organizer entry; ownership of individual Activities still comes from `activities.organizer_key`.
+- `professional`: enables the Services professional entry and required Beauty setup; production Services data remains separately gated.
 - `moderator`: can review and moderate scoped records.
-- `admin`: can manage high-risk platform actions.
+- `admin`: can manage high-risk platform actions and receives both domain cabinet entries in the client shell.
 
 The legacy Sprint 1 allowlist exists only for dev/demo UI visibility and migration compatibility:
 

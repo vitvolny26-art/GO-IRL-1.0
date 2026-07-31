@@ -2,7 +2,7 @@
 -- Apply this in Supabase SQL Editor after migration_v1.sql.
 --
 -- Goals:
--- - production role model: user / organizer / moderator / admin
+-- - production role model: user / organizer / professional / moderator / admin
 -- - RLS helpers that understand roles
 -- - audit log for critical activity and membership changes
 -- - idempotent and safe to run more than once
@@ -15,7 +15,7 @@ create table if not exists public.user_roles (
   note text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint user_roles_role_check check (role in ('user', 'organizer', 'moderator', 'admin'))
+  constraint user_roles_role_check check (role in ('user', 'organizer', 'professional', 'moderator', 'admin'))
 );
 
 insert into public.user_roles (user_key, role, note)
