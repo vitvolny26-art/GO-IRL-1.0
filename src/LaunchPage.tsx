@@ -1,5 +1,5 @@
 const activityCardImage = "/launch/activity-card-user.webp";
-const servicesCardImage = "/launch/services-card-user.webp?v=20260801-2";
+const servicesCardImage = "/launch/services-card-user.webp?v=20260801-3";
 import { AppHeader } from "./components/AppHeader";
 import { getTranslation } from "./i18n";
 import type { Language } from "./types";
