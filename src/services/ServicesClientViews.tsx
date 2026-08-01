@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { CircleUserRound, Compass, Heart, MapPin, Save, Sparkles } from "lucide-react";
+import { CircleUserRound, Compass, Heart, MapPin, Save, Search, Sparkles } from "lucide-react";
 import { getCity } from "../config/cities";
 import type { Language } from "../types";
 import {
@@ -84,16 +84,53 @@ function ProfessionalCards({
   ))}</div>;
 }
 
+function ProfessionalSection({ title, professionals }: { title: string; professionals: ServicesProfessional[] }) {
+  if (!professionals.length) return null;
+  return <section className="discover-section"><div className="section-title"><h2>{title}</h2></div><ProfessionalCards professionals={professionals} state="ready" empty="" loading="" error="" /></section>;
+}
+
 export function ServicesForYouView({ language, selectedCityId }: { language: Language; selectedCityId: string }) {
   const profile = useMemo(readProfile, []);
   const { professionals, state } = useProfessionalDirectory(selectedCityId);
   const text = copy[language];
-  const matched = useMemo(() => professionals.filter((professional) => (
+  const [query, setQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [locationState, setLocationState] = useState<"idle" | "ready" | "blocked">("idle");
+  const interestMatches = useMemo(() => professionals.filter((professional) => (
     profile.preferences.length === 0
     || profile.preferences.some((preference) => professional.serviceName.toLocaleLowerCase().includes(preference.toLocaleLowerCase()))
   )), [professionals, profile.preferences]);
+  const matched = useMemo(() => professionals.filter((professional) => {
+    const service = professional.serviceName.toLocaleLowerCase();
+    const searchValue = `${professional.displayName} ${service} ${professional.publicLocation}`.toLocaleLowerCase();
+    return searchValue.includes(query.trim().toLocaleLowerCase()) && activeFilters.every((filter) => service.includes(filter.toLocaleLowerCase()));
+  }), [activeFilters, professionals, query]);
   const matchedState = state === "ready" && matched.length === 0 ? "empty" : state;
-  return <section className="page-section services-client-view"><div className="page-title"><Sparkles /><div><h1>{text.forYou}</h1><p>{text.forYouHint}</p></div></div><ProfessionalCards professionals={matched} state={matchedState} empty={text.empty} loading={text.loading} error={text.error} /></section>;
+  const labels = language === "ru"
+    ? { search: "Найти мастера или услугу", filters: "Быстрые фильтры", matched: "Подходит вам", interests: "По вашим интересам", nearest: "Ближайшие мастера", newest: "Новые мастера", nearMe: "Рядом со мной", location: "Включить геолокацию", blocked: "Не удалось получить геолокацию" }
+    : language === "uk"
+      ? { search: "Знайти майстра або послугу", filters: "Швидкі фільтри", matched: "Підходить вам", interests: "За вашими інтересами", nearest: "Найближчі майстри", newest: "Нові майстри", nearMe: "Поруч зі мною", location: "Увімкнути геолокацію", blocked: "Не вдалося отримати геолокацію" }
+      : language === "cs"
+        ? { search: "Najít profesionála nebo službu", filters: "Rychlé filtry", matched: "Pro vás", interests: "Podle vašich zájmů", nearest: "Nejbližší profesionálové", newest: "Noví profesionálové", nearMe: "V mém okolí", location: "Povolit polohu", blocked: "Polohu se nepodařilo získat" }
+        : { search: "Find a professional or service", filters: "Quick filters", matched: "Matched for you", interests: "Based on your interests", nearest: "Nearest professionals", newest: "New professionals", nearMe: "Near me", location: "Enable location", blocked: "Location is unavailable" };
+  const newest = [...professionals].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 8);
+  const toggleFilter = (filter: string) => setActiveFilters((current) => current.includes(filter) ? current.filter((item) => item !== filter) : [...current, filter]);
+  const enableLocation = () => {
+    if (!navigator.geolocation) return setLocationState("blocked");
+    navigator.geolocation.getCurrentPosition(() => setLocationState("ready"), () => setLocationState("blocked"), { maximumAge: 300_000, timeout: 5000 });
+  };
+  return <section className="page-section services-client-view discover-page">
+    <div className="page-title"><Sparkles /><div><h1>{text.forYou}</h1><p>{text.forYouHint}</p></div></div>
+    <label className="discover-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={labels.search} /></label>
+    <div className="discover-filter-block"><span>{labels.filters}</span><div className="filter-row discover-filters">{preferenceOptions.map((filter) => <button className={activeFilters.includes(filter) ? "filter active" : "filter"} key={filter} onClick={() => toggleFilter(filter)} type="button">{filter}</button>)}</div></div>
+    {(query || activeFilters.length > 0) && <section className="discover-section"><div className="section-title"><h2>{labels.matched}</h2></div><ProfessionalCards professionals={matched} state={matchedState} empty={text.empty} loading={text.loading} error={text.error} /></section>}
+    {state !== "ready" ? <ProfessionalCards professionals={[]} state={state} empty={text.empty} loading={text.loading} error={text.error} /> : <>
+      <ProfessionalSection title={labels.interests} professionals={interestMatches.slice(0, 8)} />
+      <ProfessionalSection title={labels.nearest} professionals={professionals.slice(0, 8)} />
+      <ProfessionalSection title={labels.newest} professionals={newest} />
+      <section className="discover-section"><div className="section-title discover-section-title"><MapPin /><h2>{labels.nearMe}</h2>{locationState === "idle" && <button onClick={enableLocation} type="button">{labels.location}</button>}</div>{locationState === "blocked" && <div className="nearby-note">{labels.blocked}</div>}{locationState === "ready" && <ProfessionalCards professionals={professionals.slice(0, 8)} state="ready" empty={text.empty} loading={text.loading} error={text.error} />}</section>
+    </>}
+  </section>;
 }
 
 export function ServicesCatalogView({ language, selectedCityId }: { language: Language; selectedCityId: string }) {
