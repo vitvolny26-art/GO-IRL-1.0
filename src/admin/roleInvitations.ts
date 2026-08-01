@@ -21,7 +21,7 @@ export type RoleAssignment = {
   updatedAt: string;
 };
 
-export type RoleDemotionStatus = "updated" | "not_found" | "role_conflict";
+export type RoleDemotionStatus = "updated" | "invalid" | "not_found" | "role_conflict";
 export type RoleDemotionResult = {
   status: RoleDemotionStatus;
   previousRole: string | null;
@@ -53,6 +53,23 @@ type AdminResponse = {
 
 const roleInvitationPattern = /^ri_[A-Za-z0-9_-]{43}$/;
 const userKeyPattern = /^telegram:[0-9]+$/;
+
+export const getRoleDemotionErrorMessage = (error: unknown) => {
+  const code = error instanceof Error ? error.message : "";
+  switch (code) {
+    case "role_conflict":
+      return "Роль уже изменилась. Обновите список.";
+    case "not_found":
+      return "Пользователь больше не найден. Обновите список.";
+    case "invalid":
+    case "invalid_target_user_key":
+      return "Некорректная запись пользователя. Обновите список.";
+    case "access_denied":
+      return "Доступ администратора больше не подтверждён. Откройте админ-панель заново.";
+    default:
+      return "Не удалось разжаловать пользователя.";
+  }
+};
 
 export const isRoleInvitationStartParam = (value: unknown) =>
   typeof value === "string" && roleInvitationPattern.test(value.trim());
