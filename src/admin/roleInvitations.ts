@@ -38,11 +38,17 @@ type RawRoleAssignment = {
   updated_at: string;
 };
 
+type RawRoleDemotionResult = {
+  status: RoleDemotionStatus;
+  previous_role: string | null;
+  current_role: string | null;
+};
+
 type AdminResponse = {
   error?: string;
   invitation?: CreatedRoleInvitation;
   roleAssignments?: RawRoleAssignment[];
-  roleDemotion?: RoleDemotionResult;
+  roleDemotion?: RawRoleDemotionResult;
 };
 
 const roleInvitationPattern = /^ri_[A-Za-z0-9_-]{43}$/;
@@ -115,10 +121,14 @@ export const requestRoleAssignments = async (
 export const requestRoleDemotion = async (
   targetUserKey: string,
   dependencies: Parameters<typeof trustedAdminRequest>[1] = {},
-) => {
+): Promise<RoleDemotionResult> => {
   const normalizedTargetUserKey = targetUserKey.trim();
   if (!userKeyPattern.test(normalizedTargetUserKey)) throw new Error("invalid_target_user_key");
   const payload = await trustedAdminRequest({ action: "demote_role", targetUserKey: normalizedTargetUserKey }, dependencies);
   if (!payload.roleDemotion) throw new Error(payload.error || "role_demotion_failed");
-  return payload.roleDemotion;
+  return {
+    status: payload.roleDemotion.status,
+    previousRole: payload.roleDemotion.previous_role,
+    currentRole: payload.roleDemotion.current_role,
+  };
 };
