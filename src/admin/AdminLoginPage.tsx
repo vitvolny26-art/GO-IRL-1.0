@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { DevPanel } from "../components/DevPanel";
 import { AdminIntegrationsPanel, countReadyIntegrations } from "./AdminIntegrationsPanel";
+import { AdminUpdatesPanel, getCurrentAdminUpdateSummary } from "./AdminUpdatesPanel";
 import { adminRedirectForAuthorization, verifyCurrentAdminSession } from "./adminSession";
 import {
   buildRoleInvitationUrl,
@@ -110,6 +111,7 @@ export function AdminPanelPage() {
 
   const roleCount = assignments.filter((item) => item.role !== "admin").length;
   const connectedIntegrationCount = countReadyIntegrations(authorized, rolesLoading, rolesError);
+  const updateSummary = getCurrentAdminUpdateSummary();
 
   return <main className="admin-login-shell admin-panel-shell">
     {authorized ? <DevPanel /> : null}
@@ -123,7 +125,7 @@ export function AdminPanelPage() {
         <div className="admin-overview-grid">
           <article className="admin-login-card admin-metric-card"><span>Повышенные роли</span><strong>{rolesLoading ? "…" : roleCount}</strong><button type="button" onClick={() => setActiveTab("roles")}>Управлять</button></article>
           <article className="admin-login-card admin-metric-card"><span>Интеграции</span><strong>{connectedIntegrationCount}/4</strong><button type="button" onClick={() => setActiveTab("integrations")}>Открыть</button></article>
-          <article className="admin-login-card admin-metric-card"><span>Обновления</span><strong>—</strong><button type="button" onClick={() => setActiveTab("updates")}>Проверить</button></article>
+          <article className="admin-login-card admin-metric-card"><span>Обновления</span><strong>{updateSummary.ready}/{updateSummary.total}</strong><button type="button" onClick={() => setActiveTab("updates")}>Проверить</button></article>
         </div>
       </section> : null}
 
@@ -154,7 +156,7 @@ export function AdminPanelPage() {
 
       {authorized && activeTab === "integrations" ? <AdminIntegrationsPanel authorized={authorized} rolesLoading={rolesLoading} rolesError={rolesError} /> : null}
 
-      {authorized && activeTab === "updates" ? <section className="admin-tab-panel"><section className="admin-login-card admin-empty-state"><span className="admin-empty-icon">↻</span><h2>Обновления функций</h2><p>Здесь появятся версии функций, статусы миграций, журнал обновлений и безопасные действия релиза.</p></section></section> : null}
+      {authorized && activeTab === "updates" ? <AdminUpdatesPanel /> : null}
     </div>
 
     {authorized ? <nav className="admin-bottom-tabs" aria-label="Разделы админ-панели">{adminTabs.map((tab) => <button key={tab.id} type="button" className={activeTab === tab.id ? "is-active" : ""} onClick={() => setActiveTab(tab.id)} aria-current={activeTab === tab.id ? "page" : undefined}><span>{tab.icon}</span><small>{tab.label}</small></button>)}</nav> : null}
