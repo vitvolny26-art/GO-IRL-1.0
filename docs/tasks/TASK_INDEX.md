@@ -15,7 +15,7 @@ This registry locates governed task capsules. It is not a backlog replacement.
 
 | Task ID | Title | Capsule | Issue | PR | Updated |
 |---|---|---|---|---|---|
-| OPS001 | Implement task continuity workflow | `docs/tasks/capsules/OPS001.md` | #513 | pending | 2026-08-01 |
+| OPS001 | Implement task continuity workflow | `docs/tasks/capsules/OPS001.md` | #513 | #514 | 2026-08-01 |
 
 ## Review
 
