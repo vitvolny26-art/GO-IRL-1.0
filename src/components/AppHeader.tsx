@@ -102,7 +102,7 @@ export function AppHeader({
             }}
           >
             <img
-              src="/branding/go-irl-logo-final.jpg?v=20260801-8"
+              src="/branding/go-irl-logo-final.jpg?v=20260801-9"
               alt="GO IRL"
               style={{
                 display: "block",
@@ -111,7 +111,7 @@ export function AppHeader({
                 borderRadius: 0,
                 objectFit: "cover",
                 boxShadow: "none",
-                transform: "scale(1.45)",
+                transform: "scale(1.85)",
                 transformOrigin: "center",
               }}
             />
