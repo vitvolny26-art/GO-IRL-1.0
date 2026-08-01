@@ -600,7 +600,7 @@ function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { langua
           ? <a className="domain-cabinet-entry" href="/beauty/workspace"><Sparkles /><strong>{cabinet.label}</strong><ChevronRight /></a>
           : <button className="domain-cabinet-entry" onClick={onOpenOrganizerCabinet} type="button"><UsersRound /><strong>{cabinet.label}</strong><ChevronRight /></button>
       )}
-      <SectionHeader title={t.chooseDirection} />
+      {servicesDomain && <SectionHeader title={t.chooseDirection} />}
       <div className={homeCategories.length === 1 ? "category-grid module-grid services-category-grid" : "category-grid module-grid"}>
         {homeCategories.map((category) => (
           <button className="category-button" data-category={category.id} key={category.id} onClick={() => setCategory(category.id)} type="button">

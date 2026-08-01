@@ -3,7 +3,7 @@
 }
 
 .category-grid.module-grid.services-category-grid {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .category-grid.module-grid.services-category-grid .category-button[data-category="creativity"] {
