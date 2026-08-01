@@ -33,6 +33,12 @@ type RoleInvitationRedeemRow = {
   target_role: RoleInvitationTargetRole | null;
 };
 
+type RemoveProfessionalRoleRow = {
+  status: "updated" | "invalid" | "not_found" | "role_conflict";
+  previous_role: string | null;
+  current_role: string | null;
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -83,14 +89,16 @@ Deno.serve(async (request) => {
       action = "session",
       initData,
       targetRole,
+      targetTelegramId,
     } = await request.json() as {
-      action?: "session" | "create_role_invitation";
+      action?: "session" | "create_role_invitation" | "remove_professional_role";
       initData?: string;
       targetRole?: string;
+      targetTelegramId?: string;
     };
 
     if (!initData) return json({ error: "init_data_required" }, 400);
-    if (action !== "session" && action !== "create_role_invitation") {
+    if (action !== "session" && action !== "create_role_invitation" && action !== "remove_professional_role") {
       return json({ error: "invalid_action" }, 400);
     }
 
@@ -125,9 +133,6 @@ Deno.serve(async (request) => {
       throw replayResult.error;
     }
 
-    // Telegram keeps one signed initData value for the lifetime of the Mini App.
-    // A duplicate replay row therefore means an idempotent session refresh, not a
-    // second unverified identity. HMAC and auth_date were already validated above.
     const userKey = `telegram:${verified.user.id}`;
     const upsertResult = await supabase
       .from("app_users")
@@ -200,6 +205,30 @@ Deno.serve(async (request) => {
           expiresAt: invitationResult.data.expires_at,
         },
       }, 201);
+    }
+
+    if (action === "remove_professional_role") {
+      if (roleBeforeAction.data?.role !== "admin") {
+        return json({ error: "access_denied" }, 403);
+      }
+      const normalizedTelegramId = typeof targetTelegramId === "string" ? targetTelegramId.trim() : "";
+      if (!/^[0-9]+$/.test(normalizedTelegramId)) {
+        return json({ error: "invalid_target_telegram_id" }, 400);
+      }
+
+      const removalResult = await supabase
+        .rpc("go_irl_remove_professional_role", {
+          p_target_user_key: `telegram:${normalizedTelegramId}`,
+          p_actor_user_key: userKey,
+        })
+        .single<RemoveProfessionalRoleRow>();
+
+      if (removalResult.error || !removalResult.data) {
+        throw removalResult.error || new Error("Professional role removal failed");
+      }
+
+      const statusCode = removalResult.data.status === "updated" ? 200 : 409;
+      return json({ roleRemoval: removalResult.data }, statusCode);
     }
 
     const roleInvitationToken = parseRoleInvitationStartParam(verified.startParam);
