@@ -7,6 +7,8 @@ const trackedFiles = execFileSync("git", ["ls-files", "-z"], {
 
 const forbiddenExact = new Set([
   "package-lock.json",
+  ".env",
+  ".env.local",
 ]);
 
 const forbiddenPrefixes = [
@@ -34,9 +36,7 @@ for (const file of trackedFiles) {
   if (
     forbiddenExact.has(file) ||
     forbiddenPrefixes.some((prefix) => file.startsWith(prefix)) ||
-    forbiddenSuffixes.some((suffix) => file.endsWith(suffix)) ||
-    file === ".env" ||
-    file.startsWith(".env.")
+    forbiddenSuffixes.some((suffix) => file.endsWith(suffix))
   ) {
     violations.push(file);
   }
