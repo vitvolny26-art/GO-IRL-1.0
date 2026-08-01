@@ -108,3 +108,21 @@
   font-size: 14px;
   font-weight: 700;
 }
+
+.admin-role-removal {
+  border-color: rgba(255, 84, 104, 0.3);
+}
+
+.admin-role-invitations .admin-danger-button {
+  background: #b4233c;
+}
+
+.admin-role-removal-success {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(201, 255, 61, 0.1);
+  color: #c9ff3d;
+  font-size: 14px;
+  font-weight: 700;
+}
