@@ -19,4 +19,5 @@
 .launch-services-card{border:3px solid #d4af37;box-shadow:0 0 18px #d4af3740,0 18px 44px #00000052,inset 0 0 0 1px #ffffff08}
 @media(max-width:420px){.launch-domain-copy strong{font-size:clamp(16px,4.6vw,18px)}.launch-domain-copy small{font-size:10px}}
 .launch-card-arrow{width:28px;height:36px;border:0;border-radius:0;background:transparent;backdrop-filter:none;font-size:30px}
+.launch-domain-card{grid-template-columns:minmax(0,1fr)}
 

@@ -606,7 +606,6 @@ function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { langua
             <span>{category.icon}</span>
             <strong>{category.name[language]}</strong>
             <small>{servicesDomain ? professionalCount + " " + professionalCountLabel(language, professionalCount) : activities.filter((activity) => activity.categoryId === category.id).length + " " + t.eventCountLabel}</small>
-            <ChevronRight size={16} />
           </button>
         ))}
       </div>

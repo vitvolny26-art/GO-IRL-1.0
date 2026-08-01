@@ -1,5 +1,5 @@
 const activityCardImage = "/launch/activity-card-user.webp";
-const servicesCardImage = "/launch/services-card-user.webp";
+const servicesCardImage = "/launch/services-card-user.webp?v=20260801-2";
 import { AppHeader } from "./components/AppHeader";
 import { getTranslation } from "./i18n";
 import type { Language } from "./types";
@@ -115,13 +115,11 @@ export function LaunchPage({
             <img src={activityCardImage} alt="" aria-hidden="true" />
             <span className="launch-card-shade" aria-hidden="true" />
             <span className="launch-domain-copy"><strong>{t.activities}</strong><small>{t.activitiesInfo}</small></span>
-            <span className="launch-card-arrow" aria-hidden="true">›</span>
           </button>
           <button className="launch-domain-card launch-services-card" type="button" onClick={onOpenServices}>
             <img src={servicesCardImage} alt="" aria-hidden="true" />
             <span className="launch-card-shade" aria-hidden="true" />
             <span className="launch-domain-copy"><strong>{t.services}</strong><small>{t.servicesInfo}</small></span>
-            <span className="launch-card-arrow" aria-hidden="true">›</span>
           </button>
         </div>
       </section>
