@@ -5,6 +5,7 @@ import { AdminUpdatesPanel, getCurrentAdminUpdateSummary } from "./AdminUpdatesP
 import { adminRedirectForAuthorization, verifyCurrentAdminSession } from "./adminSession";
 import {
   buildRoleInvitationUrl,
+  getRoleDemotionErrorMessage,
   requestRoleAssignments,
   requestRoleDemotion,
   requestRoleInvitation,
@@ -98,8 +99,7 @@ export function AdminPanelPage() {
       await requestRoleDemotion(assignment.userKey);
       await loadAssignments();
     } catch (error) {
-      const code = error instanceof Error ? error.message : "";
-      setRolesError(code === "role_conflict" ? "Роль уже изменилась. Обновите список." : "Не удалось разжаловать пользователя.");
+      setRolesError(getRoleDemotionErrorMessage(error));
     } finally { setDemotingUserKey(""); }
   };
 
