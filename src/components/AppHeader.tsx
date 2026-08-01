@@ -102,7 +102,7 @@ export function AppHeader({
             }}
           >
             <img
-              src="/branding/go-irl-logo-header-final.png?v=20260801-10"
+              src="/branding/go-irl-logo-header-final.png?v=20260801-11"
               alt="GO IRL"
               style={{
                 display: "block",
