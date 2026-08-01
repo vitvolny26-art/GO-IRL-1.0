@@ -6,6 +6,10 @@ const migrationSource = readFileSync(
   new URL("../../migrations/20260731135251_admin005_role_invitations.sql", import.meta.url),
   "utf8",
 );
+const removalMigrationSource = readFileSync(
+  new URL("../../migrations/20260801001500_admin006_remove_professional_role.sql", import.meta.url),
+  "utf8",
+);
 
 describe("Admin005 role invitation boundary", () => {
   it("allows creation only after current database admin verification", () => {
@@ -46,5 +50,36 @@ describe("Admin005 role invitation boundary", () => {
     expect(migrationSource).toContain("'role_invitation.created'");
     expect(migrationSource).toContain("'role_invitation.redeemed'");
     expect(migrationSource).not.toContain("jsonb_build_object('token'");
+  });
+});
+
+describe("Admin006 professional role removal boundary", () => {
+  it("revalidates the current admin role before removal", () => {
+    const action = edgeSource.indexOf('action === "remove_professional_role"');
+    const adminCheck = edgeSource.indexOf('roleBeforeAction.data?.role !== "admin"', action);
+    const rpcCall = edgeSource.indexOf('rpc("go_irl_remove_professional_role"', adminCheck);
+
+    expect(action).toBeGreaterThan(-1);
+    expect(adminCheck).toBeGreaterThan(action);
+    expect(rpcCall).toBeGreaterThan(adminCheck);
+  });
+
+  it("accepts only numeric Telegram ids and does not expose direct table mutation", () => {
+    expect(edgeSource).toContain("invalid_target_telegram_id");
+    expect(edgeSource).toContain("p_target_user_key: `telegram:${normalizedTelegramId}`");
+    expect(edgeSource).not.toContain('.from("user_roles").update');
+  });
+
+  it("limits the database transition to professional-to-user and audits it", () => {
+    expect(removalMigrationSource).toContain("if v_previous_role <> 'professional'");
+    expect(removalMigrationSource).toContain("set role = 'user'");
+    expect(removalMigrationSource).toContain("and role = 'professional'");
+    expect(removalMigrationSource).toContain("'user_role.professional_removed'");
+    expect(removalMigrationSource).toContain(
+      "revoke execute on function public.go_irl_remove_professional_role(text, text)",
+    );
+    expect(removalMigrationSource).toContain(
+      "grant execute on function public.go_irl_remove_professional_role(text, text)\nto service_role",
+    );
   });
 });
