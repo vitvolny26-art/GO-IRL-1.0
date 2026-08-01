@@ -38,7 +38,7 @@ create or replace function public.go_irl_demote_role(
   p_target_user_key text,
   p_actor_user_key text
 )
-returns table(status text, previous_role text, current_role text)
+returns table(status text, previous_role text, "current_role" text)
 language plpgsql
 security definer
 set search_path = pg_catalog, public
