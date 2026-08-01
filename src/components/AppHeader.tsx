@@ -81,55 +81,38 @@ export function AppHeader({
             onClick={onBrandClick}
             type="button"
             aria-label="GO IRL"
-            style={{ width: 110, height: 110, minWidth: 110, minHeight: 110, overflow: "visible" }}
+            style={{ width: 92, height: 64, minWidth: 92, minHeight: 64, overflow: "hidden" }}
           >
             <img
-              src="/branding/go-irl-logo-header.png"
+              src="/branding/go-irl-logo-final.jpg"
               alt="GO IRL"
               style={{
                 display: "block",
-                width: 110,
-                height: 110,
+                width: 64,
+                height: 64,
                 borderRadius: 0,
                 objectFit: "contain",
                 boxShadow: "none",
+                transform: "scale(1.3)",
+                transformOrigin: "center",
               }}
             />
           </button>
 
           <div className="header-controls">
-            <button
-              className={openMenu === "city" ? "header-control is-active" : "header-control"}
-              onClick={() => toggleMenu("city")}
-              type="button"
-              aria-label={translation.selectCity}
-              aria-expanded={openMenu === "city"}
-            >
+            <button className={openMenu === "city" ? "header-control is-active" : "header-control"} onClick={() => toggleMenu("city")} type="button" aria-label={translation.selectCity} aria-expanded={openMenu === "city"}>
               <MapPin />
               <span>{selectedCity.name[language]}</span>
               <ChevronDown className="control-chevron" />
             </button>
 
-            <button
-              className={openMenu === "language" ? "header-control language-control is-active" : "header-control language-control"}
-              onClick={() => toggleMenu("language")}
-              type="button"
-              aria-label={translation.selectLanguage}
-              aria-expanded={openMenu === "language"}
-            >
+            <button className={openMenu === "language" ? "header-control language-control is-active" : "header-control language-control"} onClick={() => toggleMenu("language")} type="button" aria-label={translation.selectLanguage} aria-expanded={openMenu === "language"}>
               <Globe2 />
               <span style={{ fontSize: 10 }}>{selectedLanguage.shortLabel}</span>
               <ChevronDown className="control-chevron" />
             </button>
 
-            <button
-              className={openMenu === "notifications" ? "header-icon-button is-active" : "header-icon-button"}
-              onClick={toggleNotifications}
-              type="button"
-              aria-label={`${translation.notifications}${unreadCount ? ` (${unreadCount})` : ""}`}
-              aria-expanded={openMenu === "notifications"}
-              title={translation.notifications}
-            >
+            <button className={openMenu === "notifications" ? "header-icon-button is-active" : "header-icon-button"} onClick={toggleNotifications} type="button" aria-label={`${translation.notifications}${unreadCount ? ` (${unreadCount})` : ""}`} aria-expanded={openMenu === "notifications"} title={translation.notifications}>
               <Bell />
               {unreadCount ? <span className="notification-badge">{unreadCount > 9 ? "9+" : unreadCount}</span> : null}
             </button>
