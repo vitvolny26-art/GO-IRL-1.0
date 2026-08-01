@@ -57,6 +57,17 @@ export function AppHeader({
   const unreadCount = notifications.filter((item) => !item.read).length;
 
   useEffect(() => {
+    const root = document.documentElement;
+    const previousHeaderHeight = root.style.getPropertyValue("--app-header-height");
+    root.style.setProperty("--app-header-height", "84px");
+
+    return () => {
+      if (previousHeaderHeight) root.style.setProperty("--app-header-height", previousHeaderHeight);
+      else root.style.removeProperty("--app-header-height");
+    };
+  }, []);
+
+  useEffect(() => {
     const refreshNotifications = () => setNotifications(getParticipantJoinNotifications());
     window.addEventListener(participantNotificationsChangedEvent, refreshNotifications);
     return () => window.removeEventListener(participantNotificationsChangedEvent, refreshNotifications);
@@ -81,20 +92,25 @@ export function AppHeader({
             onClick={onBrandClick}
             type="button"
             aria-label="GO IRL"
-            style={{ width: 92, height: 72, minWidth: 92, minHeight: 72, overflow: "hidden" }}
+            style={{
+              width: 92,
+              height: 84,
+              minWidth: 92,
+              minHeight: 84,
+              overflow: "visible",
+              justifyContent: "center",
+            }}
           >
             <img
-              src="/branding/go-irl-logo-final.jpg?v=20260801-4"
+              src="/branding/go-irl-logo-header.png?v=20260801-7"
               alt="GO IRL"
               style={{
                 display: "block",
-                width: 72,
-                height: 72,
+                width: 82,
+                height: 82,
                 borderRadius: 0,
                 objectFit: "contain",
                 boxShadow: "none",
-                transform: "scale(1.5)",
-                transformOrigin: "center",
               }}
             />
           </button>
