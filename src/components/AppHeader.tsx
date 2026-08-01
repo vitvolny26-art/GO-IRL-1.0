@@ -97,22 +97,20 @@ export function AppHeader({
               height: 84,
               minWidth: 92,
               minHeight: 84,
-              overflow: "hidden",
+              overflow: "visible",
               justifyContent: "center",
             }}
           >
             <img
-              src="/branding/go-irl-logo-final.jpg?v=20260801-9"
+              src="/branding/go-irl-logo-header-final.png?v=20260801-10"
               alt="GO IRL"
               style={{
                 display: "block",
-                width: 84,
-                height: 84,
+                width: 82,
+                height: 82,
                 borderRadius: 0,
-                objectFit: "cover",
+                objectFit: "contain",
                 boxShadow: "none",
-                transform: "scale(1.85)",
-                transformOrigin: "center",
               }}
             />
           </button>
