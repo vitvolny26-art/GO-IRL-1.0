@@ -19,12 +19,14 @@ Capsule: `docs/tasks/capsules/OPS001.md`
 
 GitHub Issue: #513
 
+Pull request: #514
+
 Branch: `ops/ops001-task-continuity-workflow`
 
 Merge target: `main`
 
 Deploy target: `none`
 
-Next action: finish the documentation contract, verify every created/updated file, open a Draft PR, and record the exact PR/head/check state in the capsule.
+Next action: verify the final PR head and CI, then review registry/onboarding alignment before merge.
 
 Do not start another governed task until this pointer is updated.
