@@ -977,24 +977,24 @@ button, input, textarea, select { letter-spacing: 0; }
 /* GO IRL header logo overflow fix */
 .app-header .header-brand,
 .header-brand {
-  width: 62px !important;
-  min-width: 62px !important;
-  max-width: 62px !important;
-  height: 62px !important;
-  min-height: 62px !important;
-  max-height: 62px !important;
-  flex: 0 0 62px !important;
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  max-height: 70px !important;
+  flex: 0 0 70px !important;
   overflow: hidden !important;
 }
 
 .app-header .header-brand img,
 .header-brand img {
-  width: 60px !important;
-  min-width: 60px !important;
-  max-width: 60px !important;
-  height: 60px !important;
-  min-height: 60px !important;
-  max-height: 60px !important;
+  width: 68px !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+  height: 68px !important;
+  min-height: 68px !important;
+  max-height: 68px !important;
   object-fit: cover !important;
   object-position: center !important;
   display: block !important;
