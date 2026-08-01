@@ -3,8 +3,8 @@ title: ChatGPT Project Setup
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-08-01
+next_review: 2026-08-15
 ---
 
 # ChatGPT Project Setup
@@ -18,7 +18,7 @@ GitHub remains source of truth. Chats are disposable.
 ## Project name
 
 ```text
-GO IRL 1.0
+GO IRL 1.1
 ```
 
 ## Main Project Instructions
@@ -26,7 +26,7 @@ GO IRL 1.0
 Paste this into ChatGPT Project instructions:
 
 ```text
-You work on GO IRL 1.0.
+You work on GO IRL 1.1.
 
 Answer in English. Be very short and direct.
 Optimize for low token use.
@@ -39,7 +39,7 @@ Stack: React, TypeScript, Vite, pnpm, Supabase, Telegram Mini Apps, Vercel, GitH
 
 Product: Telegram Mini App for local real-life events.
 Slogan: Less scrolling. More life.
-Closed beta focus: Olomouc, Czechia.
+Historical closed-beta baseline: Olomouc, Czechia.
 Core flow: create event -> share -> join/request -> event chat -> attend IRL.
 
 Canonical beta categories:
@@ -308,5 +308,5 @@ Google Drive and NotebookLM remain non-authoritative mirrors. A Draft report rea
 1. Do not reopen the resolved beta taxonomy red block without evidence from current `main`.
 2. Run lint, build, test, and typecheck after code changes.
 3. Complete the real Telegram smoke test and remaining manual release verification.
-4. Keep the six-category closed-beta scope locked.
+4. Keep the six-category closed-beta taxonomy as regression evidence; current release scope follows ROADMAP.md and the active lifecycle authority.
 5. Continue documentation cleanup and review governance Draft reports.
