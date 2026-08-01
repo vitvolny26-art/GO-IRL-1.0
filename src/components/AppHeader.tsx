@@ -81,15 +81,15 @@ export function AppHeader({
             onClick={onBrandClick}
             type="button"
             aria-label="GO IRL"
-            style={{ width: 90, height: 90, minWidth: 90, minHeight: 90, overflow: "visible" }}
+            style={{ width: 110, height: 110, minWidth: 110, minHeight: 110, overflow: "visible" }}
           >
             <img
               src="/branding/go-irl-logo-final.jpg"
               alt="GO IRL"
               style={{
                 display: "block",
-                width: 90,
-                height: 90,
+                width: 110,
+                height: 110,
                 borderRadius: 0,
                 objectFit: "contain",
                 boxShadow: "none",
@@ -118,7 +118,7 @@ export function AppHeader({
               aria-expanded={openMenu === "language"}
             >
               <Globe2 />
-              <span>{selectedLanguage.shortLabel}</span>
+              <span style={{ fontSize: 10 }}>{selectedLanguage.shortLabel}</span>
               <ChevronDown className="control-chevron" />
             </button>
 
