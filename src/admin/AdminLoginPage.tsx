@@ -3,6 +3,7 @@ import { DevPanel } from "../components/DevPanel";
 import { adminRedirectForAuthorization, verifyCurrentAdminSession } from "./adminSession";
 import {
   buildRoleInvitationUrl,
+  requestProfessionalRoleRemoval,
   requestRoleInvitation,
   type CreatedRoleInvitation,
   type RoleInvitationTargetRole,
@@ -32,6 +33,11 @@ export function AdminPanelPage() {
   const [invitationError, setInvitationError] = useState("");
   const [creatingInvitation, setCreatingInvitation] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [targetTelegramId, setTargetTelegramId] = useState("");
+  const [removingRole, setRemovingRole] = useState(false);
+  const [roleRemovalMessage, setRoleRemovalMessage] = useState("");
+  const [roleRemovalError, setRoleRemovalError] = useState("");
+
   useEffect(() => {
     let active = true;
     void (async () => {
@@ -65,6 +71,28 @@ export function AdminPanelPage() {
     }
   };
 
+  const removeMasterRole = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const normalizedTelegramId = targetTelegramId.trim();
+    if (!window.confirm(`Снять роль мастера у Telegram ID ${normalizedTelegramId}?`)) return;
+
+    setRemovingRole(true);
+    setRoleRemovalMessage("");
+    setRoleRemovalError("");
+    try {
+      await requestProfessionalRoleRemoval(normalizedTelegramId);
+      setRoleRemovalMessage("Роль мастера снята. Пользователь снова имеет роль user.");
+      setTargetTelegramId("");
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      if (code === "not_found") setRoleRemovalError("Пользователь с таким Telegram ID не найден.");
+      else if (code === "role_conflict") setRoleRemovalError("У пользователя сейчас нет роли мастера.");
+      else setRoleRemovalError("Не удалось снять роль мастера. Проверьте Telegram ID и повторите попытку.");
+    } finally {
+      setRemovingRole(false);
+    }
+  };
+
   const copyInvitation = async () => {
     if (!invitation) return;
     try {
@@ -92,18 +120,11 @@ export function AdminPanelPage() {
       <p>Одноразовая ссылка действует 24 часа. Роль получит первый Telegram-аккаунт, который её откроет.</p>
       <form onSubmit={createInvitation}>
         <label htmlFor="role-invitation-target">Кого приглашаем</label>
-        <select
-          id="role-invitation-target"
-          value={targetRole}
-          onChange={(event) => setTargetRole(event.target.value as RoleInvitationTargetRole)}
-          disabled={creatingInvitation}
-        >
+        <select id="role-invitation-target" value={targetRole} onChange={(event) => setTargetRole(event.target.value as RoleInvitationTargetRole)} disabled={creatingInvitation}>
           <option value="organizer">Организатор</option>
           <option value="professional">Мастер</option>
         </select>
-        <button type="submit" disabled={creatingInvitation}>
-          {creatingInvitation ? "Создаём…" : "Сформировать приглашение"}
-        </button>
+        <button type="submit" disabled={creatingInvitation}>{creatingInvitation ? "Создаём…" : "Сформировать приглашение"}</button>
       </form>
       {invitation ? <div className="admin-role-invitation-result" aria-live="polite">
         <strong>{invitation.targetRole === "professional" ? "Мастер" : "Организатор"}</strong>
@@ -112,6 +133,18 @@ export function AdminPanelPage() {
         <button type="button" onClick={() => void copyInvitation()}>{copied ? "Скопировано" : "Скопировать ссылку"}</button>
       </div> : null}
       {invitationError ? <div className="admin-role-invitation-error" role="alert">{invitationError}</div> : null}
+    </section> : null}
+    {authorized ? <section className="admin-login-card admin-role-invitations admin-role-removal" aria-labelledby="role-removal-title">
+      <div className="admin-login-mark">ADMIN006</div>
+      <h2 id="role-removal-title">Снять роль мастера</h2>
+      <p>Укажите числовой Telegram ID. Действие доступно только для текущей роли professional и возвращает пользователя в user.</p>
+      <form onSubmit={removeMasterRole}>
+        <label htmlFor="role-removal-telegram-id">Telegram ID пользователя</label>
+        <input id="role-removal-telegram-id" inputMode="numeric" pattern="[0-9]{5,20}" required value={targetTelegramId} onChange={(event) => setTargetTelegramId(event.target.value)} disabled={removingRole} placeholder="Например, 8585124925" />
+        <button className="admin-danger-button" type="submit" disabled={removingRole || !targetTelegramId.trim()}>{removingRole ? "Снимаем роль…" : "Снять роль мастера"}</button>
+      </form>
+      {roleRemovalMessage ? <div className="admin-role-removal-success" role="status">{roleRemovalMessage}</div> : null}
+      {roleRemovalError ? <div className="admin-role-invitation-error" role="alert">{roleRemovalError}</div> : null}
     </section> : null}
   </main>;
 }
