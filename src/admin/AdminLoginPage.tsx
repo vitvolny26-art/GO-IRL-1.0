@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { DevPanel } from "../components/DevPanel";
+import { AdminIntegrationsPanel, countReadyIntegrations } from "./AdminIntegrationsPanel";
 import { adminRedirectForAuthorization, verifyCurrentAdminSession } from "./adminSession";
 import {
   buildRoleInvitationUrl,
@@ -12,9 +13,6 @@ import {
 } from "./roleInvitations";
 import "./admin-login.css";
 
-declare const __GO_IRL_COMMIT__: string;
-declare const __GO_IRL_BUILT_AT__: string;
-
 const telegramBotUsername = String(import.meta.env.VITE_GO_IRL_BOT_USERNAME || "GOirl_bot");
 const telegramAppName = String(import.meta.env.VITE_GO_IRL_APP_NAME || "");
 const roleLabels: Record<string, string> = {
@@ -25,14 +23,6 @@ const roleLabels: Record<string, string> = {
 };
 
 type AdminTab = "overview" | "roles" | "integrations" | "updates";
-type IntegrationState = "connected" | "checking" | "attention" | "planned";
-type IntegrationStatus = {
-  id: string;
-  name: string;
-  detail: string;
-  meta: string;
-  state: IntegrationState;
-};
 
 const adminTabs: Array<{ id: AdminTab; icon: string; label: string }> = [
   { id: "overview", icon: "⌂", label: "Обзор" },
@@ -40,13 +30,6 @@ const adminTabs: Array<{ id: AdminTab; icon: string; label: string }> = [
   { id: "integrations", icon: "⇄", label: "Интеграции" },
   { id: "updates", icon: "↻", label: "Обновления" },
 ];
-
-const integrationStateLabels: Record<IntegrationState, string> = {
-  connected: "Подключено",
-  checking: "Проверка",
-  attention: "Требует внимания",
-  planned: "Не подключено",
-};
 
 export function AdminLoginPage() {
   useEffect(() => {
@@ -126,39 +109,7 @@ export function AdminPanelPage() {
   };
 
   const roleCount = assignments.filter((item) => item.role !== "admin").length;
-  const buildCommit = typeof __GO_IRL_COMMIT__ === "string" ? __GO_IRL_COMMIT__ : "unknown";
-  const builtAt = typeof __GO_IRL_BUILT_AT__ === "string" ? __GO_IRL_BUILT_AT__ : "unknown";
-  const integrationStatuses: IntegrationStatus[] = [
-    {
-      id: "telegram",
-      name: "Telegram",
-      detail: authorized ? "Защищённая Telegram-сессия администратора подтверждена." : "Проверяем Telegram-сессию.",
-      meta: `Bot: @${telegramBotUsername.replace(/^@/, "")}`,
-      state: authorized ? "connected" : "checking",
-    },
-    {
-      id: "supabase",
-      name: "Supabase",
-      detail: rolesLoading ? "Проверяем серверный доступ к ролям." : rolesError ? "Серверный список ролей недоступен." : "Серверный список ролей доступен.",
-      meta: rolesError || `${assignments.length} повышенных назначений`,
-      state: rolesLoading ? "checking" : rolesError ? "attention" : "connected",
-    },
-    {
-      id: "vercel",
-      name: "Vercel",
-      detail: buildCommit === "unknown" ? "Метаданные сборки недоступны." : "Приложение работает из проверяемой production-сборки.",
-      meta: buildCommit === "unknown" ? "SHA неизвестен" : `Build ${buildCommit} · ${builtAt}`,
-      state: buildCommit === "unknown" ? "attention" : "connected",
-    },
-    {
-      id: "n8n",
-      name: "n8n",
-      detail: "Read-only health endpoint для админ-панели ещё не подключён.",
-      meta: "Управление workflow недоступно из приложения",
-      state: "planned",
-    },
-  ];
-  const connectedIntegrationCount = integrationStatuses.filter((item) => item.state === "connected").length;
+  const connectedIntegrationCount = countReadyIntegrations(authorized, rolesLoading, rolesError);
 
   return <main className="admin-login-shell admin-panel-shell">
     {authorized ? <DevPanel /> : null}
@@ -201,15 +152,7 @@ export function AdminPanelPage() {
         </section>
       </section> : null}
 
-      {authorized && activeTab === "integrations" ? <section className="admin-tab-panel admin-tab-stack">
-        <section className="admin-login-card admin-integrations-header">
-          <div><span className="admin-eyebrow">READ ONLY</span><h2>Интеграции</h2><p>Безопасные статусы без секретов и управляющих действий.</p></div>
-          <strong>{connectedIntegrationCount}/4</strong>
-        </section>
-        <div className="admin-integration-list">{integrationStatuses.map((item) => <article className="admin-login-card admin-integration-row" key={item.id}>
-          <div className="admin-integration-copy"><div className="admin-integration-title"><strong>{item.name}</strong><span className={`admin-integration-state is-${item.state}`}>{integrationStateLabels[item.state]}</span></div><p>{item.detail}</p><small>{item.meta}</small></div>
-        </article>)}</div>
-      </section> : null}
+      {authorized && activeTab === "integrations" ? <AdminIntegrationsPanel authorized={authorized} rolesLoading={rolesLoading} rolesError={rolesError} /> : null}
 
       {authorized && activeTab === "updates" ? <section className="admin-tab-panel"><section className="admin-login-card admin-empty-state"><span className="admin-empty-icon">↻</span><h2>Обновления функций</h2><p>Здесь появятся версии функций, статусы миграций, журнал обновлений и безопасные действия релиза.</p></section></section> : null}
     </div>
