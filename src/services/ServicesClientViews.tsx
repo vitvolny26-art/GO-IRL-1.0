@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { CircleUserRound, Compass, Heart, MapPin, Save, Search, Sparkles } from "lucide-react";
+import { ChevronDown, CircleUserRound, Clock3, Compass, Heart, MapPin, Save, Search, Sparkles, X } from "lucide-react";
 import { getCity } from "../config/cities";
 import type { Language } from "../types";
 import {
@@ -75,13 +75,33 @@ function ProfessionalCards({
     return <div className="services-client-empty"><Heart /><span>{message}</span></div>;
   }
   return <div className="services-professional-grid">{professionals.map((professional) => (
-    <article className="services-professional-card" key={professional.profileId}>
-      <span className="services-professional-avatar">{professional.displayName.slice(0, 1).toUpperCase()}</span>
-      <div><strong>{professional.displayName}</strong><span><MapPin />{professional.publicLocation}</span></div>
-      <p>{professional.serviceName}</p>
-      <b>{professional.priceCzk} {professional.currency}</b>
-    </article>
+    <ProfessionalCard key={professional.profileId} professional={professional} />
   ))}</div>;
+}
+
+function ProfessionalCard({ professional }: { professional: ServicesProfessional }) {
+  const [expanded, setExpanded] = useState(false);
+  const toggle = () => setExpanded((current) => !current);
+
+  return <article className={expanded ? "services-professional-card is-expanded" : "services-professional-card"}>
+    <div className="services-professional-artwork" aria-hidden="true"><span>{professional.displayName.slice(0, 1).toUpperCase()}</span></div>
+    <button className="services-professional-main" type="button" onClick={toggle} aria-expanded={expanded}>
+      <strong>{professional.displayName}</strong>
+      <span>{professional.serviceName}</span>
+    </button>
+    <button className="services-professional-expand" type="button" onClick={toggle} aria-label={expanded ? "Закрыть подробности" : "Открыть подробности"} aria-expanded={expanded}>
+      {expanded ? <X /> : <ChevronDown />}
+    </button>
+    <div className="services-professional-summary">
+      <span><Clock3 />{professional.durationMinutes} мин</span>
+      <span><b>{professional.priceCzk}</b> {professional.currency}</span>
+    </div>
+    {expanded && <div className="services-professional-details">
+      <div><MapPin /><span>{professional.publicLocation}</span></div>
+      <div><Clock3 /><span>{professional.serviceName} · {professional.durationMinutes} мин</span></div>
+      <button type="button" onClick={toggle}>Свернуть карточку</button>
+    </div>}
+  </article>;
 }
 
 function ProfessionalSection({ title, professionals }: { title: string; professionals: ServicesProfessional[] }) {
