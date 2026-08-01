@@ -48,6 +48,7 @@ button, input, textarea, select { letter-spacing: 0; }
 .header-control, .header-icon-button { min-height: 44px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--muted); transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease; }
 .header-control { display: flex; min-width: 0; align-items: center; gap: 4px; padding: 0 6px; font-size: 12px; font-weight: 750; }
 .header-control > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.city-control > span { font-size: 15px; font-weight: 850; }
 .header-control > svg:first-child { flex: 0 0 auto; width: 17px; height: 17px; color: var(--lime); }
 .header-control .control-chevron { flex: 0 0 auto; width: 13px; height: 13px; }
 .header-control.is-active, .header-icon-button.is-active { border-color: #363b43; background: var(--surface-2); color: var(--text); }
@@ -476,6 +477,7 @@ button, input, textarea, select { letter-spacing: 0; }
   .header-brand img { width: 42px; height: 42px; }
   .header-control { padding-inline: 4px; }
   .header-control:not(.language-control) > span { max-width: 56px; }
+  .city-control > span { max-width: 68px !important; font-size: 14px; }
   .quick-actions, .category-grid, .form-row { grid-template-columns: 1fr; }
   .segmented { grid-template-columns: 1fr; }
   .activity-card-main { grid-template-columns: 42px minmax(0, 1fr); }

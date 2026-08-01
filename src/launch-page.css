@@ -12,8 +12,11 @@
 .launch-root{width:min(100%,630px);padding:0}.launch-content{padding:calc(var(--app-safe-top) + var(--app-header-height) + 24px) 16px max(42px,env(safe-area-inset-bottom))}.launch-domain-section{margin-top:0;padding-top:0}.launch-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.launch-domain-card{aspect-ratio:1;min-height:0}
 @media(max-width:420px){.launch-root{padding:0}.launch-content{padding-left:14px;padding-right:14px}.launch-domain-card{grid-template-columns:minmax(0,1fr) 36px;gap:8px;min-height:0;padding:12px}.launch-card-arrow{width:36px;height:36px;font-size:28px}.launch-domain-copy strong{font-size:clamp(22px,7.3vw,28px)}.launch-domain-copy small{font-size:11.5px}}
 
-.launch-domain-copy strong{font-size:clamp(22px,5vw,30px)}
+.launch-domain-copy strong{font-size:clamp(20px,4.4vw,26px)}
 .launch-domain-copy small{font-size:12px}
-.launch-domain-card{border-radius:14px}
-@media(max-width:420px){.launch-domain-copy strong{font-size:clamp(18px,5.4vw,22px)}.launch-domain-copy small{font-size:10px}}
+.launch-domain-card{border-radius:10px}
+.launch-activities-card{border:3px solid #c9ff32;box-shadow:0 0 18px #c9ff3247,0 18px 44px #00000052,inset 0 0 0 1px #ffffff08}
+.launch-services-card{border:3px solid #d4af37;box-shadow:0 0 18px #d4af3740,0 18px 44px #00000052,inset 0 0 0 1px #ffffff08}
+@media(max-width:420px){.launch-domain-copy strong{font-size:clamp(16px,4.6vw,18px)}.launch-domain-copy small{font-size:10px}}
+.launch-card-arrow{width:28px;height:36px;border:0;border-radius:0;background:transparent;backdrop-filter:none;font-size:30px}
 

@@ -117,7 +117,7 @@ export function AppHeader({
 
           <div className="header-controls">
             <button
-              className={openMenu === "city" ? "header-control is-active" : "header-control"}
+              className={openMenu === "city" ? "header-control city-control is-active" : "header-control city-control"}
               onClick={() => toggleMenu("city")}
               type="button"
               aria-label={translation.selectCity}
