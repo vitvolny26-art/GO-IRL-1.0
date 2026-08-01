@@ -21,6 +21,15 @@ const roleLabels: Record<string, string> = {
   admin: "Администратор",
 };
 
+type AdminTab = "overview" | "roles" | "integrations" | "updates";
+
+const adminTabs: Array<{ id: AdminTab; icon: string; label: string }> = [
+  { id: "overview", icon: "⌂", label: "Обзор" },
+  { id: "roles", icon: "♙", label: "Роли" },
+  { id: "integrations", icon: "⇄", label: "Интеграции" },
+  { id: "updates", icon: "↻", label: "Обновления" },
+];
+
 export function AdminLoginPage() {
   useEffect(() => {
     let active = true;
@@ -35,6 +44,7 @@ export function AdminLoginPage() {
 
 export function AdminPanelPage() {
   const [authorized, setAuthorized] = useState(false);
+  const [activeTab, setActiveTab] = useState<AdminTab>("overview");
   const [targetRole, setTargetRole] = useState<RoleInvitationTargetRole>("organizer");
   const [invitation, setInvitation] = useState<(CreatedRoleInvitation & { url: string }) | null>(null);
   const [invitationError, setInvitationError] = useState("");
@@ -97,32 +107,55 @@ export function AdminPanelPage() {
     catch { setInvitationError("Не удалось скопировать ссылку."); }
   };
 
+  const roleCount = assignments.filter((item) => item.role !== "admin").length;
+
   return <main className="admin-login-shell admin-panel-shell">
     {authorized ? <DevPanel /> : null}
-    <section className="admin-login-card"><h1>Admin panel</h1>{authorized ? <p>Серверная авторизация подтверждена.</p> : <p>Проверяем доступ…</p>}</section>
-    {authorized ? <section className="admin-login-card admin-role-invitations">
-      <h2>Приглашение роли</h2>
-      <form onSubmit={createInvitation}>
-        <select value={targetRole} onChange={(event) => setTargetRole(event.target.value as RoleInvitationTargetRole)} disabled={creatingInvitation}>
-          <option value="organizer">Организатор</option><option value="professional">Мастер</option>
-        </select>
-        <button type="submit" disabled={creatingInvitation}>{creatingInvitation ? "Создаём…" : "Сформировать приглашение"}</button>
-      </form>
-      {invitation ? <div className="admin-role-invitation-result"><input readOnly value={invitation.url} /><button type="button" onClick={() => void copyInvitation()}>{copied ? "Скопировано" : "Скопировать"}</button></div> : null}
-      {invitationError ? <div className="admin-role-invitation-error">{invitationError}</div> : null}
-    </section> : null}
-    {authorized ? <section className="admin-login-card admin-role-invitations admin-role-removal">
-      <h2>Назначенные роли</h2>
-      <button type="button" onClick={() => void loadAssignments()} disabled={rolesLoading}>{rolesLoading ? "Обновляем…" : "Обновить список"}</button>
-      {assignments.length ? <div className="admin-role-list">{assignments.map((item) => {
-        const displayName = [item.firstName, item.lastName].filter(Boolean).join(" ") || item.username || item.userKey;
-        return <article className="admin-role-row" key={item.userKey}>
-          <div><strong>{displayName}</strong><span>{item.username ? `@${item.username} · ` : ""}{item.telegramId || item.userKey}</span><span>{roleLabels[item.role]}</span></div>
-          {item.role === "admin" ? <span className="admin-role-protected">Защищено</span> : <button className="admin-danger-button" type="button" onClick={() => void demote(item)} disabled={demotingUserKey === item.userKey}>{demotingUserKey === item.userKey ? "Разжалование…" : "Разжаловать"}</button>}
-        </article>;
-      })}</div> : !rolesLoading ? <p>Повышенных ролей нет.</p> : null}
-      {rolesError ? <div className="admin-role-invitation-error">{rolesError}</div> : null}
-    </section> : null}
+    <div className="admin-panel-content">
+      <section className="admin-login-card admin-panel-header">
+        <div><span className="admin-eyebrow">GO IRL</span><h1>Admin panel</h1></div>
+        <span className={authorized ? "admin-status is-ready" : "admin-status"}>{authorized ? "Доступ подтверждён" : "Проверяем доступ…"}</span>
+      </section>
+
+      {authorized && activeTab === "overview" ? <section className="admin-tab-panel">
+        <div className="admin-overview-grid">
+          <article className="admin-login-card admin-metric-card"><span>Повышенные роли</span><strong>{rolesLoading ? "…" : roleCount}</strong><button type="button" onClick={() => setActiveTab("roles")}>Управлять</button></article>
+          <article className="admin-login-card admin-metric-card"><span>Интеграции</span><strong>0</strong><button type="button" onClick={() => setActiveTab("integrations")}>Открыть</button></article>
+          <article className="admin-login-card admin-metric-card"><span>Обновления</span><strong>—</strong><button type="button" onClick={() => setActiveTab("updates")}>Проверить</button></article>
+        </div>
+      </section> : null}
+
+      {authorized && activeTab === "roles" ? <section className="admin-tab-panel admin-tab-stack">
+        <section className="admin-login-card admin-role-invitations">
+          <h2>Приглашение роли</h2>
+          <form onSubmit={createInvitation}>
+            <select value={targetRole} onChange={(event) => setTargetRole(event.target.value as RoleInvitationTargetRole)} disabled={creatingInvitation}>
+              <option value="organizer">Организатор</option><option value="professional">Мастер</option>
+            </select>
+            <button type="submit" disabled={creatingInvitation}>{creatingInvitation ? "Создаём…" : "Сформировать приглашение"}</button>
+          </form>
+          {invitation ? <div className="admin-role-invitation-result"><input readOnly value={invitation.url} /><button type="button" onClick={() => void copyInvitation()}>{copied ? "Скопировано" : "Скопировать"}</button></div> : null}
+          {invitationError ? <div className="admin-role-invitation-error">{invitationError}</div> : null}
+        </section>
+        <section className="admin-login-card admin-role-invitations admin-role-removal">
+          <div className="admin-section-heading"><div><h2>Назначенные роли</h2><p>Организаторы, мастера, модераторы и администраторы.</p></div><button type="button" onClick={() => void loadAssignments()} disabled={rolesLoading}>{rolesLoading ? "Обновляем…" : "Обновить"}</button></div>
+          {assignments.length ? <div className="admin-role-list">{assignments.map((item) => {
+            const displayName = [item.firstName, item.lastName].filter(Boolean).join(" ") || item.username || item.userKey;
+            return <article className="admin-role-row" key={item.userKey}>
+              <div><strong>{displayName}</strong><span>{item.username ? `@${item.username} · ` : ""}{item.telegramId || item.userKey}</span><span>{roleLabels[item.role]}</span></div>
+              {item.role === "admin" ? <span className="admin-role-protected">Защищено</span> : <button className="admin-danger-button" type="button" onClick={() => void demote(item)} disabled={demotingUserKey === item.userKey}>{demotingUserKey === item.userKey ? "Разжалование…" : "Разжаловать"}</button>}
+            </article>;
+          })}</div> : !rolesLoading ? <p>Повышенных ролей нет.</p> : null}
+          {rolesError ? <div className="admin-role-invitation-error">{rolesError}</div> : null}
+        </section>
+      </section> : null}
+
+      {authorized && activeTab === "integrations" ? <section className="admin-tab-panel"><section className="admin-login-card admin-empty-state"><span className="admin-empty-icon">⇄</span><h2>Интеграции</h2><p>Здесь будут подключения Telegram, Supabase, n8n, Vercel и внешних сервисов.</p></section></section> : null}
+
+      {authorized && activeTab === "updates" ? <section className="admin-tab-panel"><section className="admin-login-card admin-empty-state"><span className="admin-empty-icon">↻</span><h2>Обновления функций</h2><p>Здесь появятся версии функций, статусы миграций, журнал обновлений и безопасные действия релиза.</p></section></section> : null}
+    </div>
+
+    {authorized ? <nav className="admin-bottom-tabs" aria-label="Разделы админ-панели">{adminTabs.map((tab) => <button key={tab.id} type="button" className={activeTab === tab.id ? "is-active" : ""} onClick={() => setActiveTab(tab.id)} aria-current={activeTab === tab.id ? "page" : undefined}><span>{tab.icon}</span><small>{tab.label}</small></button>)}</nav> : null}
   </main>;
 }
 
