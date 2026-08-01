@@ -81,20 +81,25 @@ export function AppHeader({
             onClick={onBrandClick}
             type="button"
             aria-label="GO IRL"
-            style={{ width: 92, height: 72, minWidth: 92, minHeight: 72, overflow: "hidden" }}
+            style={{
+              width: 92,
+              height: 72,
+              minWidth: 92,
+              minHeight: 72,
+              overflow: "visible",
+              justifyContent: "center",
+            }}
           >
             <img
-              src="/branding/go-irl-logo-final.jpg?v=20260801-4"
+              src="/branding/go-irl-logo-header.png?v=20260801-6"
               alt="GO IRL"
               style={{
                 display: "block",
-                width: 72,
-                height: 72,
+                width: 82,
+                height: 82,
                 borderRadius: 0,
                 objectFit: "contain",
                 boxShadow: "none",
-                transform: "scale(1.5)",
-                transformOrigin: "center",
               }}
             />
           </button>
