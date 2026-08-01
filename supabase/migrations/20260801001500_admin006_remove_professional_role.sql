@@ -1,6 +1,40 @@
 begin;
 
-create or replace function public.go_irl_remove_professional_role(
+create or replace function public.go_irl_list_elevated_roles()
+returns table(
+  user_key text,
+  telegram_id bigint,
+  first_name text,
+  last_name text,
+  username text,
+  role text,
+  updated_at timestamptz
+)
+language sql
+security definer
+set search_path = pg_catalog, public
+as $$
+  select
+    roles.user_key,
+    users.telegram_id,
+    users.first_name,
+    users.last_name,
+    users.username,
+    roles.role,
+    roles.updated_at
+  from public.user_roles roles
+  left join public.app_users users on users.user_key = roles.user_key
+  where roles.role in ('organizer', 'professional', 'moderator', 'admin')
+  order by roles.role, coalesce(users.first_name, ''), roles.user_key
+  limit 200;
+$$;
+
+revoke execute on function public.go_irl_list_elevated_roles()
+from public, anon, authenticated;
+grant execute on function public.go_irl_list_elevated_roles()
+to service_role;
+
+create or replace function public.go_irl_demote_role(
   p_target_user_key text,
   p_actor_user_key text
 )
@@ -32,17 +66,17 @@ begin
     return;
   end if;
 
-  if v_previous_role <> 'professional' then
+  if v_previous_role not in ('organizer', 'professional', 'moderator') then
     return query select 'role_conflict'::text, v_previous_role, v_previous_role;
     return;
   end if;
 
   update public.user_roles
   set role = 'user',
-      note = 'Professional role removed through admin panel',
+      note = 'Elevated role removed through admin panel',
       updated_at = now()
   where user_key = p_target_user_key
-    and role = 'professional';
+    and role = v_previous_role;
 
   if not found then
     return query select 'role_conflict'::text, v_previous_role, v_previous_role;
@@ -57,22 +91,22 @@ begin
     metadata
   ) values (
     p_actor_user_key,
-    'user_role.professional_removed',
+    'user_role.demoted',
     'user_role',
     p_target_user_key,
     jsonb_build_object(
-      'previous_role', 'professional',
+      'previous_role', v_previous_role,
       'current_role', 'user'
     )
   );
 
-  return query select 'updated'::text, 'professional'::text, 'user'::text;
+  return query select 'updated'::text, v_previous_role, 'user'::text;
 end;
 $$;
 
-revoke execute on function public.go_irl_remove_professional_role(text, text)
+revoke execute on function public.go_irl_demote_role(text, text)
 from public, anon, authenticated;
-grant execute on function public.go_irl_remove_professional_role(text, text)
+grant execute on function public.go_irl_demote_role(text, text)
 to service_role;
 
 notify pgrst, 'reload schema';
