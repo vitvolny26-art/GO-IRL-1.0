@@ -76,7 +76,7 @@ Direct runtime evidence on 2026-08-01 shows a split topology:
 - `https://go-irl-1-1.vercel.app` returns HTTP 200 from `Server: Vercel` with an `x-vercel-id` header;
 - the two HTML bodies differ;
 - latest READY Vercel production deployment is `dpl_BntrDPTtWvNv6sJgZpDXWRppPAnp` at commit `e43be4ece9a5908984add70dc9dfd99cc501b2a3` (ADMIN009);
-- GitHub `main` is `563b47a4b639636d5f1f6420e66d1cb6df0d1388` and includes the later lazy-admin-route merge;
+- GitHub `main` observed during this reconciliation is `f9aa349d7d300070767ec8b8da4a284bf08273b6`;
 - the exact Git commit served by the public Caddy endpoint is not exposed by current runtime evidence.
 
 Therefore the safe operational model is: public Caddy/VPS runtime plus a separate Vercel production runtime with known commit drift. Changing routing or redeploying either runtime requires a separate approved release task.
@@ -87,7 +87,9 @@ Completed repository hygiene:
 
 - PR #499 closed as superseded by merged PR #501;
 - PR #500 closed as superseded by merged PR #501;
-- historical Draft PR #444 closed as superseded by ADMIN006-009.
+- historical Draft PR #444 closed as superseded by ADMIN006-009;
+- historical conflicting Draft PR #443 closed without merge as superseded by ADMIN005-009 and the current tabbed Admin Panel;
+- corrective PR #518 remains Draft, open, and unmerged with exact-head CI green.
 
 Still required before ADMIN010:
 
