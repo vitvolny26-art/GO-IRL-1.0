@@ -18,8 +18,6 @@ import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPorta
 import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
 import { resolveAdminRoute } from "./admin/adminSession";
 import { isProfilePath } from "./profile/profileRoute";
-import { BeautySetupPage } from "./beauty/BeautySetupPage";
-import { BeautyRouteGuard } from "./beauty/BeautyRouteGuard";
 import { BeautyHomeEntryPortal } from "./beauty/BeautyHomeEntryPortal";
 import { useAppStore } from "./store";
 import { LaunchPage } from "./LaunchPage";
@@ -110,6 +108,8 @@ const App = lazy(() => import("./App"));
 const AdminLoginPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminLoginPage })));
 const AdminAccessDeniedPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminAccessDeniedPage })));
 const AdminPanelPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminPanelPage })));
+const BeautySetupPage = lazy(() => import("./beauty/BeautySetupPage").then((module) => ({ default: module.BeautySetupPage })));
+const BeautyRouteGuard = lazy(() => import("./beauty/BeautyRouteGuard").then((module) => ({ default: module.BeautyRouteGuard })));
 const queryClient = new QueryClient();
 const adminRoute = resolveAdminRoute(window.location.pathname);
 const beautyPath = window.location.pathname.replace(/\/+$/, "");
