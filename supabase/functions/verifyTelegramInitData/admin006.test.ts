@@ -7,28 +7,33 @@ const migrationSource = readFileSync(
   "utf8",
 );
 
-describe("ADMIN006 professional role removal boundary", () => {
-  it("requires a current database admin before mutation", () => {
-    const action = edgeSource.indexOf('action === "remove_professional_role"');
-    const adminCheck = edgeSource.indexOf('roleBeforeAction.data?.role !== "admin"', action);
-    const rpcCall = edgeSource.indexOf('rpc("go_irl_remove_professional_role"', adminCheck);
-
-    expect(action).toBeGreaterThan(-1);
-    expect(adminCheck).toBeGreaterThan(action);
-    expect(rpcCall).toBeGreaterThan(adminCheck);
+describe("ADMIN006 role management boundary", () => {
+  it("requires a current database admin before list and mutation", () => {
+    for (const actionName of ["list_role_assignments", "demote_role"]) {
+      const action = edgeSource.indexOf(`action === "${actionName}"`);
+      const adminCheck = edgeSource.indexOf('roleBeforeAction.data?.role !== "admin"', action);
+      expect(action).toBeGreaterThan(-1);
+      expect(adminCheck).toBeGreaterThan(action);
+    }
   });
 
-  it("allows only professional to user and writes safe audit metadata", () => {
-    expect(migrationSource).toContain("if v_previous_role <> 'professional'");
+  it("lists only elevated roles and caps the result", () => {
+    expect(migrationSource).toContain("roles.role in ('organizer', 'professional', 'moderator', 'admin')");
+    expect(migrationSource).toContain("limit 200");
+    expect(migrationSource).toContain("go_irl_list_elevated_roles");
+  });
+
+  it("demotes only non-admin elevated roles to user and audits the transition", () => {
+    expect(migrationSource).toContain("v_previous_role not in ('organizer', 'professional', 'moderator')");
     expect(migrationSource).toContain("set role = 'user'");
-    expect(migrationSource).toContain("'user_role.professional_removed'");
-    expect(migrationSource).toContain("'previous_role', 'professional'");
-    expect(migrationSource).toContain("'current_role', 'user'");
+    expect(migrationSource).toContain("'user_role.demoted'");
+    expect(migrationSource).toContain("'previous_role', v_previous_role");
   });
 
-  it("keeps execution service-role only", () => {
-    expect(migrationSource).toContain("revoke execute on function public.go_irl_remove_professional_role");
-    expect(migrationSource).toContain("from public, anon, authenticated");
-    expect(migrationSource).toContain("to service_role");
+  it("keeps both RPCs service-role only", () => {
+    expect(migrationSource).toContain("revoke execute on function public.go_irl_list_elevated_roles()");
+    expect(migrationSource).toContain("grant execute on function public.go_irl_list_elevated_roles()");
+    expect(migrationSource).toContain("revoke execute on function public.go_irl_demote_role(text, text)");
+    expect(migrationSource).toContain("grant execute on function public.go_irl_demote_role(text, text)");
   });
 });
