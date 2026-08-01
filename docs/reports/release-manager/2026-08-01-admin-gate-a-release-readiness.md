@@ -17,7 +17,8 @@ Reconcile the merged ADMIN005-009 implementation, historical pull requests, prod
 
 - Repository: `vitvolny26-art/Go-IRL-1.1`
 - Base: GitHub `main`
-- Base SHA: `563b47a4b639636d5f1f6420e66d1cb6df0d1388`
+- Original task base SHA: `563b47a4b639636d5f1f6420e66d1cb6df0d1388`
+- Current observed main SHA: `f9aa349d7d300070767ec8b8da4a284bf08273b6`
 - Task branch: `agent/gate-a-admin-release-readiness-20260801`
 - Draft pull request: #512
 - Merge target: GitHub `main`
@@ -28,17 +29,20 @@ Reconcile the merged ADMIN005-009 implementation, historical pull requests, prod
 - PR #499 was closed on 2026-08-01 as superseded by merged PR #501.
 - PR #500 was closed on 2026-08-01 as superseded by merged PR #501.
 - historical Draft PR #444 was closed on 2026-08-01 as superseded by the implemented ADMIN006-009 line.
-- PR #501 merged the Admin006 SQL keyword hotfix.
+- historical conflicting Draft PR #443 was closed on 2026-08-01 without merge as superseded by ADMIN005-009 and the current tabbed Admin Panel.
+- PR #501 merged the ADMIN006 SQL keyword hotfix.
 - PR #502 merged ADMIN007 bottom navigation.
 - PR #507 merged ADMIN008 read-only integration status.
 - PR #509 merged ADMIN009 read-only update status.
-- PR #510 merged lazy loading for the admin route and is current `main`.
+- PR #510 merged lazy loading for the admin route.
+- current `main` is `f9aa349d7d300070767ec8b8da4a284bf08273b6` after later launch/Beauty work.
+- corrective PR #518 remains Draft and unmerged at head `60d53749a22e48a66595c853c5196560f1f63e56`; exact-head CI run `30699129636` passed.
 
 No PR was merged by this task.
 
 ## Documentation reconciliation
 
-`docs/Admin.md` incorrectly stated that no admin runtime UI or API existed. It is updated to describe the implemented ADMIN005-009 boundaries, production backend evidence, split runtime topology, Gate A blockers, and the bounded ADMIN010 follow-up.
+`docs/Admin.md` previously stated that no admin runtime UI or API existed. It now describes the implemented ADMIN005-009 boundaries, production backend evidence, split runtime topology, completed stale-PR cleanup, Gate A blockers, and the bounded ADMIN010 follow-up.
 
 ## Production metadata evidence
 
@@ -55,7 +59,7 @@ No PR was merged by this task.
 ### Vercel
 
 - project: `go-irl-1-1` (`prj_MtabJvddKyFSr98iC18Ztf7rlZjF`);
-- latest production deployment: `dpl_BntrDPTtWvNv6sJgZpDXWRppPAnp`;
+- latest production deployment observed by the original reconciliation: `dpl_BntrDPTtWvNv6sJgZpDXWRppPAnp`;
 - state: `READY`;
 - deployed SHA: `e43be4ece9a5908984add70dc9dfd99cc501b2a3`;
 - source: `main`, ADMIN009 PR #509;
@@ -68,7 +72,7 @@ Direct HTTP comparison on 2026-08-01:
 - `https://goirl.realitka.pp.ua`: HTTP 200, `Server: Caddy`, no `x-vercel-id`;
 - `https://go-irl-1-1.vercel.app`: HTTP 200, `Server: Vercel`, `x-vercel-id` present;
 - response bodies are different;
-- GitHub `main` is newer than the latest READY Vercel deployment;
+- GitHub `main` is newer than the latest READY Vercel deployment recorded here;
 - the public Caddy build exposes no verified Git SHA.
 
 The requested `Telegram -> Vercel` topology is therefore not established. Current evidence supports a public Caddy/VPS runtime and a separate Vercel production runtime with drift.
@@ -93,6 +97,7 @@ Repository and automated tests are useful regression evidence but do not replace
 - SQL, migrations, RLS: not changed.
 - Supabase data: not changed.
 - Vercel/VPS deployment: not performed.
+- Historical PR #443: closed without merge.
 - Destructive operations: not performed.
 
 ## Result
