@@ -76,7 +76,7 @@ const trustedAdminRequest = async (
   });
   const payload = await response.json() as RoleInvitationResponse;
 
-  if (!response.ok) throw new Error(payload.error || "admin_action_failed");
+  if (!response.ok) throw new Error(payload.error || payload.roleRemoval?.status || "admin_action_failed");
   return payload;
 };
 
@@ -84,15 +84,10 @@ export const requestRoleInvitation = async (
   targetRole: RoleInvitationTargetRole,
   dependencies: Parameters<typeof trustedAdminRequest>[1] = {},
 ) => {
-  const payload = await trustedAdminRequest({
-    action: "create_role_invitation",
-    targetRole,
-  }, dependencies);
-
+  const payload = await trustedAdminRequest({ action: "create_role_invitation", targetRole }, dependencies);
   if (!payload.invitation || !isRoleInvitationStartParam(payload.invitation.startParam)) {
     throw new Error(payload.error || "role_invitation_creation_failed");
   }
-
   return payload.invitation;
 };
 
@@ -107,7 +102,6 @@ export const requestProfessionalRoleRemoval = async (
     action: "remove_professional_role",
     targetTelegramId: normalizedTelegramId,
   }, dependencies);
-
   if (!payload.roleRemoval) throw new Error(payload.error || "professional_role_removal_failed");
   return payload.roleRemoval;
 };
