@@ -21,7 +21,7 @@ export type RoleAssignment = {
   updatedAt: string;
 };
 
-export type RoleDemotionStatus = "updated" | "not_found" | "role_conflict";
+export type RoleDemotionStatus = "updated" | "invalid" | "not_found" | "role_conflict";
 export type RoleDemotionResult = {
   status: RoleDemotionStatus;
   previousRole: string | null;
@@ -38,15 +38,38 @@ type RawRoleAssignment = {
   updated_at: string;
 };
 
+type RawRoleDemotionResult = {
+  status: RoleDemotionStatus;
+  previous_role: string | null;
+  current_role: string | null;
+};
+
 type AdminResponse = {
   error?: string;
   invitation?: CreatedRoleInvitation;
   roleAssignments?: RawRoleAssignment[];
-  roleDemotion?: RoleDemotionResult;
+  roleDemotion?: RawRoleDemotionResult;
 };
 
 const roleInvitationPattern = /^ri_[A-Za-z0-9_-]{43}$/;
 const userKeyPattern = /^telegram:[0-9]+$/;
+
+export const getRoleDemotionErrorMessage = (error: unknown) => {
+  const code = error instanceof Error ? error.message : "";
+  switch (code) {
+    case "role_conflict":
+      return "Роль уже изменилась. Обновите список.";
+    case "not_found":
+      return "Пользователь больше не найден. Обновите список.";
+    case "invalid":
+    case "invalid_target_user_key":
+      return "Некорректная запись пользователя. Обновите список.";
+    case "access_denied":
+      return "Доступ администратора больше не подтверждён. Откройте админ-панель заново.";
+    default:
+      return "Не удалось разжаловать пользователя.";
+  }
+};
 
 export const isRoleInvitationStartParam = (value: unknown) =>
   typeof value === "string" && roleInvitationPattern.test(value.trim());
@@ -115,10 +138,14 @@ export const requestRoleAssignments = async (
 export const requestRoleDemotion = async (
   targetUserKey: string,
   dependencies: Parameters<typeof trustedAdminRequest>[1] = {},
-) => {
+): Promise<RoleDemotionResult> => {
   const normalizedTargetUserKey = targetUserKey.trim();
   if (!userKeyPattern.test(normalizedTargetUserKey)) throw new Error("invalid_target_user_key");
   const payload = await trustedAdminRequest({ action: "demote_role", targetUserKey: normalizedTargetUserKey }, dependencies);
   if (!payload.roleDemotion) throw new Error(payload.error || "role_demotion_failed");
-  return payload.roleDemotion;
+  return {
+    status: payload.roleDemotion.status,
+    previousRole: payload.roleDemotion.previous_role,
+    currentRole: payload.roleDemotion.current_role,
+  };
 };

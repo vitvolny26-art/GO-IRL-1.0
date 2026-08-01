@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildRoleInvitationUrl,
+  getRoleDemotionErrorMessage,
   isRoleInvitationStartParam,
   requestRoleAssignments,
   requestRoleDemotion,
@@ -38,6 +39,16 @@ describe("admin role invitations", () => {
     await expect(requestRoleInvitation("organizer", { ...dependencies, fetcher: fetcher as typeof fetch }))
       .resolves.toMatchObject({ targetRole: "organizer", startParam });
   });
+
+  it("fails closed when trusted Telegram data is missing", async () => {
+    const fetcher = vi.fn();
+    await expect(requestRoleInvitation("organizer", {
+      ...dependencies,
+      initData: "",
+      fetcher: fetcher as typeof fetch,
+    })).rejects.toThrow("telegram_init_data_required");
+    expect(fetcher).not.toHaveBeenCalled();
+  });
 });
 
 describe("admin role management", () => {
@@ -58,7 +69,7 @@ describe("admin role management", () => {
       .resolves.toEqual([expect.objectContaining({ userKey: "telegram:8585124925", role: "professional" })]);
   });
 
-  it("demotes a selected elevated role", async () => {
+  it("normalizes the backend demotion response", async () => {
     const fetcher = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
       expect(JSON.parse(String(init?.body))).toEqual({
         action: "demote_role",
@@ -67,12 +78,34 @@ describe("admin role management", () => {
       });
       return new Response(JSON.stringify({ roleDemotion: {
         status: "updated",
-        previousRole: "professional",
-        currentRole: "user",
+        previous_role: "professional",
+        current_role: "user",
       } }), { status: 200, headers: { "Content-Type": "application/json" } });
     });
     await expect(requestRoleDemotion("telegram:8585124925", { ...dependencies, fetcher: fetcher as typeof fetch }))
-      .resolves.toMatchObject({ status: "updated", currentRole: "user" });
+      .resolves.toEqual({ status: "updated", previousRole: "professional", currentRole: "user" });
+  });
+
+  it.each([
+    ["role_conflict", "Роль уже изменилась. Обновите список."],
+    ["not_found", "Пользователь больше не найден. Обновите список."],
+    ["invalid", "Некорректная запись пользователя. Обновите список."],
+    ["invalid_target_user_key", "Некорректная запись пользователя. Обновите список."],
+    ["access_denied", "Доступ администратора больше не подтверждён. Откройте админ-панель заново."],
+    ["unexpected", "Не удалось разжаловать пользователя."],
+  ])("maps %s to a safe admin message", (code, message) => {
+    expect(getRoleDemotionErrorMessage(new Error(code))).toBe(message);
+  });
+
+  it.each(["role_conflict", "not_found", "invalid"] as const)("surfaces %s from the protected backend", async (status) => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ roleDemotion: {
+      status,
+      previous_role: status === "role_conflict" ? "user" : null,
+      current_role: status === "role_conflict" ? "user" : null,
+    } }), { status: 409, headers: { "Content-Type": "application/json" } }));
+
+    await expect(requestRoleDemotion("telegram:8585124925", { ...dependencies, fetcher: fetcher as typeof fetch }))
+      .rejects.toThrow(status);
   });
 
   it("rejects malformed user keys before network access", async () => {
