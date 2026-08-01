@@ -1,7 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildRoleInvitationUrl, isRoleInvitationStartParam, requestRoleInvitation } from "./roleInvitations";
+import {
+  buildRoleInvitationUrl,
+  isRoleInvitationStartParam,
+  normalizeTelegramId,
+  requestProfessionalRoleRemoval,
+  requestRoleInvitation,
+} from "./roleInvitations";
 
 const startParam = `ri_${"a".repeat(43)}`;
+
+const dependencies = {
+  initData: "signed-init-data",
+  publishableKey: "publishable-key",
+  supabaseUrl: "https://project.supabase.co",
+};
 
 describe("admin role invitations", () => {
   it("builds a Telegram Mini App link without adding identity data", () => {
@@ -22,8 +34,8 @@ describe("admin role invitations", () => {
     const fetcher = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
       expect(JSON.parse(String(init?.body))).toEqual({
         action: "create_role_invitation",
-        initData: "signed-init-data",
         targetRole: "organizer",
+        initData: "signed-init-data",
       });
       return new Response(JSON.stringify({
         invitation: {
@@ -36,22 +48,63 @@ describe("admin role invitations", () => {
     });
 
     await expect(requestRoleInvitation("organizer", {
+      ...dependencies,
       fetcher: fetcher as typeof fetch,
-      initData: "signed-init-data",
-      publishableKey: "publishable-key",
-      supabaseUrl: "https://project.supabase.co",
     })).resolves.toMatchObject({ targetRole: "organizer", startParam });
   });
 
   it("fails closed on a generic server denial", async () => {
     await expect(requestRoleInvitation("professional", {
+      ...dependencies,
       fetcher: vi.fn(async () => new Response(JSON.stringify({ error: "access_denied" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
       })) as typeof fetch,
-      initData: "signed-init-data",
-      publishableKey: "publishable-key",
-      supabaseUrl: "https://project.supabase.co",
     })).rejects.toThrow("access_denied");
+  });
+});
+
+describe("admin professional role removal", () => {
+  it("normalizes only numeric Telegram ids", () => {
+    expect(normalizeTelegramId(" 8585124925 ")).toBe("8585124925");
+    expect(normalizeTelegramId("telegram:8585124925")).toBeNull();
+    expect(normalizeTelegramId("1234")).toBeNull();
+    expect(normalizeTelegramId("abc")).toBeNull();
+  });
+
+  it("requests a guarded professional-to-user demotion", async () => {
+    const fetcher = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      expect(JSON.parse(String(init?.body))).toEqual({
+        action: "remove_professional_role",
+        targetTelegramId: "8585124925",
+        initData: "signed-init-data",
+      });
+      return new Response(JSON.stringify({
+        roleRemoval: {
+          status: "updated",
+          targetUserKey: "telegram:8585124925",
+          previousRole: "professional",
+          currentRole: "user",
+        },
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    });
+
+    await expect(requestProfessionalRoleRemoval("8585124925", {
+      ...dependencies,
+      fetcher: fetcher as typeof fetch,
+    })).resolves.toMatchObject({
+      status: "updated",
+      targetUserKey: "telegram:8585124925",
+      currentRole: "user",
+    });
+  });
+
+  it("rejects malformed ids before network access", async () => {
+    const fetcher = vi.fn();
+    await expect(requestProfessionalRoleRemoval("telegram:8585124925", {
+      ...dependencies,
+      fetcher: fetcher as typeof fetch,
+    })).rejects.toThrow("invalid_telegram_id");
+    expect(fetcher).not.toHaveBeenCalled();
   });
 });
