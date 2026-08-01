@@ -84,7 +84,7 @@ export function AppHeader({
             style={{ width: 110, height: 110, minWidth: 110, minHeight: 110, overflow: "visible" }}
           >
             <img
-              src="/branding/go-irl-logo-final.jpg"
+              src="/branding/go-irl-logo-header.png"
               alt="GO IRL"
               style={{
                 display: "block",
