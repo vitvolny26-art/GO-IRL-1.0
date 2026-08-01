@@ -124,3 +124,13 @@
   .category-grid.module-grid .category-button { min-height: 122px; padding: 11px; }
   .category-grid.module-grid .category-button svg { width: 32px; height: 32px; padding: 8px; }
 }
+
+.category-grid.module-grid .category-button svg {
+  width: 26px;
+  height: 26px;
+  padding: 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
