@@ -38,6 +38,16 @@ describe("admin role invitations", () => {
     await expect(requestRoleInvitation("organizer", { ...dependencies, fetcher: fetcher as typeof fetch }))
       .resolves.toMatchObject({ targetRole: "organizer", startParam });
   });
+
+  it("fails closed when trusted Telegram data is missing", async () => {
+    const fetcher = vi.fn();
+    await expect(requestRoleInvitation("organizer", {
+      ...dependencies,
+      initData: "",
+      fetcher: fetcher as typeof fetch,
+    })).rejects.toThrow("telegram_init_data_required");
+    expect(fetcher).not.toHaveBeenCalled();
+  });
 });
 
 describe("admin role management", () => {
@@ -58,7 +68,7 @@ describe("admin role management", () => {
       .resolves.toEqual([expect.objectContaining({ userKey: "telegram:8585124925", role: "professional" })]);
   });
 
-  it("demotes a selected elevated role", async () => {
+  it("normalizes the backend demotion response", async () => {
     const fetcher = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
       expect(JSON.parse(String(init?.body))).toEqual({
         action: "demote_role",
@@ -67,12 +77,23 @@ describe("admin role management", () => {
       });
       return new Response(JSON.stringify({ roleDemotion: {
         status: "updated",
-        previousRole: "professional",
-        currentRole: "user",
+        previous_role: "professional",
+        current_role: "user",
       } }), { status: 200, headers: { "Content-Type": "application/json" } });
     });
     await expect(requestRoleDemotion("telegram:8585124925", { ...dependencies, fetcher: fetcher as typeof fetch }))
-      .resolves.toMatchObject({ status: "updated", currentRole: "user" });
+      .resolves.toEqual({ status: "updated", previousRole: "professional", currentRole: "user" });
+  });
+
+  it("surfaces role conflicts from the protected backend", async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ roleDemotion: {
+      status: "role_conflict",
+      previous_role: "user",
+      current_role: "user",
+    } }), { status: 409, headers: { "Content-Type": "application/json" } }));
+
+    await expect(requestRoleDemotion("telegram:8585124925", { ...dependencies, fetcher: fetcher as typeof fetch }))
+      .rejects.toThrow("role_conflict");
   });
 
   it("rejects malformed user keys before network access", async () => {
