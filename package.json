@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5178",
     "repo:check": "node scripts/repo-check.cjs",
+    "bundle:check": "node scripts/check-bundle-budget.cjs",
     "typecheck": "tsc -b && tsc -p tsconfig.api.json",
     "lint": "eslint .",
     "test": "vitest run && pnpm run test:staff-os",
