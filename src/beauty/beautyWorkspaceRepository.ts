@@ -3,10 +3,10 @@ import { getCurrentAuthIdentity, getCurrentUserRole, isBrowserMockMode } from ".
 import { supabase } from "../supabase";
 import type { BeautyWorkspace } from "./beautySetupModel";
 import {
-  loadBeautyWorkspace as loadLocalBeautyWorkspace,
-  resetBeautyWorkspace as resetLocalBeautyWorkspace,
-  saveBeautyWorkspace as saveLocalBeautyWorkspace,
-} from "./beautyWorkspaceStorage";
+  loadLocalBeautyWorkspace,
+  resetLocalBeautyWorkspace,
+  saveLocalBeautyWorkspace,
+} from "./beautyWorkspaceLocalStorage";
 
 type BeautyProfileRow = {
   profile_id: string;
