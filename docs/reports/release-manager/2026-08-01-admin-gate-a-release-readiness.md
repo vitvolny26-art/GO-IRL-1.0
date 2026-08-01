@@ -19,6 +19,7 @@ Reconcile the merged ADMIN005-009 implementation, historical pull requests, prod
 - Base: GitHub `main`
 - Base SHA: `563b47a4b639636d5f1f6420e66d1cb6df0d1388`
 - Task branch: `agent/gate-a-admin-release-readiness-20260801`
+- Draft pull request: #512
 - Merge target: GitHub `main`
 - Deploy target: `none`
 
