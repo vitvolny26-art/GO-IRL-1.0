@@ -109,8 +109,7 @@ export function LaunchPage({
         onLanguageChange={onLanguageChange}
       />
       <main className="launch-content">
-      <section className="launch-domain-section" aria-labelledby="launch-domain-title">
-        <h2 id="launch-domain-title">{t.choose}</h2>
+      <section className="launch-domain-section" aria-label={t.choose}>
         <div className="launch-domain-grid">
           <button className="launch-domain-card launch-activities-card" type="button" onClick={onOpenActivities}>
             <img src={activityCardImage} alt="" aria-hidden="true" />
