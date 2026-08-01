@@ -16,44 +16,13 @@
   text-align: center;
 }
 
-.admin-login-mark {
-  margin-bottom: 18px;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  opacity: 0.7;
-}
-
 .admin-login-card h1 { margin: 0 0 12px; font-size: 32px; }
 .admin-login-card p { margin: 0 0 18px; color: rgba(255, 255, 255, 0.78); }
-.admin-login-status { margin: 0 0 18px; padding: 12px 14px; border-radius: 14px; background: rgba(201, 255, 61, 0.1); color: #c9ff3d; font-size: 14px; font-weight: 700; }
 .admin-login-card a { color: #fff; font-weight: 700; }
-
-.admin-panel-shell {
-  align-content: center;
-  gap: 18px;
-}
-
-.admin-role-invitations {
-  text-align: left;
-}
-
-.admin-role-invitations h2 {
-  margin: 0 0 12px;
-  font-size: 24px;
-}
-
-.admin-role-invitations form {
-  display: grid;
-  gap: 10px;
-}
-
-.admin-role-invitations label {
-  font-size: 13px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.78);
-}
-
+.admin-panel-shell { align-content: center; gap: 18px; }
+.admin-role-invitations { text-align: left; }
+.admin-role-invitations h2 { margin: 0 0 12px; font-size: 24px; }
+.admin-role-invitations form { display: grid; gap: 10px; }
 .admin-role-invitations select,
 .admin-role-invitations input,
 .admin-role-invitations button {
@@ -63,48 +32,17 @@
   border-radius: 14px;
   font: inherit;
 }
-
 .admin-role-invitations select,
-.admin-role-invitations input {
-  padding: 0 14px;
-  background: #151b24;
-  color: #fff;
-}
-
-.admin-role-invitations button {
-  padding: 0 16px;
-  border: 0;
-  background: #2f6df6;
-  color: #fff;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.admin-role-invitations button:disabled {
-  cursor: wait;
-  opacity: 0.62;
-}
-
-.admin-role-invitation-result {
-  display: grid;
-  gap: 10px;
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: 16px;
-  background: rgba(47, 109, 246, 0.14);
-}
-
-.admin-role-invitation-result span {
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 13px;
-}
-
-.admin-role-invitation-error {
-  margin-top: 14px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 84, 104, 0.14);
-  color: #ffb5bd;
-  font-size: 14px;
-  font-weight: 700;
-}
+.admin-role-invitations input { padding: 0 14px; background: #151b24; color: #fff; }
+.admin-role-invitations button { padding: 0 16px; border: 0; background: #2f6df6; color: #fff; font-weight: 800; cursor: pointer; }
+.admin-role-invitations button:disabled { cursor: wait; opacity: 0.62; }
+.admin-role-invitation-result { display: grid; gap: 10px; margin-top: 16px; padding: 16px; border-radius: 16px; background: rgba(47, 109, 246, 0.14); }
+.admin-role-invitation-error { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: rgba(255, 84, 104, 0.14); color: #ffb5bd; font-size: 14px; font-weight: 700; }
+.admin-role-removal { width: min(100%, 620px); border-color: rgba(255, 84, 104, 0.3); }
+.admin-role-invitations .admin-danger-button { background: #b4233c; }
+.admin-role-list { display: grid; gap: 10px; margin-top: 16px; }
+.admin-role-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; background: rgba(255, 255, 255, 0.04); }
+.admin-role-row div { min-width: 0; display: grid; gap: 4px; }
+.admin-role-row span { color: rgba(255, 255, 255, 0.7); font-size: 13px; overflow-wrap: anywhere; }
+.admin-role-row .admin-danger-button { width: auto; min-width: 110px; }
+.admin-role-protected { padding: 8px 10px; border-radius: 12px; background: rgba(201, 255, 61, 0.1); color: #c9ff3d !important; font-weight: 800; }

@@ -23,14 +23,21 @@ type AppUserRow = {
   username: string | null;
 };
 
-type RoleInvitationCreateRow = {
-  id: string;
-  expires_at: string;
+type RoleInvitationCreateRow = { id: string; expires_at: string };
+type RoleInvitationRedeemRow = { status: RoleInvitationRedemptionStatus; target_role: RoleInvitationTargetRole | null };
+type RoleAssignmentRow = {
+  user_key: string;
+  telegram_id: number | null;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+  role: string;
+  updated_at: string;
 };
-
-type RoleInvitationRedeemRow = {
-  status: RoleInvitationRedemptionStatus;
-  target_role: RoleInvitationTargetRole | null;
+type RoleDemotionRow = {
+  status: "updated" | "invalid" | "not_found" | "role_conflict";
+  previous_role: string | null;
+  current_role: string | null;
 };
 
 const corsHeaders = {
@@ -39,11 +46,10 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
 
 const requiredEnv = (name: string) => {
   const value = Deno.env.get(name);
@@ -83,14 +89,16 @@ Deno.serve(async (request) => {
       action = "session",
       initData,
       targetRole,
+      targetUserKey,
     } = await request.json() as {
-      action?: "session" | "create_role_invitation";
+      action?: "session" | "create_role_invitation" | "list_role_assignments" | "demote_role";
       initData?: string;
       targetRole?: string;
+      targetUserKey?: string;
     };
 
     if (!initData) return json({ error: "init_data_required" }, 400);
-    if (action !== "session" && action !== "create_role_invitation") {
+    if (!["session", "create_role_invitation", "list_role_assignments", "demote_role"].includes(action)) {
       return json({ error: "invalid_action" }, 400);
     }
 
@@ -107,127 +115,101 @@ Deno.serve(async (request) => {
       maxAgeSeconds: authMaxAgeSeconds,
     });
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { persistSession: false },
-    });
-
+    const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
     const replayHash = await createTelegramReplayKey(verified.hash);
-    const replayResult = await supabase
-      .from("telegram_auth_replay")
-      .insert({
-        init_data_hash: replayHash,
-        telegram_id: verified.user.id,
-        auth_date: new Date(verified.authDate * 1000).toISOString(),
-        expires_at: new Date((verified.authDate + authMaxAgeSeconds) * 1000).toISOString(),
-      });
+    const replayResult = await supabase.from("telegram_auth_replay").insert({
+      init_data_hash: replayHash,
+      telegram_id: verified.user.id,
+      auth_date: new Date(verified.authDate * 1000).toISOString(),
+      expires_at: new Date((verified.authDate + authMaxAgeSeconds) * 1000).toISOString(),
+    });
+    if (replayResult.error && replayResult.error.code !== "23505") throw replayResult.error;
 
-    if (replayResult.error && replayResult.error.code !== "23505") {
-      throw replayResult.error;
-    }
-
-    // Telegram keeps one signed initData value for the lifetime of the Mini App.
-    // A duplicate replay row therefore means an idempotent session refresh, not a
-    // second unverified identity. HMAC and auth_date were already validated above.
     const userKey = `telegram:${verified.user.id}`;
-    const upsertResult = await supabase
-      .from("app_users")
-      .upsert({
-        auth_provider: "telegram",
-        provider_user_id: String(verified.user.id),
-        user_key: userKey,
-        telegram_id: verified.user.id,
-        first_name: verified.user.first_name || null,
-        last_name: verified.user.last_name || null,
-        username: verified.user.username?.toLowerCase() || null,
-        language_code: verified.user.language_code || null,
-        last_login_at: new Date().toISOString(),
-      }, { onConflict: "auth_provider,provider_user_id" })
+    const upsertResult = await supabase.from("app_users").upsert({
+      auth_provider: "telegram",
+      provider_user_id: String(verified.user.id),
+      user_key: userKey,
+      telegram_id: verified.user.id,
+      first_name: verified.user.first_name || null,
+      last_name: verified.user.last_name || null,
+      username: verified.user.username?.toLowerCase() || null,
+      language_code: verified.user.language_code || null,
+      last_login_at: new Date().toISOString(),
+    }, { onConflict: "auth_provider,provider_user_id" })
       .select("id,user_key,telegram_id,first_name,last_name,username")
       .single<AppUserRow>();
-
     if (upsertResult.error || !upsertResult.data) throw upsertResult.error || new Error("User upsert failed");
 
-    const identityResult = await supabase
-      .from("user_provider_identities")
-      .upsert({
-        user_key: userKey,
-        provider: "telegram",
-        provider_user_id: String(verified.user.id),
-        status: "active",
-        last_inbound_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "provider,provider_user_id" });
-
+    const identityResult = await supabase.from("user_provider_identities").upsert({
+      user_key: userKey,
+      provider: "telegram",
+      provider_user_id: String(verified.user.id),
+      status: "active",
+      last_inbound_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "provider,provider_user_id" });
     if (identityResult.error) throw identityResult.error;
 
-    const roleBeforeAction = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_key", userKey)
-      .maybeSingle<{ role: string }>();
-
+    const roleBeforeAction = await supabase.from("user_roles").select("role").eq("user_key", userKey).maybeSingle<{ role: string }>();
     if (roleBeforeAction.error) throw roleBeforeAction.error;
 
     if (action === "create_role_invitation") {
-      if (roleBeforeAction.data?.role !== "admin") {
-        return json({ error: "access_denied" }, 403);
-      }
-      if (!isRoleInvitationTargetRole(targetRole)) {
-        return json({ error: "invalid_target_role" }, 400);
-      }
-
+      if (roleBeforeAction.data?.role !== "admin") return json({ error: "access_denied" }, 403);
+      if (!isRoleInvitationTargetRole(targetRole)) return json({ error: "invalid_target_role" }, 400);
       const token = createRoleInvitationToken();
       const tokenHash = await hashRoleInvitationToken(token);
       const expiresAt = new Date(Date.now() + roleInvitationLifetimeSeconds * 1000).toISOString();
-      const invitationResult = await supabase
-        .rpc("go_irl_create_role_invitation", {
-          p_token_hash: tokenHash,
-          p_target_role: targetRole,
-          p_created_by_user_key: userKey,
-          p_expires_at: expiresAt,
-        })
-        .single<RoleInvitationCreateRow>();
+      const invitationResult = await supabase.rpc("go_irl_create_role_invitation", {
+        p_token_hash: tokenHash,
+        p_target_role: targetRole,
+        p_created_by_user_key: userKey,
+        p_expires_at: expiresAt,
+      }).single<RoleInvitationCreateRow>();
+      if (invitationResult.error || !invitationResult.data) throw invitationResult.error || new Error("Role invitation creation failed");
+      return json({ invitation: {
+        id: invitationResult.data.id,
+        startParam: token,
+        targetRole,
+        expiresAt: invitationResult.data.expires_at,
+      } }, 201);
+    }
 
-      if (invitationResult.error || !invitationResult.data) {
-        throw invitationResult.error || new Error("Role invitation creation failed");
-      }
+    if (action === "list_role_assignments") {
+      if (roleBeforeAction.data?.role !== "admin") return json({ error: "access_denied" }, 403);
+      const listResult = await supabase.rpc("go_irl_list_elevated_roles");
+      if (listResult.error) throw listResult.error;
+      return json({ roleAssignments: (listResult.data || []) as RoleAssignmentRow[] });
+    }
 
-      return json({
-        invitation: {
-          id: invitationResult.data.id,
-          startParam: token,
-          targetRole,
-          expiresAt: invitationResult.data.expires_at,
-        },
-      }, 201);
+    if (action === "demote_role") {
+      if (roleBeforeAction.data?.role !== "admin") return json({ error: "access_denied" }, 403);
+      const normalizedTargetUserKey = typeof targetUserKey === "string" ? targetUserKey.trim() : "";
+      if (!/^telegram:[0-9]+$/.test(normalizedTargetUserKey)) return json({ error: "invalid_target_user_key" }, 400);
+      const demotionResult = await supabase.rpc("go_irl_demote_role", {
+        p_target_user_key: normalizedTargetUserKey,
+        p_actor_user_key: userKey,
+      }).single<RoleDemotionRow>();
+      if (demotionResult.error || !demotionResult.data) throw demotionResult.error || new Error("Role demotion failed");
+      const statusCode = demotionResult.data.status === "updated" ? 200 : 409;
+      return json({ roleDemotion: demotionResult.data }, statusCode);
     }
 
     const roleInvitationToken = parseRoleInvitationStartParam(verified.startParam);
     let roleInvitation: RoleInvitationRedeemRow | null = null;
-
     if (roleInvitationToken) {
       const tokenHash = await hashRoleInvitationToken(roleInvitationToken);
-      const redemptionResult = await supabase
-        .rpc("go_irl_redeem_role_invitation", {
-          p_token_hash: tokenHash,
-          p_user_key: userKey,
-        })
-        .single<RoleInvitationRedeemRow>();
-
-      if (redemptionResult.error || !redemptionResult.data) {
-        throw redemptionResult.error || new Error("Role invitation redemption failed");
-      }
+      const redemptionResult = await supabase.rpc("go_irl_redeem_role_invitation", {
+        p_token_hash: tokenHash,
+        p_user_key: userKey,
+      }).single<RoleInvitationRedeemRow>();
+      if (redemptionResult.error || !redemptionResult.data) throw redemptionResult.error || new Error("Role invitation redemption failed");
       roleInvitation = redemptionResult.data;
     }
 
     const roleResult = roleInvitation
-      ? await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_key", userKey)
-        .maybeSingle<{ role: string }>()
+      ? await supabase.from("user_roles").select("role").eq("user_key", userKey).maybeSingle<{ role: string }>()
       : roleBeforeAction;
-
     if (roleResult.error) throw roleResult.error;
 
     const now = Math.floor(Date.now() / 1000);
@@ -246,12 +228,7 @@ Deno.serve(async (request) => {
     }, jwtSecret);
 
     return json({
-      session: {
-        access_token: token,
-        token_type: "bearer",
-        expires_in: sessionTtlSeconds,
-        expires_at: expiresAt,
-      },
+      session: { access_token: token, token_type: "bearer", expires_in: sessionTtlSeconds, expires_at: expiresAt },
       user: {
         id: upsertResult.data.id,
         userKey,
@@ -266,9 +243,7 @@ Deno.serve(async (request) => {
     });
   } catch (error) {
     console.error(error);
-    if (error instanceof TelegramInitDataValidationError) {
-      return json({ error: error.code }, 401);
-    }
+    if (error instanceof TelegramInitDataValidationError) return json({ error: error.code }, 401);
     return json({ error: "verification_failed" }, 500);
   }
 });
