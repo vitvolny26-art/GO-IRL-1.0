@@ -82,6 +82,29 @@
 .admin-role-row .admin-danger-button { width: auto; min-width: 110px; }
 .admin-role-protected { padding: 8px 10px; border-radius: 12px; background: rgba(201, 255, 61, 0.1); color: #c9ff3d !important; font-weight: 800; }
 
+.admin-integrations-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  text-align: left;
+}
+.admin-integrations-summary h2 { margin: 4px 0 6px; }
+.admin-integrations-summary p { margin: 0; }
+.admin-integrations-summary > strong { font-size: 34px; color: #c9ff3d; }
+.admin-integration-list { display: grid; gap: 12px; }
+.admin-integration-row { text-align: left; }
+.admin-integration-copy { display: grid; gap: 8px; }
+.admin-integration-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.admin-integration-title > strong { font-size: 20px; }
+.admin-integration-copy p { margin: 0; }
+.admin-integration-copy small { color: rgba(255, 255, 255, 0.48); overflow-wrap: anywhere; }
+.admin-integration-status { flex: 0 0 auto; padding: 7px 9px; border-radius: 999px; font-size: 11px; font-weight: 900; }
+.admin-integration-status.is-ready { background: rgba(201, 255, 61, 0.11); color: #c9ff3d; }
+.admin-integration-status.is-checking { background: rgba(47, 109, 246, 0.16); color: #a9c4ff; }
+.admin-integration-status.is-unavailable { background: rgba(255, 84, 104, 0.14); color: #ffb5bd; }
+.admin-integration-status.is-neutral { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.62); }
+
 .admin-empty-state { min-height: 330px; display: grid; place-content: center; text-align: center; }
 .admin-empty-state h2 { margin: 10px 0 8px; }
 .admin-empty-state p { max-width: 420px; margin: 0 auto; }
@@ -133,4 +156,6 @@
   .admin-section-heading > button { width: 100%; }
   .admin-role-row { grid-template-columns: 1fr; }
   .admin-role-row .admin-danger-button { width: 100%; }
+  .admin-integrations-summary { align-items: flex-start; }
+  .admin-integration-title { align-items: flex-start; }
 }

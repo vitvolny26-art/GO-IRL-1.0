@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { DevPanel } from "../components/DevPanel";
+import { AdminIntegrationsPanel, countReadyIntegrations } from "./AdminIntegrationsPanel";
 import { adminRedirectForAuthorization, verifyCurrentAdminSession } from "./adminSession";
 import {
   buildRoleInvitationUrl,
@@ -108,6 +109,7 @@ export function AdminPanelPage() {
   };
 
   const roleCount = assignments.filter((item) => item.role !== "admin").length;
+  const connectedIntegrationCount = countReadyIntegrations(authorized, rolesLoading, rolesError);
 
   return <main className="admin-login-shell admin-panel-shell">
     {authorized ? <DevPanel /> : null}
@@ -120,7 +122,7 @@ export function AdminPanelPage() {
       {authorized && activeTab === "overview" ? <section className="admin-tab-panel">
         <div className="admin-overview-grid">
           <article className="admin-login-card admin-metric-card"><span>Повышенные роли</span><strong>{rolesLoading ? "…" : roleCount}</strong><button type="button" onClick={() => setActiveTab("roles")}>Управлять</button></article>
-          <article className="admin-login-card admin-metric-card"><span>Интеграции</span><strong>0</strong><button type="button" onClick={() => setActiveTab("integrations")}>Открыть</button></article>
+          <article className="admin-login-card admin-metric-card"><span>Интеграции</span><strong>{connectedIntegrationCount}/4</strong><button type="button" onClick={() => setActiveTab("integrations")}>Открыть</button></article>
           <article className="admin-login-card admin-metric-card"><span>Обновления</span><strong>—</strong><button type="button" onClick={() => setActiveTab("updates")}>Проверить</button></article>
         </div>
       </section> : null}
@@ -150,7 +152,7 @@ export function AdminPanelPage() {
         </section>
       </section> : null}
 
-      {authorized && activeTab === "integrations" ? <section className="admin-tab-panel"><section className="admin-login-card admin-empty-state"><span className="admin-empty-icon">⇄</span><h2>Интеграции</h2><p>Здесь будут подключения Telegram, Supabase, n8n, Vercel и внешних сервисов.</p></section></section> : null}
+      {authorized && activeTab === "integrations" ? <AdminIntegrationsPanel authorized={authorized} rolesLoading={rolesLoading} rolesError={rolesError} /> : null}
 
       {authorized && activeTab === "updates" ? <section className="admin-tab-panel"><section className="admin-login-card admin-empty-state"><span className="admin-empty-icon">↻</span><h2>Обновления функций</h2><p>Здесь появятся версии функций, статусы миграций, журнал обновлений и безопасные действия релиза.</p></section></section> : null}
     </div>
