@@ -16,7 +16,6 @@ import { EventLocationProviderPortal } from "./components/EventLocationProviderP
 import { MapProviderPickerPortal } from "./components/MapProviderPickerPortal";
 import { ParticipantIdentityPortal } from "./components/ParticipantIdentityPortal";
 import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
-import { AdminAccessDeniedPage, AdminLoginPage, AdminPanelPage } from "./admin/AdminLoginPage";
 import { resolveAdminRoute } from "./admin/adminSession";
 import { isProfilePath } from "./profile/profileRoute";
 import { BeautySetupPage } from "./beauty/BeautySetupPage";
@@ -108,6 +107,9 @@ const initializeLanguagePreference = () => {
 
 initializeLanguagePreference();
 const App = lazy(() => import("./App"));
+const AdminLoginPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminLoginPage })));
+const AdminAccessDeniedPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminAccessDeniedPage })));
+const AdminPanelPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminPanelPage })));
 const queryClient = new QueryClient();
 const adminRoute = resolveAdminRoute(window.location.pathname);
 const beautyPath = window.location.pathname.replace(/\/+$/, "");
@@ -201,9 +203,11 @@ function MainSurface() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    {adminSurface || (beautyRoute ? <BeautyRouteGuard><BeautySetupPage /></BeautyRouteGuard> : (
-      <MainSurface />
-    ))}
+    <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}>
+      {adminSurface || (beautyRoute ? <BeautyRouteGuard><BeautySetupPage /></BeautyRouteGuard> : (
+        <MainSurface />
+      ))}
+    </Suspense>
   </StrictMode>,
 );
 
