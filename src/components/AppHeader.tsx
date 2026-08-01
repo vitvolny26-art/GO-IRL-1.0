@@ -76,8 +76,25 @@ export function AppHeader({
     <>
       <header className="app-header">
         <div className="header-inner">
-          <button className="header-brand" onClick={onBrandClick} type="button" aria-label="GO IRL">
-            <img src="/branding/go-irl-logo-final.jpg" alt="GO IRL" style={{ width: 90, height: 90 }} />
+          <button
+            className="header-brand"
+            onClick={onBrandClick}
+            type="button"
+            aria-label="GO IRL"
+            style={{ width: 90, height: 90, minWidth: 90, minHeight: 90, overflow: "visible" }}
+          >
+            <img
+              src="/branding/go-irl-logo-final.jpg"
+              alt="GO IRL"
+              style={{
+                display: "block",
+                width: 90,
+                height: 90,
+                borderRadius: 0,
+                objectFit: "contain",
+                boxShadow: "none",
+              }}
+            />
           </button>
 
           <div className="header-controls">
