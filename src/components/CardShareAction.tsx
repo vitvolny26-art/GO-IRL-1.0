@@ -7,7 +7,7 @@ import {
 } from "../cardShare";
 import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
-import { readUserPreferences, updateUserPreferences, type ShareProvider } from "../userPreferences";
+import { readUserPreferences, type ShareProvider } from "../userPreferences";
 import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
 import {
   activityChatUnreadChangedEvent,
@@ -126,11 +126,8 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
   };
 
-  const share = async (channel: ShareChannel, remember = false) => {
+  const share = async (channel: ShareChannel) => {
     setOpen(false);
-    if (remember && channel !== "native" && channel !== "facebook") {
-      updateUserPreferences({ shareProvider: channel });
-    }
 
     if (channel === "telegram") {
       if (onTelegramShare) {
@@ -221,7 +218,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                void share(channel.id, channel.id !== "native" && channel.id !== "facebook");
+                void share(channel.id);
               }}
             >
               <span className="card-share-icon-circle">
