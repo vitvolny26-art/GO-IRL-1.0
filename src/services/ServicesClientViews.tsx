@@ -104,7 +104,7 @@ function ProfessionalCard({ professional }: { professional: ServicesProfessional
 
   return <article className={expanded ? "services-professional-card is-expanded" : "services-professional-card"}>
     <div className="services-professional-artwork" aria-hidden="true">
-      {artwork ? <img src={expanded ? artwork.sheet : artwork.card} alt="" decoding="async" /> : <span>{professional.displayName.slice(0, 1).toUpperCase()}</span>}
+      {artwork ? <img src={artwork.sheet} alt="" decoding="async" /> : <span>{professional.displayName.slice(0, 1).toUpperCase()}</span>}
     </div>
     <button className="services-professional-main" type="button" onClick={toggle} aria-expanded={expanded}>
       <strong>{professional.displayName}</strong>
