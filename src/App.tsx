@@ -30,7 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
-import { clientNavigationLabels, domainCabinetForPath, homeCategoriesForPath } from "./domainHomeCategories";
+import { clientNavigationLabels, domainActionLabels, homeCategoriesForPath } from "./domainHomeCategories";
 import { AppHeader } from "./components/AppHeader";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
@@ -506,7 +506,6 @@ function App() {
             language={store.language}
             onOpen={openActivity}
             onJoin={handleJoin}
-            onOpenOrganizerCabinet={() => store.setView("create")}
           />
         )}
         {store.view === "discover" && (isServicesDomain
@@ -585,25 +584,19 @@ function App() {
   );
 }
 
-function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onOpenOrganizerCabinet: () => void }) {
-  const { activities, loading, selectedCityId, setCategory, userRole } = useAppStore();
+function HomeView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
+  const { activities, loading, selectedCityId, setCategory } = useAppStore();
   const t = getTranslation(language);
   const today = new Date().toISOString().slice(0, 10);
   const nearby = activities.filter((item) => item.date >= today).slice(0, 4);
   const popular = activities.filter((item) => item.popular);
   const urgent = activities.filter((item) => item.urgent);
   const homeCategories = homeCategoriesForPath(window.location.pathname, language);
-  const cabinet = domainCabinetForPath(window.location.pathname, userRole, language);
   const servicesDomain = window.location.pathname.replace(/\/+$/, "") === "/services";
   const professionalCount = servicesDomain ? professionalsForCity(selectedCityId).length : 0;
 
   return (
     <>
-      {cabinet && (
-        cabinet.kind === "professional"
-          ? <a className="domain-cabinet-entry" href="/beauty/workspace"><Sparkles /><strong>{cabinet.label}</strong><ChevronRight /></a>
-          : <button className="domain-cabinet-entry" onClick={onOpenOrganizerCabinet} type="button"><UsersRound /><strong>{cabinet.label}</strong><ChevronRight /></button>
-      )}
       <div className={homeCategories.length === 1 ? "category-grid module-grid services-category-grid" : "category-grid module-grid"}>
         {homeCategories.map((category) => (
           <button className="category-button" data-category={category.id} key={category.id} onClick={() => setCategory(category.id)} type="button">
@@ -1657,7 +1650,7 @@ function GenericActivitySheet({
         </div>
         <div className="detail-list">
           <div><Sparkles /><span>{t.category}</span><strong>{category.name[language]}</strong></div>
-          <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
+          <div className="calendar-date-action" onClick={() => onCalendar(activity)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onCalendar(activity); } }} role="button" tabIndex={0} aria-label={t.addToGoogleCalendar}><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
           <div><Compass /><span>{t.city}</span><strong>{cityName}</strong></div>
           <div><MapPin /><span>{t.address}</span>{activity.locationUrl ? <a href={activity.locationUrl} target="_blank" rel="noreferrer">{activity.address}</a> : <strong>{activity.address}</strong>}</div>
           <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
@@ -1776,14 +1769,23 @@ function EventDetailsSkeleton() {
 
 function BottomNav({ view, setView, language }: { view: AppView; setView: (view: AppView) => void; language: Language }) {
   const labels = clientNavigationLabels[language];
+  const actions = domainActionLabels[language];
+  const isServicesDomain = window.location.pathname.replace(/\/+$/, "") === "/services";
   const items: Array<{ id: AppView; label: string; icon: React.ReactNode }> = [
     { id: "home", label: labels[0], icon: <Home /> },
     { id: "discover", label: labels[1], icon: <Sparkles /> },
     { id: "explore", label: labels[2], icon: <Compass /> },
-    { id: "bookings", label: labels[3], icon: <CalendarDays /> },
-    { id: "profile", label: labels[4], icon: <CircleUserRound /> },
+    isServicesDomain
+      ? { id: "bookings", label: labels[3], icon: <CalendarDays /> }
+      : { id: "create", label: actions.create, icon: <Plus /> },
+    { id: "profile", label: isServicesDomain ? actions.professional : labels[4], icon: isServicesDomain ? <Sparkles /> : <CircleUserRound /> },
   ];
-  return <nav className="bottom-nav">{items.map((item) => <button className={view === item.id ? "active" : ""} key={item.id} onClick={() => setView(item.id)} type="button">{item.icon}<span>{item.label}</span></button>)}</nav>;
+  return <nav className="bottom-nav">{items.map((item, index) => {
+    if (isServicesDomain && index === items.length - 1) {
+      return <a className="bottom-nav-link" href="/beauty/workspace" key="professional-workspace">{item.icon}<span>{item.label}</span></a>;
+    }
+    return <button className={view === item.id ? "active" : ""} key={item.id} onClick={() => setView(item.id)} type="button">{item.icon}<span>{item.label}</span></button>;
+  })}</nav>;
 }
 
 function SectionHeader({ title, icon }: { title: string; icon?: React.ReactNode }) {
@@ -1814,6 +1816,3 @@ function EventListSkeleton() {
 }
 
 export default App;
-
-
-

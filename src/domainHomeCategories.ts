@@ -15,22 +15,11 @@ export const clientNavigationLabels: Record<Language, [string, string, string, s
   en: ["Home", "For you", "Catalog", "My bookings", "Profile"],
 };
 
-const cabinetLabels: Record<Language, { organizer: string; professional: string }> = {
-  ru: { organizer: "Кабинет организатора", professional: "Кабинет мастера" },
-  uk: { organizer: "Кабінет організатора", professional: "Кабінет майстра" },
-  cs: { organizer: "Kabinet organizátora", professional: "Kabinet profesionála" },
-  en: { organizer: "Organizer workspace", professional: "Professional workspace" },
-};
-
-export const domainCabinetForPath = (pathname: string, role: import("./types").UserRole, language: Language = "ru") => {
-  const domain = pathname.replace(/\/+$/, "");
-  if (domain === "/activities" && (role === "organizer" || role === "admin")) {
-    return { label: cabinetLabels[language].organizer, kind: "organizer" as const };
-  }
-  if (domain === "/services" && (role === "professional" || role === "admin")) {
-    return { label: cabinetLabels[language].professional, kind: "professional" as const };
-  }
-  return null;
+export const domainActionLabels: Record<Language, { create: string; professional: string }> = {
+  ru: { create: "Создать", professional: "Кабинет мастера" },
+  uk: { create: "Створити", professional: "Кабінет майстра" },
+  cs: { create: "Vytvořit", professional: "Kabinet profesionála" },
+  en: { create: "Create", professional: "Professional workspace" },
 };
 
 export const homeCategoriesForPath = (pathname: string, language: Language) => {

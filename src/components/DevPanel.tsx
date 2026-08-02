@@ -51,8 +51,8 @@ export function DevPanel() {
         onClick={() => setOpen(true)}
         style={{
           position: "fixed",
-          left: 105,
-          top: 54,
+          left: 132,
+          top: 42,
           zIndex: 99999,
           fontSize: 12,
           fontWeight: 700,
