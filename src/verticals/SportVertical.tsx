@@ -9,7 +9,7 @@ import { getUserKey } from "../supabase";
 import type { Activity, Language, SportMetadata } from "../types";
 import { getSportMetadata, sportEnvironmentLabel, sportEnvironments, sportFormatLabel, sportFormats, sportLevelLabel, sportLevels } from "./sport";
 import { ActivityChatPanel } from "../components/ActivityChatPanel";
-import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction, OrganizerDetailAction } from "../components/EventCardPrimitives";
+import { EventCardMetaItem, EventDetailsAction, OrganizerAvatarAction, OrganizerDetailAction, ParticipantProfileAction } from "../components/EventCardPrimitives";
 import { CoachRequestPanel } from "../components/CoachRequestPanel";
 import { getOrganizerRoleRequestState } from "../coachFeature";
 import { getCity } from "../config/cities";
@@ -107,6 +107,18 @@ const sportAvatar = (value: string | null | undefined) => {
 const sportAvatarForActivity = (activity: Activity, language: Language, meta: SportMetadata) =>
   sportAvatar([meta.sportType, activity.activity[language], activity.title[language]].filter(Boolean).join(" "));
 
+const normalizeActivityMembers = (activity: Activity) => {
+  const organizer = { userKey: activity.organizerKey, name: activity.organizer, status: "joined" as const };
+  const otherMembers = activity.members.filter((member) => member.userKey !== activity.organizerKey);
+  const joinedMembers = [organizer, ...otherMembers.filter((member) => member.status === "joined")];
+  return {
+    joinedMembers,
+    waitingMembers: otherMembers.filter((member) => member.status === "waiting"),
+    pendingMembers: otherMembers.filter((member) => member.status === "pending"),
+    participantCount: Math.max(activity.participants, joinedMembers.length),
+  };
+};
+
 type SportCardProps = {
   activity: Activity;
   language: Language;
@@ -190,7 +202,7 @@ function SportDetailsSkeleton() {
   );
 }
 
-export function SportActivityCard({ activity, language, onOpen, onJoin }: SportCardProps) {
+export function SportActivityCard({ activity, language, onOpen, onJoin, onOpenMembers }: SportCardProps) {
   const { joinedIds, waitingIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const meta = getSportMetadata(activity);
@@ -248,6 +260,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
   const showCoachAction = interaction.showHelperAction && (isOrganizer || coachState === "confirmed");
   const shareTitle = cleanSportLabel(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
+  const { participantCount } = normalizeActivityMembers(activity);
 
   useEffect(() => {
     let active = true;
@@ -306,6 +319,7 @@ export function SportActivityCard({ activity, language, onOpen, onJoin }: SportC
         <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
         <EventCardMetaItem icon={<Ticket />} caption={t.price.split(",")[0]} value={activity.price ? `${activity.price} Kč` : t.free} />
         <EventCardMetaItem icon={<MapPin />} caption={t.address} value={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
+        <EventCardMetaItem icon={<UsersRound />} caption={t.participants} value={`${participantCount} / ${activity.capacity}`} ariaLabel={t.participants} onClick={() => onOpenMembers ? onOpenMembers(activity) : onOpen(activity)} />
         <OrganizerAvatarAction organizerKey={activity.organizerKey} organizerName={activity.organizer} />
       </div>
       <div className="activity-card-footer compact-sport-actions">
@@ -365,9 +379,7 @@ export function SportActivitySheet({
     hasWaitingList: false,
   });
   const action = t[eventActionTranslationKey(interaction.primaryAction, "sheet")];
-  const joinedMembers = activity.members.filter((member) => member.status === "joined");
-  const waitingMembers = activity.members.filter((member) => member.status === "waiting");
-  const pendingMembers = activity.members.filter((member) => member.status === "pending");
+  const { joinedMembers, waitingMembers, pendingMembers, participantCount } = normalizeActivityMembers(activity);
   const sportMapQuery = buildMapsQuery([activity.address, cityName]);
   const sportMapSearchUrl = buildGoogleMapsSearchUrl(sportMapQuery);
   const addressLines = compactAddressLines(activity.address, cityName);
@@ -479,7 +491,7 @@ export function SportActivitySheet({
           <button className="detail-members-toggle sport-detail-members-row" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
             <UsersRound />
             <span>{t.participants}</span>
-            <strong>{activity.participants} / {activity.capacity}</strong>
+            <strong>{participantCount} / {activity.capacity}</strong>
             <ChevronRight className={membersOpen ? "open" : ""} />
           </button>
           <div className="sport-location-row"><MapPin /><a className="sport-location-block" href={activity.locationUrl || sportMapSearchUrl || "#"} target="_blank" rel="noreferrer"><span className="sport-location-city">{cityName}</span>{addressLines.map((line, index) => <span className="sport-location-address" key={`${line}-${index}`}>{line}</span>)}</a></div>
@@ -530,20 +542,12 @@ export function SportActivitySheet({
               <button className="members-popover-close" onClick={() => setMembersOpen(false)} type="button" aria-label={t.close}><X /></button>
               <div className="members-list">
               {joinedMembers.map((member) => (
-                <div className="member-row" key={member.userKey}>
-                  <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
-                  <strong>{member.name}</strong>
-                  <UsersRound />
-                </div>
+                <ParticipantProfileAction key={member.userKey} userKey={member.userKey} name={member.name} trailing={<UsersRound />} />
               ))}
               {!joinedMembers.length && <p>{t.noParticipants}</p>}
               {waitingMembers.length > 0 && <div className="waiting-heading">{t.waitingList} · {waitingMembers.length}</div>}
               {waitingMembers.map((member) => (
-                <div className="member-row waiting-member" key={member.userKey}>
-                  <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
-                  <strong>{member.name}</strong>
-                  <Clock3 />
-                </div>
+                <ParticipantProfileAction key={member.userKey} userKey={member.userKey} name={member.name} trailing={<Clock3 />} />
               ))}
               {canManageActivity && pendingMembers.length > 0 && <div className="pending-heading">{t.requests} · {pendingMembers.length}</div>}
               {canManageActivity && pendingMembers.map((member) => (

@@ -24,22 +24,24 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(0, 0, 0, .9);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, .58);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .activity-sheet .members-section.members-popover {
   position: relative;
-  width: min(100%, 360px);
-  max-height: min(70vh, 520px);
+  width: min(88vw, 310px);
+  max-height: min(68vh, 500px);
   margin: 0 !important;
   overflow: auto;
-  padding: 52px 18px 18px;
-  border: 1px solid rgba(201, 255, 61, .28) !important;
-  border-radius: 20px !important;
-  background: rgba(8, 12, 14, .97) !important;
-  box-shadow: 0 24px 70px rgba(0, 0, 0, .62) !important;
+  padding: 50px 14px 14px;
+  border: 1px solid rgba(201, 255, 61, .24) !important;
+  border-radius: 18px !important;
+  background: rgba(8, 12, 14, .82) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  backdrop-filter: blur(18px) saturate(130%);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, .46) !important;
 }
 
 .members-popover-close {
@@ -53,13 +55,35 @@
   place-items: center;
   border: 1px solid rgba(255, 255, 255, .14);
   border-radius: 12px;
-  background: rgba(255, 255, 255, .06);
+  background: rgba(255, 255, 255, .08);
   color: #fff;
 }
 
 .members-popover-close svg {
   width: 20px;
   height: 20px;
+}
+
+.activity-sheet .members-popover .member-profile-action {
+  width: 100%;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.activity-sheet .members-popover .member-profile-action:active {
+  transform: scale(.985);
+}
+
+.activity-sheet .members-popover .member-avatar {
+  overflow: hidden;
+}
+
+.activity-sheet .members-popover .member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .activity-sheet .confirmed-coach-chat-card,
