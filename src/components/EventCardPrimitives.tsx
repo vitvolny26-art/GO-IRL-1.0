@@ -58,16 +58,22 @@ const dispatchOrganizerProfile = (identity: OrganizerIdentity) => {
   window.dispatchEvent(new CustomEvent<OrganizerProfileDetail>(organizerProfileEventName, { detail: identity }));
 };
 
-export function OrganizerAvatarAction({ organizerKey, organizerName }: { organizerKey: string; organizerName: string }) {
-  const [identity, setIdentity] = useState<OrganizerIdentity>(() => fallbackOrganizerIdentity(organizerKey, organizerName));
+function useResolvedProfile(userKey: string, fallbackName: string) {
+  const [identity, setIdentity] = useState<OrganizerIdentity>(() => fallbackOrganizerIdentity(userKey, fallbackName));
 
   useEffect(() => {
     let active = true;
-    void resolveOrganizerIdentity(organizerKey, organizerName).then((resolved) => {
+    void resolveOrganizerIdentity(userKey, fallbackName).then((resolved) => {
       if (active) setIdentity(resolved);
     });
     return () => { active = false; };
-  }, [organizerKey, organizerName]);
+  }, [userKey, fallbackName]);
+
+  return identity;
+}
+
+export function OrganizerAvatarAction({ organizerKey, organizerName }: { organizerKey: string; organizerName: string }) {
+  const identity = useResolvedProfile(organizerKey, organizerName);
 
   const openProfile = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -83,21 +89,25 @@ export function OrganizerAvatarAction({ organizerKey, organizerName }: { organiz
 }
 
 export function OrganizerDetailAction({ organizerKey, organizerName, label }: { organizerKey: string; organizerName: string; label: string }) {
-  const [identity, setIdentity] = useState<OrganizerIdentity>(() => fallbackOrganizerIdentity(organizerKey, organizerName));
-
-  useEffect(() => {
-    let active = true;
-    void resolveOrganizerIdentity(organizerKey, organizerName).then((resolved) => {
-      if (active) setIdentity(resolved);
-    });
-    return () => { active = false; };
-  }, [organizerKey, organizerName]);
+  const identity = useResolvedProfile(organizerKey, organizerName);
 
   return (
     <button className="organizer-detail-action" type="button" aria-label={`${label}: ${identity.displayName}`} onClick={() => dispatchOrganizerProfile(identity)}>
       <span className="organizer-detail-avatar">{isOrganizerAvatarImage(identity.avatar) ? <img src={identity.avatar} alt="" /> : identity.avatar}</span>
       <span>{label}</span>
       <strong>{identity.displayName}</strong>
+    </button>
+  );
+}
+
+export function ParticipantProfileAction({ userKey, name, trailing }: { userKey: string; name: string; trailing?: ReactNode }) {
+  const identity = useResolvedProfile(userKey, name);
+
+  return (
+    <button className="member-row member-profile-action" type="button" onClick={() => dispatchOrganizerProfile(identity)} aria-label={identity.displayName}>
+      <span className="member-avatar">{isOrganizerAvatarImage(identity.avatar) ? <img src={identity.avatar} alt="" /> : identity.avatar}</span>
+      <strong>{identity.displayName}</strong>
+      {trailing}
     </button>
   );
 }
