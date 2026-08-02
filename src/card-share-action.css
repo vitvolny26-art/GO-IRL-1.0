@@ -11,8 +11,8 @@
   top: 0;
   right: 42px;
   display: grid;
-  grid-template-columns: 52px;
-  gap: 6px;
+  grid-template-columns: repeat(2, 52px);
+  gap: 8px;
 }
 
 .card-share-channel-list > button {

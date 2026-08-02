@@ -31,6 +31,12 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
 
 export const buildMessengerPreviewUrl = buildMetaEventPreviewUrl;
 
+export const buildOrganicCardShareContent = (content: CardShareContent) => ({
+  title: `GO IRL: ${content.title}`,
+  text: [content.date, content.address].filter(Boolean).join("\n"),
+  url: buildMetaEventPreviewUrl(content),
+});
+
 export const buildFacebookShareTarget = (content: CardShareContent) => {
   const target = new URL("https://www.facebook.com/sharer/sharer.php");
   target.searchParams.set("u", buildMetaEventPreviewUrl(content));
@@ -66,7 +72,8 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
 };
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
-  const message = buildCardShareText(content);
+  const organicContent = buildOrganicCardShareContent(content);
+  const message = buildCardShareText({ ...content, url: organicContent.url });
   const encodedUrl = encodeURIComponent(content.url);
   if (channel === "telegram") {
     const textWithoutUrl = buildCardShareText({ ...content, url: "" });
