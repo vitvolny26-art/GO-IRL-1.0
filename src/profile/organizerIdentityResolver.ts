@@ -30,7 +30,7 @@ const fallbackIdentity = (organizerKey: string, fallbackName: string): Organizer
 });
 
 const createRepository = async () => {
-  const { supabase } = await import("../supabase");
+  const { supabase } = await import("../profileRuntimeDependencies");
   return createProfileRepository({
     identity: getCurrentAuthIdentity(),
     supabaseClient: supabase,

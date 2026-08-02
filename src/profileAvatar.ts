@@ -11,7 +11,7 @@ const imageMimeExtensions: Record<string, string> = {
 export const isDataImageAvatar = (value: string) => value.startsWith("data:image/");
 
 export async function shouldStoreProfileAvatarLocally() {
-  const { isBrowserMockMode, isLegacyDemoAuthEnabled } = await import("./authSession");
+  const { isBrowserMockMode, isLegacyDemoAuthEnabled } = await import("./profileRuntimeDependencies");
   return isBrowserMockMode() || isLegacyDemoAuthEnabled();
 }
 
@@ -44,9 +44,7 @@ export const readProfileAvatarAsDataUrl = (file: File) => new Promise<string>((r
 });
 
 export async function uploadProfileAvatarToStorage(file: File) {
-  const [{ getUserKey, supabase }] = await Promise.all([
-    import("./supabase"),
-  ]);
+  const { getUserKey, supabase } = await import("./profileRuntimeDependencies");
   const path = buildProfileAvatarPath(getUserKey(), file);
   const { error } = await supabase.storage
     .from(profileAvatarBucket)
