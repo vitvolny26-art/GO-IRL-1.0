@@ -7,4 +7,4 @@ dist/
 vite.config.js
 vite.config.d.ts
 *.zip
-go-irl-*.png
+/go-irl-*.png

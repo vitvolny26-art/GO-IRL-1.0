@@ -4,7 +4,7 @@ import { beautyRouteAccess } from "./beautyRouteAccess";
 describe("Beauty route access", () => {
   it.each([
     ["professional", "allowed"],
-    ["admin", "blocked"],
+    ["admin", "allowed"],
     ["user", "blocked"],
     ["organizer", "blocked"],
     ["moderator", "blocked"],

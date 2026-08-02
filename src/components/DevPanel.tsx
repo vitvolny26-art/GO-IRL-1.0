@@ -67,7 +67,7 @@ export function DevPanel() {
           userSelect: "none",
         }}
       >
-        BETA {commit}
+        {commit}
       </button>
 
       {open && (
