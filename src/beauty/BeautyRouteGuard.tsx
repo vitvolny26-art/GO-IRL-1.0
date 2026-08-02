@@ -3,6 +3,7 @@ import { initializeTrustedAuth } from "../authSession";
 import { resolveCurrentUserRole, useAppStore } from "../store";
 import type { Language, UserRole } from "../types";
 import { beautyRouteAccess } from "./beautyRouteAccess";
+import "./beauty-setup.css";
 
 const accessCopy: Record<Language, { loading: string; title: string; message: string; action: string }> = {
   ru: { loading: "Проверяем доступ…", title: "Доступ ограничен", message: "Кабинет Beauty доступен только мастеру-владельцу. Возвращаем вас в сервисы.", action: "Вернуться в сервисы" },

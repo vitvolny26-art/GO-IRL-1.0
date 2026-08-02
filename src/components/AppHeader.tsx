@@ -10,6 +10,8 @@ import {
 } from "../participantNotifications";
 import type { Language } from "../types";
 
+declare const __GO_IRL_COMMIT__: string;
+
 type HeaderMenu = "city" | "language" | "notifications" | null;
 
 type AppHeaderProps = {
@@ -51,6 +53,7 @@ export function AppHeader({
   onLanguageChange,
 }: AppHeaderProps) {
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
+  const [logoFailed, setLogoFailed] = useState(false);
   const [notifications, setNotifications] = useState(getParticipantJoinNotifications);
   const selectedCity = getCity(selectedCityId);
   const selectedLanguage = languageOptions.find((item) => item.id === language) ?? languageOptions[0];
@@ -101,18 +104,23 @@ export function AppHeader({
               justifyContent: "center",
             }}
           >
-            <img
-              src="/branding/go-irl-logo-header-final.png?v=20260801-11"
-              alt="GO IRL"
-              style={{
-                display: "block",
-                width: 82,
-                height: 82,
-                borderRadius: 0,
-                objectFit: "contain",
-                boxShadow: "none",
-              }}
-            />
+            {logoFailed ? (
+              <span style={{ color: "#c9ff3d", fontSize: 18, fontWeight: 950, lineHeight: 1 }}>GO IRL</span>
+            ) : (
+              <img
+                src={`/branding/go-irl-logo-header-final.png?v=${encodeURIComponent(__GO_IRL_COMMIT__)}`}
+                alt="GO IRL"
+                onError={() => setLogoFailed(true)}
+                style={{
+                  display: "block",
+                  width: 82,
+                  height: 82,
+                  borderRadius: 0,
+                  objectFit: "contain",
+                  boxShadow: "none",
+                }}
+              />
+            )}
           </button>
 
           <div className="header-controls">
