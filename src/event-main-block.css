@@ -17,6 +17,51 @@
   border-radius: 0;
 }
 
+.members-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, .58);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.activity-sheet .members-section.members-popover {
+  position: relative;
+  width: min(100%, 360px);
+  max-height: min(70vh, 520px);
+  margin: 0 !important;
+  overflow: auto;
+  padding: 52px 18px 18px;
+  border: 1px solid rgba(201, 255, 61, .28) !important;
+  border-radius: 20px !important;
+  background: rgba(8, 12, 14, .97) !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .62) !important;
+}
+
+.members-popover-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+}
+
+.members-popover-close svg {
+  width: 20px;
+  height: 20px;
+}
+
 .activity-sheet .confirmed-coach-chat-card,
 .activity-sheet .activity-chat-panel {
   margin-top: 0;

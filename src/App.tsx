@@ -487,6 +487,10 @@ function App() {
         selectedCityId={store.selectedCityId}
         translation={t}
         onBrandClick={() => {
+          setSelected(null);
+          setSelectedMembersOpen(false);
+          setSelectedChatRequest(0);
+          store.setView("home");
           window.history.pushState(null, "", "/");
           window.dispatchEvent(new PopStateEvent("popstate"));
         }}
@@ -1668,8 +1672,10 @@ function GenericActivitySheet({
           <ChevronRight className={membersOpen ? "open" : ""} />
         </button>
         {membersOpen && (
-          <div className="members-section">
-            <div className="members-list">
+          <div className="members-popover-backdrop" onMouseDown={() => setMembersOpen(false)}>
+            <div className="members-section members-popover" role="dialog" aria-modal="true" aria-label={t.participants} onMouseDown={(event) => event.stopPropagation()}>
+              <button className="members-popover-close" onClick={() => setMembersOpen(false)} type="button" aria-label={t.close}><X /></button>
+              <div className="members-list">
               {joinedMembers.map((member) => (
                 <div className="member-row" key={member.userKey}>
                   <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
@@ -1697,6 +1703,7 @@ function GenericActivitySheet({
                   </span>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         )}
