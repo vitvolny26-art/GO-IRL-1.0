@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Share2 } from "lucide-react";
 import {
   buildCardShareTarget,
+  buildOrganicCardShareContent,
   buildCardShareText,
 } from "../cardShare";
-import { openExternalShareTarget, openMessengerShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
+import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 import { readUserPreferences, updateUserPreferences, type ShareProvider } from "../userPreferences";
 import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
@@ -34,6 +35,7 @@ const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> 
   { id: "facebook", label: "Facebook", icon: "/icons/facebook.svg" },
   { id: "messenger", label: "Messenger", icon: "/icons/messenger.svg" },
   { id: "whatsapp", label: "WhatsApp", icon: "/icons/whatsapp.svg" },
+  { id: "instagram", label: "Instagram", icon: "/icons/instagram.svg" },
   { id: "native", label: "Поделиться", icon: null },
 ];
 
@@ -139,34 +141,26 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       return;
     }
 
-    if (channel === "messenger") {
-      openMessengerShareTarget(content);
-      return;
-    }
-
     if (channel === "facebook" || channel === "whatsapp") {
       openExternalShareTarget(buildCardShareTarget(channel, content));
       return;
     }
 
+    const organicContent = buildOrganicCardShareContent(content);
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: `GO IRL: ${title}`,
-          text: [date, address].filter(Boolean).join("\n"),
-          url,
-        });
+        await navigator.share(organicContent);
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
       }
     }
-    await copyShareText();
+    await copyShareText(organicContent.url);
   };
 
   const activate = () => {
     const preferred = readUserPreferences().shareProvider;
-    if (preferred && preferred !== "instagram") {
+    if (preferred) {
       void share(preferred);
       return;
     }
