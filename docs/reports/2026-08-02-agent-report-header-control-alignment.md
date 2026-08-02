@@ -11,7 +11,7 @@ next_review: 2026-08-16
 
 ## Task
 
-Adjust the shared header controls: move the blue build marker 4 px up and 15 px left, and move the city and language controls 3 px right.
+Adjust the shared header controls: move the blue build marker into the free black area, and move the city and language controls 4 px right.
 
 ## Files inspected
 
@@ -25,8 +25,8 @@ The blue build marker is shared globally through `DevPanel`. City and language u
 
 ## Changes made
 
-- Changed the build marker position from `left: 132, top: 42` to `left: 117, top: 38`.
-- Shifted `.city-control` and `.language-control` 3 px right.
+- Changed the build marker position to `left: 91, top: 32`, placing it between the logo and city control without overlap.
+- Shifted `.city-control` and `.language-control` 4 px farther right, for a final relative offset of `left: 7px`.
 
 ## Checks
 
@@ -38,7 +38,7 @@ The blue build marker is shared globally through `DevPanel`. City and language u
 
 ## Risks
 
-Small screens may have less spacing before the notification control; no layout dimensions or behavior changed.
+The marker remains fixed-positioned; no layout dimensions or behavior changed.
 
 ## Not touched
 
