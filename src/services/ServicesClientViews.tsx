@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { ChevronDown, CircleUserRound, Clock3, Compass, Heart, MapPin, Save, Search, Sparkles, X } from "lucide-react";
+import { ChevronDown, CircleUserRound, Clock3, Compass, Heart, MapPin, Save, Search, Share2, Sparkles, X } from "lucide-react";
 import { getCity } from "../config/cities";
 import type { Language } from "../types";
 import {
   loadProfessionalDirectory,
   type ServicesProfessional,
 } from "./servicesProfessionalDirectory";
+import { getServiceArtwork, manicureArtwork } from "./serviceArtwork";
 import "./services-client.css";
+import "./service-artwork.css";
 
 type ClientProfile = { name: string; preferences: string[] };
 type DirectoryState = "loading" | "ready" | "empty" | "error";
@@ -82,9 +84,28 @@ function ProfessionalCards({
 function ProfessionalCard({ professional }: { professional: ServicesProfessional }) {
   const [expanded, setExpanded] = useState(false);
   const toggle = () => setExpanded((current) => !current);
+  const artwork = getServiceArtwork(professional.serviceName);
+  const share = async () => {
+    const url = new URL(professional.publicLink, window.location.origin).toString();
+    if (navigator.share) {
+      const data: ShareData = { title: `${professional.displayName} · ${professional.serviceName}`, url };
+      if (artwork && navigator.canShare) {
+        try {
+          const response = await fetch(artwork.share);
+          const file = new File([await response.blob()], "s-01-manicure.webp", { type: "image/webp" });
+          if (navigator.canShare({ files: [file] })) data.files = [file];
+        } catch { /* Link sharing remains available when the image cannot be loaded. */ }
+      }
+      await navigator.share(data);
+      return;
+    }
+    await navigator.clipboard.writeText(url);
+  };
 
   return <article className={expanded ? "services-professional-card is-expanded" : "services-professional-card"}>
-    <div className="services-professional-artwork" aria-hidden="true"><span>{professional.displayName.slice(0, 1).toUpperCase()}</span></div>
+    <div className="services-professional-artwork" aria-hidden="true">
+      {artwork ? <img src={expanded ? artwork.sheet : artwork.card} alt="" decoding="async" /> : <span>{professional.displayName.slice(0, 1).toUpperCase()}</span>}
+    </div>
     <button className="services-professional-main" type="button" onClick={toggle} aria-expanded={expanded}>
       <strong>{professional.displayName}</strong>
       <span>{professional.serviceName}</span>
@@ -99,6 +120,8 @@ function ProfessionalCard({ professional }: { professional: ServicesProfessional
     {expanded && <div className="services-professional-details">
       <div><MapPin /><span>{professional.publicLocation}</span></div>
       <div><Clock3 /><span>{professional.serviceName} · {professional.durationMinutes} мин</span></div>
+      {artwork && <img className="services-professional-portfolio" src={artwork.portfolio} alt="" decoding="async" />}
+      <button className="services-professional-share" type="button" onClick={() => { void share().catch(() => undefined); }}><Share2 />Поделиться</button>
       <button type="button" onClick={toggle}>Свернуть карточку</button>
     </div>}
   </article>;
@@ -142,7 +165,7 @@ export function ServicesForYouView({ language, selectedCityId }: { language: Lan
   return <section className="page-section services-client-view discover-page">
     <div className="page-title"><Sparkles /><div><h1>{text.forYou}</h1><p>{text.forYouHint}</p></div></div>
     <label className="discover-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={labels.search} /></label>
-    <div className="discover-filter-block"><span>{labels.filters}</span><div className="filter-row discover-filters">{preferenceOptions.map((filter) => <button className={activeFilters.includes(filter) ? "filter active" : "filter"} key={filter} onClick={() => toggleFilter(filter)} type="button">{filter}</button>)}</div></div>
+    <div className="discover-filter-block"><span>{labels.filters}</span><div className="filter-row discover-filters">{preferenceOptions.map((filter) => <button className={activeFilters.includes(filter) ? "filter active" : "filter"} key={filter} onClick={() => toggleFilter(filter)} type="button">{filter === "Маникюр" && <img className="service-filter-icon" src={manicureArtwork.icon} alt="" />}{filter}</button>)}</div></div>
     {(query || activeFilters.length > 0) && <section className="discover-section"><div className="section-title"><h2>{labels.matched}</h2></div><ProfessionalCards professionals={matched} state={matchedState} empty={text.empty} loading={text.loading} error={text.error} /></section>}
     {state !== "ready" ? <ProfessionalCards professionals={[]} state={state} empty={text.empty} loading={text.loading} error={text.error} /> : <>
       <ProfessionalSection title={labels.interests} professionals={interestMatches.slice(0, 8)} />
