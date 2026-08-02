@@ -3,30 +3,28 @@ title: Documentation Governance Archivist
 owner: Technical Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-17
-next_review: 2026-07-24
+last_review: 2026-07-24
+next_review: 2026-08-24
 ---
 
 # Documentation Governance Archivist
 
-## Production workflows
-
-- Main workflow: `eEQiF6O2PUFyo49P`
-- Error workflow: `fQRdemYreOGDzWAw`
-- Schedule: every 12 hours
-- Timezone: `Europe/Prague`
-
-## Self-hosted n8n migration
+## Production workflow
 
 - Instance: `https://n8n.realitka.pp.ua`
-- Workflow: `GO IRL AI Archivist`
-- Workflow ID: `ot1NwNlcqD0vOHrn`
+- Workflow: `GO IRL - Unified Production Orchestrator`
+- Workflow ID: `ulCZrP3Ci0YJy1TY`
+- Published version: `0683daaa-8551-4d4f-acf6-495123e65e4d`
+- Queue pump: every 2 minutes
+- Chief Archivist heartbeat: every 10 minutes
 - Timezone: `Europe/Prague`
-- Revision schedule: `01:00`
-- Approved synchronization schedule: `13:00`
-- GitHub remains source of truth.
-- The self-hosted workflow is not production-active until required credentials are reconnected and a successful revision execution is verified.
-- OpenRouter is connected. Telegram, GitHub, Google Drive, Google Docs, ClickUp, and SSH credentials still require server-side authorization.
+
+## Historical workflow evidence
+
+- Legacy production claim: `eEQiF6O2PUFyo49P`, every 12 hours.
+- Legacy self-hosted migration workflow: `ot1NwNlcqD0vOHrn`.
+- These identifiers are historical evidence only and must not be presented as current production truth.
+- GitHub remains source of truth; n8n is orchestration and runtime evidence, not governance authority.
 
 ## Self-hosted GitHub Actions runner
 
@@ -45,27 +43,25 @@ Routine GO IRL quality gates can now run directly through GitHub Actions. Termiu
 
 ## Main flow
 
-`Manual/Schedule -> read ClickUp + DOCS_INDEX + BACKLOG -> normalize evidence -> SHA-256 fingerprint -> deduplicate -> create Draft report -> save to Drive Inbox -> comment on persistent ClickUp task`
+`Manual/Schedule -> collect GitHub + Drive + ClickUp evidence -> normalize evidence -> semantic gate -> evidence ledger -> persist Drive report -> persist tracking -> human review`
 
 ## Destinations
 
-- Drive Inbox: `Go IRL/AI Reports/Inbox`
-- Drive Reviewed: `Go IRL/AI Reports/Reviewed`
-- Drive Rejected: `Go IRL/AI Reports/Rejected`
-- Persistent ClickUp task: `Documentation Governance / Archivist`
+- Drive reports: `Go IRL/AI Reports/<agent-role>/YYYY-MM-DD`
+- Persistent ClickUp governance task: `Documentation Governance / Archivist`
 - NotebookLM corpus: `Go IRL/GO IRL DOC`
 
 ## Error handling
 
-Production failures invoke the separate Error Trigger workflow. The handler writes failure evidence to the persistent ClickUp governance task. It does not close tasks, change GitHub, or modify Drive lifecycle state.
+Failures must produce structured evidence and remain non-authoritative. The workflow must not close tasks, change GitHub, or modify Drive lifecycle state automatically.
 
-## Deduplication
+## Deduplication and tracking
 
-The main workflow stores the latest SHA-256 fingerprint in workflow static data. When the normalized evidence has not changed, the workflow emits no report and no duplicate ClickUp comment.
+The workflow persists normalized tracking state and must suppress duplicate unchanged findings according to verified workflow logic. Deduplication behavior requires execution evidence and is not project authority.
 
 ## Human gates
 
-Automation may prepare reports and review evidence, but only a human-reviewed GitHub pull request may change source-of-truth documentation. A human must also decide whether a Drive report moves from Inbox to Reviewed or Rejected.
+Automation may prepare reports and review evidence, but only a human-reviewed GitHub pull request may change source-of-truth documentation. A human must also decide whether a report is accepted as durable project knowledge.
 
 ## Prohibited actions
 
@@ -79,4 +75,14 @@ The workflow must not:
 
 ## Verification evidence
 
-Production execution `695` created the initial reconciled report. Production execution `696` completed successfully without creating a duplicate. The error workflow is attached through the main workflow `errorWorkflow` setting.
+Controlled execution `3313` completed technically with final Chief Archivist status `BLOCKED`.
+
+- `reportValid=true`
+- evidence ledger rows: `30`
+- exact evidence rows: `30`
+- missing finding evidence: `0`
+- missing mandatory tokens: `0`
+- Drive report: `1si-lmsZnMOOfjAq-awYqELrVE1k8Eojj`
+- tracking state: `direct_archivist_blocked`
+
+This execution verifies truthful terminal-state handling. It does not resolve the source conflicts recorded by the report.
