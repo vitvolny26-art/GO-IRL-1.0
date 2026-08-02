@@ -475,7 +475,7 @@ export function SportActivitySheet({
           <span>{meta.durationMinutes || 90} {t.minutesShort}</span>
         </div>
         <div className="detail-list sport-detail-list sport-priority-grid" style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
-          <div className="sport-date-row"><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
+          <div className="sport-date-row calendar-date-action" onClick={() => onCalendar(activity)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onCalendar(activity); } }} role="button" tabIndex={0} aria-label={t.addToGoogleCalendar}><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
           <button className="detail-members-toggle sport-detail-members-row" onClick={() => setMembersOpen((open: boolean) => !open)} type="button" aria-expanded={membersOpen}>
             <UsersRound />
             <span>{t.participants}</span>
