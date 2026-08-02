@@ -1,5 +1,6 @@
 import { stripLeadingEmoji } from "./cardText";
 import { getTranslation } from "./i18n";
+import { organizerInitials, resolveOrganizerIdentity } from "./profile/organizerIdentityResolver";
 import { useAppStore } from "./store";
 import type { Activity, ActivityMember, Language } from "./types";
 
@@ -46,7 +47,20 @@ const closeAllDropdowns = (except?: HTMLElement) => {
   });
 };
 
-const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toUpperCase() || "GI";
+const isImageAvatar = (value: string) => value.startsWith("data:image/") || /^https?:\/\//.test(value);
+
+const loadParticipantAvatar = async (avatar: HTMLElement, member: ActivityMember) => {
+  const fallback = organizerInitials(member.name);
+  avatar.textContent = fallback;
+  const identity = await resolveOrganizerIdentity(member.userKey, member.name);
+  if (!avatar.isConnected || !isImageAvatar(identity.avatar)) return;
+
+  const image = document.createElement("img");
+  image.alt = "";
+  image.src = identity.avatar;
+  image.addEventListener("error", () => image.replaceWith(fallback), { once: true });
+  avatar.replaceChildren(image);
+};
 
 const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Language) => {
   const t = getTranslation(language);
@@ -74,7 +88,7 @@ const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Lan
       row.className = "runtime-card-participant-row";
       const avatar = document.createElement("span");
       avatar.className = "runtime-card-participant-avatar";
-      avatar.textContent = initials(member.name);
+      void loadParticipantAvatar(avatar, member);
       const name = document.createElement("strong");
       name.textContent = member.name;
       row.append(avatar, name);

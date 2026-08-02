@@ -354,9 +354,9 @@ button, input, textarea, select { letter-spacing: 0; }
 .referral-button small { color: var(--muted); font-size: 11px; }
 
 .bottom-nav { position: fixed; z-index: 30; bottom: 0; left: 50%; display: grid; grid-template-columns: repeat(5, 1fr); width: min(100%, 560px); min-height: calc(68px + env(safe-area-inset-bottom)); padding: 6px 8px env(safe-area-inset-bottom); border-top: 1px solid var(--line); background: rgba(12,13,16,.96); backdrop-filter: blur(18px); transform: translateX(-50%); }
-.bottom-nav button { display: grid; place-items: center; align-content: center; gap: 4px; border: 0; background: transparent; color: #747b86; }
-.bottom-nav button svg { width: 21px; height: 21px; }
-.bottom-nav button span { font-size: 10px; }
+.bottom-nav button, .bottom-nav-link { display: grid; place-items: center; align-content: center; gap: 4px; border: 0; background: transparent; color: #747b86; text-align: center; text-decoration: none; }
+.bottom-nav button svg, .bottom-nav-link svg { width: 21px; height: 21px; }
+.bottom-nav button span, .bottom-nav-link span { font-size: 10px; }
 .bottom-nav button.active { color: var(--lime); }
 
 .sheet-backdrop { position: fixed; z-index: 60; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-top: 40px; background: rgba(0,0,0,.72); animation: fade-in 150ms ease-out; }
@@ -377,6 +377,9 @@ button, input, textarea, select { letter-spacing: 0; }
 .details-error svg { flex: 0 0 auto; width: 18px; height: 18px; }
 .detail-list { display: grid; border-top: 1px solid var(--line); }
 .detail-list > div { display: grid; grid-template-columns: 25px 1fr minmax(0, 1.5fr); align-items: center; gap: 8px; min-height: 52px; border-bottom: 1px solid var(--line); }
+.detail-list > .calendar-date-action { cursor: pointer; }
+.detail-list > .calendar-date-action:active { background: rgba(255, 255, 255, .06) !important; }
+.detail-list > .calendar-date-action:focus-visible { outline: 2px solid var(--lime); outline-offset: -2px; }
 .detail-list svg { width: 19px; color: var(--lime); }
 .detail-list span { color: var(--muted); font-size: 12px; }
 .detail-list strong { font-size: 13px; text-align: right; overflow-wrap: anywhere; }

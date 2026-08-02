@@ -43,7 +43,8 @@ describe("Telegram event share-card image", () => {
     expect(svg).not.toContain(">Vitalii Pashyn<");
     expect(svg).not.toContain('x1="58" y1="690"');
     expect(svg).toContain('data-card-frame="expanded"');
-    expect(svg).toContain('data-share-participants="two-row"');
+    expect(svg).not.toContain('data-share-participants');
+    expect(svg).not.toContain("2 / 8");
     expect(svg).toContain('data-share-footer="two-row"');
     expect(svg).not.toContain("90 мин");
     expect(svg).not.toContain("Нужен тренер");

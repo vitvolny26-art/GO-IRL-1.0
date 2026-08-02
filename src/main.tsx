@@ -175,14 +175,17 @@ function MainSurface() {
 
   if (surface === "launch") {
     return (
-      <LaunchPage
-        language={language}
-        selectedCityId={selectedCityId}
-        onLanguageChange={setLanguage}
-        onCityChange={setSelectedCity}
-        onOpenActivities={() => openApp("/activities")}
-        onOpenServices={() => openApp("/services")}
-      />
+      <>
+        <LaunchPage
+          language={language}
+          selectedCityId={selectedCityId}
+          onLanguageChange={setLanguage}
+          onCityChange={setSelectedCity}
+          onOpenActivities={() => openApp("/activities")}
+          onOpenServices={() => openApp("/services")}
+        />
+        <AdminDevPanel />
+      </>
     );
   }
 
