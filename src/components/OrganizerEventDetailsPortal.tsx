@@ -41,8 +41,10 @@ export function OrganizerEventDetailsPortal() {
       const activity = detailList
         ? findSportActivityForSheet(activities, language, title, description)
         : null;
+      const hasOrganizerCard = Array.from(detailList?.querySelectorAll(".organizer-detail-action") || [])
+        .some((node) => !node.closest(".organizer-detail-portal-slot"));
 
-      if (!detailList || !activity) {
+      if (!detailList || !activity || hasOrganizerCard) {
         setPortal((current) => {
           current?.target.remove();
           return null;
