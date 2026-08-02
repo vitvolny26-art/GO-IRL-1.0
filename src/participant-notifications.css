@@ -1,5 +1,8 @@
 .header-icon-button {
   position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .notification-badge {
@@ -17,11 +20,14 @@
   line-height: 17px;
   text-align: center;
   box-shadow: 0 0 0 2px #14161b;
+  pointer-events: none;
 }
 
 .notifications-popover {
+  z-index: 4;
   max-height: min(68vh, 460px);
   overflow-y: auto;
+  pointer-events: auto;
 }
 
 .notification-list {

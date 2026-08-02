@@ -17,6 +17,11 @@
   border-radius: 0;
 }
 
+/* Keep the compact card footer at its original four-item layout. */
+.compact-sport-card .sport-details-grid > :nth-child(4) {
+  display: none !important;
+}
+
 .members-popover-backdrop {
   position: fixed;
   inset: 0;
@@ -24,7 +29,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(0, 0, 0, .58);
+  background: rgba(0, 0, 0, .68);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
@@ -38,10 +43,29 @@
   padding: 50px 14px 14px;
   border: 1px solid rgba(201, 255, 61, .24) !important;
   border-radius: 18px !important;
-  background: rgba(8, 12, 14, .82) !important;
+  background: rgba(8, 12, 14, .94) !important;
+  color: #fff !important;
   -webkit-backdrop-filter: blur(18px) saturate(130%);
   backdrop-filter: blur(18px) saturate(130%);
-  box-shadow: 0 20px 54px rgba(0, 0, 0, .46) !important;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, .56) !important;
+}
+
+.activity-sheet .members-popover .members-list,
+.activity-sheet .members-popover .member-row,
+.activity-sheet .members-popover .member-profile-action {
+  background: transparent !important;
+  color: #fff !important;
+}
+
+.activity-sheet .members-popover .member-row {
+  border-color: rgba(255, 255, 255, .08) !important;
+}
+
+.activity-sheet .members-popover .member-row strong,
+.activity-sheet .members-popover .members-list p,
+.activity-sheet .members-popover .waiting-heading,
+.activity-sheet .members-popover .pending-heading {
+  color: #fff !important;
 }
 
 .members-popover-close {
@@ -67,7 +91,6 @@
 .activity-sheet .members-popover .member-profile-action {
   width: 100%;
   border: 0;
-  color: inherit;
   text-align: left;
   cursor: pointer;
 }
