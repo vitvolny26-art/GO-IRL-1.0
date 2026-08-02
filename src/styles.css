@@ -49,6 +49,7 @@ button, input, textarea, select { letter-spacing: 0; }
 .header-control { display: flex; min-width: 0; align-items: center; gap: 4px; padding: 0 6px; font-size: 12px; font-weight: 750; }
 .header-control > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .city-control > span { font-size: 15px; font-weight: 850; }
+.city-control, .language-control { position: relative; left: 3px; }
 .header-control > svg:first-child { flex: 0 0 auto; width: 17px; height: 17px; color: var(--lime); }
 .header-control .control-chevron { flex: 0 0 auto; width: 13px; height: 13px; }
 .header-control.is-active, .header-icon-button.is-active { border-color: #363b43; background: var(--surface-2); color: var(--text); }
