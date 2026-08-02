@@ -61,7 +61,7 @@
 
 .runtime-hero-brand {
   display: grid;
-  grid-template-columns: minmax(82px, 28%) minmax(0, 1fr);
+  grid-template-columns: minmax(96px, 34%) minmax(0, 1fr);
   align-items: center;
   gap: 18px;
   width: 100%;
@@ -73,7 +73,7 @@
 .runtime-hero-brand-mark {
   display: block;
   width: 100%;
-  max-width: 126px;
+  max-width: 152px;
   aspect-ratio: 1;
   justify-self: center;
   border-radius: 18px;
@@ -115,7 +115,7 @@
   }
 
   .runtime-hero-brand {
-    grid-template-columns: 78px minmax(0, 1fr);
+    grid-template-columns: 92px minmax(0, 1fr);
     gap: 12px;
     padding: 14px;
   }
