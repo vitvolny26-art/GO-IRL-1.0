@@ -83,7 +83,6 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
   const subtitleLines = subtitle.toLocaleLowerCase() === headline.toLocaleLowerCase() ? [] : wrap(subtitle, 28, 4);
   const organizer = clean(input.organizer || "GO IRL", 80);
   const organizerInitial = organizer.trim().slice(0, 1).toUpperCase() || "G";
-  const participantCount = `${Math.max(0, Math.trunc(input.participants))} / ${Math.max(0, Math.trunc(input.capacity))}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="900" viewBox="0 0 1080 900">
   <defs>
@@ -98,11 +97,6 @@ const buildShareCardSvg = (input: TelegramEventCardInput) => {
 
   <text fill="#f7f8f9" font-size="62" font-weight="900" font-family="DejaVu Sans, sans-serif">${textLines(headlineLines, 76, 108, 64)}</text>
   <text fill="#d3d7dc" font-size="34" font-weight="600" font-family="DejaVu Sans, sans-serif">${textLines(subtitleLines, 76, 208, 42)}</text>
-
-  <g data-share-participants="two-row" font-family="DejaVu Sans, sans-serif" font-weight="900">
-    <g fill="none" stroke="#c9ff3d" stroke-width="5" stroke-linecap="round"><circle cx="930" cy="126" r="13"/><path d="M906 171c2-19 11-29 24-29s22 10 24 29"/></g>
-    <text x="930" y="220" text-anchor="middle" fill="#f7f8f9" font-size="32">${xml(participantCount)}</text>
-  </g>
 
   ${weatherBlock(input)}
 

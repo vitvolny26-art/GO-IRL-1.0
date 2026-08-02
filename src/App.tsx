@@ -30,7 +30,7 @@ import {
   Zap,
 } from "lucide-react";
 import { activityOptions, categories, closedBetaActivityOptions, closedBetaCategories } from "./data";
-import { clientNavigationLabels, domainCabinetForPath, homeCategoriesForPath } from "./domainHomeCategories";
+import { clientNavigationLabels, domainActionLabels, homeCategoriesForPath } from "./domainHomeCategories";
 import { AppHeader } from "./components/AppHeader";
 import { buildGoogleCalendarUrl } from "./calendar/googleCalendar";
 import { openBugReport } from "./bugReport";
@@ -506,7 +506,6 @@ function App() {
             language={store.language}
             onOpen={openActivity}
             onJoin={handleJoin}
-            onOpenOrganizerCabinet={() => store.setView("create")}
           />
         )}
         {store.view === "discover" && (isServicesDomain
@@ -585,25 +584,19 @@ function App() {
   );
 }
 
-function HomeView({ language, onOpen, onJoin, onOpenOrganizerCabinet }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onOpenOrganizerCabinet: () => void }) {
-  const { activities, loading, selectedCityId, setCategory, userRole } = useAppStore();
+function HomeView({ language, onOpen, onJoin }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
+  const { activities, loading, selectedCityId, setCategory } = useAppStore();
   const t = getTranslation(language);
   const today = new Date().toISOString().slice(0, 10);
   const nearby = activities.filter((item) => item.date >= today).slice(0, 4);
   const popular = activities.filter((item) => item.popular);
   const urgent = activities.filter((item) => item.urgent);
   const homeCategories = homeCategoriesForPath(window.location.pathname, language);
-  const cabinet = domainCabinetForPath(window.location.pathname, userRole, language);
   const servicesDomain = window.location.pathname.replace(/\/+$/, "") === "/services";
   const professionalCount = servicesDomain ? professionalsForCity(selectedCityId).length : 0;
 
   return (
     <>
-      {cabinet && (
-        cabinet.kind === "professional"
-          ? <a className="domain-cabinet-entry" href="/beauty/workspace"><Sparkles /><strong>{cabinet.label}</strong><ChevronRight /></a>
-          : <button className="domain-cabinet-entry" onClick={onOpenOrganizerCabinet} type="button"><UsersRound /><strong>{cabinet.label}</strong><ChevronRight /></button>
-      )}
       <div className={homeCategories.length === 1 ? "category-grid module-grid services-category-grid" : "category-grid module-grid"}>
         {homeCategories.map((category) => (
           <button className="category-button" data-category={category.id} key={category.id} onClick={() => setCategory(category.id)} type="button">
@@ -892,928 +885,1048 @@ function CreateView({ language, initialActivity, onCreated, onCancel }: { langua
     }
     const priceError = validateEventPrice(price, t);
     if (priceError) {
-      setPriceError(priceError);
-      setFormError("");
-      setSubmitting(false);
-      return;
-    }
-
-    const activity: NewActivity = {
-      type: categoryId === "sport" ? "sport" : "custom",
-      categoryId,
-      activityText,
-      titleText: rawTitle,
-      descriptionText: rawDescription,
-      date,
-      time: String(data.get("time")),
-      cityId,
-      address: rawAddress,
-      locationUrl: rawLocationUrl || undefined,
-      participantNote: rawParticipantNote || undefined,
-      price,
-      capacity,
-      visibility: String(data.get("visibility")) as NewActivity["visibility"],
-      metadata: categoryId === "sport" ? { sport: sportMetadataFromForm(data, activityText) } : undefined,
-    };
-    try {
-      const id = initialActivity
-        ? await updateActivity(initialActivity.id, activity)
-        : await createActivity(activity);
-      rememberEventLocation(rawAddress, rawLocationUrl);
-      setSelectedCity(cityId);
-      onCreated(id);
-      if (!initialActivity) event.currentTarget.reset();
-    } catch {
-      setFormError(t.publishError);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <section className="page-section create-page">
-      <button className="back-button" onClick={onCancel} type="button"><ArrowLeft size={20} /></button>
-      <div className="page-title">{initialActivity ? <Pencil /> : <Plus />}<div><h1>{initialActivity ? t.edit : t.createTitle}</h1><p>{t.createHint}</p></div></div>
-      <form className="create-form" ref={formRef} onSubmit={submit}>
-        <div className="template-row" aria-label={t.quickTemplates}>
-          <span>{t.quickTemplates}</span>
-          <div
-            data-no-tab-swipe
-            onPointerDown={handleTemplatePointerDown}
-            onPointerMove={handleTemplatePointerMove}
-            onPointerUp={finishTemplateGesture}
-            onPointerCancel={finishTemplateGesture}
-          >
-            {quickTemplates.map((template) => (
-              <button key={template.id} onClick={() => handleTemplateClick(template)} type="button">
-                {template.icon} {template.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <label><span>{t.category}</span><select name="categoryId" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} required>{createCategories.map((category) => <option key={category.id} value={category.id}>{category.icon} {category.name[language]}</option>)}</select></label>
-        <label><span>{t.activity}</span><select key={`${categoryId}-${language}`} name="activityText" defaultValue={initialActivity?.categoryId === categoryId ? stripLeadingEmoji(initialActivity.activity[language]) : undefined} required>{(createActivityOptions[categoryId] || []).map((option) => <option key={`${option.icon}-${option.name[language]}`} value={option.name[language]}>{option.icon} {option.name[language]}</option>)}</select></label>
-        {categoryId === "sport" && (
-          <Suspense fallback={<div className="sport-create-panel">{t.loadingEvents}</div>}>
-            <LazySportCreateFields language={language} initialSport={initialSport} />
-          </Suspense>
-        )}
-        <label><span>{t.title}</span><input name="titleText" defaultValue={initialActivity?.title[language]} placeholder={t.titlePlaceholder} maxLength={MAX_EVENT_TITLE_LENGTH} required /></label>
-        <label><span>{t.description}</span><textarea name="descriptionText" rows={4} defaultValue={initialActivity?.description[language]} maxLength={MAX_EVENT_DESCRIPTION_LENGTH} required /></label>
-        <div className="form-row">
-          <label><span>{t.date}</span><input name="date" type="date" min={today} defaultValue={initialActivity?.date || today} required /></label>
-          <label><span>{t.time}</span><input name="time" type="time" defaultValue={initialActivity?.time || "18:00"} required /></label>
-        </div>
-        <label><span>{t.city}</span><select name="cityId" value={cityId} onChange={(event) => {
-          const nextCityId = event.target.value;
-          const oldAutoUrl = buildEventLocationUrl(addressValue, selectedCity.name[language]);
-          const nextCityName = getCity(nextCityId).name[language];
-          setCityId(nextCityId);
-          if (!locationUrlValue || locationUrlValue === oldAutoUrl) setLocationUrlValue(buildEventLocationUrl(addressValue, nextCityName));
-        }} required>{cities.map((city) => <option key={city.id} value={city.id}>{city.name[language]}</option>)}</select></label>
-        <label><span>{t.address}</span><input name="address" list="saved-event-locations" value={addressValue} onChange={(event) => {
-          const nextAddress = event.target.value;
-          const previousAutoUrl = buildEventLocationUrl(addressValue, selectedCity.name[language]);
-          const saved = savedLocations.find((item) => item.address.toLocaleLowerCase() === nextAddress.trim().toLocaleLowerCase());
-          setAddressValue(nextAddress);
-          if (saved?.locationUrl) setLocationUrlValue(saved.locationUrl);
-          else if (!locationUrlValue || locationUrlValue === previousAutoUrl) setLocationUrlValue(buildEventLocationUrl(nextAddress, selectedCity.name[language]));
-        }} maxLength={MAX_EVENT_ADDRESS_LENGTH} required /></label>
-        <datalist id="saved-event-locations">{savedLocations.map((item) => <option key={item.address} value={item.address} />)}</datalist>
-        <label><span>{t.locationUrl}</span><input name="locationUrl" type="url" value={locationUrlValue} onChange={(event) => setLocationUrlValue(event.target.value)} placeholder={t.locationPlaceholder} /></label>
-        <label><span>{t.participantNote}</span><textarea name="participantNote" rows={3} defaultValue={initialActivity?.participantNote} maxLength={MAX_EVENT_NOTE_LENGTH} placeholder={t.participantNotePlaceholder} /></label>
-        <div className="form-row">
-          <label className="price-field"><span>{t.price}</span><input name="price" type="number" min="0" max={MAX_EVENT_PRICE} defaultValue={initialActivity?.price || 0} onInput={(event) => setPriceError(validateEventPrice(Number(event.currentTarget.value), t))} onChange={(event) => setPriceError(validateEventPrice(Number(event.currentTarget.value), t))} required /><small className="field-error">{priceError || t.priceTooHigh}</small></label>
-          <label><span>{t.capacity}</span><input name="capacity" type="number" min={MIN_EVENT_CAPACITY} max={MAX_EVENT_CAPACITY} defaultValue={initialActivity?.capacity || 8} required /></label>
-        </div>
-        <fieldset>
-          <legend>{t.visibility}</legend>
-          <div className="segmented">
-            <label><input name="visibility" type="radio" value="public" defaultChecked={!initialActivity || initialActivity.visibility === "public"} /><span>{t.public}</span></label>
-            <label><input name="visibility" type="radio" value="private" defaultChecked={initialActivity?.visibility === "private"} /><span>{t.private}</span></label>
-            <label><input name="visibility" type="radio" value="invite" defaultChecked={initialActivity?.visibility === "invite"} /><span>{t.invite}</span></label>
-          </div>
-        </fieldset>
-        {formError && <div className="form-error">{formError}</div>}
-        <button className="publish-button" type="submit" disabled={submitting || Boolean(priceError)}>{initialActivity ? <Pencil size={20} /> : <Sparkles size={20} />}{submitting ? "…" : initialActivity ? t.save : t.publish}</button>
-      </form>
-    </section>
-  );
-}
-
-type LocalProfile = {
-  name: string;
-  bio: string;
-  cityId: string;
-  avatar: string;
-  registeredAt: string;
-  favoriteActivities: string[];
-};
-
-const avatarOptions = ["GI", "GO", "IRL", "🏐", "🎉", "🌿"];
-const maxAvatarBytes = 5 * 1024 * 1024;
-const profilePolishCopy: Record<Language, { title: string; hint: string; upload: string; formats: string; invalid: string }> = {
-  ru: { title: "Профиль", hint: "Настройте профиль и интересы", upload: "Нажмите или перетащите фото", formats: "JPG или PNG до 5 МБ", invalid: "Выберите JPG или PNG размером до 5 МБ" },
-  uk: { title: "Профіль", hint: "Налаштуйте профіль та інтереси", upload: "Натисніть або перетягніть фото", formats: "JPG або PNG до 5 МБ", invalid: "Виберіть JPG або PNG розміром до 5 МБ" },
-  cs: { title: "Profil", hint: "Nastavte profil a zájmy", upload: "Klikněte nebo přetáhněte fotku", formats: "JPG nebo PNG do 5 MB", invalid: "Vyberte JPG nebo PNG do 5 MB" },
-  en: { title: "Profile", hint: "Set up your profile and interests", upload: "Click or drag a photo here", formats: "JPG or PNG up to 5 MB", invalid: "Choose a JPG or PNG up to 5 MB" },
-};
-
-const loadProfile = (fallbackName: string, fallbackCityId: string): LocalProfile => {
-  const stored = localStorage.getItem("go-irl-profile");
-  const registeredAt = localStorage.getItem("go-irl-registered-at") || new Date().toISOString();
-  localStorage.setItem("go-irl-registered-at", registeredAt);
-  if (!stored) return { name: fallbackName, bio: "", cityId: fallbackCityId, avatar: "GI", registeredAt, favoriteActivities: [] };
-
-  try {
-    const parsed = JSON.parse(stored) as Partial<LocalProfile>;
-    return {
-      name: parsed.name || fallbackName,
-      bio: parsed.bio || "",
-      cityId: parsed.cityId || fallbackCityId,
-      avatar: parsed.avatar || "GI",
-      registeredAt: parsed.registeredAt || registeredAt,
-      favoriteActivities: Array.isArray(parsed.favoriteActivities) ? parsed.favoriteActivities : [],
-    };
-  } catch {
-    return { name: fallbackName, bio: "", cityId: fallbackCityId, avatar: "GI", registeredAt, favoriteActivities: [] };
+      setPri…30256 tokens truncated…der-radius: 12px; background: var(--lime); color: #11150d; font: inherit; font-weight: 900; }
+.card-reminder-save:disabled, .card-reminder-remove:disabled { cursor: wait; opacity: .65; }
+.card-reminder-remove { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; border: 0; background: transparent; color: #aeb4bd; font: inherit; font-size: 12px; font-weight: 750; }
+.card-reminder-remove svg { width: 15px; height: 15px; }
+@media (max-width: 720px) {
+  .card-reminder-panel {
+    position: fixed;
+    inset: auto 12px calc(76px + env(safe-area-inset-bottom)) 12px;
+    width: auto;
+    max-height: min(620px, calc(100dvh - 110px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
-};
+}
+.status-banner { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 12px; border: 1px solid #37431e; border-radius: 7px; background: rgba(201,255,61,.08); color: var(--lime); font-size: 13px; font-weight: 800; }
+.status-banner.neutral { border-color: rgba(87,217,232,.3); background: rgba(87,217,232,.08); color: var(--cyan); }
+.status-banner.danger { border-color: rgba(255,111,97,.36); background: rgba(255,111,97,.09); color: var(--coral); }
+.sheet-actions { display: grid; grid-template-columns: 1fr 48px 48px; gap: 8px; margin-top: 16px; }
+.main-action, .square-action { min-height: 49px; border: 0; border-radius: 7px; font-weight: 850; }
+.main-action { display: flex; align-items: center; justify-content: center; gap: 7px; background: var(--lime); color: var(--lime-text); }
+.main-action:disabled { cursor: not-allowed; opacity: .52; }
+.square-action { display: grid; place-items: center; background: var(--surface-2); color: var(--text); }
+.square-action.muted { color: var(--muted); }
+.toast { position: fixed; z-index: 80; left: 50%; bottom: calc(82px + env(safe-area-inset-bottom)); max-width: calc(100% - 32px); padding: 11px 15px; border-radius: 7px; background: var(--text); color: #111; font-size: 13px; font-weight: 800; transform: translateX(-50%); }
+.completion-bar { position: fixed; z-index: 75; left: 50%; bottom: calc(82px + env(safe-area-inset-bottom)); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: min(calc(100% - 24px), 536px); padding: 10px; border: 1px solid rgba(201,255,61,.28); border-radius: 8px; background: rgba(18,20,25,.98); box-shadow: 0 16px 40px rgba(0,0,0,.4); transform: translateX(-50%); animation: card-in 180ms ease-out; }
+.completion-bar div { display: grid; gap: 2px; min-width: 0; }
+.completion-bar > div { flex: 1 1 100%; }
+.completion-bar strong { font-size: 13px; overflow-wrap: anywhere; }
+.completion-bar span { color: var(--muted); font-size: 11px; line-height: 1.25; }
+.completion-bar button { min-height: 40px; padding: 0 11px; border: 0; border-radius: 7px; background: var(--lime); color: var(--lime-text); font-size: 12px; font-weight: 900; }
+.completion-bar button.secondary { border: 1px solid var(--line); background: var(--surface-2); color: var(--text); }
+.empty-state { display: grid; place-items: center; gap: 8px; min-height: 150px; padding: 20px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); text-align: center; animation: fade-in 180ms ease-out; }
+.empty-state p { margin: 0; }
+.event-list-skeleton { display: grid; gap: 10px; }
+.event-skeleton-card { display: grid; gap: 10px; padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.event-skeleton-card span, .details-skeleton span { display: block; border-radius: 6px; background: linear-gradient(90deg, #1b1e24 0%, #262a32 42%, #1b1e24 82%); background-size: 220% 100%; animation: shimmer 1.15s ease-in-out infinite; }
+.event-skeleton-card span:nth-child(1) { width: 52px; height: 52px; }
+.event-skeleton-card span:nth-child(2) { width: 72%; height: 18px; }
+.event-skeleton-card span:nth-child(3) { width: 92%; height: 13px; }
+.event-skeleton-card span:nth-child(4) { width: 100%; height: 46px; }
+.details-skeleton { display: grid; gap: 9px; margin: 0 54px 16px 0; }
+.details-skeleton span:nth-child(1) { width: 58px; height: 58px; }
+.details-skeleton span:nth-child(2) { width: 76%; height: 22px; }
+.details-skeleton span:nth-child(3) { width: 100%; height: 48px; }
 
-type ProfileViewState = {
-  name: string;
-  bio: string;
-  cityId: string;
-  avatar: string;
-  avatarPath: string | null;
-  avatarCode: string | null;
-  registeredAt: string;
-  favoriteActivities: string[];
-  isPublic: boolean;
-  showFavorites: boolean;
-};
+@keyframes shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-up { from { transform: translateY(22px); opacity: .82; } to { transform: translateY(0); opacity: 1; } }
+@keyframes card-in { from { transform: translateY(6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-const createFallbackProfileViewState = (name: string, cityId: string): ProfileViewState => ({
-  name,
-  bio: "",
-  cityId,
-  avatar: "GI",
-  avatarPath: null,
-  avatarCode: "GI",
-  registeredAt: new Date().toISOString(),
-  favoriteActivities: [],
-  isPublic: true,
-  showFavorites: true,
-});
-
-const mapProfileViewState = (profile: UserProfile, avatar: string): ProfileViewState => ({
-  name: profile.displayName,
-  bio: profile.bio,
-  cityId: profile.cityId,
-  avatar: avatar || profile.avatarCode || "GI",
-  avatarPath: profile.avatarPath,
-  avatarCode: profile.avatarCode,
-  registeredAt: profile.createdAt,
-  favoriteActivities: profile.favoriteActivityIds,
-  isPublic: profile.isPublic,
-  showFavorites: profile.showFavorites,
-});
-
-const isProfileAvatarImage = (value: string) => value.startsWith("data:image/") || /^https?:\/\//.test(value);
-
-function ProfileView({ language, onOpen, onJoin, onCloseMiniApp }: { language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onCloseMiniApp: () => void }) {
-  const { activities, joinedIds, pendingIds, loading, syncError, selectedCityId, setSelectedCity } = useAppStore();
-  const [editing, setEditing] = useState(false);
-  const t = getTranslation(language);
-  const tgUser = getTelegramWebApp()?.initDataUnsafe?.user;
-  const fallbackName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ") || t.guestName;
-  const identity = getCurrentAuthIdentity();
-  const identityKey = identity?.source === "trusted-telegram" ? identity.user.userKey : getUserKey();
-  const repository = useMemo<ProfileRepository>(() => createProfileRepository({
-    identity,
-    supabaseClient: supabase,
-    storage: localStorage,
-    fallbackDisplayName: fallbackName,
-    fallbackCityId: selectedCityId,
-  }), [fallbackName, identityKey, selectedCityId]);
-  const [profile, setProfile] = useState<ProfileViewState>(() => createFallbackProfileViewState(fallbackName, selectedCityId));
-  const [avatarDraft, setAvatarDraft] = useState(profile.avatar);
-  const [avatarPathDraft, setAvatarPathDraft] = useState<string | null>(profile.avatarPath);
-  const [avatarCodeDraft, setAvatarCodeDraft] = useState<string | null>(profile.avatarCode);
-  const [avatarBusy, setAvatarBusy] = useState(false);
-  const [avatarError, setAvatarError] = useState("");
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [profileError, setProfileError] = useState(false);
-  const userKey = getUserKey();
-  const city = getCity(profile.cityId);
-  const today = new Date().toISOString().slice(0, 10);
-  const organized = activities.filter((item) => item.organizerKey === userKey);
-  const participating = activities.filter((item) => joinedIds.includes(item.id) && item.organizerKey !== userKey);
-  const pendingRequests = activities.filter((item) => pendingIds.includes(item.id));
-  const activeEvents = activities.filter((item) => item.date >= today && (item.organizerKey === userKey || joinedIds.includes(item.id) || pendingIds.includes(item.id)));
-  const joinedCount = activities.filter((item) => joinedIds.includes(item.id)).length;
-  const registeredLabel = new Intl.DateTimeFormat(localeByLanguage[language], { day: "numeric", month: "short", year: "numeric" }).format(safeDate(profile.registeredAt));
-  const favoriteOptions = favoriteActivityOptions(language);
-  const selectedFavorites = favoriteOptions.filter((option) => profile.favoriteActivities.includes(option.id));
-  const profileCopy = profilePolishCopy[language];
-
-  useEffect(() => {
-    let active = true;
-    setProfileLoading(true);
-    setProfileError(false);
-    void repository.loadOwnProfile()
-      .then(async (loaded) => {
-        if (!active) return;
-        if (!loaded) {
-          const fallback = createFallbackProfileViewState(fallbackName, selectedCityId);
-          setProfile(fallback);
-          setAvatarDraft(fallback.avatar);
-          setAvatarPathDraft(null);
-          setAvatarCodeDraft("GI");
-          return;
-        }
-        const resolvedAvatar = loaded.avatarPath
-          ? await repository.resolveAvatarUrl(loaded.avatarPath)
-          : loaded.avatarCode || "GI";
-        if (!active) return;
-        const next = mapProfileViewState(loaded, resolvedAvatar);
-        setProfile(next);
-        setAvatarDraft(next.avatar);
-        setAvatarPathDraft(next.avatarPath);
-        setAvatarCodeDraft(next.avatarCode);
-      })
-      .catch(() => { if (active) setProfileError(true); })
-      .finally(() => { if (active) setProfileLoading(false); });
-    return () => { active = false; };
-  }, [fallbackName, repository, selectedCityId]);
-
-  const processAvatarFile = async (file?: File) => {
-    if (!file) return;
-    if (!["image/jpeg", "image/png"].includes(file.type) || file.size > maxAvatarBytes) {
-      setAvatarError(profileCopy.invalid);
-      return;
-    }
-
-    setAvatarError("");
-    setAvatarBusy(true);
-    try {
-      const cropped = await openAvatarCropper(file);
-      if (!cropped) return;
-      const stored = await repository.uploadAvatar(cropped);
-      const display = stored.startsWith("data:image/") ? stored : await repository.resolveAvatarUrl(stored);
-      setAvatarDraft(display);
-      setAvatarPathDraft(stored);
-      setAvatarCodeDraft(null);
-    } catch {
-      setAvatarError(profileCopy.invalid);
-    } finally {
-      setAvatarBusy(false);
-    }
-  };
-
-  const selectAvatarCode = (avatar: string) => {
-    setAvatarDraft(avatar);
-    setAvatarPathDraft(null);
-    setAvatarCodeDraft(avatar);
-  };
-
-  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const draft: UserProfileDraft = {
-      displayName: String(data.get("profileName") || fallbackName).trim() || fallbackName,
-      bio: String(data.get("profileBio") || "").trim(),
-      cityId: String(data.get("profileCity") || selectedCityId),
-      avatarPath: avatarPathDraft,
-      avatarCode: avatarCodeDraft,
-      isPublic: profile.isPublic,
-      showFavorites: profile.showFavorites,
-      favoriteActivityIds: data.getAll("favoriteActivities").map(String),
-    };
-    setAvatarBusy(true);
-    setProfileError(false);
-    try {
-      const saved = await repository.saveOwnProfile(draft);
-      const resolvedAvatar = saved.avatarPath
-        ? await repository.resolveAvatarUrl(saved.avatarPath)
-        : saved.avatarCode || "GI";
-      const next = mapProfileViewState(saved, resolvedAvatar);
-      setProfile(next);
-      setAvatarDraft(next.avatar);
-      setAvatarPathDraft(next.avatarPath);
-      setAvatarCodeDraft(next.avatarCode);
-      setSelectedCity(next.cityId);
-      setEditing(false);
-      notifyTelegram("success");
-    } catch {
-      setProfileError(true);
-      notifyTelegram("error");
-    } finally {
-      setAvatarBusy(false);
-    }
-  };
-
-  const renderProfileSection = (section: ProfilePanelSection) => {
-    if (section === "preferences") return <ProfilePreferences language={language} />;
-
-    if (section === "diagnostics") {
-      return (
-        <div className="profile-diagnostics">
-          {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-          <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
-        </div>
-      );
-    }
-
-    if (section === "my-go-irl") {
-      return (
-        <div className="profile-my-go-irl">
-          {(loading || profileLoading) && <ProfileSkeleton />}
-          {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-          <SectionHeader title={t.favoriteActivities} />
-          {selectedFavorites.length ? (
-            <div className="profile-interest-list">
-              {selectedFavorites.map((option) => <span key={option.id}>{option.label}</span>)}
-            </div>
-          ) : (
-            <EmptyState text={t.noFavoriteActivities} />
-          )}
-          <SectionHeader title={t.profileStats} />
-          <div className="life-grid profile-stats-grid">
-            <Metric icon={<Star />} value={String(organized.length)} label={t.createdEvents} />
-            <Metric icon={<UserRoundCheck />} value={String(joinedCount)} label={t.visitedEvents} />
-            <Metric icon={<Zap />} value={String(activeEvents.length)} label={t.activeEvents} />
-            <Metric icon={<Clock3 />} value={String(pendingRequests.length)} label={t.pendingRequests} />
-          </div>
-          <SectionHeader title={t.myEvents} />
-          <ProfileEventGroup title={t.organizing} activities={organized} language={language} emptyText={t.noOrganizedEvents} onOpen={onOpen} onJoin={onJoin} />
-          <ProfileEventGroup title={t.participating} activities={participating} language={language} emptyText={t.noJoinedEvents} onOpen={onOpen} onJoin={onJoin} />
-          <ProfileEventGroup title={t.waitingDecision} activities={pendingRequests} language={language} emptyText={t.noPendingRequests} onOpen={onOpen} onJoin={onJoin} />
-          <button className="telegram-close-button" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
-        </div>
-      );
-    }
-
-    return (
-      <div className="profile-identity">
-        {(loading || profileLoading) && <ProfileSkeleton />}
-        {(syncError || profileError) && <div className="details-error profile-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-        {!editing && <div className="profile-hero">
-          <div className="profile-avatar">{isProfileAvatarImage(profile.avatar) ? <img src={profile.avatar} alt={t.avatar} /> : profile.avatar}</div>
-          <div className="profile-main">
-            <div className="profile-kicker"><MapPin />{city.name[language]}</div>
-            <h1>{profile.name}</h1>
-            <p>{profile.bio || t.profileBioFallback}</p>
-            <small>{t.registeredAt}: {registeredLabel}</small>
-          </div>
-          <button className="profile-edit-button" onClick={() => setEditing(true)} type="button"><Pencil size={18} />{t.editProfile}</button>
-        </div>}
-        {editing && (
-          <form id="profile-edit-form" className="profile-edit-form" onSubmit={saveProfile}>
-            <div className="profile-edit-intro">
-              <h1>{profileCopy.title}</h1>
-              <p>{profileCopy.hint}</p>
-              <label className={`profile-edit-avatar${avatarBusy ? " is-busy" : ""}`}>
-                <input type="file" accept="image/jpeg,image/png" disabled={avatarBusy} aria-label={t.avatar} onChange={(event) => {
-                  const input = event.currentTarget;
-                  void processAvatarFile(input.files?.[0]).finally(() => { input.value = ""; });
-                }} />
-                {isProfileAvatarImage(avatarDraft) ? <img src={avatarDraft} alt={t.avatar} /> : <span>{avatarDraft}</span>}
-                <i aria-hidden="true"><Camera size={20} /></i>
-              </label>
-            </div>
-            <label><span>{t.name}</span><input name="profileName" defaultValue={profile.name} required /></label>
-            <label><span>{t.shortBio}</span><textarea name="profileBio" rows={3} defaultValue={profile.bio} placeholder={t.profileBioPlaceholder} /></label>
-            <label><span>{t.city}</span><select name="profileCity" defaultValue={profile.cityId}>{cities.map((item) => <option key={item.id} value={item.id}>{item.name[language]}</option>)}</select></label>
-            <div className="interest-picker">
-              <span>{t.favoriteActivities}</span>
-              <p>{t.favoriteActivitiesHint}</p>
-              <div>
-                {favoriteOptions.map((option) => (
-                  <label key={option.id}>
-                    <input name="favoriteActivities" type="checkbox" value={option.id} defaultChecked={profile.favoriteActivities.includes(option.id)} />
-                    <span>{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="profile-avatar-choice-label">{t.avatar}</div>
-            <div className="avatar-picker" role="radiogroup" aria-label={t.avatar}>
-              {avatarOptions.map((avatar) => (
-                <label key={avatar}>
-                  <input name="profileAvatar" type="radio" value={avatar} defaultChecked={profile.avatarCode === avatar} onChange={() => selectAvatarCode(avatar)} />
-                  <span>{avatar}</span>
-                </label>
-              ))}
-            </div>
-            {avatarError && <div className="profile-avatar-error" role="alert">{avatarError}</div>}
-            <button className="publish-button" type="submit" disabled={avatarBusy}><Pencil size={18} />{avatarBusy ? "…" : t.save}</button>
-          </form>
-        )}
-      </div>
-    );
-  };
-
-  return (
-    <section className={`page-section profile-page${editing ? " is-editing" : ""}`}>
-      <ProfilePanel
-        language={language}
-        editing={editing}
-        renderSection={renderProfileSection}
-      />
-    </section>
-  );
+@media (max-width: 370px) {
+  .header-inner { gap: 4px; padding-inline: 10px; }
+  .header-controls { gap: 2px; }
+  .header-brand { min-width: 44px; }
+  .header-brand img { width: 42px; height: 42px; }
+  .header-control { padding-inline: 4px; }
+  .header-control:not(.language-control) > span { max-width: 56px; }
+  .city-control > span { max-width: 68px !important; font-size: 14px; }
+  .quick-actions, .category-grid, .form-row { grid-template-columns: 1fr; }
+  .segmented { grid-template-columns: 1fr; }
+  .activity-card-main { grid-template-columns: 42px minmax(0, 1fr); }
+  .category-icon { width: 42px; height: 42px; }
+  .card-arrow { display: none; }
+  .activity-card-details { grid-template-columns: 1fr; }
+  .activity-card-footer { grid-template-columns: 1fr; }
+  .card-status { width: 100%; }
+  .card-join { width: 100%; }
+  .achievements { grid-template-columns: repeat(2, 1fr); }
+  .completion-bar { display: grid; grid-template-columns: 1fr; }
+  .completion-bar button { width: 100%; }
 }
 
-function ProfileEventGroup({ title, activities, language, emptyText, onOpen, onJoin }: { title: string; activities: Activity[]; language: Language; emptyText: string; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
-  return (
-    <section className="profile-event-group">
-      <h3>{title}</h3>
-      {activities.length ? (
-        <div className="activity-stack">{activities.map((activity) => <ActivityCard key={activity.id} activity={activity} language={language} onOpen={onOpen} onJoin={onJoin} />)}</div>
-      ) : (
-        <EmptyState text={emptyText} />
-      )}
-    </section>
-  );
+@media (min-width: 700px) {
+  body { background: #050607; }
+  .app { border-left: 1px solid #17191d; border-right: 1px solid #17191d; background: var(--bg); }
+}
+/* Sport card chip hardening: no emoji mojibake, no default white buttons. */
+.sport-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-function ProfileSkeleton() {
-  return (
-    <div className="profile-skeleton" aria-hidden="true">
-      <span />
-      <span />
-      <span />
-      <span />
-    </div>
-  );
+.sport-card-chip,
+.sport-card-participants-chip {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid rgba(201,255,61,.16);
+  border-radius: 7px;
+  background: rgba(201,255,61,.07);
+  color: #dfff89;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1;
+  gap: 6px;
 }
 
-function ActivitySection({ title, activities, language, onOpen, onJoin, icon, urgent = false }: { title: string; activities: Activity[]; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; icon?: React.ReactNode; urgent?: boolean }) {
-  if (!activities.length) return null;
-  return (
-    <section className={urgent ? "activity-section urgent-section" : "activity-section"}>
-      <SectionHeader title={title} icon={icon} />
-      <div className="activity-stack">{activities.map((activity) => <ActivityCard key={activity.id} activity={activity} language={language} onOpen={onOpen} onJoin={onJoin} />)}</div>
-    </section>
-  );
+.sport-card-participants-chip {
+  cursor: pointer;
 }
 
-function ActivityCard(props: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void; onOpenMembers?: (activity: Activity) => void }) {
-  if (!isSportExperience(props.activity)) return <GenericActivityCard {...props} />;
-  return (
-    <Suspense fallback={<GenericActivityCard {...props} />}>
-      <LazySportActivityCard {...props} />
-    </Suspense>
-  );
+.sport-card-participants-chip:hover,
+.sport-card-participants-chip:focus-visible {
+  border-color: rgba(201,255,61,.42);
+  background: rgba(201,255,61,.12);
 }
 
-function GenericActivityCard({ activity, language, onOpen, onJoin }: { activity: Activity; language: Language; onOpen: OpenActivity; onJoin: (activity: Activity) => void }) {
-  const { joinedIds, waitingIds, pendingIds } = useAppStore();
-  const t = getTranslation(language);
-  const category = getActivityCategory(activity);
-  const joined = joinedIds.includes(activity.id);
-  const waiting = waitingIds.includes(activity.id);
-  const pending = pendingIds.includes(activity.id);
-  const isOrganizer = activity.organizerKey === getUserKey();
-  const full = activity.participants >= activity.capacity;
-  const interaction = resolveEventInteractionState({
-    isOrganizer,
-    isJoined: joined,
-    isWaiting: waiting,
-    isPending: pending,
-    isFull: full,
-    visibility: activity.visibility,
-    isFinished: isActivityFinished(activity),
-    hasWaitingList: false,
-  });
-  const [membersPreviewOpen, setMembersPreviewOpen] = useState(false);
-  const [helperState, setHelperState] = useState<"none" | "requested" | "confirmed">("none");
-  const joinedMembers = activity.members.filter((member) => member.status === "joined");
-  const pendingRequestCount = isOrganizer
-    ? activity.members.filter((member) => member.status === "pending").length
-    : 0;
-  const shareTitle = stripLeadingEmoji(activity.activity[language]);
-  const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
-  const avatar = genericActivityAvatar(activity, language, category.icon);
-  const mapLabel = activity.address.trim() || getCity(activity.cityId).name[language];
-  const action = t[eventActionTranslationKey(interaction.primaryAction, "card")];
-  const membershipActive = joined || pending || waiting;
-  const cardRightLabel = joined || waiting ? t.leave : pending ? t.cancelRequest : action;
-  const cardRightDisabled = !membershipActive && interaction.disabled;
-  const cardLeftLabel = joined ? t.cardOpenChat : t.details;
-  const handleCardLeftAction = () => {
-    if (joined) {
-      onOpen(activity, { focusChat: true });
-      return;
-    }
-    onOpen(activity);
-  };
-  const handleCardRightAction = () => {
-    if (membershipActive) {
-      onJoin(activity);
-      return;
-    }
-    runEventPrimaryAction(interaction.primaryAction, {
-      open: () => onOpen(activity),
-      openChat: () => onOpen(activity, { focusChat: true }),
-      join: () => onJoin(activity),
-    });
-  };
-  const helperAction = isOrganizer
-    ? helperState === "confirmed"
-      ? eventHelperCardCopy[language].confirmed
-      : helperState === "requested"
-        ? eventHelperCardCopy[language].requested
-        : eventHelperCardCopy[language].needed
-    : helperState === "confirmed"
-      ? eventHelperCardCopy[language].confirmed
-      : t.details;
-  const showHelperAction = interaction.showHelperAction && (isOrganizer || helperState === "confirmed");
-
-  useEffect(() => {
-    let active = true;
-    const refresh = () => {
-      void getOrganizerRoleRequestState(activity.id)
-        .then((state) => { if (active) setHelperState(state); })
-        .catch(() => { if (active) setHelperState("none"); });
-    };
-    const onChanged = (event: Event) => {
-      const detail = (event as CustomEvent<{ activityId?: string }>).detail;
-      if (!detail?.activityId || detail.activityId === activity.id) refresh();
-    };
-    refresh();
-    window.addEventListener("go-irl-coach-requests-changed", onChanged);
-    return () => {
-      active = false;
-      window.removeEventListener("go-irl-coach-requests-changed", onChanged);
-    };
-  }, [activity.id]);
-  return (
-    <article className="activity-card sport-card compact-sport-card unified-event-card glass-event-card">
-      <EventCardArtwork icon={avatar} activity={activity.activity[language]} title={activity.title[language]} />
-      <div className="sport-card-top-actions">
-        {pendingRequestCount > 0 ? (
-          <button
-            className="event-request-alert"
-            type="button"
-            aria-label={`${t.requests}: ${pendingRequestCount}`}
-            onClick={() => onOpen(activity, { focusRequests: true })}
-          >
-            <BellDot aria-hidden="true" />
-            <span>{pendingRequestCount}</span>
-          </button>
-        ) : null}
-        <CardReminderAction activityId={activity.id} date={activity.date} time={activity.time} />
-        <CardShareAction
-          title={shareTitle}
-          date={shareDate}
-          address={activity.address}
-          url={activityInviteUrl(activity)}
-          label={t.share}
-          onTelegramShare={() => sharePreparedTelegramEvent(activity, language)}
-        />
-      </div>
-      <button className="sport-card-main glass-event-card-main" onClick={() => onOpen(activity)} type="button">
-        <h3>{shareTitle}</h3>
-        <p>{stripLeadingEmoji(activity.title[language]) || mapLabel}</p>
-      </button>
-      <div className="sport-chip-row">
-        <button
-          className="sport-card-participants-chip"
-          type="button"
-          aria-label={`${t.participants}: ${activity.participants} / ${activity.capacity}`}
-          aria-expanded={membersPreviewOpen}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            setMembersPreviewOpen((open) => !open);
-          }}
-        ><UsersRound size={16} aria-hidden="true" /><span>{activity.participants} / {activity.capacity}</span></button>
-      </div>
-      {membersPreviewOpen && (
-        <div className="sport-card-members-preview">
-          {joinedMembers.length ? joinedMembers.map((member) => (
-            <div key={member.userKey} className="sport-card-member-preview-row">
-              <span className="sport-card-member-avatar">{member.name?.slice(0, 2).toUpperCase() || "GO"}</span>
-              <span className="sport-card-member-name">{member.name || "GO IRL User"}</span>
-            </div>
-          )) : <div className="sport-card-members-empty">{t.noParticipants || "Пока никого нет"}</div>}
-        </div>
-      )}
-      <EventWeatherStrip activity={activity} language={language} enabled={isOutdoorGenericActivity(activity)} />
-      <div className="activity-card-details sport-details-grid">
-        <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
-        <EventCardMetaItem icon={<Ticket />} caption={t.price.split(",")[0]} value={activity.price ? `${activity.price} Kč` : t.free} />
-        <EventCardMetaItem icon={<MapPin />} caption={t.address} value={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
-        <OrganizerAvatarAction organizerKey={activity.organizerKey} organizerName={activity.organizer} />
-      </div>
-      <div className="activity-card-footer compact-sport-actions">
-        {joined
-          ? <button className="sport-coach-action" onClick={handleCardLeftAction} type="button"><UsersRound size={18} /><span>{cardLeftLabel}</span></button>
-          : showHelperAction
-            ? <button className="sport-coach-action" onClick={() => onOpen(activity)} type="button"><UsersRound size={18} /><span>{helperAction}</span></button>
-            : <EventDetailsAction label={t.details} onClick={() => onOpen(activity)} />}
-        <button className={membershipActive ? "card-join card-leave" : interaction.canJoin && !pending ? "card-join" : "card-join secondary"} onClick={handleCardRightAction} type="button" disabled={cardRightDisabled}>
-          {cardRightLabel}
-        </button>
-      </div>
-    </article>
-  );
+.sport-card-chip span,
+.sport-card-participants-chip span {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
 }
 
-type ActivitySheetProps = {
-  activity: Activity;
-  language: Language;
-  cityName: string;
-  loading: boolean;
-  error: string | null;
-  onClose: () => void;
-  onJoin: (activity: Activity) => void;
-  onShare: (activity: Activity) => void;
-  onCalendar: (activity: Activity) => void;
-  onEdit: (activity: Activity) => void;
-  onDelete: (activity: Activity) => void;
-  onCloseMiniApp: () => void;
-  onNotice: (msg: string) => void;
-  initialMembersOpen?: boolean;
-  initialChatRequest?: number;
-};
-
-function ActivitySheet(props: ActivitySheetProps) {
-  if (!isSportExperience(props.activity)) return <GenericActivitySheet {...props} />;
-  return (
-    <Suspense fallback={<GenericActivitySheet {...props} />}>
-      <LazySportActivitySheet {...props} />
-    </Suspense>
-  );
+.sport-card-chip svg,
+.sport-card-participants-chip svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
 }
 
-function GenericActivitySheet({
-  activity,
-  language,
-  cityName,
-  loading,
-  error,
-  onClose,
-  onJoin,
-  onShare,
-  onCalendar,
-  onEdit,
-  onDelete,
-  onCloseMiniApp,
-  initialMembersOpen = false,
-  initialChatRequest = 0,
-}: ActivitySheetProps) {
-  const { joinedIds, waitingIds, pendingIds, reviewRequest, userRole } = useAppStore();
-  const [membersOpen, setMembersOpen] = useState(initialMembersOpen);
-  const [chatOpenRequest, setChatOpenRequest] = useState(initialChatRequest);
-  const moreActionsRef = useRef<HTMLDetailsElement>(null);
 
-  useEffect(() => {
-    setMembersOpen(initialMembersOpen);
-  }, [activity.id, initialMembersOpen]);
-
-  useEffect(() => {
-    setChatOpenRequest(initialChatRequest);
-  }, [activity.id, initialChatRequest]);
-
-  useEffect(() => {
-    const closeMoreActions = () => {
-      if (moreActionsRef.current?.open) moreActionsRef.current.open = false;
-    };
-    const handlePointerDown = (event: Event) => {
-      const details = moreActionsRef.current;
-      if (details?.open && event.target instanceof Node && !details.contains(event.target)) {
-        details.open = false;
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("scroll", closeMoreActions, true);
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("scroll", closeMoreActions, true);
-    };
-  }, [activity.id]);
-
-  const t = getTranslation(language);
-  const category = getActivityCategory(activity);
-  const isOrganizer = activity.organizerKey === getUserKey();
-  const canDelete = isOrganizer || userRole === "admin";
-  const joined = joinedIds.includes(activity.id);
-  const waiting = waitingIds.includes(activity.id);
-  const pending = pendingIds.includes(activity.id);
-  const full = activity.participants >= activity.capacity;
-  const interaction = resolveEventInteractionState({
-    isOrganizer,
-    isJoined: joined,
-    isWaiting: waiting,
-    isPending: pending,
-    isFull: full,
-    visibility: activity.visibility,
-    isFinished: isActivityFinished(activity),
-    hasWaitingList: false,
-  });
-  const action = t[eventActionTranslationKey(interaction.primaryAction, "sheet")];
-  const status = t[eventStatusTranslationKey(interaction)];
-  const accessLabel = activity.visibility === "public" ? t.publicAccess : activity.visibility === "private" ? t.privateAccess : t.inviteAccess;
-  const joinedMembers = activity.members.filter((member) => member.status === "joined");
-  const waitingMembers = activity.members.filter((member) => member.status === "waiting");
-  const pendingMembers = activity.members.filter((member) => member.status === "pending");
-  const activityAvatar = genericActivityAvatar(activity, language, category.icon);
-  const sheetBackgroundStyle = getEventSheetBackgroundStyle({
-    icon: activityAvatar,
-    activity: activity.activity[language],
-    title: activity.title[language],
-  });
-
-  const handleReview = async (memberKey: string, approved: boolean) => {
-    await reviewRequest(activity.id, memberKey, approved);
-  };
-
-  const handlePrimaryAction = () => runEventPrimaryAction(interaction.primaryAction, {
-    open: () => onEdit(activity),
-    openChat: () => setChatOpenRequest((request) => request + 1),
-    join: () => onJoin(activity),
-  });
-
-  return (
-    <div className="sheet-backdrop" onMouseDown={onClose}>
-      <article className="activity-sheet" style={sheetBackgroundStyle} onMouseDown={(event) => event.stopPropagation()}>
-        <div className="sheet-handle" />
-        <button className="sheet-close" onClick={onClose} type="button" aria-label={t.close}><X /></button>
-        {loading && <EventDetailsSkeleton />}
-        {error && <div className="details-error"><ShieldCheck /><span>{t.databaseError}</span></div>}
-        <div className={`sheet-symbol category-${category.id}`}>
-          <ActivityIcon emoji={activityAvatar} label={activity.activity[language]} />
-        </div>
-        <div className="sheet-label">{category.name[language]} · {stripLeadingEmoji(activity.activity[language])}</div>
-        <h2>{stripLeadingEmoji(activity.title[language])}</h2>
-        <p className="sheet-description">{stripLeadingEmoji(activity.description[language])}</p>
-        <div className="details-status-row">
-          <span className={isOrganizer ? "details-status organizer" : pending ? "details-status pending" : joined ? "details-status joined" : full ? "details-status full" : "details-status"}>{status}</span>
-          <span className="details-access">{accessLabel}</span>
-        </div>
-        <div className="detail-list">
-          <div><Sparkles /><span>{t.category}</span><strong>{category.name[language]}</strong></div>
-          <div><CalendarDays /><span>{dateLabel(activity.date, language)}</span>{formatEventTime(activity.time) ? <strong>{formatEventTime(activity.time)}</strong> : null}</div>
-          <div><Compass /><span>{t.city}</span><strong>{cityName}</strong></div>
-          <div><MapPin /><span>{t.address}</span>{activity.locationUrl ? <a href={activity.locationUrl} target="_blank" rel="noreferrer">{activity.address}</a> : <strong>{activity.address}</strong>}</div>
-          <div><Ticket /><span>{t.price}</span><strong>{activity.price ? `${activity.price} Kč` : t.free}</strong></div>
-          {activity.participantNote && <div><Sparkles /><span>{t.participantNote}</span><strong>{activity.participantNote}</strong></div>}
-          <OrganizerDetailAction organizerKey={activity.organizerKey} organizerName={activity.organizer} label={t.organizer} />
-          <div><ShieldCheck /><span>{t.visibility}</span><strong>{accessLabel}</strong></div>
-        </div>
-        <button className="detail-members-toggle" onClick={() => setMembersOpen((open) => !open)} type="button">
-          <UsersRound />
-          <span>{t.participants}</span>
-          <strong>{activity.participants} / {activity.capacity}</strong>
-          <ChevronRight className={membersOpen ? "open" : ""} />
-        </button>
-        {membersOpen && (
-          <div className="members-popover-backdrop" onMouseDown={() => setMembersOpen(false)}>
-            <div className="members-section members-popover" role="dialog" aria-modal="true" aria-label={t.participants} onMouseDown={(event) => event.stopPropagation()}>
-              <button className="members-popover-close" onClick={() => setMembersOpen(false)} type="button" aria-label={t.close}><X /></button>
-              <div className="members-list">
-              {joinedMembers.map((member) => (
-                <div className="member-row" key={member.userKey}>
-                  <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
-                  <strong>{member.name}</strong>
-                  <UserRoundCheck />
-                </div>
-              ))}
-              {!joinedMembers.length && <p>{t.noParticipants}</p>}
-              {waitingMembers.length > 0 && <div className="waiting-heading">{t.waitingList} · {waitingMembers.length}</div>}
-              {waitingMembers.map((member) => (
-                <div className="member-row waiting-member" key={member.userKey}>
-                  <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
-                  <strong>{member.name}</strong>
-                  <Clock3 />
-                </div>
-              ))}
-              {isOrganizer && pendingMembers.length > 0 && <div className="pending-heading">{t.requests} · {pendingMembers.length}</div>}
-              {isOrganizer && pendingMembers.map((member) => (
-                <div className="member-row pending-member" key={member.userKey}>
-                  <span className="member-avatar">{member.name.slice(0, 2).toUpperCase()}</span>
-                  <strong>{member.name}</strong>
-                  <span className="request-actions">
-                    <button onClick={() => void handleReview(member.userKey, true)} type="button" aria-label={t.approve} title={t.approve}><Check /><span>{t.approve}</span></button>
-                    <button onClick={() => void handleReview(member.userKey, false)} type="button" aria-label={t.reject} title={t.reject}><X /><span>{t.reject}</span></button>
-                  </span>
-                </div>
-              ))}
-              </div>
-            </div>
-          </div>
-        )}
-        {!isOrganizer && (joined || waiting || pending) && <div className="status-banner">{joined ? <UserRoundCheck /> : <Clock3 />}<span>{joined ? t.joined : waiting ? t.waiting : t.requested}</span></div>}
-        {!isOrganizer && activity.visibility === "private" && !joined && !waiting && !pending && <div className="status-banner neutral"><ShieldCheck /><span>{t.privateJoinInfo}</span></div>}
-        {full && !joined && !waiting && !pending && !isOrganizer && <div className="status-banner danger"><UsersRound /><span>{t.eventFull}</span></div>}
-              <ActivityChatPanel activity={activity} openRequest={chatOpenRequest} showHelperAction={interaction.showHelperAction} />
-
-      <div className="sheet-actions compact-sheet-actions">
-          <button className="main-action" onClick={handlePrimaryAction} type="button" disabled={interaction.disabled}>{interaction.primaryAction === "manage" && <Pencil size={18} />}{action}</button>
-          <details ref={moreActionsRef} className="event-more-actions">
-            <summary className="square-action" aria-label="Еще" title="Еще"><Ellipsis aria-hidden="true" /></summary>
-            <div className="event-more-menu">
-              <button onClick={() => void onShare(activity)} type="button"><Share2 size={18} />{t.share}</button>
-              <button onClick={() => onCalendar(activity)} type="button"><CalendarPlus size={18} />{t.addToGoogleCalendar}</button>
-              <button onClick={() => openBugReport(activity, language)} type="button"><Bug size={18} />{t.report}</button>
-            </div>
-          </details>
-        </div>
-        {!isOrganizer && (joined || waiting || pending) && (
-          <button className="danger-action membership-leave-action" onClick={() => onJoin(activity)} type="button">
-            <X size={18} />
-            {pending ? t.cancelRequest : t.leave}
-          </button>
-        )}
-        {canDelete && (
-          <button className="danger-action" onClick={() => onDelete(activity)} type="button">
-            <Trash2 size={18} />
-            {t.delete}
-          </button>
-        )}
-        <button className="telegram-close-button compact" onClick={onCloseMiniApp} type="button">{t.backToTelegram}</button>
-      </article>
-    </div>
-  );
+.coach-panel {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(190, 255, 46, 0.18);
+  border-radius: 18px;
+  background: rgba(190, 255, 46, 0.06);
+  display: grid;
+  gap: 12px;
 }
 
-function CompletionBar({
-  activity,
-  language,
-  onCalendar,
-  onCloseMiniApp,
-}: {
-  activity: Activity;
-  language: Language;
-  onCalendar: () => void;
-  onCloseMiniApp: () => void;
-}) {
-  const t = getTranslation(language);
-  const shareTitle = stripLeadingEmoji(activity.activity[language]);
-  const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
-  return (
-    <div className="completion-bar post-save-actions" aria-label={t.createdSuccess}>
-      <CardShareAction title={shareTitle} date={shareDate} address={activity.address} url={activityInviteUrl(activity)} label={t.share} onTelegramShare={() => sharePreparedTelegramEvent(activity, language)} />
-      <button className="secondary" onClick={onCalendar} type="button"><CalendarPlus /><span>{t.addToGoogleCalendar}</span></button>
-      <button className="secondary" onClick={onCloseMiniApp} type="button"><ArrowLeft /><span>{t.backToTelegram}</span></button>
-    </div>
-  );
+.coach-panel-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-function EventDetailsSkeleton() {
-  return (
-    <div className="details-skeleton" aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </div>
-  );
+.coach-panel-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(190, 255, 46, 0.12);
+  color: var(--accent, #bfff2e);
+  flex: 0 0 auto;
 }
 
-function BottomNav({ view, setView, language }: { view: AppView; setView: (view: AppView) => void; language: Language }) {
-  const labels = clientNavigationLabels[language];
-  const items: Array<{ id: AppView; label: string; icon: React.ReactNode }> = [
-    { id: "home", label: labels[0], icon: <Home /> },
-    { id: "discover", label: labels[1], icon: <Sparkles /> },
-    { id: "explore", label: labels[2], icon: <Compass /> },
-    { id: "bookings", label: labels[3], icon: <CalendarDays /> },
-    { id: "profile", label: labels[4], icon: <CircleUserRound /> },
-  ];
-  return <nav className="bottom-nav">{items.map((item) => <button className={view === item.id ? "active" : ""} key={item.id} onClick={() => setView(item.id)} type="button">{item.icon}<span>{item.label}</span></button>)}</nav>;
+.coach-panel h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--text-primary, #f7f7f7);
 }
 
-function SectionHeader({ title, icon }: { title: string; icon?: React.ReactNode }) {
-  return <div className="section-title">{icon}<h2>{title}</h2></div>;
+.coach-panel p {
+  margin: 0;
+  color: var(--text-muted, #a5a8b3);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
-function Metric({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-  return <div className="metric">{icon}<strong>{value}</strong><span>{label}</span></div>;
+.coach-panel-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent, #bfff2e);
+  font-weight: 800;
+  font-size: 13px;
 }
 
-function EmptyState({ text }: { text: string }) {
-  return <div className="empty-state"><Dices /><p>{text}</p></div>;
+.coach-panel-button {
+  appearance: none;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: var(--accent, #bfff2e);
+  color: #10140d;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
 }
 
-function EventListSkeleton() {
-  return (
-    <div className="event-list-skeleton" aria-hidden="true">
-      {[0, 1, 2].map((item) => (
-        <div className="event-skeleton-card" key={item}>
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
-      ))}
-    </div>
-  );
+.coach-panel-button:disabled {
+  cursor: default;
+  opacity: 0.72;
 }
 
-export default App;
+.coach-panel-message {
+  color: var(--text-muted, #a5a8b3);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.activity-chat-panel {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.activity-chat-toggle {
+  appearance: none;
+  width: 100%;
+  border: 1px solid rgba(190, 255, 46, 0.18);
+  border-radius: 18px;
+  background: rgba(190, 255, 46, 0.06);
+  color: inherit;
+  font: inherit;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.activity-chat-toggle-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: rgba(190, 255, 46, 0.12);
+  color: var(--accent, #bfff2e);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.activity-chat-toggle strong {
+  display: block;
+  font-weight: 900;
+  color: var(--text-primary, #f7f7f7);
+}
+
+.activity-chat-toggle small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted, #a5a8b3);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.activity-chat-box {
+  border: 1px solid rgba(190, 255, 46, 0.14);
+  border-radius: 18px;
+  background: rgba(8, 12, 10, 0.76);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.activity-chat-messages {
+  max-height: 260px;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+.activity-chat-message {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  padding: 10px;
+}
+
+.activity-chat-message-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-muted, #a5a8b3);
+  font-size: 12px;
+}
+
+.activity-chat-message-meta strong {
+  color: var(--accent, #bfff2e);
+}
+
+.activity-chat-message p {
+  margin: 6px 0 0;
+  color: var(--text-primary, #f7f7f7);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.activity-chat-form {
+  display: flex;
+  gap: 8px;
+}
+
+.activity-chat-form input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid rgba(190, 255, 46, 0.16);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text-primary, #f7f7f7);
+  font: inherit;
+  padding: 12px;
+}
+
+.activity-chat-form button {
+  appearance: none;
+  border: 0;
+  border-radius: 14px;
+  background: var(--accent, #bfff2e);
+  color: #10140d;
+  width: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.activity-chat-form button:disabled {
+  opacity: 0.56;
+  cursor: default;
+}
+
+.activity-chat-muted {
+  color: var(--text-muted, #a5a8b3);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.activity-chat-error {
+  color: #ff7b7b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+
+.sport-card-members-preview {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(190, 255, 46, 0.16);
+  border-radius: 14px;
+  background: rgba(8, 12, 10, 0.72);
+  display: grid;
+  gap: 8px;
+}
+
+.sport-card-member-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sport-card-member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(190, 255, 46, 0.1);
+  color: #bfff2e;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.sport-card-member-name {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sport-card-members-empty {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+
+/* GO IRL targeted UI v3 */
+
+.home-brand-logo-wrap {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.home-brand-logo {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 220px;
+  margin: 0;
+  border: 1px solid rgba(201,255,61,.16);
+  border-radius: 16px;
+  background: #05070a;
+  object-fit: contain !important;
+  object-position: center;
+  box-shadow: 0 18px 44px rgba(0,0,0,.28);
+  overflow: hidden;
+}
+
+.home-hero h1 {
+  margin: 0;
+  max-width: none;
+  font-size: clamp(30px, 8.5vw, 36px);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.home-hero p {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+@media (max-width: 360px) {
+  .home-hero h1 {
+  margin: 0;
+  max-width: none;
+  font-size: clamp(30px, 8.5vw, 36px);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+}
+
+.sport-card-main h3 {
+  margin-bottom: 4px;
+}
+
+.sport-card-main p {
+  line-height: 1.3;
+}
+
+.sport-chip-row {
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sport-card-chip,
+.sport-card-participants-chip,
+.sport-sheet-chips span {
+  min-height: 36px;
+  padding: 8px 11px;
+  border-radius: 999px;
+}
+
+.sport-sheet-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.compact-sport-detail-list {
+  gap: 0;
+}
+
+.compact-sport-detail-list > div {
+  min-height: auto;
+  padding: 12px 0;
+}
+
+.compact-sport-detail-list strong {
+  line-height: 1.35;
+}
+
+.sport-map-preview {
+  margin: 14px 0 16px;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(92, 225, 230, 0.26);
+  background:
+    linear-gradient(135deg, rgba(92, 225, 230, 0.12), rgba(190, 255, 46, 0.08)),
+    rgba(0, 0, 0, 0.24);
+}
+
+.sport-map-preview iframe {
+  display: block;
+  width: 100%;
+  min-height: 190px;
+  border: 0;
+}
+
+.sport-map-link {
+  display: block;
+  padding: 12px 14px;
+  text-align: center;
+  color: #5ce1e6;
+  text-decoration: none;
+  font-weight: 900;
+  border-top: 1px solid rgba(92, 225, 230, 0.2);
+}
+
+.sport-card-members-preview {
+  margin-top: 10px;
+}
 
 
 
+/* GO IRL logo hard fix */
+@media (max-width: 360px) {
+  .home-hero h1 {
+    white-space: normal;
+    font-size: 30px;
+  }
+}
+
+/* GO IRL hard hero logo fix v2 */
+.home-hero {
+  padding-top: 8px !important;
+}
+
+.go-irl-hero-logo-frame {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 230px !important;
+  aspect-ratio: 16 / 9 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(201,255,61,.18) !important;
+  border-radius: 18px !important;
+  background: #05070a !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,.28) !important;
+}
+
+.go-irl-hero-logo-img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.home-hero h1 {
+  max-width: none !important;
+  font-size: clamp(30px, 8.5vw, 36px) !important;
+  line-height: 1.05 !important;
+  white-space: nowrap !important;
+}
+
+/* GO IRL header logo overflow fix */
+.app-header .header-brand,
+.header-brand {
+  width: 70px !important;
+  min-width: 70px !important;
+  max-width: 70px !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  max-height: 70px !important;
+  flex: 0 0 70px !important;
+  overflow: hidden !important;
+}
+
+.app-header .header-brand img,
+.header-brand img {
+  width: 68px !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+  height: 68px !important;
+  min-height: 68px !important;
+  max-height: 68px !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  display: block !important;
+  border-radius: 8px !important;
+  transform: none !important;
+}
+
+/* Home hero logo must be wide, but only this exact class */
+.go-irl-hero-logo-frame {
+  width: 100% !important;
+  max-width: 100% !important;
+  aspect-ratio: 16 / 9 !important;
+  max-height: 220px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(201,255,61,.18) !important;
+  border-radius: 18px !important;
+  background: #05070a !important;
+}
+
+.go-irl-hero-logo-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+/* GO IRL report bug action cleanup */
+.report-bug-action {
+  width: 100% !important;
+  min-height: 54px !important;
+  grid-column: 1 / -1 !important;
+  display: inline-flex !important;
+  gap: 10px !important;
+}
+
+.report-bug-action span {
+  display: inline !important;
+  font-weight: 800 !important;
+}
+/* GO IRL compact details and actions */
+.compact-sheet-actions {
+  grid-template-columns: 1fr 56px !important;
+  align-items: stretch !important;
+}
+
+.event-more-actions {
+  position: relative !important;
+}
+
+.event-more-actions summary {
+  list-style: none !important;
+  cursor: pointer !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
+}
+
+.event-more-actions summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.event-more-menu {
+  position: absolute !important;
+  right: 0 !important;
+  bottom: 64px !important;
+  z-index: 50 !important;
+  min-width: 240px !important;
+  padding: 8px !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 16px !important;
+  background: rgba(12,15,20,.98) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45) !important;
+}
+
+.event-more-menu button {
+  width: 100% !important;
+  min-height: 46px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-weight: 800 !important;
+  text-align: left !important;
+}
+
+.sport-detail-list {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 0 !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+.sport-detail-list > div {
+  min-height: 76px !important;
+  padding: 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+}
+
+.sport-detail-list > div:nth-child(odd) {
+  border-right: 1px solid rgba(255,255,255,.10) !important;
+}
+
+.sport-detail-list > div:nth-last-child(-n+2) {
+  border-bottom: 0 !important;
+}
+
+.sport-detail-list > div span {
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+}
+
+.sport-detail-list > div strong,
+.sport-detail-list > div a {
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  text-align: right !important;
+}
+/* GO IRL compact detail grid readability fix */
+.sport-detail-list > div {
+  display: grid !important;
+  grid-template-columns: 26px 1fr !important;
+  grid-template-areas:
+    "icon label"
+    "icon value" !important;
+  column-gap: 10px !important;
+  row-gap: 5px !important;
+  align-items: center !important;
+  min-width: 0 !important;
+  min-height: 86px !important;
+}
+
+.sport-detail-list > div > svg {
+  grid-area: icon !important;
+}
+
+.sport-detail-list > div > span {
+  grid-area: label !important;
+  min-width: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.15 !important;
+}
+
+.sport-detail-list > div > strong,
+.sport-detail-list > div > a {
+  grid-area: value !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  font-size: 15px !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+.sport-detail-list > div > a {
+  color: #67e8f9 !important;
+}
+/* GO IRL place card instead of embedded map */
+.sport-map-preview {
+  display: none !important;
+}
+
+.sport-place-card {
+  margin: 14px 0 16px !important;
+  padding: 14px !important;
+  display: grid !important;
+  gap: 12px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(92,225,230,.22) !important;
+  background: rgba(92,225,230,.06) !important;
+}
+
+.sport-place-card span {
+  display: block !important;
+  color: var(--muted) !important;
+  font-size: 13px !important;
+  margin-bottom: 4px !important;
+}
+
+.sport-place-card strong {
+  display: block !important;
+  font-size: 18px !important;
+}
+/* GO IRL map cleanup and address link */
+.sport-map-preview,
+.sport-map-preview iframe {
+  display: none !important;
+}
+
+.sport-address-link {
+  color: #67e8f9 !important;
+  font-weight: 900 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+}
+
+
+
+.weather-detail-toggle {
+  display: grid !important;
+  grid-template-columns: 25px 1fr minmax(0, 1.5fr) !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 52px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  background: transparent !important;
+  color: var(--text) !important;
+  text-align: left !important;
+}
+
+.weather-detail-toggle svg {
+  width: 19px !important;
+  color: var(--lime) !important;
+}
+
+.weather-detail-toggle span {
+  color: var(--muted) !important;
+  font-size: 12px !important;
+}
+
+.weather-detail-toggle strong {
+  font-size: 13px !important;
+  text-align: right !important;
+  overflow-wrap: anywhere !important;
+}
+
+.weather-detail-card {
+  margin: 14px 0 16px !important;
+  padding: 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(201,255,61,.22) !important;
+  background: rgba(201,255,61,.06) !important;
+}
+
+.weather-detail-head {
+  display: grid !important;
+  gap: 4px !important;
+  margin-bottom: 12px !important;
+}
+
+.weather-detail-head span {
+  color: var(--muted) !important;
+  font-size: 13px !important;
+}
+
+.weather-detail-head strong {
+  font-size: 16px !important;
+}
+
+.weather-bars {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.weather-bar-row {
+  display: grid !important;
+  grid-template-columns: 46px 1fr 54px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12px !important;
+}
+
+.weather-bar-row meter {
+  width: 100% !important;
+}
+
+.weather-detail-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+  color: var(--muted) !important;
+  font-size: 12px !important;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+
+/* PLAN1152 profile photo controls */
+.profile-edit-avatar {
+  width: 152px;
+  height: 152px;
+  margin-top: 8px;
+  border-radius: 28px;
+  font-size: 30px;
+  box-shadow: 0 18px 42px rgba(0,0,0,.34);
+  cursor: pointer;
+}
+.profile-edit-avatar input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.profile-edit-avatar.is-busy {
+  pointer-events: none;
+  opacity: .7;
+}
+.profile-edit-avatar i {
+  right: -10px;
+  bottom: -10px;
+  width: 46px;
+  height: 46px;
+  border-width: 3px;
+  border-radius: 15px;
+}
+
+
+/* Event sheet UI polish: participants, three-line address, neutral coach action. */
+.sport-detail-list > .sport-location-row {
+  min-height: 118px !important;
+}
+
+.sport-location-block {
+  display: grid !important;
+  gap: 3px !important;
+  align-content: center !important;
+  min-height: 66px !important;
+  overflow: hidden !important;
+}
+
+.sport-location-city,
+.sport-location-address {
+  display: -webkit-box !important;
+  overflow: hidden !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 1 !important;
+}
+
+.sport-detail-list > .sport-detail-members-row {
+  grid-column: 1 / -1 !important;
+  grid-template-columns: 26px 1fr auto 22px !important;
+  grid-template-areas: "icon label value arrow" !important;
+  min-height: 64px !important;
+  width: 100% !important;
+  padding: 12px !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  text-align: left !important;
+}
+
+.sport-detail-members-row > svg:first-child { grid-area: icon !important; }
+.sport-detail-members-row > span { grid-area: label !important; }
+.sport-detail-members-row > strong { grid-area: value !important; }
+.sport-detail-members-row > svg:last-child { grid-area: arrow !important; }
+
+.coach-panel-button {
+  border: 1px solid rgba(255,255,255,.18) !important;
+  background: transparent !important;
+  color: var(--text-primary, #f7f7f7) !important;
+}
+
+
+/* Event sheet post-save polish. */
+.activity-sheet.sport-sheet {
+  padding-top: 30px !important;
+}
+
+.sport-sheet .sport-sheet-hero {
+  margin-top: -12px !important;
+  align-items: flex-start !important;
+}
+
+.sport-detail-list > .sport-date-row > span,
+.sport-detail-list > .sport-date-row > strong {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+
+.sport-location-block {
+  grid-template-rows: repeat(3, minmax(0, 1.25em)) !important;
+}
+
+.sport-location-city,
+.sport-location-address {
+  line-height: 1.25 !important;
+}
+
+.sport-detail-list > .sport-bring-row > strong {
+  display: -webkit-box !important;
+  min-height: calc(3 * 1.2em) !important;
+  max-height: calc(3 * 1.2em) !important;
+  overflow: hidden !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+.sport-detail-list > .sport-organizer-tips-row {
+  grid-column: 1 / -1 !important;
+  min-height: 64px !important;
+}
+
+.sport-detail-list > .sport-organizer-tips-row > strong {
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.post-save-actions {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+  z-index: 80 !important;
+  width: min(calc(100% - 96px), 390px) !important;
+  transform: translateX(-50%) !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.post-save-actions button {
+  min-width: 0 !important;
+  min-height: 40px !important;
+  padding: 6px 7px !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  border-radius: 12px !important;
+  background: rgba(8,12,10,.72) !important;
+  color: var(--text-primary, #f7f7f7) !important;
+  backdrop-filter: blur(10px) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+
+.post-save-actions button svg {
+  width: 15px !important;
+  height: 15px !important;
+  flex: 0 0 auto !important;
+}
+
+.post-save-actions button span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
