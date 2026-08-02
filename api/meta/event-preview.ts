@@ -22,10 +22,10 @@ const publicOrigin = () => {
 };
 
 export const metaEventPreviewCopy = {
-  ru: { calendar: "Добавить в календарь", map: "Открыть карту", telegram: "Присоединиться в Telegram" },
-  uk: { calendar: "Додати до календаря", map: "Відкрити мапу", telegram: "Приєднатися в Telegram" },
-  cs: { calendar: "Přidat do kalendáře", map: "Otevřít mapu", telegram: "Připojit se v Telegramu" },
-  en: { calendar: "Add to calendar", map: "Open map", telegram: "Join in Telegram" },
+  ru: { open: "Открыть событие", calendar: "В календарь" },
+  uk: { open: "Відкрити подію", calendar: "У календар" },
+  cs: { open: "Otevřít událost", calendar: "Do kalendáře" },
+  en: { open: "Open event", calendar: "Add to calendar" },
 } as const;
 
 const escapeHtml = (value: string) => value
@@ -95,9 +95,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
 <img class="hero" src="${escapeHtml(imageUrl)}" alt="" />
 <div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div>
 <div class="actions">
+<a class="btn primary" href="${escapeHtml(telegramUrl)}">${escapeHtml(labels.open)}</a>
 <a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">${escapeHtml(labels.calendar)}</a>
-${card.mapUrl ? `<a class="btn outline" href="${escapeHtml(card.mapUrl)}">${escapeHtml(labels.map)}</a>` : ""}
-<a class="btn primary" href="${escapeHtml(telegramUrl)}">${escapeHtml(labels.telegram)}</a>
 </div></div></article></main></body></html>`);
   } catch {
     return response.status(503).end("preview_unavailable");
