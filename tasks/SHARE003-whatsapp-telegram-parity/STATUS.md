@@ -3,34 +3,39 @@
 - Last verified: 2026-08-03
 - Task ID: `SHARE003`
 - Required display/name prefix: `Share003-`
-- Status: In Progress — corrective synchronized-head verification and provider smoke pending
+- Status: In Progress — physical provider smoke pending
 - Owner role: AI Fixer
 - Active branch: `fix/share003-whatsapp-telegram-parity-20260803`
 - Original base: `e3fd56624ccee6d0a441037b844d8d280b48b503`
 - Verified GitHub main: `252b6643c994209b5f9d6a93f57778ce6a4e9b36`
-- Previous clean branch head: `156609c3b6cc0ea71a6e9ae3453d1a7ac7d1b0b4`
-- Incorrect synchronization head retained in history: `9c98b314e2b6af70237063cc1dc4c37e070e0dbd`
-- Incorrect-base cause: recent commit `93b5bb26…` was treated as main without ref verification; PR readback exposed a 24-file diff
-- Corrective action: build tree from verified `main` plus Share003 runtime/docs and publish as fast-forward descendant; no force push
 - Runtime commit: `fcee7c4fa5a3d4c5f98e58671e767a7ea1dcf87d`
+- Previous clean head: `156609c3b6cc0ea71a6e9ae3453d1a7ac7d1b0b4`
+- Incorrect synchronization retained in history: `9c98b314e2b6af70237063cc1dc4c37e070e0dbd`
+- Corrected synchronized implementation head: `6b75ff25149a3d7e7f181ff375fafa8dc5a39925`
+- Correction method: verified-main tree + Share003 blobs, normal fast-forward ref update, no force push
 - Pull request: Draft PR #608 — https://github.com/vitvolny26-art/Go-IRL-1.1/pull/608
-- Previous exact-head CI: run `30841936889` — PASS
-- Tests on previous exact head: 140 files / 664 tests; focused card share 13 PASS; preview parity 2 PASS
+- PR readback at corrected head: open, Draft, mergeable, unmerged
+- Compare against main: ahead 5 / behind 0
+- Changed files: 11, all limited to Share003 runtime/tests/task evidence/report
+- Corrected exact-head CI: run `30855513385`, job `91825484091` — PASS
+- Repository check: PASS
+- Diff check: PASS
+- Test: PASS
 - Typecheck: PASS
-- Lint: PASS, 0 errors; one pre-existing warning outside scope
-- Build: PASS, 344 modules
-- Bundle budget: PASS, 12 JavaScript chunks
+- Lint: PASS
+- Build: PASS
+- Bundle budget: PASS
 - Product decision: organic WhatsApp sharing continues without company registration or documentary Meta verification
 - Business/Cloud API: out of scope; governed separately by WABA001
 - Organic route: `wa.me` intent with one public event-preview URL
 - Company registration requirement for Open Graph card generation: none asserted
 - PR Preview: not found in accessible Vercel deployments
 - Accessible Vercel deployments: production `main` only; not used as branch-rendering evidence
+- Drive report mirror updated and read back
 - ClickUp: https://app.clickup.com/t/869e3k1v5
-- Drive task folder: https://drive.google.com/drive/folders/1kJWNUSyKHj9hfMTVEOKyvwxTVEoRL3EP
-- Drive parity evidence: https://docs.google.com/document/d/1pSk8pSjttpgMFSd06WzD3UpVjYPk_q1t-jZcCUVBOBQ/edit
+- ClickUp update/readback in this pass: unavailable because connector returned explicit rate limit; no unverified write sent
 - Merge: not performed
 - Deployment: not performed
 - Production configuration: unchanged
 - Blocker: physical Android/iOS/Web WhatsApp preview and cache verification
-- Next action: publish/read back the corrective synchronization head, verify PR file scope and exact-head CI, then collect physical provider evidence.
+- Next action: run bounded physical provider smoke and record RU/UK/CS/EN rendering, actions, app switching and cache behavior.
