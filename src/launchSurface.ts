@@ -1,3 +1,5 @@
+import { consumeLaunchSurfaceRequest } from "./launchNavigation";
+
 export type LaunchSurface = "launch" | "app";
 
 type LaunchLocation = {
@@ -15,8 +17,8 @@ export const resolveLaunchSurface = ({
 }: LaunchLocation): LaunchSurface => {
   const normalizedPath = pathname.replace(/\/+$/, "");
   if (normalizedPath !== "") return "app";
+  if (consumeLaunchSurfaceRequest()) return "launch";
   if (telegramStartParam || new URLSearchParams(search).has("startapp")) return "app";
   if (hash === "#activities" || hash === "#services") return "app";
   return "launch";
 };
-
