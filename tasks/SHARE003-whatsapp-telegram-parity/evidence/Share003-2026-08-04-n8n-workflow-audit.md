@@ -1,89 +1,93 @@
 ---
 title: Share003 n8n Workflow Audit Evidence
-date: 2026-08-04
 owner: n8n Automation Engineer / AI Fixer
-status: Blocked
+status: Verified
 source_of_truth: false
+last_review: 2026-08-04
+next_review: 2026-08-11
 ---
 
-# Share003 — n8n workflow audit evidence
+# Share003- n8n workflow audit
 
 ## Scope
 
-Read-only verification of whether n8n is a runtime dependency of organic WhatsApp sharing:
+Read-only audit of the organic WhatsApp flow:
 
 `GO IRL share action -> wa.me intent -> public event-preview URL -> WhatsApp-generated link preview`
 
-No workflow was edited, activated, deactivated, executed, or tested. No production webhook was called. No credential value, token, phone number, WABA ID, raw personal data, or raw production payload was read or stored.
+No workflow was changed or executed. No webhook was called. No credential values or production payloads were read.
 
-## Repository reference
+## Sources inspected
 
-- Repository: `vitvolny26-art/Go-IRL-1.1`
-- Branch: `fix/share003-whatsapp-telegram-parity-20260803`
-- Verified starting head: `4ced0fbfe5a667174ae829f4073e3c58dd96a240`
-- Branch comparison result before evidence commit: identical to the stated head
-- Draft PR reference: `#608`
-- ClickUp reference: `869e3k1v5`
+- Live n8n inventory: 34 current workflows, five active.
+- Required keyword searches in workflow metadata.
+- Full node/configuration details for all five active workflows.
+- Full details for the only deployment/Vercel candidate: `6khfY6PmKkIVB9Qv`.
+- Latest 200 execution metadata records from 3,136 records; no payload data.
+- Repository branch `fix/share003-whatsapp-telegram-parity-20260803` and PR #608.
+- `src/cardShare.ts` at the branch head.
 
-## n8n inventory and metadata search
+## Former blocker
 
-The read-only n8n inventory returned 34 workflows. Exact workflow metadata searches returned zero matches for:
+`B6RqcoG2DEDRYlAT` / `GovKit Agent Deployment` is absent from the current 34-workflow inventory. Exact ID and name searches return zero results. This removes the prior stale-inventory blocker; no claim is made about whether it was deleted or archived.
 
-- `Share003`
-- `SHARE003`
-- `WhatsApp`
-- `wa.me`
-- `event-preview`
-- `event sharing`
-- `Meta`
-- `Open Graph`
-- `Telegram share`
-- `social sharing`
+## Keyword results
 
-These zero-result searches are not treated as proof of absence because the search endpoint covers workflow metadata and does not prove that node parameters are free of those terms.
+Metadata searches returned no workflows for `Share003`, `SHARE003`, `WhatsApp`, `wa.me`, `event-preview`, `event sharing`, `Meta`, `Open Graph`, `Telegram share`, or `social sharing`.
 
-## Workflows inspected before blocker
+This was not used alone as proof. All active workflows and the deployment/Vercel candidate were inspected at node level.
 
-| Workflow ID | Name | Status | Trigger / webhook | Relevant nodes and external calls | Credential references | Share003 relationship | Conclusion |
-|---|---|---|---|---|---|---|---|
-| `925CFxQK2lRRIWwa` | GO IRL ChatGPT Bridge | active | Webhook; path `go-irl-archivist` | Receives an archivist mission, invokes the Chief Archivist workflow, returns an archivist response; Google Drive/Docs-related handling | Credential object names were not recorded; no values were read | No verified WhatsApp, Meta, `wa.me`, event-preview, Open Graph, share-card, localization, or cache path | `unrelated` |
-| `GgNDCkn0ppU7VJJq` | GO IRL Chief Archivist | active | Execute Workflow Trigger; no public Share003 webhook identified | Google Drive, Google Docs, GitHub API, ClickUp API, Telegram report delivery | Credential object names were not recorded; no values were read | Documentation/report orchestration only; no verified organic share runtime path | `unrelated` |
-| `ulCZrP3Ci0YJy1TY` | GO IRL Orchestrator Telegram | active | Telegram Trigger | Authorizes a Telegram command, builds an archivist payload, invokes Chief Archivist, sends a Telegram response | Credential object names were not recorded; no values were read | Telegram control/report workflow, not Telegram or WhatsApp event sharing | `unrelated` |
-| `B6RqcoG2DEDRYlAT` | GovKit Agent Deployment | active in inventory | Not verifiable | Workflow details request returned `Workflow not found or you don't have permission to access it.` | Not inspected | Cannot determine whether node parameters or runtime calls affect Share003 | `not verified` |
-| `iL1g1ZZFPhRpVRPx` | Generate n8n Workflow Stats Report | active in inventory | Not fully inspected because audit stopped at the access blocker | Not fully inspected | Not inspected | Not determined | `not verified` |
+## Relevant workflow inspection
 
-The remaining inventory entries were not fully inspected after the required stop condition was reached.
+| ID | Name | Status | Trigger | Relevant behavior | Credential references | Share003 conclusion |
+|---|---|---|---|---|---|---|
+| `ulCZrP3Ci0YJy1TY` | GO IRL — Unified Production Orchestrator — Index Resolver Pilot | active | governance/orchestrator triggers | Repository/document governance; no WhatsApp, Meta, preview or share path | none relevant | unrelated |
+| `GgNDCkn0ppU7VJJq` | GO IRL — Chief Archivist Read-Only | active | chat trigger | Sealed read-only AI review; no source-write or sharing nodes | none relevant | unrelated |
+| `925CFxQK2lRRIWwa` | GO IRL ChatGPT Bridge | active | private webhook/chat bridge | Archivist request/response bridge; no event-sharing API | none relevant | unrelated |
+| `qrUBzEfnj1K9myQJ` | DZ 6 — Call Analytics Agent | active | hosted chat trigger | Call-statistics agent calling `iL1g1ZZFPhRpVRPx` | OpenRouter reference only; no values read | unrelated |
+| `iL1g1ZZFPhRpVRPx` | DZ 6 — Get call stats | active | Execute Workflow Trigger | Reads call-analysis table and returns aggregate statistics | none relevant | unrelated |
+| `6khfY6PmKkIVB9Qv` | GO IRL VPS + Vercel Deploy | inactive | manual trigger in current version | Deploys repository main and invokes a Vercel deploy hook. It does not receive, transform, shorten or generate event-share URLs. | SSH credential reference exists; name/value not copied | related to deployment, not required at runtime |
 
-## Executions inspected
+No current workflow sends WhatsApp Business/Cloud API messages, calls `wa.me`, generates Open Graph event cards, replaces `/api/meta/event-preview`, changes share localization/image/cache behavior, or intercepts an ordinary share action.
 
-None. Execution metadata inspection was not started after the active-workflow access failure. No raw execution payload was requested.
+## Execution metadata
 
-## Required verification status
+Latest 200 records contain executions only for:
 
-| Required check | Status |
+- `ulCZrP3Ci0YJy1TY` — governance/orchestrator activity;
+- `6khfY6PmKkIVB9Qv` — historical deployment runs.
+
+Representative redacted metadata:
+
+| Execution ID | Timestamp UTC | Status | Workflow ID | Summary |
+|---|---|---|---|---|
+| `7920` | 2026-08-03T23:25:18.233Z | success | `ulCZrP3Ci0YJy1TY` | governance trigger; no payload inspected |
+| `7897` | 2026-08-03T22:59:49.751Z | success | `6khfY6PmKkIVB9Qv` | deployment run; no payload inspected |
+| `7876` | 2026-08-03T21:57:30.822Z | success | `6khfY6PmKkIVB9Qv` | historical webhook-mode deployment run; current workflow is inactive/manual |
+
+No execution maps to Share003, WhatsApp delivery, preview generation, URL transformation, localization, card-image generation or cache control.
+
+## Repository runtime evidence
+
+`src/cardShare.ts` constructs the WhatsApp target directly as `https://wa.me/?text=...`. The text contains the public URL built by `buildMetaEventPreviewUrl()`, which resolves to `/api/meta/event-preview?event=<uuid>&language=<language>`. No n8n URL or webhook appears in this path.
+
+## Required checks
+
+| Check | Result |
 |---|---|
-| Workflow substitutes or shortens the event-preview URL | Not fully verified |
-| Workflow sends WhatsApp messages through Business/Cloud API | Not fully verified |
-| Workflow generates the card instead of `api/meta/event-preview` | Not fully verified |
-| Workflow invokes a production webhook during ordinary `wa.me` sharing | Not fully verified |
-| Active workflow can change Share003 behavior after merge | Not fully verified |
-| Duplicate or stale social-sharing automation exists | Not fully verified |
-| Share003 execution records exist | Not verified |
+| n8n substitutes or shortens event-preview URL | No |
+| n8n sends through WhatsApp Business/Cloud API | No |
+| n8n generates the card instead of `/api/meta/event-preview` | No |
+| ordinary `wa.me` sharing calls a production n8n webhook | No |
+| active workflow can change Share003 behavior after merge | No |
+| duplicate/stale social-sharing automation exists | No current workflow found |
 
-## Runtime dependency conclusion
+## Conclusion
 
-No Result A or Result B is asserted.
+**Result A — n8n is not a runtime dependency of Share003.**
 
-The three fully inspected active GO IRL workflows above are unrelated to organic WhatsApp sharing. However, the full n8n estate could not be verified because an active workflow returned by the inventory could not be opened. Therefore absence of an n8n runtime dependency is not established.
+The verified path is frontend share construction -> direct `wa.me` intent -> public `/api/meta/event-preview` URL -> WhatsApp-generated preview. The inactive deployment workflow can publish repository code but is not part of an individual share request.
 
-## Blocker
+## Remaining gate
 
-`B6RqcoG2DEDRYlAT` was returned as active by the n8n workflow inventory, but `get_workflow_details` returned:
-
-`Workflow not found or you don't have permission to access it.`
-
-This is an access or inventory-consistency blocker. Per the audit stop rule, verification stopped without inspecting executions or declaring Result A/B.
-
-## Next verified step
-
-Restore read access to `B6RqcoG2DEDRYlAT`, or confirm through n8n administration that the inventory entry is stale and no longer reachable. Then rerun the complete read-only workflow-node and execution-metadata audit from the beginning before drawing a Share003 runtime conclusion.
+Physical WhatsApp verification on Android, iOS and Web/Desktop remains separate from this n8n dependency result.
