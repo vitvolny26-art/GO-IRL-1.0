@@ -33,6 +33,7 @@ import {
 import { eventDurationLabel } from "../eventCardPresentation";
 import { buildDurationOptions, formatDurationOption } from "../durationOptions";
 import { getEventSheetBackgroundStyle } from "../eventSheetBackground";
+import { joinedParticipants } from "../cardParticipantsDropdown";
 
 type CoachRequestsChangedDetail = { activityId?: string };
 
@@ -108,13 +109,11 @@ const sportAvatarForActivity = (activity: Activity, language: Language, meta: Sp
   sportAvatar([meta.sportType, activity.activity[language], activity.title[language]].filter(Boolean).join(" "));
 
 const normalizeActivityMembers = (activity: Activity) => {
-  const organizer = { userKey: activity.organizerKey, name: activity.organizer, status: "joined" as const };
-  const otherMembers = activity.members.filter((member) => member.userKey !== activity.organizerKey);
-  const joinedMembers = [organizer, ...otherMembers.filter((member) => member.status === "joined")];
+  const joinedMembers = joinedParticipants(activity);
   return {
     joinedMembers,
-    waitingMembers: otherMembers.filter((member) => member.status === "waiting"),
-    pendingMembers: otherMembers.filter((member) => member.status === "pending"),
+    waitingMembers: activity.members.filter((member) => member.status === "waiting"),
+    pendingMembers: activity.members.filter((member) => member.status === "pending"),
     participantCount: Math.max(activity.participants, joinedMembers.length),
   };
 };
@@ -202,7 +201,7 @@ function SportDetailsSkeleton() {
   );
 }
 
-export function SportActivityCard({ activity, language, onOpen, onJoin, onOpenMembers }: SportCardProps) {
+export function SportActivityCard({ activity, language, onOpen, onJoin }: SportCardProps) {
   const { joinedIds, waitingIds, pendingIds } = useAppStore();
   const t = getTranslation(language);
   const meta = getSportMetadata(activity);
@@ -260,8 +259,6 @@ export function SportActivityCard({ activity, language, onOpen, onJoin, onOpenMe
   const showCoachAction = interaction.showHelperAction && (isOrganizer || coachState === "confirmed");
   const shareTitle = cleanSportLabel(activity.activity[language]);
   const shareDate = `${compactDateLabel(activity.date, language)}${formatEventTime(activity.time) ? ` · ${formatEventTime(activity.time)}` : ""}`;
-  const { participantCount } = normalizeActivityMembers(activity);
-
   useEffect(() => {
     let active = true;
 
@@ -319,7 +316,6 @@ export function SportActivityCard({ activity, language, onOpen, onJoin, onOpenMe
         <EventCardMetaItem icon={<CalendarDays />} caption={t.date} value={shareDate} ariaLabel={t.addToGoogleCalendar} onClick={() => openActivityCalendar(activity, language)} />
         <EventCardMetaItem icon={<Ticket />} caption={t.price.split(",")[0]} value={activity.price ? `${activity.price} Kč` : t.free} />
         <EventCardMetaItem icon={<MapPin />} caption={t.address} value={mapLabel} ariaLabel={`${t.address}: ${mapLabel}`} onClick={() => openActivityMap(activity)} />
-        <EventCardMetaItem icon={<UsersRound />} caption={t.participants} value={`${participantCount} / ${activity.capacity}`} ariaLabel={t.participants} onClick={() => onOpenMembers ? onOpenMembers(activity) : onOpen(activity)} />
         <OrganizerAvatarAction organizerKey={activity.organizerKey} organizerName={activity.organizer} />
       </div>
       <div className="activity-card-footer compact-sport-actions">
