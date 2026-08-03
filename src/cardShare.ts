@@ -1,3 +1,5 @@
+import type { Language } from "./types";
+
 export type CardShareChannel = "telegram" | "whatsapp" | "messenger" | "facebook" | "instagram";
 
 export type CardShareContent = {
@@ -5,12 +7,23 @@ export type CardShareContent = {
   date: string;
   address: string;
   url: string;
+  language?: Language;
 };
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const fallbackOrigin = "https://go-irl-1-0.vercel.app";
 const shareTextMarker = "GO IRL:";
 export const metaAppId = "1348703396728256";
+
+export const whatsappShareCopy = {
+  ru: { open: "Открыть событие" },
+  uk: { open: "Відкрити подію" },
+  cs: { open: "Otevřít událost" },
+  en: { open: "Open event" },
+} as const satisfies Record<Language, { open: string }>;
+
+const resolveShareLanguage = (content: Pick<CardShareContent, "language">): Language =>
+  content.language ?? "ru";
 
 export const normalizeCardShareUrl = (value: string) => {
   const trimmed = value.trim();
@@ -36,7 +49,7 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
 
     const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
     previewUrl.searchParams.set("event", eventId);
-    previewUrl.searchParams.set("language", "ru");
+    previewUrl.searchParams.set("language", resolveShareLanguage(content));
     return previewUrl.toString();
   } catch {
     return content.url;
@@ -50,6 +63,14 @@ export const buildOrganicCardShareContent = (content: CardShareContent) => ({
   text: [content.date, content.address].filter(Boolean).join("\n"),
   url: buildMetaEventPreviewUrl(content),
 });
+
+export const buildWhatsAppShareText = (content: CardShareContent) => {
+  const normalizedContent = { ...content, url: normalizeCardShareUrl(content.url) };
+  const previewUrl = buildMetaEventPreviewUrl(normalizedContent);
+  const labels = whatsappShareCopy[resolveShareLanguage(normalizedContent)];
+  const summary = buildCardShareText({ ...normalizedContent, url: "" });
+  return [summary, `${labels.open}: ${previewUrl}`].filter(Boolean).join("\n\n");
+};
 
 export const buildFacebookShareTarget = (content: CardShareContent) => {
   const target = new URL("https://www.facebook.com/sharer/sharer.php");
@@ -87,15 +108,13 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
   const normalizedContent = { ...content, url: normalizeCardShareUrl(content.url) };
-  const organicContent = buildOrganicCardShareContent(normalizedContent);
-  const message = buildCardShareText({ ...normalizedContent, url: organicContent.url });
   if (channel === "telegram") {
     const target = new URL("https://t.me/share/url");
     target.searchParams.set("url", normalizedContent.url);
     target.searchParams.set("text", buildCardShareText({ ...normalizedContent, url: "" }));
     return target.toString();
   }
-  if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(buildWhatsAppShareText(normalizedContent))}`;
   if (channel === "facebook") return buildFacebookShareTarget(normalizedContent);
   return buildMessengerSendTarget(normalizedContent);
 };
