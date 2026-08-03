@@ -21,12 +21,11 @@ AI Fixer.
 
 ## Sources inspected
 
-- current GitHub `main`, open PRs and WABA-related code/docs;
-- current Drive messaging/reminders status;
+- current GitHub `main`, Draft PR #611 and WABA-related code/docs;
 - ClickUp task `869e81k1r`;
-- current Vercel project/deployment metadata and scoped logs;
-- current Meta-maintained Cloud API requirements;
-- direct owner correction about token creation and unchanged release state.
+- Drive messaging/reminders status and WABA001 checklist;
+- Vercel project, production deployments, authenticated URL fetch and scoped runtime logs;
+- direct owner correction about token creation and unchanged WABA001 release state.
 
 ## Files inspected
 
@@ -34,7 +33,6 @@ AI Fixer.
 - `docs/reports/2026-07-23-whatsapp-number-readiness.md`
 - `docs/reports/2026-07-23-whatsapp-review-recheck.md`
 - `api/whatsapp/webhook.ts`
-- `api/_shared/vercel-handler.ts`
 - `api/_shared/provider-webhook.ts`
 - `api/_shared/provider-messages.ts`
 - `src/whatsapp/payload-builders.ts`
@@ -44,18 +42,38 @@ AI Fixer.
 
 ## Runtime evidence
 
-- Vercel project: `go-irl-1-1`.
-- Latest inspected production deployment: `dpl_775uXa5ws7nnUvHugTRm5c2PgzAW` — READY.
-- Broad 30-day WhatsApp log query: response could not be verified because the query timed out.
-- Scoped current-deployment query for the last 24 hours: no WhatsApp-matching entries.
-- No absence claim was inferred from the empty scoped result.
-- No live WhatsApp message was sent.
+Current production deployment at the latest verification:
+
+- Vercel project: `go-irl-1-1`;
+- deployment: `dpl_BjDaCwagW1hvwhB9SUigj25fc18b`;
+- state: READY;
+- target: production;
+- deployed main commit: `db9421f8234107f4cf5ae45ee3e2fdad6e9796d2`.
+
+A single read-only negative-path webhook probe was issued through the authenticated Vercel connector. It used `hub.mode=subscribe`, an intentionally invalid non-secret verify token and a non-sensitive challenge.
+
+Verified response:
+
+- HTTP `403 Forbidden`;
+- body `{"error":"verification_failed"}`;
+- Vercel response date `2026-08-03T20:02:59Z`.
+
+Scoped runtime log readback verified:
+
+- `2026-08-03T20:02:58Z GET /api/whatsapp/webhook 403`;
+- deployment `dpl_BjDaCwagW1hvwhB9SUigj25fc18b`;
+- source `serverless`;
+- cache `MISS`.
+
+The inspected code reads `META_VERIFY_TOKEN` with `requireEnv` before returning the controlled mismatch response. Therefore this probe verifies that the production route is deployed and `META_VERIFY_TOKEN` is present/resolvable. Its value was not read or returned.
+
+No live WhatsApp message was sent.
 
 ## Findings
 
 The existing code already implements the baseline Cloud API boundary:
 
-- GET verification and POST signature verification;
+- GET webhook verification and POST signature verification;
 - inbound WhatsApp parsing;
 - START/СТАРТ and STOP/СТОП consent;
 - durable inbound idempotency;
@@ -65,23 +83,22 @@ The existing code already implements the baseline Cloud API boundary:
 - localized approved-template reminders/lifecycle notifications;
 - explicit `REMINDER_ENABLED_PROVIDERS` release gate.
 
-The principal unverified boundary is current external account readiness, not missing baseline code.
-
 Historical durable evidence says webhook/messages subscription was configured and both `go_irl_event_reminder` and `go_irl_event_update` later became Active. The last durable phone audit still had only the Meta test number. Historical evidence is not current account-state proof.
 
 ### Owner correction — token state
 
-The owner confirmed that Meta/WhatsApp token or tokens were created. This corrects the earlier overly broad wording that could be read as no token creation.
+The owner confirmed that Meta/WhatsApp token or tokens were created.
 
-Verified from the owner statement:
+Verified:
 
 - token creation occurred;
-- merge was not performed;
-- deployment was not performed;
-- production configuration was not changed;
-- GitHub created no workflow runs or combined status checks for the docs-only head, so CI is neither PASS nor FAIL.
+- no token value or secret was supplied or stored;
+- production configuration was not changed by WABA001;
+- provider allowlist was not changed;
+- no live WhatsApp message was sent;
+- no WABA001 merge or deployment was performed.
 
-Not yet verified:
+Still unverified:
 
 - temporary versus permanent token type;
 - dedicated system-user ownership;
@@ -89,62 +106,69 @@ Not yet verified:
 - `whatsapp_business_messaging` permission;
 - `whatsapp_business_management` permission;
 - expiry and rotation ownership;
-- current server-only Vercel Production presence;
-- validity for the intended WABA and production phone number.
+- active WABA/production-number validity;
+- current server-only `WHATSAPP_ACCESS_TOKEN` presence;
+- `META_APP_SECRET` and `WHATSAPP_PHONE_NUMBER_ID` production readiness.
 
-No token value or other secret was supplied or stored.
+### Scope clarification
+
+Unrelated production deployments from current `main` were observed. They are not attributed to WABA001. WABA001 itself remains documentation/evidence-only and unmerged.
 
 ## Changes made
 
-- created the WABA001 task branch/folder;
-- saved initial audit evidence;
-- created a separate owner-correction evidence record;
-- created the owner-readiness checklist;
-- mirrored the report to Drive;
-- updated and read back ClickUp as WhatsApp-only / In Progress / High;
-- opened Draft PR #611.
+- created and maintained the WABA001 task workspace;
+- saved initial audit and owner-correction evidence;
+- executed one bounded read-only negative-path webhook verification;
+- saved production webhook evidence;
+- updated STATUS and task ROADMAP;
+- maintained the redacted owner-readiness checklist;
+- updated ClickUp and Drive.
 
-No runtime code, production configuration, provider allowlist, auth, RLS, SQL, migrations or production data were changed. No merge, deployment or live WhatsApp message occurred.
+No runtime code, production configuration, provider allowlist, auth, RLS, SQL, migrations or production data were changed.
 
 ## Checks
 
-For the documentation-only PR heads inspected:
+Application code checks were not run because no application code changed.
 
-- changes were limited to WABA001 task documentation/evidence;
-- GitHub workflow runs: none registered;
-- combined commit status checks: none registered;
-- result: CI was not created for the documentation head; no PASS or FAIL is claimed.
+For the WABA001 docs-only heads inspected, GitHub registered no workflow run or combined status check. Therefore no CI PASS or FAIL is claimed.
 
-No code change occurred, so local code gates were not run in this audit phase.
+The runtime verification is independently evidenced by the authenticated HTTP response and scoped Vercel log readback.
 
 ## Evidence
 
 - `tasks/WABA001-whatsapp-business-release-gate/evidence/2026-08-03-initial-readiness-audit.md`
 - `tasks/WABA001-whatsapp-business-release-gate/evidence/2026-08-03-owner-correction-token-state.md`
+- `tasks/WABA001-whatsapp-business-release-gate/evidence/2026-08-03-production-webhook-readonly-probe.md`
 - owner checklist: https://docs.google.com/document/d/1Ma0zKGAbcBDmrqKmQHLTGZplej90NIVDsOs1syMDOPA/edit
 
 ## GitHub
 
 Repository: `vitvolny26-art/Go-IRL-1.1`
 
-Base: `7068b37adeb8756315ce2f6e5fe49a3d2c744273`
+Task base: `7068b37adeb8756315ce2f6e5fe49a3d2c744273`
+
+Current production main observed through Vercel: `db9421f8234107f4cf5ae45ee3e2fdad6e9796d2`
 
 ## Branch
 
 `task/waba001-whatsapp-business-release-gate-20260803`
+
+## Commit
+
+The production-probe evidence, STATUS, ROADMAP and report are grouped in the next WABA001 documentation commit.
 
 ## Pull request
 
 Draft PR #611:
 https://github.com/vitvolny26-art/Go-IRL-1.1/pull/611
 
-Verified open, Draft and unmerged. No merge authorized.
+Keep open, Draft and unmerged. No merge authorized.
 
 ## ClickUp
 
 https://app.clickup.com/t/869e81k1r
 
-Verified scope remains WhatsApp-only, status `In Progress`, priority `High`.
+Scope remains WhatsApp-only, status `In Progress`, priority `High`.
 
 ## Google Drive
 
@@ -159,14 +183,14 @@ https://docs.google.com/document/d/1Ma0zKGAbcBDmrqKmQHLTGZplej90NIVDsOs1syMDOPA/
 
 ## Blockers
 
-No authenticated Meta Business/WhatsApp Manager connector is available in this session. Token creation is confirmed by the owner, but token production readiness and current WABA/app/number/template/subscription state still require redacted verification.
+No authenticated Meta Business/WhatsApp Manager connector is available in this session. Token creation and production verify-token presence are confirmed, but token permissions/assets/type, positive Meta callback, WABA/app subscription, production-number readiness and outbound delivery remain unverified.
 
 A separate explicit owner approval is required before production configuration, number registration/migration, credential rotation, live messaging, provider enablement, merge or deployment.
 
 ## Roadmap update
 
-Phase 1 audit and durable setup are complete. Phase 2 is external asset verification. The token-existence item is partially resolved; token classification, permissions and deployment presence remain pending. No runtime code change is justified unless fresh evidence or controlled smoke exposes a bounded defect.
+Phase 2 advanced: the production webhook route and `META_VERIFY_TOKEN` negative path are now verified. The next boundary is Meta account/token/number verification, not application code.
 
 ## Next verified step
 
-Complete the owner-readiness checklist using only `PASS`, `BLOCKED`, `NOT FOUND` or `NOT CHECKED`. For the token section, record statuses only—never token values. Then request approval for the exact Meta/Vercel actions and one controlled live-recipient smoke.
+Provide redacted statuses only for token type, system user, permissions, assigned assets, expiry/rotation, intended WABA/number and server-only access-token presence. Then verify positive Meta callback/subscription state. Never paste token values or provider identifiers.
