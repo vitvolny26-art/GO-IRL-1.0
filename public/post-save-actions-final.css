@@ -1,0 +1,54 @@
+/* Final production override for the post-save action row. */
+.post-save-actions {
+  display: grid !important;
+  grid-template-columns: 56px minmax(168px, 1fr) 56px !important;
+  gap: 12px !important;
+  width: min(calc(100% - 24px), 420px) !important;
+  padding: 8px !important;
+  align-items: center !important;
+  background: rgba(9, 10, 12, 0.96) !important;
+  border: 1px solid rgba(201, 255, 61, 0.28) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.48) !important;
+}
+
+.post-save-actions > .card-share-action,
+.post-save-actions > button {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.post-save-actions > .card-share-action {
+  display: block !important;
+}
+
+.post-save-actions > .card-share-action .sport-card-icon-action,
+.post-save-actions > button {
+  width: 100% !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  padding: 0 !important;
+  color: var(--lime) !important;
+  background: rgba(201, 255, 61, 0.16) !important;
+  border: 1px solid rgba(201, 255, 61, 0.46) !important;
+  border-radius: 14px !important;
+}
+
+.post-save-actions > button:nth-of-type(1) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+  padding: 0 18px !important;
+  font-size: 12px !important;
+}
+
+.post-save-actions > button:nth-of-type(2) {
+  display: grid !important;
+  place-items: center !important;
+}
