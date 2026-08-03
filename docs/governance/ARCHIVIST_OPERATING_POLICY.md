@@ -3,8 +3,8 @@ title: Archivist Operating Policy
 owner: Technical Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-16
-next_review: 2026-07-23
+last_review: 2026-08-03
+next_review: 2026-08-10
 ---
 
 # Archivist Operating Policy
@@ -27,10 +27,11 @@ Governance cannot override verified runtime evidence. Conflicts must be recorded
 
 ## Report lifecycle
 
-1. Automation creates a Draft report in `Go IRL/AI Reports/Inbox`.
-2. A human reviews the evidence and proposed action.
-3. Approved reports move to `Reviewed`; rejected reports move to `Rejected`.
-4. Source-of-truth changes require a reviewed GitHub pull request.
+1. Automation creates a non-authoritative report in `Go IRL/AI Reports/Chief Archivist - Technical Lead/YYYY-MM-DD`.
+2. A human reviews the evidence and any proposed action before an approval-gated write.
+3. Historical reports remain preserved. A later report may classify them as current, stale, advisory, superseded, or blocked without rewriting their original claims.
+4. A report may be classified as internally inconsistent only from direct subject-level evidence. A quotation or evidence row about another report is not proof that the quoting report has the same defect.
+5. Source-of-truth changes require a reviewed GitHub pull request.
 
 ## Automation boundaries
 
