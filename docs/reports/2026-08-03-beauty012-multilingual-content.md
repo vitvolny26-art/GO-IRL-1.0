@@ -27,7 +27,7 @@ Implement Beauty012 Slice B: let a professional maintain RU, UK, CS and EN profi
 
 ## Findings
 
-The current Beauty model stores one service name and no professional description. The public directory RPC is language-neutral, so the client cannot request translated professional content. Existing production may not yet have the new RPCs, therefore the application requires a compatibility fallback until the additive migration is explicitly applied.
+The previous Beauty model stored one service name and no professional description. The public directory RPC was language-neutral, so the client could not request translated professional content. Existing production does not yet have the new RPCs, therefore the application includes a compatibility fallback until the additive migration is explicitly applied.
 
 ## Changes made
 
@@ -45,18 +45,22 @@ The current Beauty model stores one service name and no professional description
 
 ## Checks
 
-Pending exact-head GitHub Actions:
+Exact-head GitHub Actions run `30853648988`, job `91819474658`: PASS.
 
-- repository check;
-- diff check;
-- tests;
-- typecheck;
-- lint;
-- build;
-- bundle budget.
+- repository hygiene: PASS, 1189 tracked files;
+- diff check: PASS;
+- tests: PASS, 141 files / 663 tests;
+- Beauty setup model: 7 PASS;
+- Services professional directory: 5 PASS;
+- Beauty professional profile model: 2 PASS;
+- Staff OS: PASS;
+- typecheck: PASS;
+- lint: PASS with zero errors and one pre-existing warning outside scope;
+- build: PASS, 349 modules;
+- bundle budget: PASS, 12 JavaScript chunks.
 
 The migration has not been applied to production. No RLS policy, auth flow, secret, environment variable or production configuration was changed.
 
 ## Next step
 
-Fix any exact-head CI failures. Keep the PR unmerged and undeployed until CI is green. Apply the additive Supabase migration only after a separate explicit owner approval, verify the versioned RPCs, then merge and deploy the application against the migrated schema.
+Keep PR #621 Draft and undeployed. Apply `20260803230500_beauty012_multilingual_content.sql` only after a separate explicit owner approval, run `supabase/verify_beauty012_multilingual_content.sql`, then mark the PR ready, merge and deploy the application against the migrated schema.
