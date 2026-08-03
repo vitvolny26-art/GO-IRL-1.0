@@ -1,4 +1,4 @@
-import { isValidBeautyPublicSlug, normalizeBeautyPublicSlug } from "./beauty/beautyPublicSlug";
+import { isValidBeautyPublicSlug } from "./beauty/beautyPublicSlug";
 import { getTelegramInitData, getTelegramWebApp } from "./telegram";
 import type { Language } from "./types";
 import type { PreparedTelegramShareResult } from "./telegramPreparedShare";
@@ -10,7 +10,7 @@ const beautySlugFromUrl = (value: string) => {
       : window.location.origin;
     const pathname = new URL(value, origin).pathname;
     const match = pathname.match(/^\/beauty\/([^/?#]+)\/?$/i);
-    const slug = normalizeBeautyPublicSlug(decodeURIComponent(match?.[1] || ""));
+    const slug = String(match?.[1] ? decodeURIComponent(match[1]) : "").trim().toLowerCase();
     return isValidBeautyPublicSlug(slug) ? slug : "";
   } catch {
     return "";
