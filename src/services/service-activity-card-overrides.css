@@ -1,0 +1,29 @@
+.service-activity-card .service-master-avatar {
+  padding: 2px !important;
+  place-items: stretch !important;
+}
+
+.service-activity-card .service-master-avatar > span {
+  width: 100%;
+  height: 100%;
+  min-height: 52px;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.service-card-calendar-popover {
+  right: 14px;
+  left: 14px;
+  width: auto;
+}
+
+@media (max-width: 420px) {
+  .service-activity-card .service-master-avatar > span {
+    min-height: 50px;
+  }
+
+  .service-card-calendar-popover {
+    right: 10px;
+    left: 10px;
+  }
+}

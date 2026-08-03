@@ -1,0 +1,21 @@
+.beauty-appointment-card:has(.status-pending) {
+  position: relative;
+  padding-top: 36px;
+  border-color: var(--beauty-gold);
+  box-shadow: 0 0 0 1px rgba(216, 177, 90, 0.22), 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.beauty-appointment-card:has(.status-pending)::before {
+  content: "Новый запрос на бронирование";
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  padding: 4px 8px;
+  border: 1px solid rgba(216, 177, 90, 0.72);
+  border-radius: 999px;
+  background: rgba(216, 177, 90, 0.12);
+  color: #ffe3a1;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+}
