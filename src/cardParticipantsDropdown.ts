@@ -95,7 +95,7 @@ const syncDropdownWidth = (dropdown: HTMLElement) => {
   const headerWidth = titleWidth + countWidth + 16;
   const sheet = dropdown.classList.contains("runtime-sheet-participants-dropdown");
   const panelWidth = calculateParticipantPanelWidth(longest, headerWidth, sheet);
-  dropdown.style.setProperty("--participant-name-width", `${Math.ceil(longest) + 20}px`);
+  dropdown.style.setProperty("--participant-name-width", `${Math.ceil(longest)}px`);
   dropdown.style.setProperty("--participant-panel-width", `${panelWidth}px`);
 };
 
