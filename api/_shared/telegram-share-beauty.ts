@@ -42,11 +42,6 @@ const normalizeDate = (value: unknown, language: ShareLanguage) => {
   };
 };
 
-const normalizeTime = (value: unknown) => {
-  const time = typeof value === "string" ? value.trim() : "";
-  return /^\d{2}:\d{2}$/.test(time) ? time : "";
-};
-
 type PublicBeautyRow = {
   profile_id: string;
   slug: string;
@@ -63,7 +58,7 @@ export async function loadTrustedTelegramBeautyCard(
   slug: string,
   language: ShareLanguage,
   selectedDate: unknown,
-  selectedTime: unknown,
+  _selectedTime: unknown,
   publicOrigin: string,
 ): Promise<TelegramEventCardInput | null> {
   const client = db();
@@ -73,7 +68,6 @@ export async function loadTrustedTelegramBeautyCard(
   if (!row) return null;
 
   const date = normalizeDate(selectedDate, language);
-  const time = normalizeTime(selectedTime);
   const inviteUrl = new URL(`/beauty/${encodeURIComponent(row.slug)}`, publicOrigin).toString();
   const city = row.city_id === "olomouc" ? "Olomouc" : row.city_id;
 
@@ -83,7 +77,7 @@ export async function loadTrustedTelegramBeautyCard(
     activity: row.service_name,
     date: date.display,
     eventDate: date.raw,
-    time,
+    time: "",
     address: row.public_location,
     participants: 0,
     capacity: 0,

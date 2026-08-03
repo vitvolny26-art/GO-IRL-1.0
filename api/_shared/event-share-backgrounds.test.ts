@@ -1,6 +1,10 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { eventShareBackgroundUrls, resolveEventShareBackgroundUrl } from "./event-share-backgrounds";
+import {
+  eventShareBackgroundUrls,
+  resolveEventShareBackgroundUrl,
+  serviceShareBackgroundUrls,
+} from "./event-share-backgrounds";
 
 describe("event share backgrounds", () => {
   it("maps all 40 category artwork codes to repository WebP assets", () => {
@@ -18,5 +22,13 @@ describe("event share backgrounds", () => {
     expect(resolveEventShareBackgroundUrl({ activity: "Волейбол" })?.pathname).toContain("01-volleyball.webp");
     expect(resolveEventShareBackgroundUrl({ activity: "Městská procházka" })?.pathname).toContain("31-city-walk.webp");
     expect(resolveEventShareBackgroundUrl({ activity: "Мой уникальный вечер" })).toBeNull();
+  });
+
+  it("uses the manicure service share artwork for localized Beauty services", () => {
+    expect(existsSync(serviceShareBackgroundUrls.manicure)).toBe(true);
+    expect(resolveEventShareBackgroundUrl({ activity: "Маникюр с гель-лаком" }))
+      .toBe(serviceShareBackgroundUrls.manicure);
+    expect(resolveEventShareBackgroundUrl({ activity: "Manikúra" }))
+      .toBe(serviceShareBackgroundUrls.manicure);
   });
 });

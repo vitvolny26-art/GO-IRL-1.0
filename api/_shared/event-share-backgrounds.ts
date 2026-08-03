@@ -44,9 +44,17 @@ export const eventShareBackgroundUrls = {
   WS: new URL("../../images/events/share-6x5/40-workshop.webp", import.meta.url),
 } as const;
 
+export const serviceShareBackgroundUrls = {
+  manicure: new URL("../../images/services/share-6x5/s-01-manicure.webp", import.meta.url),
+} as const;
+
 export type EventShareBackgroundCode = keyof typeof eventShareBackgroundUrls;
 
+const isManicure = ({ activity = "", title = "" }: EventArtworkInput) =>
+  /manicure|маникюр|манікюр|manik[uú]ra/i.test(`${activity} ${title}`);
+
 export const resolveEventShareBackgroundUrl = (input: EventArtworkInput) => {
+  if (isManicure(input)) return serviceShareBackgroundUrls.manicure;
   const code = resolveEventArtworkCode(input);
   return (eventShareBackgroundUrls as Partial<Record<string, URL>>)[code] || null;
 };
