@@ -25,7 +25,8 @@ AI Fixer.
 - current Drive messaging/reminders status;
 - ClickUp task `869e81k1r`;
 - current Vercel project/deployment metadata and scoped logs;
-- current Meta-maintained Cloud API requirements.
+- current Meta-maintained Cloud API requirements;
+- direct owner correction about token creation and unchanged release state.
 
 ## Files inspected
 
@@ -68,32 +69,58 @@ The principal unverified boundary is current external account readiness, not mis
 
 Historical durable evidence says webhook/messages subscription was configured and both `go_irl_event_reminder` and `go_irl_event_update` later became Active. The last durable phone audit still had only the Meta test number. Historical evidence is not current account-state proof.
 
+### Owner correction — token state
+
+The owner confirmed that Meta/WhatsApp token or tokens were created. This corrects the earlier overly broad wording that could be read as no token creation.
+
+Verified from the owner statement:
+
+- token creation occurred;
+- merge was not performed;
+- deployment was not performed;
+- production configuration was not changed;
+- GitHub created no workflow runs or combined status checks for the docs-only head, so CI is neither PASS nor FAIL.
+
+Not yet verified:
+
+- temporary versus permanent token type;
+- dedicated system-user ownership;
+- assigned business assets;
+- `whatsapp_business_messaging` permission;
+- `whatsapp_business_management` permission;
+- expiry and rotation ownership;
+- current server-only Vercel Production presence;
+- validity for the intended WABA and production phone number.
+
+No token value or other secret was supplied or stored.
+
 ## Changes made
 
 - created the WABA001 task branch/folder;
 - saved initial audit evidence;
+- created a separate owner-correction evidence record;
 - created the owner-readiness checklist;
 - mirrored the report to Drive;
 - updated and read back ClickUp as WhatsApp-only / In Progress / High;
 - opened Draft PR #611.
 
-No runtime code, Meta/Vercel production configuration, secrets, provider allowlist, auth, RLS, SQL, migrations or production data were changed.
+No runtime code, production configuration, provider allowlist, auth, RLS, SQL, migrations or production data were changed. No merge, deployment or live WhatsApp message occurred.
 
 ## Checks
 
-For PR head `0aff3c64bdccdec39b5f752b4e2893f145a5af2e`:
+For the documentation-only PR heads inspected:
 
-- changed files: five WABA001 documentation files only;
-- branch compare: two commits ahead, zero behind its verified base;
-- GitHub workflow runs: none registered on two reads;
+- changes were limited to WABA001 task documentation/evidence;
+- GitHub workflow runs: none registered;
 - combined commit status checks: none registered;
-- result: CI was not created for this documentation head; no PASS or FAIL is claimed.
+- result: CI was not created for the documentation head; no PASS or FAIL is claimed.
 
 No code change occurred, so local code gates were not run in this audit phase.
 
 ## Evidence
 
 - `tasks/WABA001-whatsapp-business-release-gate/evidence/2026-08-03-initial-readiness-audit.md`
+- `tasks/WABA001-whatsapp-business-release-gate/evidence/2026-08-03-owner-correction-token-state.md`
 - owner checklist: https://docs.google.com/document/d/1Ma0zKGAbcBDmrqKmQHLTGZplej90NIVDsOs1syMDOPA/edit
 
 ## GitHub
@@ -106,11 +133,6 @@ Base: `7068b37adeb8756315ce2f6e5fe49a3d2c744273`
 
 `task/waba001-whatsapp-business-release-gate-20260803`
 
-## Commit
-
-- scaffold: `03d7f0bb2720d18bd01838246304e52828b93b56`
-- audit/report synchronization: `0aff3c64bdccdec39b5f752b4e2893f145a5af2e`
-
 ## Pull request
 
 Draft PR #611:
@@ -122,13 +144,7 @@ Verified open, Draft and unmerged. No merge authorized.
 
 https://app.clickup.com/t/869e81k1r
 
-Verified readback:
-
-- `WABA001 — WhatsApp Business Cloud API release gate`;
-- status `In Progress`;
-- priority `High`;
-- WhatsApp-only scope;
-- PR, Drive, checklist and approval gates recorded.
+Verified scope remains WhatsApp-only, status `In Progress`, priority `High`.
 
 ## Google Drive
 
@@ -143,14 +159,14 @@ https://docs.google.com/document/d/1Ma0zKGAbcBDmrqKmQHLTGZplej90NIVDsOs1syMDOPA/
 
 ## Blockers
 
-No authenticated Meta Business/WhatsApp Manager connector is available in this session. Fresh current WABA/app/number/token/template/subscription evidence must be provided through the redacted checklist or redacted UI evidence.
+No authenticated Meta Business/WhatsApp Manager connector is available in this session. Token creation is confirmed by the owner, but token production readiness and current WABA/app/number/template/subscription state still require redacted verification.
 
-A separate explicit owner approval is required before any production configuration, number registration/migration, credential creation/rotation, live message, provider enablement, merge or deployment.
+A separate explicit owner approval is required before production configuration, number registration/migration, credential rotation, live messaging, provider enablement, merge or deployment.
 
 ## Roadmap update
 
-Phase 1 audit and durable setup are complete. Phase 2 is external asset verification. No runtime code change is justified unless fresh evidence or controlled smoke exposes a bounded defect.
+Phase 1 audit and durable setup are complete. Phase 2 is external asset verification. The token-existence item is partially resolved; token classification, permissions and deployment presence remain pending. No runtime code change is justified unless fresh evidence or controlled smoke exposes a bounded defect.
 
 ## Next verified step
 
-Complete the owner-readiness checklist using only `PASS`, `BLOCKED`, `NOT FOUND` or `NOT CHECKED`. Do not paste tokens, secrets, phone numbers or IDs. Then request approval for the exact Meta/Vercel actions and one controlled live-recipient smoke.
+Complete the owner-readiness checklist using only `PASS`, `BLOCKED`, `NOT FOUND` or `NOT CHECKED`. For the token section, record statuses only—never token values. Then request approval for the exact Meta/Vercel actions and one controlled live-recipient smoke.
