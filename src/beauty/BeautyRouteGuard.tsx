@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { initializeTrustedAuth } from "../authSession";
 import { resolveCurrentUserRole, useAppStore } from "../store";
 import type { Language, UserRole } from "../types";
+import { BeautyPublicSlugEditor } from "./BeautyPublicSlugEditor";
 import { beautyRouteAccess } from "./beautyRouteAccess";
 import "./beauty-setup.css";
 
@@ -43,5 +44,5 @@ export function BeautyRouteGuard({ children }: { children: ReactNode }) {
     return <main className="beauty-shell"><section className="beauty-card" role="alert"><div className="beauty-note"><strong>{text.title}</strong><span>{text.message}</span></div><a className="beauty-home-button" href="/services">{text.action}</a></section></main>;
   }
 
-  return children;
+  return <>{children}<BeautyPublicSlugEditor /></>;
 }

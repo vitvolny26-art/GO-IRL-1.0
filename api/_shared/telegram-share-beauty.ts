@@ -3,10 +3,13 @@ import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { readEnv } from "./env.js";
 import { isShareLanguage, type ShareLanguage } from "./telegram-share-event.js";
 
-const BEAUTY_SLUG_PATTERN = /^beauty-[a-f0-9]{16}$/i;
+const BEAUTY_SLUG_PATTERN = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export const isBeautyShareSlug = (value: unknown): value is string =>
-  typeof value === "string" && BEAUTY_SLUG_PATTERN.test(value.trim());
+export const isBeautyShareSlug = (value: unknown): value is string => {
+  if (typeof value !== "string") return false;
+  const slug = value.trim().toLowerCase();
+  return slug.length >= 10 && slug.length <= 48 && BEAUTY_SLUG_PATTERN.test(slug);
+};
 
 export { isShareLanguage };
 
@@ -29,6 +32,20 @@ const localeByLanguage: Record<ShareLanguage, string> = {
   en: "en-GB",
 };
 
+const manicureServiceName: Record<ShareLanguage, string> = {
+  ru: "Маникюр с гель-лаком",
+  uk: "Манікюр з гель-лаком",
+  cs: "Manikúra s gel lakem",
+  en: "Gel manicure",
+};
+
+export const localizeBeautyServiceName = (serviceName: string, language: ShareLanguage) => {
+  const normalized = serviceName.trim();
+  return /manicure|маникюр|манікюр|manik[uú]ra/i.test(normalized)
+    ? manicureServiceName[language]
+    : normalized;
+};
+
 const normalizeDate = (value: unknown, language: ShareLanguage) => {
   const date = typeof value === "string" ? value.trim() : "";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { raw: "", display: date.slice(0, 40) };
@@ -40,6 +57,16 @@ const normalizeDate = (value: unknown, language: ShareLanguage) => {
       .format(parsed)
       .replace(/\.$/, ""),
   };
+};
+
+const buildTelegramBeautyInviteUrl = (slug: string) => {
+  const bot = (readEnv("GO_IRL_BOT_USERNAME") || readEnv("VITE_GO_IRL_BOT_USERNAME") || "GOirl_bot")
+    .trim()
+    .replace(/^@/, "");
+  const appName = (readEnv("GO_IRL_APP_NAME") || readEnv("VITE_GO_IRL_APP_NAME") || "")
+    .trim()
+    .replace(/^\/+|\/+$/g, "");
+  return `https://t.me/${bot}${appName ? `/${appName}` : ""}?startapp=${encodeURIComponent(slug)}`;
 };
 
 type PublicBeautyRow = {
@@ -59,8 +86,10 @@ export async function loadTrustedTelegramBeautyCard(
   language: ShareLanguage,
   selectedDate: unknown,
   _selectedTime: unknown,
-  publicOrigin: string,
+  _publicOrigin: string,
 ): Promise<TelegramEventCardInput | null> {
+  void _selectedTime;
+  void _publicOrigin;
   const client = db();
   const result = await client.rpc("go_irl_list_public_beauty_professionals", { p_requested_city_id: "olomouc" });
   if (result.error) throw result.error;
@@ -68,13 +97,13 @@ export async function loadTrustedTelegramBeautyCard(
   if (!row) return null;
 
   const date = normalizeDate(selectedDate, language);
-  const inviteUrl = new URL(`/beauty/${encodeURIComponent(row.slug)}`, publicOrigin).toString();
+  const serviceName = localizeBeautyServiceName(row.service_name, language);
   const city = row.city_id === "olomouc" ? "Olomouc" : row.city_id;
 
   return {
     eventId: row.profile_id,
-    title: row.display_name,
-    activity: row.service_name,
+    title: serviceName,
+    activity: row.display_name,
     date: date.display,
     eventDate: date.raw,
     time: "",
@@ -82,7 +111,7 @@ export async function loadTrustedTelegramBeautyCard(
     participants: 0,
     capacity: 0,
     icon: "✨",
-    inviteUrl,
+    inviteUrl: buildTelegramBeautyInviteUrl(row.slug),
     city,
     organizer: row.display_name,
     durationMinutes: row.duration_minutes,
