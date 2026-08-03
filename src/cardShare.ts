@@ -9,7 +9,21 @@ export type CardShareContent = {
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const fallbackOrigin = "https://go-irl-1-0.vercel.app";
+const shareTextMarker = "GO IRL:";
 export const metaAppId = "1348703396728256";
+
+export const normalizeCardShareUrl = (value: string) => {
+  const trimmed = value.trim();
+  const markerIndex = trimmed.indexOf(shareTextMarker);
+  const candidate = (markerIndex > 0 ? trimmed.slice(0, markerIndex) : trimmed).trim();
+
+  try {
+    const url = new URL(candidate);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : candidate;
+  } catch {
+    return candidate;
+  }
+};
 
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
   [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n\n");
@@ -72,14 +86,16 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
 };
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
-  const organicContent = buildOrganicCardShareContent(content);
-  const message = buildCardShareText({ ...content, url: organicContent.url });
-  const encodedUrl = encodeURIComponent(content.url);
+  const normalizedContent = { ...content, url: normalizeCardShareUrl(content.url) };
+  const organicContent = buildOrganicCardShareContent(normalizedContent);
+  const message = buildCardShareText({ ...normalizedContent, url: organicContent.url });
   if (channel === "telegram") {
-    const textWithoutUrl = buildCardShareText({ ...content, url: "" });
-    return `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(textWithoutUrl)}`;
+    const target = new URL("https://t.me/share/url");
+    target.searchParams.set("url", normalizedContent.url);
+    target.searchParams.set("text", buildCardShareText({ ...normalizedContent, url: "" }));
+    return target.toString();
   }
   if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
-  if (channel === "facebook") return buildFacebookShareTarget(content);
-  return buildMessengerSendTarget(content);
+  if (channel === "facebook") return buildFacebookShareTarget(normalizedContent);
+  return buildMessengerSendTarget(normalizedContent);
 };
