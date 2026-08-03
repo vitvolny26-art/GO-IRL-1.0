@@ -3,9 +3,16 @@ import type { AppView } from "./types";
 
 export const tabViews: AppView[] = ["home", "discover", "explore", "create", "profile"];
 
-export const isTabSwipeBlockedTarget = (_target: EventTarget | null) => true;
+export const isTabSwipeBlockedTarget = (target: EventTarget | null) => {
+  void target;
+  return true;
+};
 
-export const resolveSwipeDirection = (_deltaX: number, _deltaY: number): "next" | "prev" | null => null;
+export const resolveSwipeDirection = (deltaX: number, deltaY: number): "next" | "prev" | null => {
+  void deltaX;
+  void deltaY;
+  return null;
+};
 
 export const resolveAdjacentTab = (view: AppView, direction: "next" | "prev") => {
   const current = tabViews.indexOf(view);
