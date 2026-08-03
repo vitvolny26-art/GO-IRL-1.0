@@ -3,7 +3,7 @@
   top: 46px !important;
   right: 0 !important;
   z-index: 40;
-  width: max-content;
+  width: calc(77px + var(--participant-name-width, 100px));
   min-width: 200px;
   max-width: calc(100vw - 32px);
   max-height: 220px;
@@ -24,7 +24,7 @@
   position: relative;
   z-index: 8;
   grid-column: 1 / -1 !important;
-  width: max-content;
+  width: calc(81px + var(--participant-name-width, 100px));
   min-width: 200px;
   max-width: calc(100% - 24px);
   max-height: 260px;
@@ -40,10 +40,12 @@
   backdrop-filter: blur(18px) saturate(125%);
 }
 
+.sport-sheet > .detail-members-toggle + .runtime-sheet-participants-dropdown,
 .activity-sheet > .detail-members-toggle + .runtime-sheet-participants-dropdown { margin-top: 0; }
+.sport-sheet .sport-community-block > .runtime-sheet-participants-dropdown,
 .activity-sheet .sport-community-block > .runtime-sheet-participants-dropdown {
   order: 2;
-  width: max-content;
+  width: calc(81px + var(--participant-name-width, 100px));
   max-width: calc(100% - 24px);
   margin: 0 12px 12px;
 }
@@ -72,11 +74,10 @@
 .runtime-card-participants-list > p { margin: 0; padding: 10px 6px; color: var(--muted); font-size: 13px; line-height: 1.35; }
 .runtime-card-participant-row {
   display: grid;
-  grid-template-columns: 38px max-content;
+  grid-template-columns: 38px var(--participant-name-width, 100px);
   align-items: center;
   gap: 9px;
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
   min-height: 46px;
   padding: 4px 10px 4px 6px;
   border-radius: 10px;
@@ -84,8 +85,10 @@
 }
 .runtime-sheet-participants-dropdown .runtime-card-participant-row { min-height: 50px; padding: 6px 10px 6px 8px; }
 .runtime-card-participant-row > strong {
+  overflow: visible;
   color: rgba(255, 255, 255, .94);
   font-size: 13px;
+  text-overflow: clip;
   white-space: nowrap;
 }
 .runtime-sheet-participants-dropdown .runtime-card-participant-row > strong { font-size: 15px; }
