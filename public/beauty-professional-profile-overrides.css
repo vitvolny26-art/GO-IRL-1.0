@@ -1,0 +1,107 @@
+/* Beauty009: full-screen professional profile over the saved manicure background. */
+.beauty-pro-profile-backdrop{
+  align-items:stretch!important;
+  padding:0!important;
+  background:#08020a!important;
+  backdrop-filter:none!important;
+}
+
+.beauty-pro-profile-shell{
+  width:min(620px,100%)!important;
+  height:100dvh!important;
+  max-height:100dvh!important;
+  border:0!important;
+  border-radius:0!important;
+  background:
+    linear-gradient(180deg,rgba(8,2,11,.18) 0%,rgba(10,3,13,.68) 34%,rgba(8,2,10,.86) 100%),
+    url('/services/sheets-9x16/s-01-manicure.webp') center top/cover no-repeat!important;
+  box-shadow:none!important;
+}
+
+.beauty-pro-profile-shell button{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+.beauty-pro-profile-close{
+  top:12px!important;
+  margin:12px 12px -56px 0!important;
+  background:transparent!important;
+  backdrop-filter:none!important;
+}
+
+.beauty-pro-profile-hero{
+  min-height:390px!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+
+.beauty-pro-profile-hero>img{
+  display:none!important;
+}
+
+.beauty-pro-profile-hero-shade{
+  background:linear-gradient(180deg,rgba(7,1,9,.02) 12%,rgba(8,2,10,.16) 44%,rgba(8,2,10,.78) 100%)!important;
+}
+
+.beauty-pro-profile-hero-copy{
+  padding:136px 22px 30px!important;
+}
+
+.beauty-pro-profile-hero-copy>span,
+.beauty-pro-profile-stats,
+.beauty-pro-profile-primary-actions{
+  display:none!important;
+}
+
+.beauty-pro-profile-section{
+  position:relative;
+  z-index:2;
+  padding-top:22px!important;
+}
+
+.beauty-pro-profile-price-list>button,
+.beauty-pro-profile-contact-grid>button,
+.beauty-pro-profile-benefits,
+.beauty-pro-profile-rating-card,
+.beauty-pro-profile-empty-reviews{
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+
+.beauty-pro-profile-price-list>button,
+.beauty-pro-profile-contact-grid>button{
+  border-color:rgba(226,189,78,.56)!important;
+}
+
+.beauty-pro-profile-primary-actions .primary,
+.beauty-pro-profile-sticky-actions .primary,
+.beauty-pro-profile-primary-actions .secondary,
+.beauty-pro-profile-sticky-actions .secondary{
+  border:1px solid rgba(226,189,78,.78)!important;
+  background:transparent!important;
+  color:#f1d56d!important;
+  box-shadow:none!important;
+}
+
+.beauty-pro-profile-sticky-actions{
+  background:linear-gradient(180deg,rgba(8,2,10,0),rgba(8,2,10,.62))!important;
+  backdrop-filter:none!important;
+}
+
+@media(max-width:520px){
+  .beauty-pro-profile-shell{
+    width:100%!important;
+    border-radius:0!important;
+  }
+
+  .beauty-pro-profile-hero{
+    min-height:390px!important;
+    border-radius:0!important;
+  }
+
+  .beauty-pro-profile-hero-copy{
+    padding:132px 20px 28px!important;
+  }
+}
