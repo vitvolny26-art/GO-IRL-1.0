@@ -198,12 +198,15 @@ export function BeautyProfessionalProfilePortal() {
     if (!openProfile) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    document.body.classList.add("beauty-profile-open");
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpenProfile(null);
+      const nestedOverlayOpen = document.querySelector(".service-sheet-backdrop, .service-popup-backdrop");
+      if (event.key === "Escape" && !nestedOverlayOpen) setOpenProfile(null);
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.classList.remove("beauty-profile-open");
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [openProfile]);
@@ -217,7 +220,6 @@ export function BeautyProfessionalProfilePortal() {
 
   const triggerCardAction = (selector: string) => {
     const wrapper = openProfile.opener.closest<HTMLElement>("[data-beauty-slug]");
-    setOpenProfile(null);
     window.requestAnimationFrame(() => wrapper?.querySelector<HTMLButtonElement>(selector)?.click());
   };
 
@@ -265,17 +267,8 @@ export function BeautyProfessionalProfilePortal() {
           <button className="primary" type="button" onClick={() => triggerCardAction(".services-professional-actions .primary")}><CalendarDays />{text.book}</button>
         </nav>
 
-        <section className="beauty-pro-profile-section">
-          <div className="beauty-pro-profile-heading"><div><small>01</small><h2>{text.services}</h2></div><Scissors /></div>
-          <div className="beauty-pro-profile-price-list">{services.map((service) => <button type="button" key={`${service.serviceName}-${service.durationMinutes}-${service.priceCzk}`} onClick={() => triggerCardAction(".services-professional-actions .secondary")}>
-            <span><strong>{service.serviceName}</strong><small><Clock3 />{service.durationMinutes} {text.minutes}</small></span>
-            <b>{price(service.priceCzk, service.currency, language)}</b>
-            <ChevronRight />
-          </button>)}</div>
-        </section>
-
         <section className="beauty-pro-profile-section beauty-pro-profile-about">
-          <div className="beauty-pro-profile-heading"><div><small>02</small><h2>{text.about}</h2></div><Sparkles /></div>
+          <div className="beauty-pro-profile-heading"><div><small>01</small><h2>{text.about}</h2></div><Sparkles /></div>
           <p>{text.aboutText}</p>
           <div className="beauty-pro-profile-benefits">
             <h3>{text.benefits}</h3>
@@ -283,6 +276,15 @@ export function BeautyProfessionalProfilePortal() {
             <div><CalendarDays /><span>{text.benefitTime}</span></div>
             <div><MessageCircle /><span>{text.benefitContact}</span></div>
           </div>
+        </section>
+
+        <section className="beauty-pro-profile-section">
+          <div className="beauty-pro-profile-heading"><div><small>02</small><h2>{text.services}</h2></div><Scissors /></div>
+          <div className="beauty-pro-profile-price-list">{services.map((service) => <button type="button" key={`${service.serviceName}-${service.durationMinutes}-${service.priceCzk}`} onClick={() => triggerCardAction(".services-professional-actions .secondary")}>
+            <span><strong>{service.serviceName}</strong><small><Clock3 />{service.durationMinutes} {text.minutes}</small></span>
+            <b>{price(service.priceCzk, service.currency, language)}</b>
+            <ChevronRight />
+          </button>)}</div>
         </section>
 
         {artwork && <section className="beauty-pro-profile-section">

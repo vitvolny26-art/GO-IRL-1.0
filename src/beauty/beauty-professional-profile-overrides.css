@@ -1,4 +1,4 @@
-/* Beauty009-011: full-screen professional profile over the saved manicure background. */
+/* Beauty009-012: full-screen professional profile over the saved manicure background. */
 .beauty-pro-profile-backdrop{
   align-items:stretch!important;
   padding:0!important;
@@ -55,10 +55,10 @@
 .beauty-pro-profile-hero-copy h1{
   position:relative!important;
   display:flex!important;
-  min-height:66px!important;
+  min-height:94px!important;
   align-items:center!important;
   margin:0!important;
-  padding-left:80px!important;
+  padding-left:112px!important;
   font-size:clamp(30px,8vw,42px)!important;
   line-height:1!important;
   letter-spacing:-.035em!important;
@@ -68,8 +68,8 @@
 .beauty-pro-profile-hero-copy h1::before{
   position:absolute;
   left:0;
-  width:62px;
-  height:62px;
+  width:92px;
+  height:92px;
   border:1px solid rgba(232,205,105,.82);
   border-radius:50%;
   background:
@@ -80,7 +80,7 @@
 }
 
 .beauty-pro-profile-hero-copy p{
-  margin:1px 0 0 80px!important;
+  margin:1px 0 0 112px!important;
   color:#f0e4ef!important;
   font-size:15px!important;
   font-weight:750!important;
@@ -90,8 +90,8 @@
 
 .beauty-pro-profile-hero-copy button{
   width:max-content!important;
-  max-width:calc(100% - 80px)!important;
-  margin:8px 0 0 80px!important;
+  max-width:calc(100% - 112px)!important;
+  margin:8px 0 0 112px!important;
   padding:0!important;
   border:0!important;
   color:#d8cbd9!important;
@@ -144,6 +144,11 @@
   backdrop-filter:none!important;
 }
 
+body.beauty-profile-open .service-sheet-backdrop,
+body.beauty-profile-open .service-popup-backdrop{
+  z-index:5400!important;
+}
+
 @media(max-width:520px){
   .beauty-pro-profile-shell{
     width:100%!important;
@@ -152,6 +157,25 @@
 
   .beauty-pro-profile-hero{
     padding:72px 18px 18px!important;
+  }
+
+  .beauty-pro-profile-hero-copy h1{
+    min-height:86px!important;
+    padding-left:102px!important;
+  }
+
+  .beauty-pro-profile-hero-copy h1::before{
+    width:84px;
+    height:84px;
+  }
+
+  .beauty-pro-profile-hero-copy p,
+  .beauty-pro-profile-hero-copy button{
+    margin-left:102px!important;
+  }
+
+  .beauty-pro-profile-hero-copy button{
+    max-width:calc(100% - 102px)!important;
   }
 
   .beauty-pro-profile-primary-actions + .beauty-pro-profile-section{
