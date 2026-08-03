@@ -26,3 +26,42 @@
   padding: 0 12px !important;
   border-radius: 12px !important;
 }
+
+/* Individual dark surfaces and exact mobile offsets for the three controls. */
+.post-save-actions {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.post-save-actions > .card-share-action .sport-card-icon-action,
+.post-save-actions > button {
+  background: rgba(9, 10, 12, .88) padding-box !important;
+  background-clip: padding-box !important;
+  box-shadow: none !important;
+}
+
+.post-save-actions > .card-share-action {
+  transform: translate(-13px, 3px) !important;
+}
+
+.post-save-actions > button:nth-of-type(1) {
+  transform: translate(-9px, 3px) !important;
+}
+
+.post-save-actions > button:nth-of-type(1) > span {
+  font-size: 0 !important;
+  line-height: 1 !important;
+}
+
+.post-save-actions > button:nth-of-type(1) > span::after {
+  content: "Добавить в...";
+  font-size: 12px;
+  line-height: 1;
+  color: var(--lime);
+  white-space: nowrap;
+}
+
+.post-save-actions > button:nth-of-type(2) {
+  transform: translate(-11px, 3px) !important;
+}
