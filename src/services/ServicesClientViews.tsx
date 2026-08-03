@@ -56,7 +56,13 @@ function ProfessionalCard({ professional, language }: { professional: ServicesPr
   const [reminded, setReminded] = useState(() => readList(reminderKey).includes(professional.profileId));
   const artwork = getServiceArtwork(professional.serviceName);
   const url = new URL(professional.publicLink, window.location.origin).toString();
-  const toggleStored = (key: string, active: boolean, setter: (value: boolean) => void) => { const values = new Set(readList(key)); active ? values.delete(professional.profileId) : values.add(professional.profileId); writeList(key, [...values]); setter(!active); };
+  const toggleStored = (key: string, active: boolean, setter: (value: boolean) => void) => {
+    const values = new Set(readList(key));
+    if (active) values.delete(professional.profileId);
+    else values.add(professional.profileId);
+    writeList(key, [...values]);
+    setter(!active);
+  };
   const share = async () => { if (navigator.share) { await navigator.share({ title: `${professional.displayName} · ${professional.serviceName}`, url }); return; } await navigator.clipboard.writeText(url); };
   const openMap = () => window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(professional.publicLocation)}`, "_blank", "noopener,noreferrer");
   return <article className={expanded ? "services-professional-card is-expanded" : "services-professional-card"}>
