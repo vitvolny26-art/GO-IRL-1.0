@@ -67,7 +67,13 @@ function ProfessionalCards({ professionals, state, empty, loading, error, langua
     const message = state === "loading" ? loading : state === "error" ? error : empty;
     return <div className="services-client-empty"><Heart /><span>{message}</span></div>;
   }
-  return <div className="services-professional-grid">{professionals.map((professional) => <ServiceActivityCard key={professional.profileId} professional={professional} language={language} />)}</div>;
+  const groups = Array.from(professionals.reduce((map, professional) => {
+    const current = map.get(professional.profileId) || [];
+    current.push(professional);
+    map.set(professional.profileId, current);
+    return map;
+  }, new Map<string, ServicesProfessional[]>()).values());
+  return <div className="services-professional-grid">{groups.map(([professional, ...serviceOptions]) => <ServiceActivityCard key={professional.profileId} professional={professional} serviceOptions={serviceOptions} language={language} />)}</div>;
 }
 
 function ProfessionalSection({ title, professionals, language }: { title: string; professionals: ServicesProfessional[]; language: Language }) {
