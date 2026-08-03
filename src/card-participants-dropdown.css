@@ -1,8 +1,8 @@
 .compact-sport-card .runtime-card-participants-dropdown {
   position: absolute;
-  top: 48px;
-  right: 0;
-  z-index: 20;
+  top: 46px !important;
+  right: 0 !important;
+  z-index: 40;
   width: min(250px, calc(100vw - 48px));
   max-width: 250px;
   max-height: 220px;
@@ -16,8 +16,35 @@
   backdrop-filter: blur(18px);
 }
 
-.compact-sport-card .runtime-card-participants-dropdown[hidden] {
+.compact-sport-card .runtime-card-participants-dropdown[hidden],
+.runtime-sheet-participants-dropdown[hidden] {
   display: none !important;
+}
+
+.runtime-sheet-participants-dropdown {
+  position: relative;
+  z-index: 8;
+  width: calc(100% - 24px);
+  max-height: 260px;
+  margin: 0 12px 12px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgba(217, 255, 99, .3);
+  border-radius: 18px;
+  background: rgba(8, 12, 14, .9);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .38);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  backdrop-filter: blur(18px) saturate(125%);
+}
+
+.activity-sheet > .detail-members-toggle + .runtime-sheet-participants-dropdown {
+  margin-top: 0;
+}
+
+.activity-sheet .sport-community-block > .runtime-sheet-participants-dropdown {
+  order: 2;
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
 }
 
 .runtime-card-participants-header {
@@ -38,8 +65,16 @@
   white-space: nowrap;
 }
 
+.runtime-sheet-participants-dropdown .runtime-card-participants-header strong {
+  font-size: 16px;
+}
+
 .runtime-card-participants-header span {
   flex: 0 0 auto;
+  padding: 5px 9px;
+  border: 1px solid rgba(217, 255, 99, .2);
+  border-radius: 9px;
+  background: rgba(217, 255, 99, .07);
   color: var(--lime);
   font-size: 13px;
   font-weight: 850;
@@ -70,6 +105,11 @@
   background: rgba(255, 255, 255, .035);
 }
 
+.runtime-sheet-participants-dropdown .runtime-card-participant-row {
+  min-height: 50px;
+  padding: 6px 8px;
+}
+
 .runtime-card-participant-row > strong {
   min-width: 0;
   overflow: hidden;
@@ -79,10 +119,15 @@
   white-space: nowrap;
 }
 
+.runtime-sheet-participants-dropdown .runtime-card-participant-row > strong {
+  font-size: 15px;
+}
+
 .runtime-card-participant-avatar {
   display: grid;
   width: 34px;
   height: 34px;
+  overflow: hidden;
   place-items: center;
   border: 1px solid rgba(217, 255, 99, .3);
   border-radius: 10px;
@@ -92,6 +137,11 @@
   font-weight: 900;
 }
 
+.runtime-sheet-participants-dropdown .runtime-card-participant-avatar {
+  width: 38px;
+  height: 38px;
+}
+
 .runtime-card-participant-avatar img {
   width: 100%;
   height: 100%;
@@ -99,11 +149,51 @@
   border-radius: inherit;
 }
 
+.glass-event-card .card-reminder-action,
+.glass-event-card .sport-card-icon-action {
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.glass-event-card:has(.card-reminder-panel) {
+  z-index: 30 !important;
+  overflow: visible !important;
+}
+
+.glass-event-card:has(.card-reminder-panel)::before,
+.glass-event-card:has(.card-reminder-panel) .glass-event-card-artwork {
+  overflow: hidden !important;
+  border-radius: inherit !important;
+}
+
+.glass-event-card .card-reminder-panel {
+  z-index: 1000 !important;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+@media (max-width: 720px) {
+  .glass-event-card .card-reminder-panel {
+    position: fixed !important;
+    z-index: 1000 !important;
+    inset: auto 12px calc(76px + env(safe-area-inset-bottom)) 12px !important;
+    width: auto !important;
+    max-height: min(620px, calc(100dvh - 110px)) !important;
+    overflow-y: auto !important;
+  }
+}
+
 @media (max-width: 380px) {
   .compact-sport-card .runtime-card-participants-dropdown {
-    top: 46px;
-    right: 0;
+    top: 44px !important;
+    right: 0 !important;
     width: min(232px, calc(100vw - 32px));
     max-width: 232px;
+  }
+
+  .runtime-sheet-participants-dropdown {
+    width: calc(100% - 16px);
+    margin-right: 8px;
+    margin-left: 8px;
   }
 }

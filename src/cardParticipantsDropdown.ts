@@ -34,16 +34,31 @@ const findActivityForCard = (card: HTMLElement, language: Language) => {
     || null;
 };
 
+const findActivityForSheet = (sheet: HTMLElement, language: Language) => {
+  const heading = normalizeText(sheet.querySelector("h2")?.textContent);
+  if (!heading) return null;
+  const candidates = useAppStore.getState().activities;
+  return candidates.find((activity) => activityTitle(activity, language) === heading)
+    || candidates.find((activity) => Object.values(activity.title).some((title) => normalizeText(title) === heading))
+    || null;
+};
+
 export const joinedParticipants = (activity: Activity): ActivityMember[] =>
   activity.members.filter((member) => member.status === "joined");
 
 const closeAllDropdowns = (except?: HTMLElement) => {
-  document.querySelectorAll<HTMLElement>(".runtime-card-participants-dropdown").forEach((dropdown) => {
+  document.querySelectorAll<HTMLElement>(".runtime-card-participants-dropdown, .runtime-sheet-participants-dropdown").forEach((dropdown) => {
     if (dropdown !== except) dropdown.hidden = true;
   });
   document.querySelectorAll<HTMLElement>(".runtime-participants-chip").forEach((chip) => {
     const dropdown = chip.parentElement?.querySelector<HTMLElement>(".runtime-card-participants-dropdown");
     chip.setAttribute("aria-expanded", dropdown && !dropdown.hidden ? "true" : "false");
+  });
+  document.querySelectorAll<HTMLElement>(".runtime-sheet-participants-dropdown").forEach((dropdown) => {
+    const toggle = dropdown.previousElementSibling;
+    if (toggle instanceof HTMLElement && toggle.matches(".detail-members-toggle")) {
+      toggle.setAttribute("aria-expanded", dropdown.hidden ? "false" : "true");
+    }
   });
 };
 
@@ -105,7 +120,7 @@ const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Lan
   dropdown.append(list);
 };
 
-const ensureDropdown = (chip: HTMLElement, card: HTMLElement, activity: Activity, language: Language) => {
+const ensureCardDropdown = (chip: HTMLElement, card: HTMLElement, activity: Activity, language: Language) => {
   let dropdown = chip.parentElement?.querySelector<HTMLElement>(".runtime-card-participants-dropdown") || null;
   if (!dropdown) {
     dropdown = document.createElement("div");
@@ -121,33 +136,79 @@ const ensureDropdown = (chip: HTMLElement, card: HTMLElement, activity: Activity
   return dropdown;
 };
 
+const ensureSheetDropdown = (toggle: HTMLElement, activity: Activity, language: Language) => {
+  const next = toggle.nextElementSibling;
+  let dropdown: HTMLElement | null = next instanceof HTMLElement && next.matches(".runtime-sheet-participants-dropdown") ? next : null;
+  if (!dropdown) {
+    dropdown = document.createElement("div");
+    dropdown.className = "runtime-sheet-participants-dropdown";
+    dropdown.hidden = true;
+    dropdown.setAttribute("role", "region");
+    toggle.insertAdjacentElement("afterend", dropdown);
+  }
+  renderDropdown(dropdown, activity, language);
+  toggle.setAttribute("aria-haspopup", "true");
+  toggle.setAttribute("aria-expanded", dropdown.hidden ? "false" : "true");
+  return dropdown;
+};
+
+const toggleDropdown = (trigger: HTMLElement, dropdown: HTMLElement) => {
+  const opening = dropdown.hidden;
+  closeAllDropdowns(dropdown);
+  dropdown.hidden = !opening;
+  trigger.setAttribute("aria-expanded", opening ? "true" : "false");
+};
+
 const handleParticipantsClick = (event: Event) => {
   const target = event.target;
   if (!(target instanceof Element)) return;
+
   const chip = target.closest<HTMLElement>(".runtime-participants-chip");
-  if (!chip) return;
-  const card = chip.closest<HTMLElement>(".compact-sport-card");
-  if (!card) return;
+  if (chip) {
+    const card = chip.closest<HTMLElement>(".compact-sport-card");
+    if (!card) return;
+    const language = currentLanguage();
+    const activity = findActivityForCard(card, language);
+    if (!activity) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    toggleDropdown(chip, ensureCardDropdown(chip, card, activity, language));
+    return;
+  }
+
+  const toggle = target.closest<HTMLElement>(".activity-sheet .detail-members-toggle");
+  if (!toggle) return;
+  const sheet = toggle.closest<HTMLElement>(".activity-sheet");
+  if (!sheet) return;
   const language = currentLanguage();
-  const activity = findActivityForCard(card, language);
+  const activity = findActivityForSheet(sheet, language);
   if (!activity) return;
 
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
+  toggleDropdown(toggle, ensureSheetDropdown(toggle, activity, language));
+};
 
-  const dropdown = ensureDropdown(chip, card, activity, language);
-  const opening = dropdown.hidden;
-  closeAllDropdowns(dropdown);
-  dropdown.hidden = !opening;
-  chip.setAttribute("aria-expanded", opening ? "true" : "false");
+const removeCompetingChipListeners = () => {
+  document.querySelectorAll<HTMLElement>(".runtime-participants-chip:not([data-participants-dropdown-ready])").forEach((chip) => {
+    const clean = chip.cloneNode(true) as HTMLElement;
+    clean.dataset.participantsDropdownReady = "true";
+    chip.replaceWith(clean);
+  });
 };
 
 export function enableCardParticipantsDropdown() {
+  const observer = new MutationObserver(removeCompetingChipListeners);
+  observer.observe(document.body, { childList: true, subtree: true });
+  removeCompetingChipListeners();
+
   document.addEventListener("click", handleParticipantsClick, true);
   document.addEventListener("click", (event) => {
     const target = event.target;
-    if (!(target instanceof Element) || target.closest(".runtime-participants-chip, .runtime-card-participants-dropdown")) return;
+    if (!(target instanceof Element) || target.closest(".runtime-participants-chip, .runtime-card-participants-dropdown, .detail-members-toggle, .runtime-sheet-participants-dropdown")) return;
     closeAllDropdowns();
   });
   document.addEventListener("keydown", (event) => {
