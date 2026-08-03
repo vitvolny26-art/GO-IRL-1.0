@@ -1,0 +1,33 @@
+# Share003- Status
+
+- Last verified: 2026-08-03
+- Task ID: `SHARE003`
+- Required display/name prefix: `Share003-`
+- Status: In Progress — synchronized-head verification and provider smoke pending
+- Owner role: AI Fixer
+- Active branch: `fix/share003-whatsapp-telegram-parity-20260803`
+- Original base: `e3fd56624ccee6d0a441037b844d8d280b48b503`
+- Current main inspected: `93b5bb26bca326e1642c34ce9de0b361aba73e85`
+- Previous branch head: `156609c3b6cc0ea71a6e9ae3453d1a7ac7d1b0b4`
+- Runtime commit: `fcee7c4fa5a3d4c5f98e58671e767a7ea1dcf87d`
+- Pull request: Draft PR #608 — https://github.com/vitvolny26-art/Go-IRL-1.1/pull/608
+- Previous exact-head CI: run `30841936889` — PASS
+- Tests on previous exact head: 140 files / 664 tests; focused card share 13 PASS; preview parity 2 PASS
+- Typecheck: PASS
+- Lint: PASS, 0 errors; one pre-existing warning outside scope
+- Build: PASS, 344 modules
+- Bundle budget: PASS, 12 JavaScript chunks
+- Product decision: organic WhatsApp sharing continues without company registration or documentary Meta verification
+- Business/Cloud API: out of scope; governed separately by WABA001
+- Organic route: `wa.me` intent with one public event-preview URL
+- Company registration requirement for Open Graph card generation: none asserted
+- PR Preview: not found in accessible Vercel deployments
+- Accessible Vercel deployments: production `main` only; not used as branch-rendering evidence
+- ClickUp: https://app.clickup.com/t/869e3k1v5
+- Drive task folder: https://drive.google.com/drive/folders/1kJWNUSyKHj9hfMTVEOKyvwxTVEoRL3EP
+- Drive parity evidence: https://docs.google.com/document/d/1pSk8pSjttpgMFSd06WzD3UpVjYPk_q1t-jZcCUVBOBQ/edit
+- Merge: not performed
+- Deployment: not performed
+- Production configuration: unchanged
+- Blocker: physical Android/iOS/Web WhatsApp preview and cache verification
+- Next action: publish/read back the synchronized merge head, verify exact-head CI, then collect physical provider evidence.
