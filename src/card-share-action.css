@@ -46,3 +46,24 @@
   height: 30px;
   object-fit: contain;
 }
+
+.card-share-status {
+  position: fixed;
+  z-index: 120;
+  left: 50%;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  width: max-content;
+  max-width: min(88vw, 420px);
+  padding: 11px 16px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(184, 255, 63, .35);
+  border-radius: 14px;
+  background: rgba(13, 17, 21, .96);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .38);
+  color: #f6f7f8;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: none;
+}
