@@ -38,16 +38,26 @@ Correct the Services card based on the production screenshot: replace the Detail
 - Grouped directory rows by professional and added service selection inside one card.
 - Service selection now updates service name, duration, price, availability count, artwork, reminder context, and booking payload.
 - Moved reminder, service selector, slot selector, and compact calendar into viewport-level portal popups.
-- Added outside-tap closing to all Services card popups; details, booking, and share already support outside closing.
+- Added outside-tap closing to all Services card popups and Beauty workspace dialogs; share already supported outside closing.
 - Expanded the compact calendar to nearly the full viewport width.
 - Enlarged the avatar by approximately 70% and centered it vertically and horizontally.
 - Added mandatory booking fields for client name and contact.
-- Extended local booking records with `clientContact` while normalizing legacy records.
+- Extended local booking records with `clientContact`, normalized legacy records, and exposed the contact in the professional workspace.
 
 ## Checks
 
-Pending GitHub CI: repository check, diff check, test, typecheck, lint, build, and bundle budget.
+Pull request: `#599`
+
+GitHub Actions run `30824557110`, job `91722709903`:
+
+- Repository check: PASS
+- Diff check: PASS
+- Test: PASS
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+- Bundle budget: PASS
 
 ## Next step
 
-Open a pull request, merge only after CI is green, deploy the merged SHA to VPS and Vercel, and verify the Services card on the same narrow Telegram viewport.
+Merge PR `#599`, deploy the merged SHA to VPS and Vercel, and verify the Services card on the same narrow Telegram viewport. Production must no longer show commit `3bf5715`.
