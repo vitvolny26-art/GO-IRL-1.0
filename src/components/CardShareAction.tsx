@@ -5,9 +5,14 @@ import {
   buildOrganicCardShareContent,
   buildCardShareText,
 } from "../cardShare";
-import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
+import {
+  openExternalShareTarget,
+  openMessengerShareTarget,
+  openTelegramShareTarget,
+} from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 import { canPrepareBeautyTelegramShare, sharePreparedTelegramBeauty } from "../telegramPreparedBeautyShare";
+import type { Language } from "../types";
 import { readUserPreferences, type ShareProvider } from "../userPreferences";
 import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
 import {
@@ -29,6 +34,7 @@ type CardShareActionProps = {
 };
 
 type ShareChannel = ShareProvider | "facebook" | "native";
+type ShareNotice = "copied" | "instagramCopied" | "copyFailed";
 type ActivityChatUnreadChangedDetail = { activityId?: string };
 
 const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> = [
@@ -40,10 +46,35 @@ const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> 
   { id: "native", label: "Поделиться", icon: null },
 ];
 
+const shareNotices: Record<Language, Record<ShareNotice, string>> = {
+  ru: {
+    copied: "Приглашение скопировано",
+    instagramCopied: "Приглашение скопировано — вставьте его в Instagram",
+    copyFailed: "Не удалось скопировать приглашение",
+  },
+  uk: {
+    copied: "Запрошення скопійовано",
+    instagramCopied: "Запрошення скопійовано — вставте його в Instagram",
+    copyFailed: "Не вдалося скопіювати запрошення",
+  },
+  cs: {
+    copied: "Pozvánka byla zkopírována",
+    instagramCopied: "Pozvánka byla zkopírována — vložte ji do Instagramu",
+    copyFailed: "Pozvánku se nepodařilo zkopírovat",
+  },
+  en: {
+    copied: "Invitation copied",
+    instagramCopied: "Invitation copied — paste it into Instagram",
+    copyFailed: "Could not copy the invitation",
+  },
+};
+
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [shareNotice, setShareNotice] = useState("");
   const rootRef = useRef<HTMLSpanElement>(null);
+  const shareNoticeTimerRef = useRef<number | null>(null);
   const content = { title, date, address, url };
   const activityId = useMemo(() => activityIdFromInviteUrl(url), [url]);
   const joinedIds = useAppStore((state) => state.joinedIds);
@@ -66,6 +97,10 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open]);
+
+  useEffect(() => () => {
+    if (shareNoticeTimerRef.current !== null) window.clearTimeout(shareNoticeTimerRef.current);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -111,10 +146,28 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     };
   }, [activityId, canAccessChat]);
 
+  const clearShareNotice = () => {
+    if (shareNoticeTimerRef.current !== null) {
+      window.clearTimeout(shareNoticeTimerRef.current);
+      shareNoticeTimerRef.current = null;
+    }
+    setShareNotice("");
+  };
+
+  const showShareNotice = (notice: ShareNotice) => {
+    clearShareNotice();
+    setShareNotice(shareNotices[language][notice]);
+    shareNoticeTimerRef.current = window.setTimeout(() => {
+      setShareNotice("");
+      shareNoticeTimerRef.current = null;
+    }, 5000);
+  };
+
   const copyShareText = async (shareUrl = url) => {
     const shareText = buildCardShareText({ ...content, url: shareUrl });
     try {
       await navigator.clipboard.writeText(shareText);
+      return true;
     } catch {
       const textarea = document.createElement("textarea");
       textarea.value = shareText;
@@ -122,14 +175,20 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       textarea.style.position = "fixed";
       textarea.style.opacity = "0";
       document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      textarea.remove();
+      try {
+        textarea.select();
+        return document.execCommand("copy");
+      } catch {
+        return false;
+      } finally {
+        textarea.remove();
+      }
     }
   };
 
   const share = async (channel: ShareChannel) => {
     setOpen(false);
+    clearShareNotice();
 
     if (channel === "telegram") {
       if (onTelegramShare) {
@@ -148,7 +207,19 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       return;
     }
 
+    if (channel === "messenger") {
+      openMessengerShareTarget(content);
+      return;
+    }
+
     const organicContent = buildOrganicCardShareContent(content);
+    if (channel === "instagram") {
+      const copied = await copyShareText(organicContent.url);
+      showShareNotice(copied ? "instagramCopied" : "copyFailed");
+      openExternalShareTarget("https://www.instagram.com/");
+      return;
+    }
+
     if (navigator.share) {
       try {
         await navigator.share(organicContent);
@@ -157,8 +228,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         if (error instanceof DOMException && error.name === "AbortError") return;
       }
     }
-    await copyShareText(organicContent.url);
-    if (channel === "instagram") openExternalShareTarget("https://www.instagram.com/");
+
+    const copied = await copyShareText(organicContent.url);
+    showShareNotice(copied ? "copied" : "copyFailed");
   };
 
   const activate = () => {
@@ -233,6 +305,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               </span>
             </button>
           ))}
+        </span>
+      ) : null}
+      {shareNotice ? (
+        <span className="card-share-status" role="status" aria-live="polite">
+          {shareNotice}
         </span>
       ) : null}
     </span>

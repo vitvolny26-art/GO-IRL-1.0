@@ -1,7 +1,10 @@
+/// <reference types="node" />
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { openExternalShareTarget, openMessengerShareTarget, openTelegramShareTarget } from "./cardShareNavigation";
 
 const content = { title: "Volleyball", date: "Tomorrow", address: "Olomouc", url: "https://go-irl-1-0.vercel.app/?startapp=39e31319-a4fc-4d41-bf1e-d713178290d1" };
+const cardShareActionSource = readFileSync(new URL("./components/CardShareAction.tsx", import.meta.url), "utf8");
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -61,5 +64,26 @@ describe("openMessengerShareTarget", () => {
     vi.stubGlobal("window", { open });
     openMessengerShareTarget(content, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
     expect(open).toHaveBeenCalledWith(expect.stringContaining("https://www.facebook.com/dialog/send"), "_blank", "noopener,noreferrer");
+  });
+});
+
+describe("CardShareAction provider wiring", () => {
+  it("routes Messenger through the dedicated helper before the native share branch", () => {
+    const messengerBranch = cardShareActionSource.indexOf('if (channel === "messenger")');
+    const nativeShareBranch = cardShareActionSource.indexOf("if (navigator.share)");
+
+    expect(messengerBranch).toBeGreaterThan(-1);
+    expect(cardShareActionSource).toContain("openMessengerShareTarget(content);");
+    expect(messengerBranch).toBeLessThan(nativeShareBranch);
+  });
+
+  it("uses copy/open fallback for Instagram and exposes accessible copy feedback", () => {
+    const instagramBranch = cardShareActionSource.indexOf('if (channel === "instagram")');
+    const nativeShareBranch = cardShareActionSource.indexOf("if (navigator.share)");
+
+    expect(instagramBranch).toBeGreaterThan(-1);
+    expect(instagramBranch).toBeLessThan(nativeShareBranch);
+    expect(cardShareActionSource).toContain('showShareNotice(copied ? "instagramCopied" : "copyFailed");');
+    expect(cardShareActionSource).toContain('className="card-share-status" role="status" aria-live="polite"');
   });
 });
