@@ -72,9 +72,12 @@ export async function saveServerEventReminder(activityId: string, provider: Remi
 export async function replaceServerEventReminders(activityId: string, provider: ReminderChannel, leadMinutes: ReminderLeadMinutes[]) {
   if (!isServerActivityId(activityId)) throw new Error("invalid_activity_id");
   const normalized = Array.from(new Set(leadMinutes)).sort((a, b) => a - b);
-  const { error: deleteError } = await supabase.from("event_reminders").delete().eq("activity_id", activityId);
-  if (deleteError) throw deleteError;
-  for (const lead of normalized) await saveServerEventReminder(activityId, provider, lead);
+  const { error } = await supabase.rpc("go_irl_replace_event_reminders", {
+    p_activity_id: activityId,
+    p_provider: provider,
+    p_lead_minutes: normalized,
+  });
+  if (error) throw error;
 }
 
 export async function removeServerEventReminder(activityId: string) {
