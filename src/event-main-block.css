@@ -17,11 +17,6 @@
   border-radius: 0;
 }
 
-/* Keep the compact card footer at its original four-item layout. */
-.compact-sport-card .sport-details-grid > :nth-child(4) {
-  display: none !important;
-}
-
 .members-popover-backdrop {
   position: fixed;
   inset: 0;

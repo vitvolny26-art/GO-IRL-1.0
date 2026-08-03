@@ -49,11 +49,18 @@ const closeAllDropdowns = (except?: HTMLElement) => {
 
 const isImageAvatar = (value: string) => value.startsWith("data:image/") || /^https?:\/\//.test(value);
 
-const loadParticipantAvatar = async (avatar: HTMLElement, member: ActivityMember) => {
+const loadParticipantIdentity = async (avatar: HTMLElement, name: HTMLElement, member: ActivityMember) => {
   const fallback = organizerInitials(member.name);
   avatar.textContent = fallback;
+  name.textContent = member.name;
   const identity = await resolveOrganizerIdentity(member.userKey, member.name);
-  if (!avatar.isConnected || !isImageAvatar(identity.avatar)) return;
+  if (!avatar.isConnected || !name.isConnected) return;
+
+  name.textContent = identity.displayName || member.name;
+  if (!isImageAvatar(identity.avatar)) {
+    avatar.textContent = identity.avatar || fallback;
+    return;
+  }
 
   const image = document.createElement("img");
   image.alt = "";
@@ -88,11 +95,11 @@ const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Lan
       row.className = "runtime-card-participant-row";
       const avatar = document.createElement("span");
       avatar.className = "runtime-card-participant-avatar";
-      void loadParticipantAvatar(avatar, member);
       const name = document.createElement("strong");
       name.textContent = member.name;
       row.append(avatar, name);
       list.append(row);
+      void loadParticipantIdentity(avatar, name, member);
     });
   }
   dropdown.append(list);
