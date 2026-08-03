@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { Bell, BellRing, Check, MessageCircle, Trash2 } from "lucide-react";
 import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
@@ -55,6 +56,7 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
   const [error, setError] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const rootRef = useRef<HTMLSpanElement>(null);
+  const panelRef = useRef<HTMLSpanElement>(null);
   const latestMessageAtRef = useRef<string | null>(null);
 
   const refreshUnread = useCallback(async () => {
@@ -125,7 +127,8 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
   useEffect(() => {
     if (!open) return;
     const outside = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !panelRef.current?.contains(target)) setOpen(false);
     };
     const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
     document.addEventListener("pointerdown", outside);
@@ -195,6 +198,54 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
     }
   };
 
+  const panel = open ? (
+    <span ref={panelRef} className="card-reminder-panel card-reminder-panel-portal" role="dialog" aria-label={label} onClick={(event) => event.stopPropagation()}>
+      <strong>Напомнить о событии</strong>
+      <span className="card-reminder-leads">
+        {leadOptions.map((option) => (
+          <button className={leadMinutes === option.value ? "is-selected" : ""} type="button" key={option.value} onClick={() => setLeadMinutes(option.value)}>
+            {option.label}
+          </button>
+        ))}
+      </span>
+      <span className="card-reminder-channels">
+        {channels.map((option) => {
+          const unavailable = !serverBacked || linkedChannels === null || !linkedChannels.has(option.id);
+          return (
+            <button
+              className={channel === option.id ? "is-selected" : ""}
+              type="button"
+              key={option.id}
+              disabled={unavailable || saving}
+              title={unavailable
+                ? serverBacked
+                  ? "Канал не подключён или недоступен для доставки"
+                  : "Сначала войдите в GO IRL через поддерживаемый мессенджер"
+                : undefined}
+              onClick={() => { setChannel(option.id); setError(""); }}
+            >
+              <img src={option.icon} alt="" /><span>{option.label}</span>{channel === option.id ? <Check aria-hidden="true" /> : null}
+            </button>
+          );
+        })}
+      </span>
+      {!serverBacked ? (
+        <span className="card-reminder-info">
+          Войдите в GO IRL через поддерживаемый мессенджер, чтобы получать напоминания.
+        </span>
+      ) : null}
+      {error ? <span className="card-reminder-error" role="alert">{error}</span> : null}
+      <button className="card-reminder-save" type="button" disabled={saving || !serverBacked || linkedChannels === null || !linkedChannels.has(channel)} onClick={save}>
+        {saving ? "Сохраняем…" : "Сохранить напоминание"}
+      </button>
+      {saved ? (
+        <button className="card-reminder-remove" type="button" disabled={saving} onClick={remove}>
+          <Trash2 aria-hidden="true" /> Удалить
+        </button>
+      ) : null}
+    </span>
+  ) : null;
+
   return (
     <>
       {joined && unreadCount > 0 ? (
@@ -222,54 +273,8 @@ export function CardReminderAction({ activityId, date, time, label = "Настр
         >
           {saved ? <BellRing aria-hidden="true" /> : <Bell aria-hidden="true" />}
         </button>
-        {open ? (
-          <span className="card-reminder-panel" role="dialog" aria-label={label} onClick={(event) => event.stopPropagation()}>
-            <strong>Напомнить о событии</strong>
-            <span className="card-reminder-leads">
-              {leadOptions.map((option) => (
-                <button className={leadMinutes === option.value ? "is-selected" : ""} type="button" key={option.value} onClick={() => setLeadMinutes(option.value)}>
-                  {option.label}
-                </button>
-              ))}
-            </span>
-            <span className="card-reminder-channels">
-              {channels.map((option) => {
-                const unavailable = !serverBacked || linkedChannels === null || !linkedChannels.has(option.id);
-                return (
-                  <button
-                    className={channel === option.id ? "is-selected" : ""}
-                    type="button"
-                    key={option.id}
-                    disabled={unavailable || saving}
-                    title={unavailable
-                      ? serverBacked
-                        ? "Канал не подключён или недоступен для доставки"
-                        : "Сначала войдите в GO IRL через поддерживаемый мессенджер"
-                      : undefined}
-                    onClick={() => { setChannel(option.id); setError(""); }}
-                  >
-                    <img src={option.icon} alt="" /><span>{option.label}</span>{channel === option.id ? <Check aria-hidden="true" /> : null}
-                  </button>
-                );
-              })}
-            </span>
-            {!serverBacked ? (
-              <span className="card-reminder-info">
-                Войдите в GO IRL через поддерживаемый мессенджер, чтобы получать напоминания.
-              </span>
-            ) : null}
-            {error ? <span className="card-reminder-error" role="alert">{error}</span> : null}
-            <button className="card-reminder-save" type="button" disabled={saving || !serverBacked || linkedChannels === null || !linkedChannels.has(channel)} onClick={save}>
-              {saving ? "Сохраняем…" : "Сохранить напоминание"}
-            </button>
-            {saved ? (
-              <button className="card-reminder-remove" type="button" disabled={saving} onClick={remove}>
-                <Trash2 aria-hidden="true" /> Удалить
-              </button>
-            ) : null}
-          </span>
-        ) : null}
       </span>
+      {panel ? createPortal(panel, document.body) : null}
     </>
   );
 }

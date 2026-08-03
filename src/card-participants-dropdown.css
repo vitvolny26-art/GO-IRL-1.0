@@ -96,10 +96,10 @@
 
 .runtime-card-participant-row {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
   gap: 9px;
-  min-height: 42px;
+  min-height: 46px;
   padding: 4px 6px;
   border-radius: 10px;
   background: rgba(255, 255, 255, .035);
@@ -124,13 +124,21 @@
 }
 
 .runtime-card-participant-avatar {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  overflow: hidden;
+  display: grid !important;
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  aspect-ratio: 1 / 1 !important;
+  overflow: hidden !important;
   place-items: center;
+  padding: 0 !important;
   border: 1px solid rgba(217, 255, 99, .3);
-  border-radius: 10px;
+  border-radius: 9px !important;
+  clip-path: none !important;
   background: rgba(217, 255, 99, .1);
   color: var(--lime);
   font-size: 11px;
@@ -138,15 +146,25 @@
 }
 
 .runtime-sheet-participants-dropdown .runtime-card-participant-avatar {
-  width: 38px;
-  height: 38px;
+  width: 38px !important;
+  height: 38px !important;
 }
 
 .runtime-card-participant-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: inherit;
+  display: block !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: 8px !important;
+  clip-path: none !important;
+  transform: none !important;
 }
 
 .glass-event-card .card-reminder-action,
@@ -155,31 +173,30 @@
   touch-action: manipulation;
 }
 
-.glass-event-card:has(.card-reminder-panel) {
-  z-index: 30 !important;
-  overflow: visible !important;
-}
-
-.glass-event-card:has(.card-reminder-panel)::before,
-.glass-event-card:has(.card-reminder-panel) .glass-event-card-artwork {
-  overflow: hidden !important;
-  border-radius: inherit !important;
-}
-
-.glass-event-card .card-reminder-panel {
-  z-index: 1000 !important;
+.card-reminder-panel-portal {
+  position: fixed !important;
+  z-index: 2147483000 !important;
+  top: auto !important;
+  right: 12px !important;
+  bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+  left: 12px !important;
+  width: auto !important;
+  max-width: 536px !important;
+  max-height: calc(100dvh - 132px) !important;
+  margin: 0 auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   pointer-events: auto !important;
   touch-action: manipulation;
+  overscroll-behavior: contain;
 }
 
-@media (max-width: 720px) {
-  .glass-event-card .card-reminder-panel {
-    position: fixed !important;
-    z-index: 1000 !important;
-    inset: auto 12px calc(76px + env(safe-area-inset-bottom)) 12px !important;
-    width: auto !important;
-    max-height: min(620px, calc(100dvh - 110px)) !important;
-    overflow-y: auto !important;
+@media (min-width: 721px) {
+  .card-reminder-panel-portal {
+    right: max(24px, calc((100vw - 560px) / 2 + 24px)) !important;
+    left: auto !important;
+    width: 310px !important;
+    margin: 0 !important;
   }
 }
 
@@ -195,5 +212,11 @@
     width: calc(100% - 16px);
     margin-right: 8px;
     margin-left: 8px;
+  }
+
+  .card-reminder-panel-portal {
+    right: 8px !important;
+    bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+    left: 8px !important;
   }
 }
