@@ -40,34 +40,82 @@ const findActivityForSheet = (sheet: HTMLElement, language: Language) => {
 export const joinedParticipants = (activity: Activity): ActivityMember[] =>
   activity.members.filter((member) => member.status === "joined");
 
+export const calculateParticipantPanelWidth = (longestNameWidth: number, headerWidth: number, sheet: boolean) => {
+  const panelChrome = sheet ? 111 : 105;
+  const headerChrome = sheet ? 26 : 22;
+  return Math.ceil(Math.max(200, longestNameWidth + panelChrome, headerWidth + headerChrome));
+};
+
+const sheetDropdownAnchor = new WeakMap<HTMLElement, HTMLElement>();
+const sheetDropdownByToggle = new WeakMap<HTMLElement, HTMLElement>();
+
 const closeAllDropdowns = (except?: HTMLElement) => {
   document.querySelectorAll<HTMLElement>(".runtime-card-participants-dropdown, .runtime-sheet-participants-dropdown").forEach((dropdown) => {
-    if (dropdown !== except) dropdown.hidden = true;
+    if (dropdown === except) return;
+    const anchor = sheetDropdownAnchor.get(dropdown);
+    if (anchor) {
+      anchor.setAttribute("aria-expanded", "false");
+      dropdown.remove();
+      return;
+    }
+    dropdown.hidden = true;
   });
   document.querySelectorAll<HTMLElement>(".runtime-participants-chip").forEach((chip) => {
     const dropdown = chip.parentElement?.querySelector<HTMLElement>(".runtime-card-participants-dropdown");
     chip.setAttribute("aria-expanded", dropdown && !dropdown.hidden ? "true" : "false");
   });
-  document.querySelectorAll<HTMLElement>(".runtime-sheet-participants-dropdown").forEach((dropdown) => {
-    const toggle = dropdown.previousElementSibling;
-    if (toggle instanceof HTMLElement && toggle.matches(".detail-members-toggle")) toggle.setAttribute("aria-expanded", dropdown.hidden ? "false" : "true");
-  });
 };
 
 const isImageAvatar = (value: string) => value.startsWith("data:image/") || /^https?:\/\//.test(value);
 
-const syncDropdownWidth = (dropdown: HTMLElement) => {
-  const names = Array.from(dropdown.querySelectorAll<HTMLElement>(".runtime-card-participant-row > strong"));
-  if (!names.length) {
-    dropdown.style.setProperty("--participant-name-width", "100px");
-    return;
-  }
+const measureText = (element: HTMLElement, value: string) => {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
-  const style = getComputedStyle(names[0]);
-  if (context) context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-  const longest = Math.max(...names.map((name) => context?.measureText(name.textContent || "").width || name.scrollWidth));
+  const style = getComputedStyle(element);
+  if (!context) return element.scrollWidth;
+  context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  return context.measureText(value).width;
+};
+
+const horizontalExtras = (element: HTMLElement) => {
+  const style = getComputedStyle(element);
+  return [style.paddingLeft, style.paddingRight, style.borderLeftWidth, style.borderRightWidth]
+    .reduce((sum, value) => sum + (Number.parseFloat(value) || 0), 0);
+};
+
+const syncDropdownWidth = (dropdown: HTMLElement) => {
+  const names = Array.from(dropdown.querySelectorAll<HTMLElement>(".runtime-card-participant-row > strong"));
+  const title = dropdown.querySelector<HTMLElement>(".runtime-card-participants-header > strong");
+  const count = dropdown.querySelector<HTMLElement>(".runtime-card-participants-header > span");
+  const longest = names.length
+    ? Math.max(...names.map((name) => measureText(name, name.textContent || "")))
+    : 100;
+  const titleWidth = title ? measureText(title, title.textContent || "") : 0;
+  const countWidth = count ? measureText(count, count.textContent || "") + horizontalExtras(count) : 0;
+  const headerWidth = titleWidth + countWidth + 16;
+  const sheet = dropdown.classList.contains("runtime-sheet-participants-dropdown");
+  const panelWidth = calculateParticipantPanelWidth(longest, headerWidth, sheet);
   dropdown.style.setProperty("--participant-name-width", `${Math.ceil(longest) + 20}px`);
+  dropdown.style.setProperty("--participant-panel-width", `${panelWidth}px`);
+};
+
+const placeSheetDropdown = (toggle: HTMLElement, dropdown: HTMLElement) => {
+  const margin = 12;
+  const gap = 8;
+  const triggerRect = toggle.getBoundingClientRect();
+  const panelRect = dropdown.getBoundingClientRect();
+  const width = Math.min(panelRect.width || 200, window.innerWidth - margin * 2);
+  const height = Math.min(dropdown.scrollHeight || panelRect.height, 260, window.innerHeight - margin * 2);
+  const left = Math.min(
+    Math.max(margin, triggerRect.right - width),
+    Math.max(margin, window.innerWidth - width - margin),
+  );
+  const below = triggerRect.bottom + gap;
+  const top = below + height <= window.innerHeight - margin
+    ? below
+    : Math.max(margin, triggerRect.top - height - gap);
+  dropdown.style.left = `${Math.round(left)}px`;
+  dropdown.style.top = `${Math.round(top)}px`;
 };
 
 const loadParticipantIdentity = async (avatar: HTMLElement, name: HTMLElement, member: ActivityMember, dropdown: HTMLElement) => {
@@ -86,6 +134,8 @@ const loadParticipantIdentity = async (avatar: HTMLElement, name: HTMLElement, m
     avatar.replaceChildren(image);
   }
   syncDropdownWidth(dropdown);
+  const anchor = sheetDropdownAnchor.get(dropdown);
+  if (anchor && dropdown.isConnected && !dropdown.hidden) placeSheetDropdown(anchor, dropdown);
 };
 
 const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Language) => {
@@ -141,14 +191,15 @@ const ensureCardDropdown = (chip: HTMLElement, card: HTMLElement, activity: Acti
 };
 
 const ensureSheetDropdown = (toggle: HTMLElement, activity: Activity, language: Language) => {
-  const next = toggle.nextElementSibling;
-  let dropdown: HTMLElement | null = next instanceof HTMLElement && next.matches(".runtime-sheet-participants-dropdown") ? next : null;
-  if (!dropdown) {
+  let dropdown = sheetDropdownByToggle.get(toggle) || null;
+  if (!dropdown?.isConnected) {
     dropdown = document.createElement("div");
-    dropdown.className = "runtime-sheet-participants-dropdown";
+    dropdown.className = "runtime-sheet-participants-dropdown runtime-sheet-participants-portal";
     dropdown.hidden = true;
     dropdown.setAttribute("role", "region");
-    toggle.insertAdjacentElement("afterend", dropdown);
+    document.body.append(dropdown);
+    sheetDropdownByToggle.set(toggle, dropdown);
+    sheetDropdownAnchor.set(dropdown, toggle);
   }
   renderDropdown(dropdown, activity, language);
   toggle.setAttribute("aria-haspopup", "true");
@@ -158,9 +209,20 @@ const ensureSheetDropdown = (toggle: HTMLElement, activity: Activity, language: 
 
 const toggleDropdown = (trigger: HTMLElement, dropdown: HTMLElement) => {
   const opening = dropdown.hidden;
+  if (!opening) {
+    trigger.setAttribute("aria-expanded", "false");
+    if (sheetDropdownAnchor.has(dropdown)) dropdown.remove();
+    else dropdown.hidden = true;
+    return;
+  }
   closeAllDropdowns(dropdown);
-  dropdown.hidden = !opening;
-  trigger.setAttribute("aria-expanded", opening ? "true" : "false");
+  dropdown.hidden = false;
+  trigger.setAttribute("aria-expanded", "true");
+  if (sheetDropdownAnchor.has(dropdown)) {
+    window.requestAnimationFrame(() => {
+      if (dropdown.isConnected && !dropdown.hidden) placeSheetDropdown(trigger, dropdown);
+    });
+  }
 };
 
 const handleParticipantsClick = (event: Event) => {
@@ -195,6 +257,10 @@ const removeCompetingChipListeners = () => {
     clean.dataset.participantsDropdownReady = "true";
     chip.replaceWith(clean);
   });
+  document.querySelectorAll<HTMLElement>(".runtime-sheet-participants-portal").forEach((dropdown) => {
+    const anchor = sheetDropdownAnchor.get(dropdown);
+    if (!anchor?.isConnected) dropdown.remove();
+  });
 };
 
 export function enableCardParticipantsDropdown() {
@@ -207,5 +273,11 @@ export function enableCardParticipantsDropdown() {
     if (!(target instanceof Element) || target.closest(".runtime-participants-chip, .runtime-card-participants-dropdown, .detail-members-toggle, .runtime-sheet-participants-dropdown")) return;
     closeAllDropdowns();
   });
+  document.addEventListener("scroll", (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest(".runtime-sheet-participants-dropdown")) return;
+    closeAllDropdowns();
+  }, true);
+  window.addEventListener("resize", () => closeAllDropdowns());
   document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeAllDropdowns(); });
 }
