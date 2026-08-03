@@ -67,15 +67,18 @@ No token was supplied to or called by this audit.
 
 ## GitHub state
 
-Draft PR #611 was read back as:
+Before the external-audit commit, Draft PR #611 was read back as open, Draft, unmerged and temporarily `mergeable=false`.
+
+After commit `301d63ded9ad0761f7c3f312bc2d5bb0f2140df3` updated the branch, GitHub recalculated the PR as:
 
 - open;
 - Draft;
 - unmerged;
-- `mergeable=false` at the time of the read;
-- head before this audit commit: `581e089bb12b425d3b58c4e54dc31dcb83e83255`.
+- `mergeable=true`.
 
-The task branch was not rebased or merged because the external Meta gate remains open.
+Recent repository commit readback confirms that `main` advanced through unrelated Beauty work, with latest observed main commit `da18668a218ce75f4e832bd9d3ffa81dbdb2b71a`.
+
+No merge was requested or performed.
 
 ## ClickUp evidence boundary
 
@@ -92,7 +95,8 @@ Verified now:
 - the only matching route log returned was the controlled 403 probe;
 - historical templates Active state exists in durable evidence;
 - the old Business Manager deletion notice does not identify the later active GO IRL portfolio;
-- PR #611 remains Draft and unmerged, and currently is not mergeable.
+- PR #611 remains Draft, mergeable and unmerged after the latest branch update;
+- current `main` has advanced independently of WABA001.
 
 Still unverified:
 

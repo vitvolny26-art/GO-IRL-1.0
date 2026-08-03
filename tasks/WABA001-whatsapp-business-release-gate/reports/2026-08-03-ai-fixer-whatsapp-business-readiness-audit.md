@@ -162,15 +162,18 @@ No token was supplied to or called by this audit.
 
 ### GitHub state
 
-Draft PR #611 was read back as:
+Before the current external-audit commit, Draft PR #611 was read back as open, Draft, unmerged and temporarily `mergeable=false`.
+
+After branch head `301d63ded9ad0761f7c3f312bc2d5bb0f2140df3` was published, GitHub recalculated PR #611 as:
 
 - open;
 - Draft;
 - unmerged;
-- `mergeable=false` at the latest read;
-- head before this report synchronization: `581e089bb12b425d3b58c4e54dc31dcb83e83255`.
+- `mergeable=true`.
 
-`main` advanced through unrelated work. The WABA001 branch was not rebased or merged because the external Meta gate remains open.
+Recent repository commit readback shows current `main` advanced independently through unrelated Beauty work; latest observed main commit is `da18668a218ce75f4e832bd9d3ffa81dbdb2b71a`.
+
+No merge was requested or performed.
 
 ### ClickUp evidence boundary
 
@@ -186,7 +189,8 @@ The latest comment-read request returned an explicit ClickUp connector rate-limi
 - saved production webhook evidence;
 - performed a current external-state audit across Vercel, Drive, Gmail, GitHub and official Meta materials;
 - added `evidence/2026-08-03-current-external-evidence-audit.md`;
-- updated STATUS, task ROADMAP and this report.
+- updated STATUS, task ROADMAP and this report;
+- corrected the temporal PR mergeability record after GitHub recalculated it.
 
 No runtime code, production configuration, provider allowlist, auth, RLS, SQL, migrations or production data were changed.
 
@@ -194,7 +198,7 @@ No runtime code, production configuration, provider allowlist, auth, RLS, SQL, m
 
 Application code checks were not run because no application code changed.
 
-For the docs-only WABA001 branch, no CI PASS or FAIL is claimed.
+For the docs-only WABA001 branch, no CI PASS or FAIL is claimed until exact-head checks are read.
 
 Runtime evidence is independently supported by the authenticated Vercel response, scoped log readback, aggregate route error query and route status grouping.
 
@@ -212,20 +216,23 @@ Repository: `vitvolny26-art/Go-IRL-1.1`
 
 Task base: `7068b37adeb8756315ce2f6e5fe49a3d2c744273`
 
+Latest observed `main`: `da18668a218ce75f4e832bd9d3ffa81dbdb2b71a`
+
 ## Branch
 
 `task/waba001-whatsapp-business-release-gate-20260803`
 
 ## Commit
 
-The current external evidence, STATUS, ROADMAP and report are grouped in one WABA001 documentation commit.
+- current external evidence: `301d63ded9ad0761f7c3f312bc2d5bb0f2140df3`;
+- mergeability-record correction: next documentation head.
 
 ## Pull request
 
 Draft PR #611:
 https://github.com/vitvolny26-art/Go-IRL-1.1/pull/611
 
-Keep open, Draft and unmerged. It is currently not mergeable against advanced `main` and should be synchronized only after the external Meta gate is resolved or when needed for review.
+Latest verified state: open, Draft, mergeable and unmerged. Keep Draft. No merge authorized.
 
 ## ClickUp
 
@@ -256,7 +263,6 @@ https://docs.google.com/document/d/1Ma0zKGAbcBDmrqKmQHLTGZplej90NIVDsOs1syMDOPA/
 - token creation and Production verify-token presence are confirmed, but full token/WABA/number readiness is not;
 - current Business verification, WABA/app assignment, production number and positive webhook subscription require redacted owner evidence;
 - ClickUp comments are temporarily unreadable because of connector rate limiting;
-- Draft PR #611 is currently not mergeable against advanced `main`;
 - protected production configuration and live messaging require separate explicit owner approval;
 - no consented test recipient has been verified.
 

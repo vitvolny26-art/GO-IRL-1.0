@@ -22,7 +22,9 @@ Phase 2 — external Meta Business/WABA asset verification.
 - historical durable Drive evidence still records only the Meta test number and no consented live WhatsApp recipient at the last phone checkpoint;
 - Gmail evidence shows that an old deletion notice and a later active GO IRL Business Manager notification reference different assets, so the deletion notice is not attributed to the later active portfolio;
 - scoped Gmail searches returned no current WhatsApp/business-verification/production-phone confirmation email; search absence is not treated as account-state proof;
-- Draft PR #611 was read back open and unmerged; it is currently `mergeable=false` after `main` advanced;
+- Draft PR #611 was read back open, Draft, unmerged and `mergeable=true` after branch head `301d63d…` was published;
+- an earlier `mergeable=false` read was transient and preceded that branch update;
+- latest observed repository `main` is `da18668a218ce75f4e832bd9d3ffa81dbdb2b71a`, advanced through unrelated work;
 - ClickUp task comments could not be verified because the connector returned a rate-limit response;
 - production configuration was not changed by WABA001;
 - provider allowlist was not changed;
@@ -60,7 +62,7 @@ Obtain redacted current statuses from Meta Business / WhatsApp Manager for:
 - controlled inbound/outbound lifecycle;
 - retry/idempotency and STOP/opt-out;
 - provider allowlist decision;
-- synchronization of Draft PR #611 with current `main` after the external gate is resolved;
+- synchronize the task branch with then-current `main` before final review/merge if required;
 - full repository gates if application code changes are later required.
 
 ## Blockers
@@ -68,10 +70,9 @@ Obtain redacted current statuses from Meta Business / WhatsApp Manager for:
 - no authenticated Meta Business/WhatsApp Manager connector in this session;
 - token creation and production verify-token presence are confirmed, but full token/WABA/number readiness is not;
 - ClickUp comments are temporarily unreadable because of connector rate limiting;
-- Draft PR #611 is currently not mergeable against advanced `main`;
 - protected production configuration and live messaging require separate explicit owner approval;
 - no consented test recipient has been verified in this task.
 
 ## Completion conditions
 
-All TASK.md acceptance criteria are verified, evidence and report are saved, ClickUp and Drive are current, the task branch is synchronized with current main, and any code/config/provider changes have the required explicit approvals. No automatic merge or deployment.
+All TASK.md acceptance criteria are verified, evidence and report are saved, ClickUp and Drive are current, the task branch is synchronized with then-current main before final review if needed, and any code/config/provider changes have the required explicit approvals. No automatic merge or deployment.

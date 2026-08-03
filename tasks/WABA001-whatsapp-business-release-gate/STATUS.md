@@ -5,8 +5,10 @@
 - Status: In Progress — external Meta account readiness gate
 - Branch: `task/waba001-whatsapp-business-release-gate-20260803`
 - Task base: `7068b37adeb8756315ce2f6e5fe49a3d2c744273`
-- Latest verified task head before this sync: `581e089bb12b425d3b58c4e54dc31dcb83e83255`
-- Pull request: https://github.com/vitvolny26-art/Go-IRL-1.1/pull/611 — open, Draft, unmerged, currently `mergeable=false`
+- Latest verified task head before this sync: `301d63ded9ad0761f7c3f312bc2d5bb0f2140df3`
+- Pull request: https://github.com/vitvolny26-art/Go-IRL-1.1/pull/611 — open, Draft, unmerged; latest readback `mergeable=true`
+- PR state sequence: before the external-audit commit GitHub temporarily returned `mergeable=false`; after branch head `301d63d…` was published, GitHub recalculated it to `mergeable=true`
+- Latest observed repository `main`: `da18668a218ce75f4e832bd9d3ffa81dbdb2b71a`; these unrelated changes are not attributed to WABA001
 - Token state: owner confirmed Meta/WhatsApp token or tokens were created
 - Token values: not provided, read or stored
 - Token readiness pending: temporary/permanent type, system-user ownership, permissions, assigned assets, expiry/rotation, active WABA/number validity and current Production access-token presence
@@ -26,7 +28,6 @@
 - Live WhatsApp messages sent: none
 - WABA001 merge: not performed
 - WABA001 deployment: not performed
-- Unrelated main production deployments are not attributed to WABA001
 - CI: no CI PASS/FAIL claimed for this docs-only branch
 - ClickUp: https://app.clickup.com/t/869e81k1r — last verified In Progress / High / WhatsApp-only scope
 - Drive task folder: https://drive.google.com/drive/folders/1m24-XdL57IjBX8oPJBn8XuKFo8nLa2m0
