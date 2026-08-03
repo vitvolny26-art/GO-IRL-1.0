@@ -68,7 +68,7 @@
   display: grid;
   grid-template-columns: 38px minmax(var(--participant-name-width, 100px), max-content);
   align-items: center;
-  gap: 9px;
+  gap: 29px;
   width: 100%;
   min-width: 0;
   min-height: 46px;
