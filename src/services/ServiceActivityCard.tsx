@@ -19,10 +19,10 @@ const remindersKey = "go-irl-services-reminders-v2";
 const defaultSlots = ["09:00", "10:30", "12:00", "14:30", "16:00"];
 
 const text = {
-  ru: { details: "Подробнее", book: "Записаться", free: "свободно", duration: "Длительность", price: "Цена", address: "Адрес", date: "Дата", master: "Мастер", close: "Закрыть", booking: "Запись к мастеру", chooseDate: "Выберите дату", chooseTime: "Выберите время", send: "Отправить запрос", sent: "Запрос отправлен", reminder: "Напомнить", reminderTitle: "Напоминание о записи", save: "Сохранить напоминание", slots: "Свободные окна" },
-  uk: { details: "Докладніше", book: "Записатися", free: "вільно", duration: "Тривалість", price: "Ціна", address: "Адреса", date: "Дата", master: "Майстер", close: "Закрити", booking: "Запис до майстра", chooseDate: "Оберіть дату", chooseTime: "Оберіть час", send: "Надіслати запит", sent: "Запит надіслано", reminder: "Нагадати", reminderTitle: "Нагадування про запис", save: "Зберегти нагадування", slots: "Вільні вікна" },
-  cs: { details: "Podrobnosti", book: "Rezervovat", free: "volno", duration: "Délka", price: "Cena", address: "Adresa", date: "Datum", master: "Profesionál", close: "Zavřít", booking: "Rezervace", chooseDate: "Vyberte datum", chooseTime: "Vyberte čas", send: "Odeslat žádost", sent: "Žádost odeslána", reminder: "Připomenout", reminderTitle: "Připomínka rezervace", save: "Uložit připomínku", slots: "Volné termíny" },
-  en: { details: "Details", book: "Book", free: "free", duration: "Duration", price: "Price", address: "Address", date: "Date", master: "Professional", close: "Close", booking: "Book a professional", chooseDate: "Choose a date", chooseTime: "Choose a time", send: "Send request", sent: "Request sent", reminder: "Remind me", reminderTitle: "Booking reminder", save: "Save reminder", slots: "Available slots" },
+  ru: { details: "Подробнее", book: "Записаться", duration: "Длительность", price: "Цена", address: "Адрес", date: "Дата", master: "Мастер", close: "Закрыть", booking: "Запись к мастеру", chooseDate: "Выберите дату", chooseTime: "Выберите время", send: "Отправить запрос", sent: "Запрос отправлен", reminder: "Напомнить", reminderTitle: "Напоминание о записи", save: "Сохранить напоминание", slots: "Свободные окна" },
+  uk: { details: "Докладніше", book: "Записатися", duration: "Тривалість", price: "Ціна", address: "Адреса", date: "Дата", master: "Майстер", close: "Закрити", booking: "Запис до майстра", chooseDate: "Оберіть дату", chooseTime: "Оберіть час", send: "Надіслати запит", sent: "Запит надіслано", reminder: "Нагадати", reminderTitle: "Нагадування про запис", save: "Зберегти нагадування", slots: "Вільні вікна" },
+  cs: { details: "Podrobnosti", book: "Rezervovat", duration: "Délka", price: "Cena", address: "Adresa", date: "Datum", master: "Profesionál", close: "Zavřít", booking: "Rezervace", chooseDate: "Vyberte datum", chooseTime: "Vyberte čas", send: "Odeslat žádost", sent: "Žádost odeslána", reminder: "Připomenout", reminderTitle: "Připomínka rezervace", save: "Uložit připomínku", slots: "Volné termíny" },
+  en: { details: "Details", book: "Book", duration: "Duration", price: "Price", address: "Address", date: "Date", master: "Professional", close: "Close", booking: "Book a professional", chooseDate: "Choose a date", chooseTime: "Choose a time", send: "Send request", sent: "Request sent", reminder: "Remind me", reminderTitle: "Booking reminder", save: "Save reminder", slots: "Available slots" },
 } satisfies Record<Language, Record<string, string>>;
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -35,9 +35,11 @@ const readJson = <T,>(key: string, fallback: T): T => {
 
 const freeSlotsFor = (date: string) => {
   const pilot = readJson<PilotData>(pilotKey, {});
+  const bookings = readJson<Booking[]>(bookingsKey, []);
   const occupied = new Set([
     ...(pilot.appointments || []).filter((item) => item.date === date && ["pending", "confirmed"].includes(item.status)).map((item) => item.time),
     ...(pilot.blocks || []).filter((item) => item.date === date).map((item) => item.time),
+    ...bookings.filter((item) => item.date === date && item.status === "pending").map((item) => item.time),
   ]);
   return defaultSlots.filter((slot) => !occupied.has(slot));
 };
@@ -71,13 +73,15 @@ export function ServiceActivityCard({ professional, language }: { professional: 
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSent, setBookingSent] = useState(false);
+  const [slotsOpen, setSlotsOpen] = useState(false);
   const [date, setDate] = useState(today);
-  const freeSlots = useMemo(() => freeSlotsFor(date), [date, bookingOpen]);
+  const freeSlots = useMemo(() => freeSlotsFor(date), [date, bookingOpen, bookingSent]);
   const [time, setTime] = useState(() => freeSlotsFor(today())[0] || "09:00");
   const artwork = getServiceArtwork(professional.serviceName);
   const url = new URL(professional.publicLink, window.location.origin).toString();
   const avatar = professional.displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   const nextSlot = freeSlots[0] || time;
+  const occupiedCount = defaultSlots.length - freeSlots.length;
   const submitBooking = (event: FormEvent) => {
     event.preventDefault();
     const bookings = readJson<Booking[]>(bookingsKey, []);
@@ -95,7 +99,7 @@ export function ServiceActivityCard({ professional, language }: { professional: 
         <div><Ticket /><span><small>{labels.price}</small><strong>{professional.priceCzk} {professional.currency}</strong></span></div>
         <button type="button" onClick={openMap}><MapPin /><span><small>{labels.address}</small><strong>{professional.publicLocation}</strong></span></button>
         <div><Clock3 /><span><small>{labels.duration}</small><strong>{professional.durationMinutes} min</strong></span></div>
-        <div><UsersRound /><span><small>{labels.slots}</small><strong>{freeSlots.length}</strong></span></div>
+        <div><UsersRound /><span><small>{labels.slots}</small><strong>{occupiedCount}/{defaultSlots.length}</strong></span></div>
       </div>
       {artwork && <img className="service-sheet-portfolio" src={artwork.portfolio} alt="" />}
       <button className="service-sheet-book" type="button" onClick={() => { setDetailsOpen(false); setBookingOpen(true); }}>{labels.book}</button>
@@ -117,10 +121,13 @@ export function ServiceActivityCard({ professional, language }: { professional: 
         <ServiceReminderAction professional={professional} date={date} time={nextSlot} language={language} />
         <CardShareAction title={professional.displayName} date={`${date} · ${nextSlot}`} address={professional.publicLocation} url={url} label={labels.book} />
       </div>
-      <div className="service-free-slots-badge"><UsersRound /><strong>{freeSlots.length}</strong><span>{labels.free}</span></div>
+      <div className="service-card-right-stack">
+        <button className="service-free-slots-badge" type="button" aria-expanded={slotsOpen} onClick={() => setSlotsOpen((value) => !value)}><UsersRound /><strong>{occupiedCount}/{defaultSlots.length}</strong></button>
+        {slotsOpen && <div className="service-free-slots-list" role="list">{freeSlots.map((slot) => <button type="button" key={slot} onClick={() => { setTime(slot); setSlotsOpen(false); setBookingOpen(true); }}>{slot}</button>)}</div>}
+        <div className="service-duration-badge"><Clock3 /><strong>{professional.durationMinutes}</strong><span>min</span></div>
+      </div>
       <button className="services-professional-main" type="button" onClick={() => setDetailsOpen(true)}><strong>{professional.displayName}</strong><span>{professional.serviceName}</span></button>
-      <div className="services-professional-summary"><span><Clock3 />{professional.durationMinutes} min</span><span><Ticket /><b>{professional.priceCzk}</b> {professional.currency}</span></div>
-      <div className="services-professional-meta">
+      <div className="services-professional-meta service-professional-meta-row">
         <div className="service-master-avatar"><span>{avatar}</span></div>
         <div><CalendarDays /><span><small>{labels.date}</small><strong>{date}</strong></span></div>
         <div><Ticket /><span><small>{labels.price}</small><strong>{professional.priceCzk} {professional.currency}</strong></span></div>
