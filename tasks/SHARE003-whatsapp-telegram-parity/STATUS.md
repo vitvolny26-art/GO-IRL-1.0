@@ -3,35 +3,46 @@
 - Last verified: 2026-08-04
 - Task ID: `SHARE003`
 - Required display/name prefix: `Share003-`
-- Status: In Progress — n8n dependency audit complete; physical provider smoke pending
-- Owner role: n8n Administrator / Automation Engineer
+- Status: In Progress — n8n dependency audit complete; physical WhatsApp provider execution pending
+- Owner role: AI Fixer
 - Active branch: `fix/share003-whatsapp-telegram-parity-20260803`
-- Audit starting head: `3a7c287f6548f2f793e91bd9e36528d01e886742`
 - Pull request: Draft PR #608 — https://github.com/vitvolny26-art/Go-IRL-1.1/pull/608
-- PR readback: open, Draft, mergeable, unmerged
+- PR state at preflight head: open, Draft, mergeable, unmerged
+- Verified base `main`: `a904248693da99895d9298260c0e9b746cac7eac`
+- n8n completion head: `1a99a23e979ce3da64a35d9d701349984e11f256`
+- Physical smoke preflight head: `484e90160cf2065e969fb8dc9de5b9967a884cd9`
 - Product decision: organic WhatsApp sharing continues without company registration or documentary Meta verification
 - Organic route: `GO IRL share action -> wa.me -> public event-preview URL -> WhatsApp-generated preview`
 - WhatsApp Business/Cloud API: out of scope; governed separately by WABA001
-- n8n inventory: 34 current workflows
-- Node-level inspection: 34/34 complete
-- Currently active workflows: 5/5 inspectable and unrelated to Share003
-- Former blocker `B6RqcoG2DEDRYlAT`: stale entry relative to the current authoritative inventory; deletion/archive/tenant move not asserted
-- Execution metadata: latest 200 global records plus targeted metadata searches inspected; no raw payloads retrieved
-- Historical deployment workflow `6khfY6PmKkIVB9Qv`: current inactive/manual state; temporary webhook removed; final observed execution completed; not a Share003 runtime dependency
 - n8n dependency conclusion: `Result A — n8n is not a Share003 runtime dependency`
-- Preview URL replacement/shortening by n8n: not found
-- WhatsApp Business/Cloud API send by n8n: not found
-- n8n card generation instead of `api/meta/event-preview`: not found
-- ordinary `wa.me` production-webhook dependency: not found
-- active n8n workflow able to change Share003 after merge: not found
-- duplicate or stale social-sharing automation: not found
-- Completion evidence: `tasks/SHARE003-whatsapp-telegram-parity/evidence/Share003-2026-08-04-n8n-workflow-audit-completion.md`
-- Completion report: `tasks/SHARE003-whatsapp-telegram-parity/reports/2026-08-04-n8n-administrator-share003-audit-completion.md`
-- Exact-head CI: required after completion-doc update; final run/job IDs recorded in delivery response
-- Drive mirror: required under `AI Tasks/SHARE003-whatsapp-telegram-parity/Reports/`
-- ClickUp: `869e3k1v5`; update only with verified evidence
+- n8n inventory: 34/34 current workflows inspected at node level
+- n8n execution metadata: latest 200 global records plus targeted metadata inspected; no raw payloads retrieved
+- Active n8n workflows: 5/5 inspectable and unrelated to Share003
+- Former blocker `B6RqcoG2DEDRYlAT`: stale relative to current authoritative inventory; deletion/archive/tenant move not asserted
+- n8n completion evidence: `tasks/SHARE003-whatsapp-telegram-parity/evidence/Share003-2026-08-04-n8n-workflow-audit-completion.md`
+- n8n completion report: `tasks/SHARE003-whatsapp-telegram-parity/reports/2026-08-04-n8n-administrator-share003-audit-completion.md`
+- Physical preflight evidence: `tasks/SHARE003-whatsapp-telegram-parity/evidence/Share003-2026-08-04-physical-whatsapp-smoke-preflight.md`
+- Vercel scope inspected: team `team_BuP2F4XGjFGussJqmQrISrbj`, project `prj_MtabJvddKyFSr98iC18Ztf7rlZjF`
+- Vercel deployment result: latest 20 accessible deployments are production `main`; no branch deployment for the Share003 branch or preflight head
+- Production `main` deployment is not accepted as evidence for this PR head
+- No preview or production deployment was started
+- Event-preview contract verified: trusted event lookup, RU/UK/CS/EN, canonical URL, OG title/description/image, 1200×630 dimensions, event/calendar actions and five-minute cache headers
+- Physical preflight CI: run `30862487202`, job `91847255080` — PASS
+- Repository check: PASS
+- Diff check: PASS
+- Test: PASS
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+- Bundle budget: PASS
+- Drive Result A mirror: https://docs.google.com/document/d/1Y_Pf79rCinwEN4IAYji358em_hfy1vb81LJC4p4nDJ0/edit
+- ClickUp: `869e3k1v5`; synchronization remains unavailable through the current connector state
 - Merge: not performed
 - Deployment: not performed
 - Production configuration/data: unchanged
-- Active blocker: physical Android/iOS/Web WhatsApp preview and cache verification
-- Next action: mirror the completion report, synchronize ClickUp with verified Result A, verify exact-head CI, and keep PR Draft pending physical provider evidence.
+- Active blockers:
+  - no branch-specific runtime deployment;
+  - no Android or iOS device session;
+  - no authenticated WhatsApp Web/Desktop session;
+  - WhatsApp-rendered preview, app switching and provider cache cannot be inferred from CI or HTML construction.
+- Next action: execute the saved physical matrix on Android, iOS and WhatsApp Web/Desktop for RU/UK/CS/EN; record redacted screenshots and PASS/FAIL evidence; keep PR Draft.
