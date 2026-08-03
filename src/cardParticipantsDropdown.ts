@@ -137,10 +137,8 @@ const ensureCardDropdown = (chip: HTMLElement, card: HTMLElement, activity: Acti
 };
 
 const ensureSheetDropdown = (toggle: HTMLElement, activity: Activity, language: Language) => {
-  let dropdown = toggle.nextElementSibling instanceof HTMLElement
-    && toggle.nextElementSibling.matches(".runtime-sheet-participants-dropdown")
-    ? toggle.nextElementSibling
-    : null;
+  const next = toggle.nextElementSibling;
+  let dropdown: HTMLElement | null = next instanceof HTMLElement && next.matches(".runtime-sheet-participants-dropdown") ? next : null;
   if (!dropdown) {
     dropdown = document.createElement("div");
     dropdown.className = "runtime-sheet-participants-dropdown";
