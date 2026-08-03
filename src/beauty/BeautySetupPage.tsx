@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, Eye, House, RotateCcw, Save, Settings2, Share2, Sparkles } from "lucide-react";
+import type { Language } from "../types";
 import {
+  beautyContentLanguages,
   beautySetupSteps,
   buildBeautyPublicProfile,
   createDefaultBeautyWorkspace,
   getBeautyStepProgress,
+  resolveBeautyLocalizedText,
   validateBeautyStep,
   type BeautySetupStep,
   type BeautyValidationCode,
@@ -15,12 +18,48 @@ import { getBeautyCopy, readBeautyLanguage } from "./beautyI18n";
 import { loadBeautyWorkspace, resetBeautyWorkspace, saveBeautyWorkspace } from "./beautyWorkspaceStorage";
 import { BeautyPilotWorkspace, resetBeautyPilotWorkspace } from "./BeautyPilotWorkspace";
 import "./beauty-setup.css";
+import "./beauty-multilingual-editor.css";
 
 const stepIndex = (step: BeautySetupStep) => beautySetupSteps.indexOf(step as (typeof beautySetupSteps)[number]);
+
+const contentLanguageNames: Record<Language, string> = {
+  ru: "Русский",
+  uk: "Українська",
+  cs: "Čeština",
+  en: "English",
+};
+
+const multilingualCopy = {
+  ru: {
+    title: "Тексты для клиентов",
+    hint: "Заполните доступные языки. Клиент увидит свой язык; если перевод пустой, используется английский, затем другой заполненный вариант.",
+    description: "Краткое описание",
+    service: "Название услуги в прайсе",
+  },
+  uk: {
+    title: "Тексти для клієнтів",
+    hint: "Заповніть доступні мови. Клієнт побачить свою мову; якщо переклад порожній, використовується англійська, потім інший заповнений варіант.",
+    description: "Короткий опис",
+    service: "Назва послуги в прайсі",
+  },
+  cs: {
+    title: "Texty pro klienty",
+    hint: "Vyplňte dostupné jazyky. Klient uvidí svůj jazyk; chybějící překlad použije angličtinu a poté jiný vyplněný text.",
+    description: "Krátký popis",
+    service: "Název služby v ceníku",
+  },
+  en: {
+    title: "Client-facing text",
+    hint: "Fill the available languages. Clients see their selected language; an empty translation falls back to English and then another completed value.",
+    description: "Short description",
+    service: "Price-list service name",
+  },
+} satisfies Record<Language, Record<string, string>>;
 
 export function BeautySetupPage() {
   const language = readBeautyLanguage();
   const text = getBeautyCopy(language);
+  const localizedText = multilingualCopy[language];
   const workspaceRoute = window.location.pathname.replace(/\/+$/, "") === "/beauty/workspace";
   const workspaceTitle = { ru: "Кабинет мастера", uk: "Кабінет майстра", cs: "Kabinet profesionála", en: "Professional workspace" }[language];
   const stepLabels = {
@@ -57,7 +96,7 @@ export function BeautySetupPage() {
       .finally(() => setSaving(false));
   }, [loading, text.saveError, workspace]);
 
-  const publicProfile = useMemo(() => buildBeautyPublicProfile(workspace), [workspace]);
+  const publicProfile = useMemo(() => buildBeautyPublicProfile(workspace, language), [language, workspace]);
   const progress = getBeautyStepProgress(workspace.currentStep);
   const update = (fn: (current: BeautyWorkspace) => BeautyWorkspace) => { setWorkspace(fn); setErrors([]); };
   const goTo = (step: BeautySetupStep) => update((current) => ({ ...current, currentStep: step }));
@@ -115,16 +154,57 @@ export function BeautySetupPage() {
     },
   }));
 
+  const updateDescription = (contentLanguage: Language, value: string) => update((current) => {
+    const descriptionByLanguage = { ...current.profile.descriptionByLanguage, [contentLanguage]: value };
+    return {
+      ...current,
+      profile: {
+        ...current.profile,
+        descriptionByLanguage,
+        description: resolveBeautyLocalizedText(descriptionByLanguage, language, current.profile.description),
+      },
+    };
+  });
+
+  const updateServiceName = (contentLanguage: Language, value: string) => update((current) => {
+    const nameByLanguage = { ...current.service.nameByLanguage, [contentLanguage]: value };
+    return {
+      ...current,
+      service: {
+        ...current.service,
+        nameByLanguage,
+        name: resolveBeautyLocalizedText(nameByLanguage, language, current.service.name),
+      },
+    };
+  });
+
+  const descriptionEditor = <section className="beauty-localized-editor beauty-span-two">
+    <div className="beauty-localized-heading"><strong>{localizedText.title}</strong><span>{localizedText.hint}</span></div>
+    <div className="beauty-localized-grid">{beautyContentLanguages.map((contentLanguage) => <label key={`description-${contentLanguage}`}>
+      <span>{localizedText.description} · {contentLanguageNames[contentLanguage]}</span>
+      <textarea rows={3} value={workspace.profile.descriptionByLanguage[contentLanguage]} onChange={(event) => updateDescription(contentLanguage, event.target.value)} />
+    </label>)}</div>
+  </section>;
+
+  const serviceNameEditor = <section className="beauty-localized-editor beauty-span-two">
+    <div className="beauty-localized-heading"><strong>{localizedText.title}</strong><span>{localizedText.hint}</span></div>
+    <div className="beauty-localized-grid">{beautyContentLanguages.map((contentLanguage) => <label key={`service-${contentLanguage}`}>
+      <span>{localizedText.service} · {contentLanguageNames[contentLanguage]}</span>
+      <input value={workspace.service.nameByLanguage[contentLanguage]} onChange={(event) => updateServiceName(contentLanguage, event.target.value)} />
+    </label>)}</div>
+  </section>;
+
   const profile = <div className="beauty-form-grid">
     <label>{text.publicName}<input value={workspace.profile.displayName} onChange={(e) => update((c) => ({ ...c, profile: { ...c.profile, displayName: e.target.value } }))} /></label>
     <label>{text.city}<input value={workspace.profile.city} onChange={(e) => update((c) => ({ ...c, profile: { ...c.profile, city: e.target.value } }))} /></label>
     <label>{text.publicArea}<input value={workspace.profile.publicLocation} onChange={(e) => update((c) => ({ ...c, profile: { ...c.profile, publicLocation: e.target.value } }))} /><small>{text.publicAreaHint}</small></label>
     <label>{text.contact}<input value={workspace.profile.contact} onChange={(e) => update((c) => ({ ...c, profile: { ...c.profile, contact: e.target.value } }))} /><small>{text.contactHint}</small></label>
     <label className="beauty-span-two">{text.exactAddress}<input value={workspace.profile.exactAddress} onChange={(e) => update((c) => ({ ...c, profile: { ...c.profile, exactAddress: e.target.value } }))} /><small>{text.exactAddressHint}</small></label>
+    {descriptionEditor}
   </div>;
 
   const service = <div className="beauty-form-grid">
-    <label className="beauty-span-two">{text.serviceName}<input value={workspace.service.name} onChange={(e) => update((c) => ({ ...c, service: { ...c.service, name: e.target.value } }))} /></label>
+    {serviceNameEditor}
     <label>{text.duration}<input type="number" min="1" value={workspace.service.durationMinutes} onChange={(e) => update((c) => ({ ...c, service: { ...c.service, durationMinutes: Number(e.target.value) } }))} /></label>
     <label>{text.price}<input type="number" min="0" value={workspace.service.priceCzk} onChange={(e) => update((c) => ({ ...c, service: { ...c.service, priceCzk: Number(e.target.value) } }))} /></label>
     <label>{text.buffer}<input type="number" min="0" value={workspace.service.bufferMinutes} onChange={(e) => update((c) => ({ ...c, service: { ...c.service, bufferMinutes: Number(e.target.value) } }))} /></label>
@@ -142,8 +222,8 @@ export function BeautySetupPage() {
   </div>;
 
   const review = <div className="beauty-review-list">
-    <button type="button" onClick={() => goTo("pro_setup_profile")}><span><strong>{workspace.profile.displayName}</strong><small>{workspace.profile.publicLocation}</small></span><span>{text.edit}</span></button>
-    <button type="button" onClick={() => goTo("pro_setup_service")}><span><strong>{workspace.service.name}</strong><small>{workspace.service.durationMinutes} min · {workspace.service.priceCzk} Kč</small></span><span>{text.edit}</span></button>
+    <button type="button" onClick={() => goTo("pro_setup_profile")}><span><strong>{workspace.profile.displayName}</strong><small>{publicProfile.description}</small></span><span>{text.edit}</span></button>
+    <button type="button" onClick={() => goTo("pro_setup_service")}><span><strong>{publicProfile.serviceName}</strong><small>{workspace.service.durationMinutes} min · {workspace.service.priceCzk} Kč</small></span><span>{text.edit}</span></button>
     <button type="button" onClick={() => goTo("pro_setup_availability")}><span><strong>{workspace.availability.weekdays.map((day) => text.weekdays[day]).join(", ")}</strong><small>{workspace.availability.startTime}–{workspace.availability.endTime}</small></span><span>{text.edit}</span></button>
     <div className="beauty-note"><strong>{text.privateData}</strong><span>{text.privateHint}</span></div>
   </div>;
@@ -160,6 +240,7 @@ export function BeautySetupPage() {
   const preview = <div className="beauty-public-preview" aria-label={text.previewTitle}>
     <span className="beauty-preview-badge">{text.publicPreview}</span>
     <h2>{publicProfile.displayName}</h2><p>{publicProfile.publicLocation}</p>
+    <div className="beauty-preview-card"><strong>{publicProfile.description}</strong><span>{publicProfile.serviceName}</span></div>
     <div className="beauty-preview-card"><strong>{publicProfile.serviceName}</strong><span>{publicProfile.durationMinutes} min</span><b>{publicProfile.priceCzk} Kč</b></div>
     <div className="beauty-preview-card"><strong>{text.available}</strong><span>{publicProfile.weekdays.map((day) => text.weekdays[day]).join(", ")}</span><span>{publicProfile.startTime}–{publicProfile.endTime}</span></div>
     <div className="beauty-note"><strong>{text.privacy}</strong><span>{text.privacyHint}</span></div>
