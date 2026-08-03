@@ -27,6 +27,7 @@ Make Beauty Telegram sharing open inside the Telegram Mini App, show the firm na
 - Task ID: `Beauty007`.
 - Implementation PR: `#604`.
 - Implementation merge commit: `68249d580f354e5e33f952307490cbe56a408975`.
+- Traceability PR: `#606`.
 - Migration: `supabase/migrations/20260803185000_beauty_public_slug.sql`.
 - Migration applied to Supabase project `tygfsvjkznypilfyyvdc` on 2026-08-03.
 - This PR restores the missing canonical task identifier and does not change runtime behavior.
