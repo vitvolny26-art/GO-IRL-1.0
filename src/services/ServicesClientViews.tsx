@@ -34,13 +34,13 @@ const copy = {
   en: { forYou: "For you", forYouHint: "Based on your profile preferences", catalog: "All professionals", profile: "Client profile", name: "Name", preferences: "Preferences", save: "Save", saved: "Saved", empty: "No matching professionals yet", catalogEmpty: "No professionals in the selected city yet", loading: "Loading professionals…", error: "The professional directory is temporarily unavailable" },
 } satisfies Record<Language, Record<string, string>>;
 
-function useProfessionalDirectory(cityId: string) {
+function useProfessionalDirectory(cityId: string, language: Language) {
   const [professionals, setProfessionals] = useState<ServicesProfessional[]>([]);
   const [state, setState] = useState<DirectoryState>("loading");
   useEffect(() => {
     let active = true;
     setState("loading");
-    void loadProfessionalDirectory(cityId)
+    void loadProfessionalDirectory(cityId, language)
       .then((items) => {
         if (!active) return;
         setProfessionals(items);
@@ -52,7 +52,7 @@ function useProfessionalDirectory(cityId: string) {
         setState("error");
       });
     return () => { active = false; };
-  }, [cityId]);
+  }, [cityId, language]);
   return { professionals, state };
 }
 
@@ -84,7 +84,7 @@ function ProfessionalSection({ title, professionals, language }: { title: string
 
 export function ServicesForYouView({ language, selectedCityId }: { language: Language; selectedCityId: string }) {
   const profile = useMemo(readProfile, []);
-  const { professionals, state } = useProfessionalDirectory(selectedCityId);
+  const { professionals, state } = useProfessionalDirectory(selectedCityId, language);
   const text = copy[language];
   const [query, setQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
@@ -120,7 +120,7 @@ export function ServicesForYouView({ language, selectedCityId }: { language: Lan
 }
 
 export function ServicesCatalogView({ language, selectedCityId }: { language: Language; selectedCityId: string }) {
-  const { professionals, state } = useProfessionalDirectory(selectedCityId);
+  const { professionals, state } = useProfessionalDirectory(selectedCityId, language);
   const city = getCity(selectedCityId);
   const text = copy[language];
   const targetSlug = useMemo(() => typeof window === "undefined" ? "" : beautyDeepLinkSlug(window.location.pathname, window.location.search), []);
