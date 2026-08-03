@@ -4,7 +4,10 @@ import type { PreparedTelegramShareResult } from "./telegramPreparedShare";
 
 const beautySlugFromUrl = (value: string) => {
   try {
-    const pathname = new URL(value, window.location.origin).pathname;
+    const origin = typeof window === "undefined"
+      ? "https://go-irl-1-0.vercel.app"
+      : window.location.origin;
+    const pathname = new URL(value, origin).pathname;
     const match = pathname.match(/^\/beauty\/(beauty-[a-f0-9]{16})\/?$/i);
     return match?.[1] || "";
   } catch {
