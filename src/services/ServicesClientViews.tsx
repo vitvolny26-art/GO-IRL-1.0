@@ -1,5 +1,22 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { ChevronDown, CircleUserRound, Clock3, Compass, Heart, MapPin, Save, Search, Share2, Sparkles, X } from "lucide-react";
+import {
+  Bell,
+  BellRing,
+  CalendarPlus,
+  ChevronDown,
+  CircleUserRound,
+  Clock3,
+  Compass,
+  Heart,
+  Info,
+  MapPin,
+  Save,
+  Search,
+  Share2,
+  Sparkles,
+  Ticket,
+  X,
+} from "lucide-react";
 import { getCity } from "../config/cities";
 import type { Language } from "../types";
 import {
@@ -14,7 +31,20 @@ type ClientProfile = { name: string; preferences: string[] };
 type DirectoryState = "loading" | "ready" | "empty" | "error";
 
 const profileKey = "go-irl-services-client-profile-v1";
+const bookingKey = "go-irl-services-bookings-v1";
+const reminderKey = "go-irl-services-reminders-v1";
 const preferenceOptions = ["Маникюр", "Волосы", "Брови и ресницы", "Массаж", "Уход за лицом"];
+
+const readStringList = (key: string) => {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "[]") as unknown;
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeStringList = (key: string, values: string[]) => localStorage.setItem(key, JSON.stringify(values));
 
 const readProfile = (): ClientProfile => {
   try {
@@ -29,10 +59,10 @@ const readProfile = (): ClientProfile => {
 };
 
 const copy = {
-  ru: { forYou: "Для вас", forYouHint: "По предпочтениям в профиле", catalog: "Все мастера", profile: "Профиль клиента", name: "Имя", preferences: "Предпочтения", save: "Сохранить", saved: "Сохранено", empty: "Подходящих мастеров пока нет", catalogEmpty: "В выбранном городе пока нет мастеров", loading: "Загружаем мастеров…", error: "Каталог мастеров временно недоступен" },
-  uk: { forYou: "Для вас", forYouHint: "За вподобаннями у профілі", catalog: "Усі майстри", profile: "Профіль клієнта", name: "Ім’я", preferences: "Вподобання", save: "Зберегти", saved: "Збережено", empty: "Відповідних майстрів поки немає", catalogEmpty: "У вибраному місті поки немає майстрів", loading: "Завантажуємо майстрів…", error: "Каталог майстрів тимчасово недоступний" },
-  cs: { forYou: "Pro vás", forYouHint: "Podle preferencí v profilu", catalog: "Všichni profesionálové", profile: "Profil klienta", name: "Jméno", preferences: "Preference", save: "Uložit", saved: "Uloženo", empty: "Zatím žádní odpovídající profesionálové", catalogEmpty: "Ve vybraném městě zatím nejsou profesionálové", loading: "Načítáme profesionály…", error: "Katalog profesionálů je dočasně nedostupný" },
-  en: { forYou: "For you", forYouHint: "Based on your profile preferences", catalog: "All professionals", profile: "Client profile", name: "Name", preferences: "Preferences", save: "Save", saved: "Saved", empty: "No matching professionals yet", catalogEmpty: "No professionals in the selected city yet", loading: "Loading professionals…", error: "The professional directory is temporarily unavailable" },
+  ru: { forYou: "Для вас", forYouHint: "По предпочтениям в профиле", catalog: "Все мастера", profile: "Профиль клиента", name: "Имя", preferences: "Предпочтения", save: "Сохранить", saved: "Сохранено", empty: "Подходящих мастеров пока нет", catalogEmpty: "В выбранном городе пока нет мастеров", loading: "Загружаем мастеров…", error: "Каталог мастеров временно недоступен", details: "Подробнее", hide: "Свернуть", book: "Записаться", booked: "Записано", share: "Поделиться", reminder: "Напомнить", reminded: "Напоминание", location: "Адрес", duration: "Длительность", price: "Цена", service: "Услуга", openMap: "Открыть карту" },
+  uk: { forYou: "Для вас", forYouHint: "За вподобаннями у профілі", catalog: "Усі майстри", profile: "Профіль клієнта", name: "Ім’я", preferences: "Вподобання", save: "Зберегти", saved: "Збережено", empty: "Відповідних майстрів поки немає", catalogEmpty: "У вибраному місті поки немає майстрів", loading: "Завантажуємо майстрів…", error: "Каталог майстрів тимчасово недоступний", details: "Докладніше", hide: "Згорнути", book: "Записатися", booked: "Записано", share: "Поділитися", reminder: "Нагадати", reminded: "Нагадування", location: "Адреса", duration: "Тривалість", price: "Ціна", service: "Послуга", openMap: "Відкрити мапу" },
+  cs: { forYou: "Pro vás", forYouHint: "Podle preferencí v profilu", catalog: "Všichni profesionálové", profile: "Profil klienta", name: "Jméno", preferences: "Preference", save: "Uložit", saved: "Uloženo", empty: "Zatím žádní odpovídající profesionálové", catalogEmpty: "Ve vybraném městě zatím nejsou profesionálové", loading: "Načítáme profesionály…", error: "Katalog profesionálů je dočasně nedostupný", details: "Podrobnosti", hide: "Skrýt", book: "Rezervovat", booked: "Rezervováno", share: "Sdílet", reminder: "Připomenout", reminded: "Připomínka", location: "Adresa", duration: "Délka", price: "Cena", service: "Služba", openMap: "Otevřít mapu" },
+  en: { forYou: "For you", forYouHint: "Based on your profile preferences", catalog: "All professionals", profile: "Client profile", name: "Name", preferences: "Preferences", save: "Save", saved: "Saved", empty: "No matching professionals yet", catalogEmpty: "No professionals in the selected city yet", loading: "Loading professionals…", error: "The professional directory is temporarily unavailable", details: "Details", hide: "Collapse", book: "Book", booked: "Booked", share: "Share", reminder: "Remind me", reminded: "Reminder set", location: "Location", duration: "Duration", price: "Price", service: "Service", openMap: "Open map" },
 } satisfies Record<Language, Record<string, string>>;
 
 function useProfessionalDirectory(selectedCityId: string) {
@@ -59,42 +89,48 @@ function useProfessionalDirectory(selectedCityId: string) {
   return { professionals, state };
 }
 
-function ProfessionalCards({
-  professionals,
-  state,
-  empty,
-  loading,
-  error,
-}: {
+function ProfessionalCards({ professionals, state, empty, loading, error, language }: {
   professionals: ServicesProfessional[];
   state: DirectoryState;
   empty: string;
   loading: string;
   error: string;
+  language: Language;
 }) {
   if (state !== "ready") {
     const message = state === "loading" ? loading : state === "error" ? error : empty;
     return <div className="services-client-empty"><Heart /><span>{message}</span></div>;
   }
   return <div className="services-professional-grid">{professionals.map((professional) => (
-    <ProfessionalCard key={professional.profileId} professional={professional} />
+    <ProfessionalCard key={professional.profileId} professional={professional} language={language} />
   ))}</div>;
 }
 
-function ProfessionalCard({ professional }: { professional: ServicesProfessional }) {
+function ProfessionalCard({ professional, language }: { professional: ServicesProfessional; language: Language }) {
+  const text = copy[language];
   const [expanded, setExpanded] = useState(false);
-  const toggle = () => setExpanded((current) => !current);
+  const [booked, setBooked] = useState(() => readStringList(bookingKey).includes(professional.profileId));
+  const [reminded, setReminded] = useState(() => readStringList(reminderKey).includes(professional.profileId));
   const artwork = getServiceArtwork(professional.serviceName);
+  const url = new URL(professional.publicLink, window.location.origin).toString();
+
+  const toggleStoredState = (key: string, active: boolean, setter: (next: boolean) => void) => {
+    const values = new Set(readStringList(key));
+    if (active) values.delete(professional.profileId);
+    else values.add(professional.profileId);
+    writeStringList(key, [...values]);
+    setter(!active);
+  };
+
   const share = async () => {
-    const url = new URL(professional.publicLink, window.location.origin).toString();
     if (navigator.share) {
       const data: ShareData = { title: `${professional.displayName} · ${professional.serviceName}`, url };
       if (artwork && navigator.canShare) {
         try {
           const response = await fetch(artwork.share);
-          const file = new File([await response.blob()], "s-01-manicure.webp", { type: "image/webp" });
+          const file = new File([await response.blob()], "service.webp", { type: "image/webp" });
           if (navigator.canShare({ files: [file] })) data.files = [file];
-        } catch { /* Link sharing remains available when the image cannot be loaded. */ }
+        } catch { /* Link sharing remains available. */ }
       }
       await navigator.share(data);
       return;
@@ -102,34 +138,53 @@ function ProfessionalCard({ professional }: { professional: ServicesProfessional
     await navigator.clipboard.writeText(url);
   };
 
+  const openMap = () => window.open(`https://mapy.cz/zakladni?q=${encodeURIComponent(professional.publicLocation)}`, "_blank", "noopener,noreferrer");
+
   return <article className={expanded ? "services-professional-card is-expanded" : "services-professional-card"}>
     <div className="services-professional-artwork" aria-hidden="true">
       {artwork ? <img src={artwork.sheet} alt="" decoding="async" /> : <span>{professional.displayName.slice(0, 1).toUpperCase()}</span>}
     </div>
-    <button className="services-professional-main" type="button" onClick={toggle} aria-expanded={expanded}>
+
+    <div className="services-professional-top-actions">
+      <button className={reminded ? "is-active" : ""} type="button" onClick={() => toggleStoredState(reminderKey, reminded, setReminded)} aria-label={reminded ? text.reminded : text.reminder} title={reminded ? text.reminded : text.reminder}>{reminded ? <BellRing /> : <Bell />}</button>
+      <button type="button" onClick={() => { void share().catch(() => undefined); }} aria-label={text.share} title={text.share}><Share2 /></button>
+    </div>
+
+    <button className="services-professional-main" type="button" onClick={() => setExpanded(true)} aria-expanded={expanded}>
       <strong>{professional.displayName}</strong>
       <span>{professional.serviceName}</span>
     </button>
-    <button className="services-professional-expand" type="button" onClick={toggle} aria-label={expanded ? "Закрыть подробности" : "Открыть подробности"} aria-expanded={expanded}>
-      {expanded ? <X /> : <ChevronDown />}
-    </button>
+
     <div className="services-professional-summary">
-      <span><Clock3 />{professional.durationMinutes} мин</span>
-      <span><b>{professional.priceCzk}</b> {professional.currency}</span>
+      <span><Clock3 />{professional.durationMinutes} min</span>
+      <span><Ticket /><b>{professional.priceCzk}</b> {professional.currency}</span>
     </div>
+
+    <div className="services-professional-meta">
+      <button type="button" onClick={openMap}><MapPin /><span><small>{text.location}</small><strong>{professional.publicLocation}</strong></span></button>
+      <div><Clock3 /><span><small>{text.duration}</small><strong>{professional.durationMinutes} min</strong></span></div>
+      <div><Ticket /><span><small>{text.price}</small><strong>{professional.priceCzk} {professional.currency}</strong></span></div>
+    </div>
+
+    <div className="services-professional-actions">
+      <button className="secondary" type="button" onClick={() => setExpanded((current) => !current)}><Info />{expanded ? text.hide : text.details}</button>
+      <button className={booked ? "primary is-active" : "primary"} type="button" onClick={() => toggleStoredState(bookingKey, booked, setBooked)}><CalendarPlus />{booked ? text.booked : text.book}</button>
+    </div>
+
     {expanded && <div className="services-professional-details">
       <div><MapPin /><span>{professional.publicLocation}</span></div>
-      <div><Clock3 /><span>{professional.serviceName} · {professional.durationMinutes} мин</span></div>
+      <div><Clock3 /><span>{professional.serviceName} · {professional.durationMinutes} min</span></div>
       {artwork && <img className="services-professional-portfolio" src={artwork.portfolio} alt="" decoding="async" />}
-      <button className="services-professional-share" type="button" onClick={() => { void share().catch(() => undefined); }}><Share2 />Поделиться</button>
-      <button type="button" onClick={toggle}>Свернуть карточку</button>
+      <button className="services-professional-share" type="button" onClick={() => { void share().catch(() => undefined); }}><Share2 />{text.share}</button>
+      <a href={professional.publicLink}><Sparkles />{text.service}</a>
+      <button type="button" onClick={() => setExpanded(false)}><X />{text.hide}</button>
     </div>}
   </article>;
 }
 
-function ProfessionalSection({ title, professionals }: { title: string; professionals: ServicesProfessional[] }) {
+function ProfessionalSection({ title, professionals, language }: { title: string; professionals: ServicesProfessional[]; language: Language }) {
   if (!professionals.length) return null;
-  return <section className="discover-section"><div className="section-title"><h2>{title}</h2></div><ProfessionalCards professionals={professionals} state="ready" empty="" loading="" error="" /></section>;
+  return <section className="discover-section"><div className="section-title"><h2>{title}</h2></div><ProfessionalCards professionals={professionals} state="ready" empty="" loading="" error="" language={language} /></section>;
 }
 
 export function ServicesForYouView({ language, selectedCityId }: { language: Language; selectedCityId: string }) {
@@ -139,10 +194,7 @@ export function ServicesForYouView({ language, selectedCityId }: { language: Lan
   const [query, setQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [locationState, setLocationState] = useState<"idle" | "ready" | "blocked">("idle");
-  const interestMatches = useMemo(() => professionals.filter((professional) => (
-    profile.preferences.length === 0
-    || profile.preferences.some((preference) => professional.serviceName.toLocaleLowerCase().includes(preference.toLocaleLowerCase()))
-  )), [professionals, profile.preferences]);
+  const interestMatches = useMemo(() => professionals.filter((professional) => profile.preferences.length === 0 || profile.preferences.some((preference) => professional.serviceName.toLocaleLowerCase().includes(preference.toLocaleLowerCase()))), [professionals, profile.preferences]);
   const matched = useMemo(() => professionals.filter((professional) => {
     const service = professional.serviceName.toLocaleLowerCase();
     const searchValue = `${professional.displayName} ${service} ${professional.publicLocation}`.toLocaleLowerCase();
@@ -166,12 +218,12 @@ export function ServicesForYouView({ language, selectedCityId }: { language: Lan
     <div className="page-title"><Sparkles /><div><h1>{text.forYou}</h1><p>{text.forYouHint}</p></div></div>
     <label className="discover-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={labels.search} /></label>
     <div className="discover-filter-block"><span>{labels.filters}</span><div className="filter-row discover-filters">{preferenceOptions.map((filter) => <button className={activeFilters.includes(filter) ? "filter active" : "filter"} key={filter} onClick={() => toggleFilter(filter)} type="button">{filter === "Маникюр" && <img className="service-filter-icon" src={manicureArtwork.icon} alt="" />}{filter}</button>)}</div></div>
-    {(query || activeFilters.length > 0) && <section className="discover-section"><div className="section-title"><h2>{labels.matched}</h2></div><ProfessionalCards professionals={matched} state={matchedState} empty={text.empty} loading={text.loading} error={text.error} /></section>}
-    {state !== "ready" ? <ProfessionalCards professionals={[]} state={state} empty={text.empty} loading={text.loading} error={text.error} /> : <>
-      <ProfessionalSection title={labels.interests} professionals={interestMatches.slice(0, 8)} />
-      <ProfessionalSection title={labels.nearest} professionals={professionals.slice(0, 8)} />
-      <ProfessionalSection title={labels.newest} professionals={newest} />
-      <section className="discover-section"><div className="section-title discover-section-title"><MapPin /><h2>{labels.nearMe}</h2>{locationState === "idle" && <button onClick={enableLocation} type="button">{labels.location}</button>}</div>{locationState === "blocked" && <div className="nearby-note">{labels.blocked}</div>}{locationState === "ready" && <ProfessionalCards professionals={professionals.slice(0, 8)} state="ready" empty={text.empty} loading={text.loading} error={text.error} />}</section>
+    {(query || activeFilters.length > 0) && <section className="discover-section"><div className="section-title"><h2>{labels.matched}</h2></div><ProfessionalCards professionals={matched} state={matchedState} empty={text.empty} loading={text.loading} error={text.error} language={language} /></section>}
+    {state !== "ready" ? <ProfessionalCards professionals={[]} state={state} empty={text.empty} loading={text.loading} error={text.error} language={language} /> : <>
+      <ProfessionalSection title={labels.interests} professionals={interestMatches.slice(0, 8)} language={language} />
+      <ProfessionalSection title={labels.nearest} professionals={professionals.slice(0, 8)} language={language} />
+      <ProfessionalSection title={labels.newest} professionals={newest} language={language} />
+      <section className="discover-section"><div className="section-title discover-section-title"><MapPin /><h2>{labels.nearMe}</h2>{locationState === "idle" && <button onClick={enableLocation} type="button">{labels.location}</button>}</div>{locationState === "blocked" && <div className="nearby-note">{labels.blocked}</div>}{locationState === "ready" && <ProfessionalCards professionals={professionals.slice(0, 8)} state="ready" empty={text.empty} loading={text.loading} error={text.error} language={language} />}</section>
     </>}
   </section>;
 }
@@ -180,7 +232,7 @@ export function ServicesCatalogView({ language, selectedCityId }: { language: La
   const { professionals, state } = useProfessionalDirectory(selectedCityId);
   const city = getCity(selectedCityId);
   const text = copy[language];
-  return <section className="page-section services-client-view"><div className="page-title"><Compass /><div><h1>{text.catalog}</h1><p>{city.name[language]}</p></div></div><ProfessionalCards professionals={professionals} state={state} empty={text.catalogEmpty} loading={text.loading} error={text.error} /></section>;
+  return <section className="page-section services-client-view"><div className="page-title"><Compass /><div><h1>{text.catalog}</h1><p>{city.name[language]}</p></div></div><ProfessionalCards professionals={professionals} state={state} empty={text.catalogEmpty} loading={text.loading} error={text.error} language={language} /></section>;
 }
 
 export function ServicesClientProfileView({ language, selectedCityId }: { language: Language; selectedCityId: string }) {
