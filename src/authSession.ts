@@ -3,6 +3,7 @@ import { createSingleFlight } from "./singleFlight";
 import { getTelegramInitData, getTelegramWebApp } from "./telegram";
 import type { UserRole } from "./types";
 import type { RoleInvitationTargetRole } from "./admin/roleInvitations";
+import { normalizeRoleInvitationResult } from "./admin/roleInvitationResult";
 import {
   fingerprintRoleInvitationStartParam,
   shouldProcessRoleInvitation,
@@ -165,7 +166,7 @@ async function performTrustedAuth(): Promise<AppAuthIdentity | null> {
       session?: { access_token: string; expires_at: number };
       user?: TrustedAuthUser;
       startParam?: string;
-      roleInvitation?: TrustedAuthSession["roleInvitation"];
+      roleInvitation?: unknown;
     };
 
     if (!response.ok || !payload.session?.access_token || !payload.user) {
@@ -173,15 +174,16 @@ async function performTrustedAuth(): Promise<AppAuthIdentity | null> {
       return null;
     }
 
+    const roleInvitation = normalizeRoleInvitationResult(payload.roleInvitation);
     const session: TrustedAuthSession = {
       accessToken: payload.session.access_token,
       expiresAt: payload.session.expires_at,
       user: payload.user,
       startParam: payload.startParam,
-      processedRoleInvitationFingerprint: payload.roleInvitation
+      processedRoleInvitationFingerprint: roleInvitation
         ? liveRoleInvitationFingerprint
         : trustedSession?.processedRoleInvitationFingerprint,
-      roleInvitation: payload.roleInvitation,
+      roleInvitation,
       source: "trusted-telegram",
     };
     writeTrustedSession(session);
