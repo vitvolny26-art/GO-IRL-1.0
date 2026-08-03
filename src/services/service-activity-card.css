@@ -92,3 +92,33 @@
   .service-calendar-grid>button,.service-calendar-grid>span{min-height:46px}
   .service-booking-slots{grid-template-columns:repeat(2,1fr)}
 }
+
+/* Compact Services metadata and in-card date picker. */
+.service-activity-card .services-professional-meta{bottom:76px;grid-template-columns:52px 82px 88px minmax(0,1fr)!important}
+.service-professional-meta-row>button,.service-professional-meta-row>div{min-height:60px;align-items:center!important;justify-content:center!important;padding:22px 6px 5px!important;text-align:center!important}
+.service-professional-meta-row .service-meta-item svg{top:5px;left:50%;transform:translateX(-50%)}
+.service-professional-meta-row .service-meta-item strong{display:block;overflow:hidden;font-size:14px!important;line-height:1.05;text-align:center;text-overflow:ellipsis;white-space:nowrap!important}
+.service-professional-meta-row .service-meta-date-item strong{font-size:15px!important}
+.service-professional-meta-row .service-meta-item:last-child strong{display:-webkit-box;font-size:13px!important;line-height:1.08;white-space:normal!important;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.service-master-avatar{min-height:60px!important;padding:5px!important}
+.service-activity-card .services-professional-actions{bottom:14px}
+.service-activity-card .services-professional-actions button{min-height:48px!important}
+.service-card-calendar-popover{position:absolute;right:15%;bottom:146px;left:15%;z-index:30;display:grid;gap:6px;padding:10px;border:1px solid #d4af37;border-radius:16px;background:#160b20f5;color:#fff;box-shadow:0 18px 46px #000b}
+.service-card-calendar-toolbar{display:grid;grid-template-columns:30px 1fr 30px;align-items:center;gap:6px}
+.service-card-calendar-toolbar button{display:grid;width:30px;height:30px;place-items:center;border:1px solid #70587a;border-radius:9px;background:transparent;color:#d4af37}
+.service-card-calendar-toolbar button:disabled{opacity:.3}
+.service-card-calendar-toolbar strong{overflow:hidden;font-size:12px;text-align:center;text-overflow:ellipsis;white-space:nowrap;text-transform:capitalize}
+.service-card-calendar-weekdays,.service-card-calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.service-card-calendar-weekdays span{font-size:8px;text-align:center;text-transform:uppercase;color:#baa9bf}
+.service-card-calendar-grid>button,.service-card-calendar-grid>span{min-width:0;min-height:26px}
+.service-card-calendar-grid>button{display:grid;place-items:center;border:1px solid #4f3858;border-radius:7px;background:transparent;color:#fff;font-size:10px;font-weight:850}
+.service-card-calendar-grid>button.is-selected{border-color:#d4af37;background:#d4af37;color:#211126}
+.service-card-calendar-grid>button:disabled{border-color:#302535;color:#665a69;opacity:.55}
+@media(max-width:420px){
+  .service-activity-card .services-professional-meta{bottom:72px;grid-template-columns:46px 76px 82px minmax(0,1fr)!important}
+  .service-professional-meta-row>button,.service-professional-meta-row>div{min-height:58px;padding:21px 4px 4px!important}
+  .service-professional-meta-row .service-meta-item strong{font-size:13px!important}
+  .service-professional-meta-row .service-meta-item:last-child strong{font-size:12px!important}
+  .service-master-avatar{min-height:58px!important}
+  .service-card-calendar-popover{right:15%;bottom:138px;left:15%;padding:8px}
+}

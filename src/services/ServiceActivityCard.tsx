@@ -127,7 +127,9 @@ function ServiceReminderAction({ professional, date, time, language }: { profess
 
 export function ServiceActivityCard({ professional, language }: { professional: ServicesProfessional; language: Language }) {
   const labels = text[language];
-  const cardDate = useTodayKey();
+  const todayDate = useTodayKey();
+  const [cardDate, setCardDate] = useState(todayDate);
+  const [compactCalendarOpen, setCompactCalendarOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [bookingSent, setBookingSent] = useState(false);
@@ -150,12 +152,16 @@ export function ServiceActivityCard({ professional, language }: { professional: 
   }, [language]);
 
   useEffect(() => {
+    if (cardDate < todayDate) setCardDate(todayDate);
+  }, [cardDate, todayDate]);
+
+  useEffect(() => {
     setBookingDate(cardDate);
     setCalendarMonth(cardDate.slice(0, 7));
     setTime(freeSlotsFor(cardDate, professional.profileId)[0] || "");
   }, [cardDate, professional.profileId]);
 
-  const isSelectableDate = (date: string) => date >= cardDate
+  const isSelectableDate = (date: string) => date >= todayDate
     && allowedWeekdays.has(parseDateKey(date).getDay())
     && freeSlotsFor(date, professional.profileId).length > 0;
 
@@ -167,11 +173,21 @@ export function ServiceActivityCard({ professional, language }: { professional: 
     setBookingSent(false);
   };
 
+  const chooseCardDate = (date: string) => {
+    if (!isSelectableDate(date)) return;
+    const slots = freeSlotsFor(date, professional.profileId);
+    setCardDate(date);
+    setBookingDate(date);
+    setTime(slots[0] || "");
+    setBookingSent(false);
+    setCompactCalendarOpen(false);
+  };
+
   const moveMonth = (offset: number) => {
     const [year, month] = calendarMonth.split("-").map(Number);
     const next = new Date(year, month - 1 + offset, 1, 12);
     const nextKey = monthKey(next);
-    if (nextKey < cardDate.slice(0, 7)) return;
+    if (nextKey < todayDate.slice(0, 7)) return;
     setCalendarMonth(nextKey);
   };
 
@@ -224,8 +240,8 @@ export function ServiceActivityCard({ professional, language }: { professional: 
       <button className="service-sheet-close" type="button" aria-label={labels.close} onClick={() => setBookingOpen(false)}><X /></button>
       <h2>{labels.booking}</h2><p>{professional.displayName} · {professional.serviceName}</p>
       <div className="service-calendar-toolbar">
-        <button type="button" aria-label={labels.previousMonth} onClick={() => moveMonth(-1)} disabled={calendarMonth <= cardDate.slice(0, 7)}><ChevronLeft /></button>
-        <input aria-label={labels.chooseDate} type="month" min={cardDate.slice(0, 7)} value={calendarMonth} onChange={(event) => setCalendarMonth(event.target.value || cardDate.slice(0, 7))} />
+        <button type="button" aria-label={labels.previousMonth} onClick={() => moveMonth(-1)} disabled={calendarMonth <= todayDate.slice(0, 7)}><ChevronLeft /></button>
+        <input aria-label={labels.chooseDate} type="month" min={todayDate.slice(0, 7)} value={calendarMonth} onChange={(event) => setCalendarMonth(event.target.value || todayDate.slice(0, 7))} />
         <button type="button" aria-label={labels.nextMonth} onClick={() => moveMonth(1)}><ChevronRight /></button>
       </div>
       <div className="service-calendar-weekdays">{weekdayLabels.map((label, index) => <span key={`${label}-${index}`}>{label}</span>)}</div>
@@ -258,10 +274,25 @@ export function ServiceActivityCard({ professional, language }: { professional: 
       <button className="services-professional-main" type="button" onClick={() => setDetailsOpen(true)}><strong>{professional.displayName}</strong><span>{professional.serviceName}</span></button>
       <div className="services-professional-meta service-professional-meta-row">
         <div className="service-master-avatar" aria-label={professional.displayName}><span>{avatar}</span></div>
-        <div className="service-meta-item"><CalendarDays /><strong>{formatCompactDate(cardDate, language)}</strong></div>
+        <button className="service-meta-item service-meta-date-item" type="button" aria-expanded={compactCalendarOpen} onClick={() => { setCalendarMonth(cardDate.slice(0, 7)); setCompactCalendarOpen((value) => !value); }}><CalendarDays /><strong>{formatCompactDate(cardDate, language)}</strong></button>
         <div className="service-meta-item"><Ticket /><strong>{professional.priceCzk} {professional.currency}</strong></div>
         <button className="service-meta-item" type="button" onClick={openMap}><MapPin /><strong>{professional.publicLocation}</strong></button>
       </div>
+      {compactCalendarOpen && <div className="service-card-calendar-popover" role="dialog" aria-label={labels.chooseDate}>
+        <div className="service-card-calendar-toolbar">
+          <button type="button" aria-label={labels.previousMonth} onClick={() => moveMonth(-1)} disabled={calendarMonth <= todayDate.slice(0, 7)}><ChevronLeft /></button>
+          <strong>{new Intl.DateTimeFormat(locale[language], { month: "long", year: "numeric" }).format(parseDateKey(`${calendarMonth}-01`))}</strong>
+          <button type="button" aria-label={labels.nextMonth} onClick={() => moveMonth(1)}><ChevronRight /></button>
+        </div>
+        <div className="service-card-calendar-weekdays">{weekdayLabels.map((label, index) => <span key={`compact-${label}-${index}`}>{label}</span>)}</div>
+        <div className="service-card-calendar-grid">{days.map((date, index) => date ? <button
+          className={date === cardDate ? "is-selected" : ""}
+          type="button"
+          key={`compact-${date}`}
+          disabled={!isSelectableDate(date)}
+          onClick={() => chooseCardDate(date)}
+        >{parseDateKey(date).getDate()}</button> : <span key={`compact-empty-${index}`} />)}</div>
+      </div>}
       <div className="services-professional-actions"><button className="secondary" type="button" onClick={() => setDetailsOpen(true)}><Info />{labels.details}</button><button className="primary" type="button" onClick={() => openBooking()}><CalendarPlus />{labels.book}</button></div>
     </article>
     {details}{booking}
