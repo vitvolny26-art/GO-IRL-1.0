@@ -11,6 +11,7 @@ export type ServiceBooking = {
   serviceName: string;
   clientUserKey: string;
   clientName: string;
+  clientContact: string;
   date: string;
   time: string;
   durationMinutes: number;
@@ -21,7 +22,7 @@ export type ServiceBooking = {
   createdAt: string;
 };
 
-export type CreateServiceBookingInput = Omit<ServiceBooking, "id" | "clientUserKey" | "clientName" | "status" | "createdAt">;
+export type CreateServiceBookingInput = Omit<ServiceBooking, "id" | "clientUserKey" | "status" | "createdAt">;
 
 const bookingsKey = "go-irl-services-bookings-v3";
 const legacyBookingsKey = "go-irl-services-bookings-v2";
@@ -29,16 +30,6 @@ const changedEvent = "go-irl-services-bookings-changed";
 const activityPrefix = "service-booking:";
 
 const uid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
-
-const isBooking = (value: unknown): value is ServiceBooking => {
-  if (!value || typeof value !== "object") return false;
-  const item = value as Partial<ServiceBooking>;
-  return typeof item.id === "string"
-    && typeof item.profileId === "string"
-    && typeof item.date === "string"
-    && typeof item.time === "string"
-    && typeof item.status === "string";
-};
 
 const readRaw = (key: string): unknown[] => {
   try {
@@ -49,34 +40,38 @@ const readRaw = (key: string): unknown[] => {
   }
 };
 
-const migrateLegacyBooking = (value: unknown): ServiceBooking | null => {
+const normalizeBooking = (value: unknown): ServiceBooking | null => {
   if (!value || typeof value !== "object") return null;
   const item = value as Record<string, unknown>;
   if (typeof item.id !== "string" || typeof item.profileId !== "string" || typeof item.date !== "string" || typeof item.time !== "string") return null;
+  const status: ServiceBookingStatus = ["pending", "confirmed", "declined", "cancelled", "completed", "no_show"].includes(String(item.status))
+    ? item.status as ServiceBookingStatus
+    : "pending";
   return {
     id: item.id,
     profileId: item.profileId,
     professionalName: typeof item.professionalName === "string" ? item.professionalName : "Professional",
     serviceName: typeof item.serviceName === "string" ? item.serviceName : "Service",
     clientUserKey: typeof item.clientUserKey === "string" ? item.clientUserKey : getCurrentUserKey(),
-    clientName: typeof item.clientName === "string" ? item.clientName : getCurrentDisplayName("GO IRL User"),
+    clientName: typeof item.clientName === "string" && item.clientName.trim() ? item.clientName : getCurrentDisplayName("GO IRL User"),
+    clientContact: typeof item.clientContact === "string" && item.clientContact.trim() ? item.clientContact : "Telegram",
     date: item.date,
     time: item.time,
     durationMinutes: typeof item.durationMinutes === "number" ? item.durationMinutes : 60,
     priceCzk: typeof item.priceCzk === "number" ? item.priceCzk : 0,
     currency: "CZK",
     publicLocation: typeof item.publicLocation === "string" ? item.publicLocation : "Olomouc",
-    status: item.status === "confirmed" ? "confirmed" : "pending",
+    status,
     createdAt: typeof item.createdAt === "string" ? item.createdAt : new Date().toISOString(),
   };
 };
 
 export const listServiceBookings = (): ServiceBooking[] => {
   if (typeof localStorage === "undefined") return [];
-  const current = readRaw(bookingsKey).filter(isBooking);
+  const current = readRaw(bookingsKey).map(normalizeBooking).filter((item): item is ServiceBooking => Boolean(item));
   if (current.length) return current;
 
-  const migrated = readRaw(legacyBookingsKey).map(migrateLegacyBooking).filter((item): item is ServiceBooking => Boolean(item));
+  const migrated = readRaw(legacyBookingsKey).map(normalizeBooking).filter((item): item is ServiceBooking => Boolean(item));
   if (migrated.length) localStorage.setItem(bookingsKey, JSON.stringify(migrated));
   return migrated;
 };
@@ -89,9 +84,10 @@ const writeBookings = (bookings: ServiceBooking[]) => {
 export const createServiceBooking = (input: CreateServiceBookingInput): ServiceBooking => {
   const booking: ServiceBooking = {
     ...input,
+    clientName: input.clientName.trim() || getCurrentDisplayName("GO IRL User"),
+    clientContact: input.clientContact.trim(),
     id: uid(),
     clientUserKey: getCurrentUserKey(),
-    clientName: getCurrentDisplayName("GO IRL User"),
     status: "pending",
     createdAt: new Date().toISOString(),
   };
