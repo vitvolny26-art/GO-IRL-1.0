@@ -24,10 +24,10 @@ describe("invitation links", () => {
       .toBe(`https://t.me/GOirl_bot?startapp=${persistedEventId}`);
   });
 
-  it("accepts Beauty startapp slugs without treating them as events", () => {
-    expect(parseInvitationStartParam("test-studio"))
-      .toEqual({ valid: true, eventId: "", beautySlug: "test-studio" });
-    expect(buildTelegramActivityInviteUrl("test-studio", "GOirl_bot")).toBeNull();
+  it("accepts namespaced Beauty startapp slugs without treating them as events", () => {
+    expect(parseInvitationStartParam("beauty-test-studio"))
+      .toEqual({ valid: true, eventId: "", beautySlug: "beauty-test-studio" });
+    expect(buildTelegramActivityInviteUrl("beauty-test-studio", "GOirl_bot")).toBeNull();
   });
 
   it("rejects invitation text glued to the UUID", () => {
