@@ -15,11 +15,11 @@ describe("resolveLaunchSurface", () => {
   });
 
   it("opens Beauty startapp links in the application surface", () => {
-    expect(resolveLaunchSurface({ pathname: "/", hash: "", search: "", telegramStartParam: "test-studio" })).toBe("app");
+    expect(resolveLaunchSurface({ pathname: "/", hash: "", search: "", telegramStartParam: "beauty-test-studio" })).toBe("app");
     expect(resolveLaunchSurface({ pathname: "/", hash: "", search: "?startapp=beauty-06b9689e8b1ee69a" })).toBe("app");
   });
 
-  it("does not intercept application routes or Telegram invitations", () => {
+  it("does not intercept application routes or non-Beauty Telegram invitations", () => {
     expect(resolveLaunchSurface({ pathname: "/profile", hash: "", search: "" })).toBe("app");
     expect(resolveLaunchSurface({ pathname: "/", hash: "", search: "?startapp=event-1" })).toBe("app");
     expect(resolveLaunchSurface({ pathname: "/", hash: "", search: "", telegramStartParam: "event-1" })).toBe("app");
