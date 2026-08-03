@@ -9,6 +9,8 @@ import {
   participantNotificationsChangedEvent,
   type ParticipantJoinNotification,
 } from "../participantNotifications";
+import { beautyDeepLinkSlug } from "../services/beautyDeepLink";
+import { useAppStore } from "../store";
 import type { Language } from "../types";
 
 declare const __GO_IRL_COMMIT__: string;
@@ -59,6 +61,12 @@ export function AppHeader({
   const selectedCity = getCity(selectedCityId);
   const selectedLanguage = languageOptions.find((item) => item.id === language) ?? languageOptions[0];
   const unreadCount = notifications.filter((item) => !item.read).length;
+
+  useEffect(() => {
+    const slug = beautyDeepLinkSlug(window.location.pathname, window.location.search);
+    if (!slug) return;
+    useAppStore.getState().setView("explore");
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;

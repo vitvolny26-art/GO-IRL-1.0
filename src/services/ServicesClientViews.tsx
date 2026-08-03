@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { CircleUserRound, Compass, Heart, MapPin, Save, Search, Sparkles } from "lucide-react";
 import { getCity } from "../config/cities";
 import type { Language } from "../types";
+import { beautyDeepLinkSelector, beautyDeepLinkSlug, clearBeautyDeepLink } from "./beautyDeepLink";
 import { loadProfessionalDirectory, type ServicesProfessional } from "./servicesProfessionalDirectory";
 import { manicureArtwork } from "./serviceArtwork";
 import { ServiceActivityCard } from "./ServiceActivityCard";
@@ -73,7 +74,7 @@ function ProfessionalCards({ professionals, state, empty, loading, error, langua
     map.set(professional.profileId, current);
     return map;
   }, new Map<string, ServicesProfessional[]>()).values());
-  return <div className="services-professional-grid">{groups.map(([professional, ...serviceOptions]) => <ServiceActivityCard key={professional.profileId} professional={professional} serviceOptions={serviceOptions} language={language} />)}</div>;
+  return <div className="services-professional-grid">{groups.map(([professional, ...serviceOptions]) => <div data-beauty-slug={professional.slug} style={{ display: "contents" }} key={professional.profileId}><ServiceActivityCard professional={professional} serviceOptions={serviceOptions} language={language} /></div>)}</div>;
 }
 
 function ProfessionalSection({ title, professionals, language }: { title: string; professionals: ServicesProfessional[]; language: Language }) {
@@ -122,6 +123,16 @@ export function ServicesCatalogView({ language, selectedCityId }: { language: La
   const { professionals, state } = useProfessionalDirectory(selectedCityId);
   const city = getCity(selectedCityId);
   const text = copy[language];
+  const targetSlug = useMemo(() => typeof window === "undefined" ? "" : beautyDeepLinkSlug(window.location.pathname, window.location.search), []);
+
+  useEffect(() => {
+    if (!targetSlug || state !== "ready" || !professionals.some((professional) => professional.slug === targetSlug)) return;
+    const opener = document.querySelector<HTMLButtonElement>(beautyDeepLinkSelector(targetSlug));
+    if (!opener) return;
+    opener.click();
+    window.history.replaceState(null, "", clearBeautyDeepLink(window.location.pathname, window.location.search, window.location.hash));
+  }, [professionals, state, targetSlug]);
+
   return <section className="page-section services-client-view"><div className="page-title"><Compass /><div><h1>{text.catalog}</h1><p>{city.name[language]}</p></div></div><ProfessionalCards professionals={professionals} state={state} empty={text.catalogEmpty} loading={text.loading} error={text.error} language={language} /></section>;
 }
 
