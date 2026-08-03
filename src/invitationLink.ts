@@ -1,3 +1,5 @@
+import { parseBeautyStartParam } from "./beauty/beautyPublicSlug";
+
 const eventUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const demoEventIdPattern = /^demo-[a-z0-9]+(?:-[a-z0-9]+)*$/i;
 
@@ -5,8 +7,10 @@ export const isValidInvitationEventId = (value: string) => eventUuidPattern.test
 
 export const parseInvitationStartParam = (value: string | null | undefined) => {
   const eventId = String(value || "").trim();
-  return isValidInvitationEventId(eventId)
-    ? { valid: true as const, eventId }
+  if (isValidInvitationEventId(eventId)) return { valid: true as const, eventId };
+  const beautySlug = parseBeautyStartParam(eventId);
+  return beautySlug
+    ? { valid: true as const, eventId: "", beautySlug }
     : { valid: false as const, eventId: "" };
 };
 
@@ -25,7 +29,7 @@ export const buildTelegramActivityInviteUrl = (
   appName = "",
 ) => {
   const parsed = parseInvitationStartParam(eventId);
-  if (!parsed.valid) return null;
+  if (!parsed.valid || !parsed.eventId) return null;
   const bot = botUsername.trim().replace(/^@/, "");
   if (!bot) return null;
   const appPath = appName.trim().replace(/^\/+|\/+$/g, "");
