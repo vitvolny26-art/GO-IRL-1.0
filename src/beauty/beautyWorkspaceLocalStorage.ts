@@ -1,5 +1,10 @@
 import type { Language } from "../types";
-import { BEAUTY_SCHEMA_VERSION, createDefaultBeautyWorkspace, type BeautyWorkspace } from "./beautySetupModel";
+import {
+  BEAUTY_SCHEMA_VERSION,
+  createDefaultBeautyWorkspace,
+  upgradeBeautyWorkspace,
+  type BeautyWorkspace,
+} from "./beautySetupModel";
 
 const databaseName = "go-irl-beauty";
 const storeName = "workspace";
@@ -32,21 +37,10 @@ const runTransaction = async <T>(mode: IDBTransactionMode, operation: (store: ID
   }
 };
 
-const isBeautyWorkspace = (value: unknown): value is BeautyWorkspace => {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as Partial<BeautyWorkspace>;
-  return candidate.schemaVersion === BEAUTY_SCHEMA_VERSION
-    && typeof candidate.currentStep === "string"
-    && typeof candidate.published === "boolean"
-    && Boolean(candidate.profile)
-    && Boolean(candidate.service)
-    && Boolean(candidate.availability);
-};
-
-const readRecoverySnapshot = (): BeautyWorkspace | undefined => {
+const readRecoverySnapshot = (language: Language): BeautyWorkspace | undefined => {
   try {
     const parsed = JSON.parse(localStorage.getItem(recoveryStorageKey) || "null") as unknown;
-    return isBeautyWorkspace(parsed) ? parsed : undefined;
+    return upgradeBeautyWorkspace(parsed, language);
   } catch {
     return undefined;
   }
@@ -59,14 +53,19 @@ const newestWorkspace = (first?: BeautyWorkspace, second?: BeautyWorkspace) => {
 };
 
 export const loadLocalBeautyWorkspace = async (language: Language = "en"): Promise<BeautyWorkspace> => {
-  const recovery = readRecoverySnapshot();
+  const recovery = readRecoverySnapshot(language);
   if (typeof indexedDB === "undefined") return recovery || createDefaultBeautyWorkspace(language);
-  const stored = await runTransaction<BeautyWorkspace | undefined>("readonly", (store) => store.get(workspaceKey));
-  return newestWorkspace(stored, recovery) || createDefaultBeautyWorkspace(language);
+  const stored = await runTransaction<unknown>("readonly", (store) => store.get(workspaceKey));
+  const upgradedStored = upgradeBeautyWorkspace(stored, language);
+  const workspace = newestWorkspace(upgradedStored, recovery) || createDefaultBeautyWorkspace(language);
+  if (upgradedStored && (stored as { schemaVersion?: number } | undefined)?.schemaVersion !== BEAUTY_SCHEMA_VERSION) {
+    await saveLocalBeautyWorkspace(workspace);
+  }
+  return workspace;
 };
 
 export const saveLocalBeautyWorkspace = async (workspace: BeautyWorkspace) => {
-  const snapshot = { ...workspace, updatedAt: new Date().toISOString() };
+  const snapshot = { ...workspace, schemaVersion: BEAUTY_SCHEMA_VERSION, updatedAt: new Date().toISOString() };
   try {
     localStorage.setItem(recoveryStorageKey, JSON.stringify(snapshot));
   } catch {

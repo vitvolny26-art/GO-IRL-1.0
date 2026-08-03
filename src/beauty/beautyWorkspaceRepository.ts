@@ -1,7 +1,11 @@
 import type { Language } from "../types";
 import { getCurrentAuthIdentity, getCurrentUserRole, isBrowserMockMode } from "../authSession";
 import { supabase } from "../supabase";
-import type { BeautyWorkspace } from "./beautySetupModel";
+import {
+  resolveBeautyLocalizedText,
+  type BeautyLocalizedText,
+  type BeautyWorkspace,
+} from "./beautySetupModel";
 import { buildBeautyPublicLink, isValidBeautyPublicSlug, normalizeBeautyPublicSlug } from "./beautyPublicSlug";
 import {
   loadLocalBeautyWorkspace,
@@ -23,6 +27,8 @@ type BeautyProfileRow = {
   price_czk: number;
   currency: "CZK";
   updated_at: string;
+  description_i18n?: Partial<BeautyLocalizedText> | null;
+  service_name_i18n?: Partial<BeautyLocalizedText> | null;
 };
 
 type BeautyProfileSaveRow = {
@@ -39,6 +45,8 @@ type BeautySlugUpdateRow = {
   updated_at: string | null;
 };
 
+type RpcError = { code?: string; message?: string } | null;
+
 let expectedServerUpdatedAt: string | null = null;
 
 const usesTrustedBeautyStorage = () => {
@@ -48,32 +56,63 @@ const usesTrustedBeautyStorage = () => {
     && getCurrentUserRole() === "professional";
 };
 
-const mapServerProfile = (base: BeautyWorkspace, row: BeautyProfileRow): BeautyWorkspace => ({
-  ...base,
-  published: row.publication_state === "published",
-  currentStep: row.publication_state === "published" ? "pro_setup_published" : base.currentStep,
-  updatedAt: row.updated_at,
-  publicLink: `/beauty/${row.slug}`,
-  profile: {
-    displayName: row.display_name,
-    city: "Olomouc",
-    publicLocation: row.public_location,
-    contact: row.contact,
-    exactAddress: row.exact_address,
-  },
-  service: {
-    ...base.service,
-    name: row.service_name,
-    durationMinutes: row.duration_minutes,
-    priceCzk: row.price_czk,
-  },
+const isMissingRpc = (error: RpcError) => error?.code === "PGRST202"
+  || Boolean(error?.message?.includes("Could not find the function"));
+
+const normalizeTranslations = (
+  value: Partial<BeautyLocalizedText> | null | undefined,
+  fallback: BeautyLocalizedText,
+): BeautyLocalizedText => ({
+  ru: value?.ru?.trim() || fallback.ru,
+  uk: value?.uk?.trim() || fallback.uk,
+  cs: value?.cs?.trim() || fallback.cs,
+  en: value?.en?.trim() || fallback.en,
 });
+
+const mapServerProfile = (base: BeautyWorkspace, row: BeautyProfileRow, language: Language): BeautyWorkspace => {
+  const descriptionByLanguage = normalizeTranslations(row.description_i18n, base.profile.descriptionByLanguage);
+  const nameByLanguage = normalizeTranslations(row.service_name_i18n, {
+    ...base.service.nameByLanguage,
+    [language]: row.service_name,
+  });
+  return {
+    ...base,
+    published: row.publication_state === "published",
+    currentStep: row.publication_state === "published" ? "pro_setup_published" : base.currentStep,
+    updatedAt: row.updated_at,
+    publicLink: `/beauty/${row.slug}`,
+    profile: {
+      ...base.profile,
+      displayName: row.display_name,
+      city: "Olomouc",
+      publicLocation: row.public_location,
+      contact: row.contact,
+      exactAddress: row.exact_address,
+      description: resolveBeautyLocalizedText(descriptionByLanguage, language, base.profile.description),
+      descriptionByLanguage,
+    },
+    service: {
+      ...base.service,
+      name: resolveBeautyLocalizedText(nameByLanguage, language, row.service_name),
+      nameByLanguage,
+      durationMinutes: row.duration_minutes,
+      priceCzk: row.price_czk,
+    },
+  };
+};
+
+const getMyBeautyProfile = async () => {
+  const localized = await supabase.rpc("get_my_beauty_profile_v2");
+  if (!localized.error) return localized;
+  if (!isMissingRpc(localized.error)) return localized;
+  return supabase.rpc("get_my_beauty_profile");
+};
 
 export const loadBeautyWorkspace = async (language: Language = "en"): Promise<BeautyWorkspace> => {
   const local = await loadLocalBeautyWorkspace(language);
   if (!usesTrustedBeautyStorage()) return local;
 
-  const result = await supabase.rpc("get_my_beauty_profile");
+  const result = await getMyBeautyProfile();
   if (result.error) throw result.error;
   const row = (Array.isArray(result.data) ? result.data[0] : result.data) as BeautyProfileRow | undefined;
   if (!row) {
@@ -82,26 +121,42 @@ export const loadBeautyWorkspace = async (language: Language = "en"): Promise<Be
   }
 
   expectedServerUpdatedAt = row.updated_at;
-  const workspace = mapServerProfile(local, row);
+  const workspace = mapServerProfile(local, row, language);
   await saveLocalBeautyWorkspace(workspace);
   return workspace;
 };
+
+const saveLegacyBeautyWorkspace = (workspace: BeautyWorkspace) => supabase.rpc("save_my_beauty_profile", {
+  p_display_name: workspace.profile.displayName,
+  p_public_location: workspace.profile.publicLocation,
+  p_contact: workspace.profile.contact,
+  p_exact_address: workspace.profile.exactAddress,
+  p_service_name: workspace.service.name,
+  p_duration_minutes: workspace.service.durationMinutes,
+  p_price_czk: workspace.service.priceCzk,
+  p_publication_state: workspace.published ? "published" : "draft",
+  p_expected_updated_at: expectedServerUpdatedAt,
+});
 
 export const saveBeautyWorkspace = async (workspace: BeautyWorkspace) => {
   await saveLocalBeautyWorkspace(workspace);
   if (!usesTrustedBeautyStorage()) return;
 
-  const result = await supabase.rpc("save_my_beauty_profile", {
+  const localizedResult = await supabase.rpc("save_my_beauty_profile_v2", {
     p_display_name: workspace.profile.displayName,
     p_public_location: workspace.profile.publicLocation,
     p_contact: workspace.profile.contact,
     p_exact_address: workspace.profile.exactAddress,
-    p_service_name: workspace.service.name,
+    p_description_i18n: workspace.profile.descriptionByLanguage,
+    p_service_name_i18n: workspace.service.nameByLanguage,
     p_duration_minutes: workspace.service.durationMinutes,
     p_price_czk: workspace.service.priceCzk,
     p_publication_state: workspace.published ? "published" : "draft",
     p_expected_updated_at: expectedServerUpdatedAt,
   });
+  const result = localizedResult.error && isMissingRpc(localizedResult.error)
+    ? await saveLegacyBeautyWorkspace(workspace)
+    : localizedResult;
   if (result.error) throw result.error;
 
   const row = (Array.isArray(result.data) ? result.data[0] : result.data) as BeautyProfileSaveRow | undefined;

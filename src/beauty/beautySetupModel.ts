@@ -1,6 +1,8 @@
 import type { Language } from "../types";
 
-export const BEAUTY_SCHEMA_VERSION = 2 as const;
+export const BEAUTY_SCHEMA_VERSION = 3 as const;
+export const beautyContentLanguages = ["ru", "uk", "cs", "en"] as const satisfies readonly Language[];
+export type BeautyLocalizedText = Record<Language, string>;
 
 export const beautySetupSteps = [
   "pro_setup_profile",
@@ -46,9 +48,12 @@ export type BeautyWorkspace = {
     publicLocation: string;
     contact: string;
     exactAddress: string;
+    description: string;
+    descriptionByLanguage: BeautyLocalizedText;
   };
   service: {
     name: string;
+    nameByLanguage: BeautyLocalizedText;
     durationMinutes: number;
     priceCzk: number;
     bufferMinutes: number;
@@ -67,6 +72,7 @@ export type BeautyPublicProfile = {
   displayName: string;
   city: string;
   publicLocation: string;
+  description: string;
   serviceName: string;
   durationMinutes: number;
   priceCzk: number;
@@ -76,7 +82,10 @@ export type BeautyPublicProfile = {
   publicLink: string;
 };
 
-const localizedDefaults: Record<Language, Pick<BeautyWorkspace, "profile" | "service">> = {
+const localizedDefaults: Record<Language, {
+  profile: Omit<BeautyWorkspace["profile"], "descriptionByLanguage">;
+  service: Omit<BeautyWorkspace["service"], "nameByLanguage">;
+}> = {
   ru: {
     profile: {
       displayName: "Студия Анна",
@@ -84,6 +93,7 @@ const localizedDefaults: Record<Language, Pick<BeautyWorkspace, "profile" | "ser
       publicLocation: "Центр, Оломоуц",
       contact: "+420 777 000 111",
       exactAddress: "Horní náměstí 1, Olomouc",
+      description: "Маникюр и уход за ногтями с аккуратной записью по времени.",
     },
     service: {
       name: "Маникюр с гель-лаком",
@@ -99,6 +109,7 @@ const localizedDefaults: Record<Language, Pick<BeautyWorkspace, "profile" | "ser
       publicLocation: "Центр, Оломоуц",
       contact: "+420 777 000 111",
       exactAddress: "Horní náměstí 1, Olomouc",
+      description: "Манікюр і догляд за нігтями з точним записом за часом.",
     },
     service: {
       name: "Манікюр з гель-лаком",
@@ -114,6 +125,7 @@ const localizedDefaults: Record<Language, Pick<BeautyWorkspace, "profile" | "ser
       publicLocation: "Centrum, Olomouc",
       contact: "+420 777 000 111",
       exactAddress: "Horní náměstí 1, Olomouc",
+      description: "Manikúra a péče o nehty s přesnými rezervačními časy.",
     },
     service: {
       name: "Manikúra s gel lakem",
@@ -129,6 +141,7 @@ const localizedDefaults: Record<Language, Pick<BeautyWorkspace, "profile" | "ser
       publicLocation: "City centre, Olomouc",
       contact: "+420 777 000 111",
       exactAddress: "Horní náměstí 1, Olomouc",
+      description: "Manicure and nail care with reliable appointment times.",
     },
     service: {
       name: "Gel manicure",
@@ -139,14 +152,47 @@ const localizedDefaults: Record<Language, Pick<BeautyWorkspace, "profile" | "ser
   },
 };
 
+const allDefaultDescriptions = (): BeautyLocalizedText => ({
+  ru: localizedDefaults.ru.profile.description,
+  uk: localizedDefaults.uk.profile.description,
+  cs: localizedDefaults.cs.profile.description,
+  en: localizedDefaults.en.profile.description,
+});
+
+const allDefaultServiceNames = (): BeautyLocalizedText => ({
+  ru: localizedDefaults.ru.service.name,
+  uk: localizedDefaults.uk.service.name,
+  cs: localizedDefaults.cs.service.name,
+  en: localizedDefaults.en.service.name,
+});
+
+export const resolveBeautyLocalizedText = (
+  values: Partial<BeautyLocalizedText> | null | undefined,
+  language: Language,
+  fallback = "",
+) => {
+  const ordered = [language, "en", "cs", "ru", "uk"] as Language[];
+  for (const key of ordered) {
+    const value = values?.[key]?.trim();
+    if (value) return value;
+  }
+  return fallback.trim();
+};
+
 export const createDefaultBeautyWorkspace = (language: Language = "en"): BeautyWorkspace => ({
   schemaVersion: BEAUTY_SCHEMA_VERSION,
   currentStep: "pro_setup_profile",
   published: false,
   updatedAt: new Date().toISOString(),
   publicLink: "https://goirl.local/beauty/anna",
-  profile: { ...localizedDefaults[language].profile },
-  service: { ...localizedDefaults[language].service },
+  profile: {
+    ...localizedDefaults[language].profile,
+    descriptionByLanguage: allDefaultDescriptions(),
+  },
+  service: {
+    ...localizedDefaults[language].service,
+    nameByLanguage: allDefaultServiceNames(),
+  },
   availability: {
     weekdays: ["mon", "tue", "wed", "thu", "fri"],
     startTime: "09:00",
@@ -157,16 +203,77 @@ export const createDefaultBeautyWorkspace = (language: Language = "en"): BeautyW
   },
 });
 
+export const upgradeBeautyWorkspace = (value: unknown, language: Language = "en"): BeautyWorkspace | undefined => {
+  if (!value || typeof value !== "object") return undefined;
+  const candidate = value as Partial<BeautyWorkspace> & {
+    schemaVersion?: number;
+    profile?: Partial<BeautyWorkspace["profile"]>;
+    service?: Partial<BeautyWorkspace["service"]>;
+  };
+  if (!candidate.profile || !candidate.service || !candidate.availability || typeof candidate.currentStep !== "string") return undefined;
+
+  const defaults = createDefaultBeautyWorkspace(language);
+  const legacyDescription = typeof candidate.profile.description === "string" ? candidate.profile.description : "";
+  const legacyServiceName = typeof candidate.service.name === "string" ? candidate.service.name : "";
+  const descriptionByLanguage = {
+    ...allDefaultDescriptions(),
+    ...(candidate.profile.descriptionByLanguage || {}),
+  };
+  const nameByLanguage = {
+    ...allDefaultServiceNames(),
+    ...(candidate.service.nameByLanguage || {}),
+  };
+  if (legacyDescription && !candidate.profile.descriptionByLanguage) descriptionByLanguage[language] = legacyDescription;
+  if (legacyServiceName && !candidate.service.nameByLanguage) nameByLanguage[language] = legacyServiceName;
+
+  return {
+    ...defaults,
+    ...candidate,
+    schemaVersion: BEAUTY_SCHEMA_VERSION,
+    published: Boolean(candidate.published),
+    updatedAt: typeof candidate.updatedAt === "string" ? candidate.updatedAt : defaults.updatedAt,
+    publicLink: typeof candidate.publicLink === "string" ? candidate.publicLink : defaults.publicLink,
+    profile: {
+      ...defaults.profile,
+      ...candidate.profile,
+      description: legacyDescription || resolveBeautyLocalizedText(descriptionByLanguage, language, defaults.profile.description),
+      descriptionByLanguage,
+    },
+    service: {
+      ...defaults.service,
+      ...candidate.service,
+      name: legacyServiceName || resolveBeautyLocalizedText(nameByLanguage, language, defaults.service.name),
+      nameByLanguage,
+    },
+    availability: {
+      ...defaults.availability,
+      ...candidate.availability,
+    },
+  } as BeautyWorkspace;
+};
+
 export const getBeautyStepProgress = (step: BeautySetupStep) => {
   const index = beautySetupSteps.indexOf(step as (typeof beautySetupSteps)[number]);
   return index >= 0 ? { current: index + 1, total: beautySetupSteps.length } : null;
 };
 
-export const buildBeautyPublicProfile = (workspace: BeautyWorkspace): BeautyPublicProfile => ({
+export const buildBeautyPublicProfile = (
+  workspace: BeautyWorkspace,
+  language: Language = "en",
+): BeautyPublicProfile => ({
   displayName: workspace.profile.displayName,
   city: workspace.profile.city,
   publicLocation: workspace.profile.publicLocation,
-  serviceName: workspace.service.name,
+  description: resolveBeautyLocalizedText(
+    workspace.profile.descriptionByLanguage,
+    language,
+    workspace.profile.description,
+  ),
+  serviceName: resolveBeautyLocalizedText(
+    workspace.service.nameByLanguage,
+    language,
+    workspace.service.name,
+  ),
   durationMinutes: workspace.service.durationMinutes,
   priceCzk: workspace.service.priceCzk,
   weekdays: [...workspace.availability.weekdays],
@@ -190,7 +297,8 @@ export const validateBeautyStep = (workspace: BeautyWorkspace, step: BeautySetup
 
   if (step === "pro_setup_service") {
     const errors: BeautyValidationCode[] = [];
-    if (isBlank(workspace.service.name)) errors.push("service_name_required");
+    if (!beautyContentLanguages.some((item) => !isBlank(workspace.service.nameByLanguage[item]))
+      && isBlank(workspace.service.name)) errors.push("service_name_required");
     if (workspace.service.durationMinutes <= 0) errors.push("service_duration_invalid");
     if (workspace.service.priceCzk < 0) errors.push("service_price_invalid");
     if (workspace.service.bufferMinutes < 0) errors.push("service_buffer_invalid");
