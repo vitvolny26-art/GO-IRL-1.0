@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Bell, Check, ChevronDown, Globe2, MapPin, UserRoundPlus } from "lucide-react";
 import { cities, getCity } from "../config/cities";
 import { languageOptions, localeByLanguage, type Translation } from "../i18n";
+import { requestLaunchSurface } from "../launchNavigation";
 import {
   getParticipantJoinNotifications,
   markParticipantJoinNotificationsRead,
@@ -86,13 +87,19 @@ export function AppHeader({
     if (opening) setNotifications(markParticipantJoinNotificationsRead());
   };
 
+  const handleBrandClick = () => {
+    const normalizedPath = window.location.pathname.replace(/\/+$/, "");
+    if (normalizedPath) requestLaunchSurface();
+    onBrandClick();
+  };
+
   return (
     <>
       <header className="app-header">
         <div className="header-inner">
           <button
             className="header-brand"
-            onClick={onBrandClick}
+            onClick={handleBrandClick}
             type="button"
             aria-label="GO IRL"
             style={{
