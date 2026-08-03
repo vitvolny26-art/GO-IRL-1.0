@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Bounded physical-provider verification after green implementation gates and safe synchronization with current `main`.
+Bounded physical-provider verification after green implementation gates and safe synchronization with current GitHub `main`.
 
 ## Verified completed
 
@@ -11,8 +11,10 @@ Bounded physical-provider verification after green implementation gates and safe
 - Organic WhatsApp sharing without company registration/documents confirmed as the product path.
 - WhatsApp Business/Cloud API remains outside scope under separate WABA001 governance.
 - Original implementation base resolved to `e3fd56624ccee6d0a441037b844d8d280b48b503`.
-- Current `main` inspected at `93b5bb26bca326e1642c34ce9de0b361aba73e85`.
-- Six intervening `main` commits affect unrelated Beauty/UI files; no Share003 runtime-path overlap was found.
+- Current GitHub `main` verified through ref comparison as `252b6643c994209b5f9d6a93f57778ce6a4e9b36`.
+- Seven intervening `main` commits affect unrelated Beauty/UI/SQL files; no Share003 runtime-path overlap was found.
+- A recent commit `93b5bb26…` was initially treated as `main` based on recency only; PR readback exposed the error through an expanded 24-file diff.
+- The incorrect synchronization was not force-pushed away. A corrective fast-forward tree is built from verified `main` plus Share003 files, preserving history and removing unrelated branch-only content.
 - Complete Telegram reference pipeline inspected and documented.
 - Portable Telegram behavior mapped to direct organic WhatsApp.
 - Current language is carried into card-share content.
@@ -27,11 +29,12 @@ Bounded physical-provider verification after green implementation gates and safe
 
 ## Next verified step
 
-Verify the synchronized Share003 head and its exact-head CI. Then run bounded WhatsApp physical smoke using one current public/invite event and record Android, iOS and Web/Desktop behavior for RU/UK/CS/EN, rendered card data, event/calendar actions, app switching and cache behavior.
+Publish and read back the corrective synchronization head. Verify that PR #608 returns only Share003 files relative to `main`, then inspect exact-head CI. After green CI, run bounded WhatsApp physical smoke with one current public/invite event.
 
 ## Pending checks
 
-- synchronized-head GitHub Actions;
+- corrective synchronized-head PR diff;
+- corrective synchronized-head GitHub Actions;
 - Android WhatsApp smoke;
 - iOS WhatsApp smoke;
 - WhatsApp Web/Desktop smoke;

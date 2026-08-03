@@ -3,12 +3,15 @@
 - Last verified: 2026-08-03
 - Task ID: `SHARE003`
 - Required display/name prefix: `Share003-`
-- Status: In Progress — synchronized-head verification and provider smoke pending
+- Status: In Progress — corrective synchronized-head verification and provider smoke pending
 - Owner role: AI Fixer
 - Active branch: `fix/share003-whatsapp-telegram-parity-20260803`
 - Original base: `e3fd56624ccee6d0a441037b844d8d280b48b503`
-- Current main inspected: `93b5bb26bca326e1642c34ce9de0b361aba73e85`
-- Previous branch head: `156609c3b6cc0ea71a6e9ae3453d1a7ac7d1b0b4`
+- Verified GitHub main: `252b6643c994209b5f9d6a93f57778ce6a4e9b36`
+- Previous clean branch head: `156609c3b6cc0ea71a6e9ae3453d1a7ac7d1b0b4`
+- Incorrect synchronization head retained in history: `9c98b314e2b6af70237063cc1dc4c37e070e0dbd`
+- Incorrect-base cause: recent commit `93b5bb26…` was treated as main without ref verification; PR readback exposed a 24-file diff
+- Corrective action: build tree from verified `main` plus Share003 runtime/docs and publish as fast-forward descendant; no force push
 - Runtime commit: `fcee7c4fa5a3d4c5f98e58671e767a7ea1dcf87d`
 - Pull request: Draft PR #608 — https://github.com/vitvolny26-art/Go-IRL-1.1/pull/608
 - Previous exact-head CI: run `30841936889` — PASS
@@ -30,4 +33,4 @@
 - Deployment: not performed
 - Production configuration: unchanged
 - Blocker: physical Android/iOS/Web WhatsApp preview and cache verification
-- Next action: publish/read back the synchronized merge head, verify exact-head CI, then collect physical provider evidence.
+- Next action: publish/read back the corrective synchronization head, verify PR file scope and exact-head CI, then collect physical provider evidence.

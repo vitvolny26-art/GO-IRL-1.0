@@ -8,6 +8,7 @@ const service = (overrides: Partial<ServicesProfessional> = {}): ServicesProfess
   displayName: "Studio Vita",
   cityId: "olomouc",
   publicLocation: "Centrum, Olomouc",
+  description: "Localized professional description.",
   serviceName: "Gel manicure",
   durationMinutes: 75,
   priceCzk: 890,

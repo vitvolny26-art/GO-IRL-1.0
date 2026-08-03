@@ -7,13 +7,13 @@
 - Status: In Progress
 - Branch: `fix/share003-whatsapp-telegram-parity-20260803`
 - Original base: `e3fd56624ccee6d0a441037b844d8d280b48b503`
-- Current synchronized main inspected: `93b5bb26bca326e1642c34ce9de0b361aba73e85`
+- Current verified GitHub `main`: `252b6643c994209b5f9d6a93f57778ce6a4e9b36`
 
 ## Product decision
 
 The owner confirmed that GO IRL should continue with organic WhatsApp sharing without company registration or documentary Meta business verification.
 
-This task therefore targets:
+This task targets:
 
 `GO IRL share action -> wa.me intent -> public event-preview URL -> WhatsApp-generated link preview`.
 

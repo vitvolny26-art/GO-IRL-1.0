@@ -182,7 +182,7 @@ export function BeautyProfessionalProfilePortal() {
     if (!openProfile) return;
     let active = true;
     setState("loading");
-    void loadProfessionalDirectory(selectedCityId)
+    void loadProfessionalDirectory(selectedCityId, language)
       .then((items) => {
         if (!active) return;
         setProfessionals(items);
@@ -192,7 +192,7 @@ export function BeautyProfessionalProfilePortal() {
         if (active) setState("error");
       });
     return () => { active = false; };
-  }, [openProfile, selectedCityId]);
+  }, [language, openProfile, selectedCityId]);
 
   useEffect(() => {
     if (!openProfile) return;
@@ -269,7 +269,7 @@ export function BeautyProfessionalProfilePortal() {
 
         <section className="beauty-pro-profile-section beauty-pro-profile-about">
           <div className="beauty-pro-profile-heading"><div><small>01</small><h2>{text.about}</h2></div><Sparkles /></div>
-          <p>{text.aboutText}</p>
+          <p>{professional.description || text.aboutText}</p>
           <div className="beauty-pro-profile-benefits">
             <h3>{text.benefits}</h3>
             <div><ShieldCheck /><span>{text.benefitPrice}</span></div>

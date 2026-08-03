@@ -9,6 +9,7 @@ export type ServicesProfessional = {
   displayName: string;
   cityId: string;
   publicLocation: string;
+  description: string;
   serviceName: string;
   durationMinutes: number;
   priceCzk: number;
@@ -23,6 +24,7 @@ type ServicesProfessionalRow = {
   display_name: string;
   city_id: string;
   public_location: string;
+  description?: string | null;
   service_name: string;
   duration_minutes: number;
   price_czk: number;
@@ -31,6 +33,8 @@ type ServicesProfessionalRow = {
   updated_at: string;
 };
 
+type RpcError = { code?: string; message?: string } | null;
+
 export const sharedMockProfessionals: ServicesProfessional[] = [
   {
     profileId: "browser-demo-studio-vita",
@@ -38,6 +42,7 @@ export const sharedMockProfessionals: ServicesProfessional[] = [
     displayName: "Studio Vita",
     cityId: "olomouc",
     publicLocation: "City centre, Olomouc",
+    description: "Manicure and nail care with reliable appointment times.",
     serviceName: "Gel manicure",
     durationMinutes: 75,
     priceCzk: 890,
@@ -55,6 +60,7 @@ const mapProfessional = (row: ServicesProfessionalRow): ServicesProfessional => 
   displayName: row.display_name,
   cityId: row.city_id,
   publicLocation: row.public_location,
+  description: row.description?.trim() || "",
   serviceName: row.service_name,
   durationMinutes: row.duration_minutes,
   priceCzk: row.price_czk,
@@ -63,17 +69,21 @@ const mapProfessional = (row: ServicesProfessionalRow): ServicesProfessional => 
   updatedAt: row.updated_at,
 });
 
+const isMissingRpc = (error: RpcError) => error?.code === "PGRST202"
+  || Boolean(error?.message?.includes("Could not find the function"));
+
 export const professionalsForCity = (
   cityId: string,
   professionals?: readonly ServicesProfessional[],
 ) => {
   const source = professionals
-    ?? (isBrowserMockMode() ? sharedMockProfessionals : directoryCache.get(cityId) || []);
+    ?? (isBrowserMockMode() ? sharedMockProfessionals : directoryCache.get(`${cityId}:en`) || []);
   return source.filter((professional) => professional.cityId === cityId);
 };
 
 export const loadProfessionalDirectory = async (
   cityId: string,
+  language: Language = "en",
   dependencies: {
     client?: SupabaseClient;
     browserMock?: boolean;
@@ -83,13 +93,19 @@ export const loadProfessionalDirectory = async (
   if (browserMock) return professionalsForCity(cityId, sharedMockProfessionals);
 
   const client = dependencies.client || supabase;
-  const result = await client.rpc("go_irl_list_public_beauty_professionals", {
+  const localized = await client.rpc("go_irl_list_public_beauty_professionals_v2", {
     p_requested_city_id: cityId,
+    p_language: language,
   });
+  const result = localized.error && isMissingRpc(localized.error)
+    ? await client.rpc("go_irl_list_public_beauty_professionals", {
+      p_requested_city_id: cityId,
+    })
+    : localized;
   if (result.error) throw result.error;
 
   const professionals = ((result.data || []) as ServicesProfessionalRow[]).map(mapProfessional);
-  directoryCache.set(cityId, professionals);
+  directoryCache.set(`${cityId}:${language}`, professionals);
   return professionals;
 };
 

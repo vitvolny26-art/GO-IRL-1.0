@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  BEAUTY_SCHEMA_VERSION,
   buildBeautyPublicProfile,
   createDefaultBeautyWorkspace,
   getBeautyStepProgress,
+  resolveBeautyLocalizedText,
+  upgradeBeautyWorkspace,
   validateBeautyStep,
 } from "./beautySetupModel";
 
@@ -15,16 +18,43 @@ describe("Beauty setup model", () => {
 
   it("keeps private fields out of the public profile", () => {
     const workspace = createDefaultBeautyWorkspace("ru");
-    const publicProfile = buildBeautyPublicProfile(workspace);
+    const publicProfile = buildBeautyPublicProfile(workspace, "ru");
 
     expect(publicProfile.displayName).toBe(workspace.profile.displayName);
+    expect(publicProfile.description).toBe(workspace.profile.descriptionByLanguage.ru);
     expect(publicProfile).not.toHaveProperty("contact");
     expect(publicProfile).not.toHaveProperty("exactAddress");
   });
 
-  it("creates defaults in the selected app language", () => {
-    expect(createDefaultBeautyWorkspace("ru").service.name).toBe("Маникюр с гель-лаком");
-    expect(createDefaultBeautyWorkspace("en").service.name).toBe("Gel manicure");
+  it("creates all supported translations and resolves the client language", () => {
+    const workspace = createDefaultBeautyWorkspace("ru");
+    expect(workspace.service.nameByLanguage.ru).toBe("Маникюр с гель-лаком");
+    expect(workspace.service.nameByLanguage.en).toBe("Gel manicure");
+    expect(buildBeautyPublicProfile(workspace, "cs").serviceName).toBe("Manikúra s gel lakem");
+  });
+
+  it("uses a deterministic fallback when the requested translation is empty", () => {
+    expect(resolveBeautyLocalizedText({ ru: "", uk: "", cs: "", en: "English" }, "ru", "Legacy"))
+      .toBe("English");
+    expect(resolveBeautyLocalizedText({ ru: "", uk: "", cs: "", en: "" }, "ru", "Legacy"))
+      .toBe("Legacy");
+  });
+
+  it("upgrades a version 2 workspace without losing the existing service name", () => {
+    const legacy = createDefaultBeautyWorkspace("ru") as unknown as Record<string, unknown>;
+    legacy.schemaVersion = 2;
+    const service = { ...(legacy.service as Record<string, unknown>) };
+    delete service.nameByLanguage;
+    service.name = "Старое название";
+    legacy.service = service;
+    const profile = { ...(legacy.profile as Record<string, unknown>) };
+    delete profile.description;
+    delete profile.descriptionByLanguage;
+    legacy.profile = profile;
+
+    const upgraded = upgradeBeautyWorkspace(legacy, "ru");
+    expect(upgraded?.schemaVersion).toBe(BEAUTY_SCHEMA_VERSION);
+    expect(upgraded?.service.nameByLanguage.ru).toBe("Старое название");
   });
 
   it("returns language-neutral validation codes", () => {
