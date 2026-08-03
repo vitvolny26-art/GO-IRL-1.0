@@ -34,6 +34,15 @@ describe("card share", () => {
     expect(whatsappTarget.searchParams.get("text")).not.toContain(content.url);
   });
 
+  it("uses the selected language in the WhatsApp rich preview", () => {
+    for (const language of ["uk", "cs", "en"] as const) {
+      const whatsappTarget = new URL(buildCardShareTarget("whatsapp", { ...content, language }));
+      const text = whatsappTarget.searchParams.get("text") || "";
+      expect(text).toContain(`/api/meta/event-preview?event=${eventId}&language=${language}`);
+      expect(text).not.toContain("language=ru");
+    }
+  });
+
   it("builds one shared Meta preview URL for the same event", () => {
     expect(buildMetaEventPreviewUrl(content)).toBe(previewUrl);
     expect(buildMessengerPreviewUrl(content)).toBe(previewUrl);
