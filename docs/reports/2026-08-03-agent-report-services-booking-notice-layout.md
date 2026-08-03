@@ -35,11 +35,34 @@ Restore the missed Services UI request: show new booking requests in the profess
 - Expanded and centered the avatar inside the lower metadata panel.
 - Expanded the compact calendar to the card edges with narrow safe insets.
 - Loaded both narrow override stylesheets from the main application entry point.
+- Opened PR `#598`: `Highlight Services booking requests and expand card controls`.
+- Merged PR `#598` into `main`.
 
 ## Checks
 
-GitHub CI must pass repository check, diff check, test, typecheck, lint, build, and bundle budget before merge.
+GitHub Actions run `30820989693` completed successfully.
+
+- Repository check: PASS
+- Diff check: PASS
+- Test: PASS
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+- Bundle budget: PASS
+
+## Merge evidence
+
+- PR: `#598`
+- Head SHA: `ce4a6e87fd38a7a81da409043ae4da3d2204b2f2`
+- Merge commit: `b7964f4ea0105c88a38d0e9ecaef5a922f319d73`
+- Target branch: `main`
+
+## Deployment status
+
+- VPS: pending verification
+- Vercel: pending verification
+- No production deployment claim is recorded yet.
 
 ## Next step
 
-Merge only after CI is green, deploy the merged SHA to VPS and Vercel, then verify the Services card and Beauty workspace on a narrow Telegram viewport.
+Deploy merge commit `b7964f4ea0105c88a38d0e9ecaef5a922f319d73` to VPS and Vercel, verify production health, then smoke-test the Services card and Beauty workspace on a narrow Telegram viewport.
