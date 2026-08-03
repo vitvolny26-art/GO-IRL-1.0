@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Activity } from "./types";
-import { joinedParticipants } from "./cardParticipantsDropdown";
+import { calculateParticipantPanelWidth, joinedParticipants } from "./cardParticipantsDropdown";
 
 const activity = {
   id: "sport-members",
@@ -29,5 +29,11 @@ const activity = {
 describe("card participant dropdown", () => {
   it("shows only joined participants in the card dropdown", () => {
     expect(joinedParticipants(activity).map((member) => member.userKey)).toEqual(["joined-1", "joined-2"]);
+  });
+
+  it("keeps at least 20px after the longest participant name and enough room for the header", () => {
+    expect(calculateParticipantPanelWidth(86, 142, false)).toBe(200);
+    expect(calculateParticipantPanelWidth(180, 142, false)).toBe(285);
+    expect(calculateParticipantPanelWidth(120, 230, true)).toBe(256);
   });
 });
