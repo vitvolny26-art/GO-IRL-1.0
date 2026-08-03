@@ -1,25 +1,94 @@
 .service-activity-card{min-height:clamp(520px,144vw,640px)}
-.service-activity-card>.services-professional-main{position:relative;z-index:2}
-.service-activity-card>.service-professional-meta-row{margin-top:auto!important;flex:0 0 auto}
-.service-activity-card>.services-professional-actions{flex:0 0 auto;margin-top:14px}
 .service-activity-card .card-share-forward-icon{color:#d4af37!important;fill:currentColor!important}
-.service-activity-card>.service-card-right-stack{position:absolute!important;top:126px!important;right:18px!important;z-index:4!important;display:grid!important;justify-items:end!important;gap:8px!important;margin:0!important}
-.service-free-slots-badge,.service-duration-badge{display:flex;align-items:center;justify-content:center;gap:5px;min-width:88px;min-height:42px;padding:7px 10px;border:1px solid #d4af37;border-radius:999px;background:#160b20d9;color:#f7e8ff;font-size:12px;font-weight:800;backdrop-filter:blur(10px)}
+.service-activity-card .services-professional-top-actions{top:16px;right:16px;align-items:flex-start}
+.service-activity-card .services-professional-top-actions .sport-card-icon-action{width:48px;height:48px;min-width:48px;min-height:48px;border:1px solid #d4af37;background:transparent!important;color:#d4af37;box-shadow:none;backdrop-filter:none}
+.service-activity-card .services-professional-top-actions .sport-card-icon-action svg{width:26px;height:26px}
+.service-activity-card .card-share-action{width:48px;height:48px}
+.service-activity-card .card-share-channel-list{top:56px;right:-4px;grid-template-columns:repeat(3,48px);gap:5px;padding:8px;border:1px solid #d4af37;border-radius:18px;background:#160b20f2;box-shadow:0 16px 40px #000a}
+.service-activity-card .card-share-channel-list>button{width:48px;height:48px;background:transparent!important}
+.service-activity-card .card-share-icon-circle{width:44px;height:44px}
+.service-card-right-stack{position:absolute;top:78px;right:16px;z-index:3;display:grid;justify-items:end;gap:7px}
+.service-free-slots-badge,.service-duration-badge{display:flex;align-items:center;justify-content:center;gap:5px;min-width:92px;min-height:42px;padding:7px 10px;border:1px solid #d4af37;border-radius:999px;background:transparent!important;color:#f7e8ff;font-size:12px;font-weight:800;box-shadow:none;backdrop-filter:none}
 .service-free-slots-badge svg,.service-duration-badge svg{width:18px;color:#d4af37}
-.service-free-slots-badge strong,.service-duration-badge strong{color:#d4af37;font-size:15px}
+.service-free-slots-badge strong,.service-duration-badge strong{color:#d4af37;font-size:16px}
 .service-free-slots-list{display:grid;grid-template-columns:repeat(2,minmax(58px,1fr));gap:6px;width:150px;padding:8px;border:1px solid #d4af37;border-radius:16px;background:#160b20f2;box-shadow:0 16px 38px #0009}
-.service-free-slots-list button{min-height:34px;padding:6px;border:1px solid #765c20;border-radius:9px;background:#2a1733;color:#fff;font-weight:800}
-.service-free-slots-list button:active{background:#d4af37;color:#211126}
-.service-master-avatar{display:grid!important;place-items:center}
-.service-master-avatar>span{display:grid;width:42px;height:42px;place-items:center;border:1px solid #d4af37;border-radius:12px;background:#2f1a38;color:#f6dc87;font-weight:900}
-.service-professional-meta-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}
-.service-professional-meta-row>button,.service-professional-meta-row>div{grid-column:auto!important;min-width:0!important;padding:10px 6px!important;border-right:1px solid #ffffff1c!important;border-bottom:0!important}
+.service-free-slots-list button{min-height:34px;padding:6px;border:1px solid #765c20;border-radius:9px;background:transparent;color:#fff;font-weight:800}
+.service-free-slots-list button:active{border-color:#d4af37;color:#d4af37}
+.service-free-slots-list>span{grid-column:1/-1;padding:8px;color:#d8c8dc;text-align:center}
+.service-activity-card .services-professional-main{position:relative;z-index:2;background:transparent!important}
+.service-activity-card .services-professional-meta{position:absolute;right:18px;bottom:92px;left:18px;grid-template-columns:52px repeat(3,minmax(0,1fr))!important;background:transparent!important}
+.service-professional-meta-row>button,.service-professional-meta-row>div{position:relative;grid-column:auto!important;min-width:0!important;min-height:74px;align-items:flex-start!important;justify-content:flex-start!important;padding:25px 7px 8px!important;border-right:1px solid #ffffff1c!important;border-bottom:0!important;background:transparent!important}
 .service-professional-meta-row>*:last-child{border-right:0!important}
-.service-professional-meta-row small{font-size:9px!important}
-.service-professional-meta-row strong{display:-webkit-box!important;overflow:hidden!important;font-size:10px!important;line-height:1.08!important;white-space:normal!important;-webkit-box-orient:vertical;-webkit-line-clamp:2}
-.service-professional-meta-row svg{width:18px!important}
+.service-professional-meta-row .service-meta-item svg{position:absolute;top:6px;left:7px;width:18px!important;height:18px;color:#d4af37}
+.service-professional-meta-row .service-meta-item strong{display:-webkit-box;overflow:hidden;font-size:11px!important;line-height:1.15;text-overflow:ellipsis;white-space:normal!important;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.service-master-avatar{display:grid!important;min-height:74px!important;place-items:center!important;padding:6px!important}
+.service-master-avatar>span{display:grid;width:36px;height:36px;place-items:center;border:1px solid #d4af37;border-radius:10px;background:transparent;color:#f6dc87;font-size:14px;font-weight:900}
+.service-activity-card .services-professional-actions{position:absolute;right:18px;bottom:18px;left:18px;margin:0}
+.service-activity-card .services-professional-actions button{min-height:58px;background:transparent!important;box-shadow:none!important}
+.service-activity-card .services-professional-actions .secondary,.service-activity-card .services-professional-actions .primary{border:1px solid #d4af37;color:#fff}
+.service-activity-card .services-professional-actions .primary{border-width:2px;color:#f2d56d}
 .service-reminder-action{position:relative;display:inline-flex}
-.service-reminder-popover{position:absolute;top:52px;right:0;z-index:20;display:grid;width:min(280px,76vw);gap:10px;padding:14px;border:1px solid #d4af37;border-radius:18px;background:#170b1f;color:#fff;box-shadow:0 18px 48px #000b}
-.service-reminder-popover>div{display:flex;flex-wrap:wrap;gap:7px}.service-reminder-popover button{min-height:34px;padding:7px 9px;border:1px solid #765c20;border-radius:10px;background:#2a1733;color:#fff;font-weight:700}.service-reminder-popover button.is-selected{border-color:#d4af37;background:#d4af37;color:#211126}.service-reminder-popover button svg{width:14px}.service-reminder-save{width:100%;background:#d4af37!important;color:#211126!important}
-.service-sheet-backdrop{position:fixed;inset:0;z-index:4000;display:flex;align-items:flex-end;justify-content:center;padding:16px;background:#000b;backdrop-filter:blur(7px)}.service-activity-sheet,.service-booking-sheet{position:relative;width:min(560px,100%);max-height:92vh;overflow:auto;padding:20px;border:2px solid #d4af37;border-radius:28px 28px 18px 18px;background:linear-gradient(180deg,#2a1534,#120917);color:#fff;box-shadow:0 25px 70px #000c}.service-sheet-close{position:absolute;top:14px;right:14px;z-index:3;display:grid;width:42px;height:42px;place-items:center;border:1px solid #d4af37;border-radius:50%;background:#1f1028;color:#d4af37}.service-sheet-hero{position:relative;display:grid;min-height:250px;align-content:end;overflow:hidden;margin:-20px -20px 18px;padding:24px;border-radius:26px 26px 20px 20px;background:#281331}.service-sheet-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 24%,#160a1fd9 86%)}.service-sheet-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.service-sheet-hero>span{position:absolute;inset:0;display:grid;place-items:center;color:#d4af3740;font-size:90px;font-weight:950}.service-sheet-hero>div{position:relative;z-index:2}.service-sheet-hero h2{margin:4px 0 0;font-size:34px}.service-sheet-hero small{color:#ead7ee;font-weight:800}.service-sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.service-sheet-grid>div,.service-sheet-grid>button{display:flex;min-width:0;align-items:center;gap:9px;padding:12px;border:1px solid #5a3d64;border-radius:15px;background:#2a1834;color:#fff;text-align:left}.service-sheet-grid svg{flex:0 0 auto;width:20px;color:#d4af37}.service-sheet-grid span{display:grid;min-width:0}.service-sheet-grid small{color:#baa9bf}.service-sheet-grid strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.service-sheet-portfolio{width:100%;max-height:320px;margin-top:14px;border:1px solid #d4af37;border-radius:18px;object-fit:cover}.service-sheet-book{display:flex;width:100%;min-height:54px;align-items:center;justify-content:center;gap:8px;margin-top:14px;border:0;border-radius:18px;background:#d4af37;color:#211126;font-size:17px;font-weight:900}.service-booking-sheet{display:grid;gap:14px}.service-booking-sheet h2{margin:4px 48px 0 0}.service-booking-sheet p{margin:0;color:#d8c8dc}.service-booking-sheet label{display:grid;gap:7px;font-weight:800}.service-booking-sheet input{padding:12px;border:1px solid #70587a;border-radius:12px;background:#1b0f22;color:#fff}.service-booking-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.service-booking-slots button{padding:11px;border:1px solid #70587a;border-radius:12px;background:#25152f;color:#fff;font-weight:850}.service-booking-slots button.is-selected{border-color:#d4af37;background:#d4af37;color:#211126}.service-booking-success{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px solid #d4af37;border-radius:16px;color:#f3da83;font-weight:900}
-@media(max-width:420px){.service-sheet-grid{grid-template-columns:1fr}.service-booking-slots{grid-template-columns:repeat(2,1fr)}.service-activity-card>.service-card-right-stack{top:122px!important;right:16px!important}.service-professional-meta-row{grid-template-columns:repeat(4,minmax(0,1fr))!important}.service-professional-meta-row>button,.service-professional-meta-row>div{padding:8px 4px!important}.service-professional-meta-row strong{font-size:9px!important}.service-master-avatar>span{width:38px;height:38px}}
+.service-reminder-popover{position:absolute;top:56px;right:0;z-index:40;display:grid;width:min(280px,76vw);gap:10px;padding:14px;border:1px solid #d4af37;border-radius:18px;background:#170b1ff5;color:#fff;box-shadow:0 18px 48px #000b}
+.service-reminder-popover>div{display:flex;flex-wrap:wrap;gap:7px}
+.service-reminder-popover button{min-height:34px;padding:7px 9px;border:1px solid #765c20;border-radius:10px;background:#2a1733;color:#fff;font-weight:700}
+.service-reminder-popover button.is-selected{border-color:#d4af37;background:#d4af37;color:#211126}
+.service-reminder-popover button svg{width:14px}
+.service-reminder-save{width:100%;background:#d4af37!important;color:#211126!important}
+.service-sheet-backdrop{position:fixed;inset:0;z-index:4000;display:flex;align-items:flex-end;justify-content:center;padding:16px;background:#000b;backdrop-filter:blur(7px)}
+.service-activity-sheet,.service-booking-sheet{position:relative;width:min(560px,100%);max-height:92vh;overflow:auto;padding:20px;border:2px solid #d4af37;border-radius:28px 28px 18px 18px;background:linear-gradient(180deg,#2a1534,#120917);color:#fff;box-shadow:0 25px 70px #000c}
+.service-sheet-close{position:absolute;top:14px;right:14px;z-index:3;display:grid;width:42px;height:42px;place-items:center;border:1px solid #d4af37;border-radius:50%;background:#1f1028;color:#d4af37}
+.service-sheet-hero{position:relative;display:grid;min-height:250px;align-content:end;overflow:hidden;margin:-20px -20px 18px;padding:24px;border-radius:26px 26px 20px 20px;background:#281331}
+.service-sheet-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 24%,#160a1fd9 86%)}
+.service-sheet-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.service-sheet-hero>span{position:absolute;inset:0;display:grid;place-items:center;color:#d4af3740;font-size:90px;font-weight:950}
+.service-sheet-hero>div{position:relative;z-index:2}
+.service-sheet-hero h2{margin:4px 0 0;font-size:34px}
+.service-sheet-hero small{color:#ead7ee;font-weight:800}
+.service-sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.service-sheet-grid>div,.service-sheet-grid>button{display:flex;min-width:0;align-items:center;gap:9px;padding:12px;border:1px solid #5a3d64;border-radius:15px;background:#2a1834;color:#fff;text-align:left}
+.service-sheet-grid svg{flex:0 0 auto;width:20px;color:#d4af37}
+.service-sheet-grid span{display:grid;min-width:0}
+.service-sheet-grid small{color:#baa9bf}
+.service-sheet-grid strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.service-sheet-portfolio{width:100%;max-height:320px;margin-top:14px;border:1px solid #d4af37;border-radius:18px;object-fit:cover}
+.service-sheet-book{display:flex;width:100%;min-height:54px;align-items:center;justify-content:center;gap:8px;margin-top:14px;border:1px solid #d4af37;border-radius:18px;background:#d4af37;color:#211126;font-size:17px;font-weight:900}
+.service-booking-sheet{display:grid;gap:14px}
+.service-booking-sheet h2{margin:4px 48px 0 0}
+.service-booking-sheet p{margin:0;color:#d8c8dc}
+.service-booking-calendar-sheet{width:min(620px,100%);min-height:min(720px,92vh);align-content:start}
+.service-calendar-toolbar{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center}
+.service-calendar-toolbar button{display:grid;width:44px;height:44px;place-items:center;border:1px solid #70587a;border-radius:12px;background:#1b0f22;color:#d4af37}
+.service-calendar-toolbar button:disabled{opacity:.3}
+.service-calendar-toolbar input{width:100%;height:44px;padding:8px 12px;border:1px solid #70587a;border-radius:12px;background:#1b0f22;color:#fff;font-weight:850;text-align:center}
+.service-calendar-weekdays,.service-calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.service-calendar-weekdays span{padding:4px;color:#baa9bf;font-size:11px;font-weight:800;text-align:center;text-transform:uppercase}
+.service-calendar-grid>button,.service-calendar-grid>span{min-height:52px;border-radius:12px}
+.service-calendar-grid>button{display:grid;place-items:center;border:1px solid #5f426a;background:#25152f;color:#fff;font-weight:900}
+.service-calendar-grid>button span{font-size:16px}
+.service-calendar-grid>button small{color:#d4af37;font-size:10px}
+.service-calendar-grid>button.is-selected{border-color:#d4af37;background:#d4af37;color:#211126}
+.service-calendar-grid>button.is-selected small{color:#211126}
+.service-calendar-grid>button:disabled{border-color:#302535;background:#160e1b;color:#6d6270;opacity:.7}
+.service-calendar-grid>button:disabled small{color:#514853}
+.service-booking-selected{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #5a3d64;border-radius:14px;background:#21122a}
+.service-booking-selected svg{width:20px;color:#d4af37}
+.service-booking-selected span{margin-left:auto;color:#baa9bf;font-size:12px}
+.service-booking-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.service-booking-slots button{padding:12px;border:1px solid #70587a;border-radius:12px;background:#25152f;color:#fff;font-weight:850}
+.service-booking-slots button.is-selected{border-color:#d4af37;background:#d4af37;color:#211126}
+.service-booking-empty{padding:16px;border:1px dashed #70587a;border-radius:14px;color:#baa9bf;text-align:center}
+.service-booking-success{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px solid #d4af37;border-radius:16px;color:#f3da83;font-weight:900}
+@media(max-width:420px){
+  .service-card-right-stack{top:74px;right:14px}
+  .service-free-slots-badge,.service-duration-badge{min-width:88px;min-height:40px}
+  .service-activity-card .services-professional-meta{right:14px;bottom:88px;left:14px}
+  .service-activity-card .services-professional-actions{right:14px;bottom:14px;left:14px}
+  .service-professional-meta-row>button,.service-professional-meta-row>div{padding:24px 5px 6px!important}
+  .service-professional-meta-row .service-meta-item svg{left:5px}
+  .service-professional-meta-row .service-meta-item strong{font-size:10px!important}
+  .service-master-avatar>span{width:32px;height:32px;font-size:12px}
+  .service-sheet-grid{grid-template-columns:1fr}
+  .service-booking-calendar-sheet{min-height:88vh;padding:16px}
+  .service-calendar-grid>button,.service-calendar-grid>span{min-height:46px}
+  .service-booking-slots{grid-template-columns:repeat(2,1fr)}
+}
