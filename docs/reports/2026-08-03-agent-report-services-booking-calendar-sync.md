@@ -55,15 +55,15 @@ The current production Beauty backend exposes professional profiles and services
 
 ## Checks
 
-Pending GitHub Actions:
+GitHub Actions run `30808949792`:
 
-- repository check
-- tests
-- typecheck
-- lint
-- build
-- bundle budget
+- repository check — PASS
+- tests — PASS
+- typecheck — PASS
+- lint — PASS
+- build — PASS
+- bundle budget — PASS
 
 ## Next step
 
-Run CI and merge only when green. Real Telegram notification and cross-device booking synchronization remain blocked until explicit approval is given for Beauty booking schema, RLS, RPC or Edge Function, and notification-worker changes.
+Merge the green PR. Real Telegram notification and cross-device booking synchronization remain blocked until explicit approval is given for Beauty booking schema, RLS, RPC or Edge Function, and notification-worker changes.
