@@ -19,6 +19,7 @@ import { useAppStore } from "../store";
 import type { Language } from "../types";
 import { buildBeautyProfessionalProfileSummary } from "./beautyProfessionalProfileModel";
 import "./beauty-professional-profile.css";
+import "./beauty-portfolio-rail.css";
 
 type OpenProfile = {
   slug: string;
@@ -289,7 +290,9 @@ export function BeautyProfessionalProfilePortal() {
 
         {artwork && <section className="beauty-pro-profile-section">
           <div className="beauty-pro-profile-heading"><div><small>03</small><h2>{text.works}</h2></div><Sparkles /></div>
-          <img className="beauty-pro-profile-portfolio" src={artwork.portfolio} alt="" loading="lazy" />
+          <div className="beauty-pro-profile-portfolio-rail" aria-label={text.works}>
+            {[artwork.portfolio, artwork.share, artwork.card].map((source, index) => <img key={source} src={source} alt="" loading="lazy" decoding="async" data-portfolio-index={index + 1} />)}
+          </div>
         </section>}
 
         <section className="beauty-pro-profile-section beauty-pro-profile-rating">
