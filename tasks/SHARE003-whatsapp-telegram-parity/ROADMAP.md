@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Bounded physical-provider verification after corrected synchronization and green exact-head implementation gates.
+Bounded physical-provider verification plus blocked n8n runtime-dependency audit. The organic Share003 implementation remains unchanged and green; n8n must not be introduced as a new runtime dependency inside this task without a separate bounded task and approval.
 
 ## Verified completed
 
@@ -10,41 +10,57 @@ Bounded physical-provider verification after corrected synchronization and green
 - Owner required exact case-sensitive prefix `Share003-`.
 - Organic WhatsApp sharing without company registration/documents confirmed as the product path.
 - WhatsApp Business/Cloud API remains outside scope under separate WABA001 governance.
-- Current GitHub `main` verified through literal ref comparison as `252b6643c994209b5f9d6a93f57778ce6a4e9b36`.
-- Seven intervening main commits affect unrelated Beauty/UI/SQL/report files; no Share003 runtime overlap.
-- An incorrect recent-commit-based synchronization was detected by PR readback, retained in history and corrected without force push.
-- Corrected head `6b75ff25149a3d7e7f181ff375fafa8dc5a39925` is ahead 5 / behind 0 from main.
-- PR #608 read back as open, Draft, mergeable, unmerged, 11 Share003-only files.
+- Current GitHub `main` verified as `252b6643c994209b5f9d6a93f57778ce6a4e9b36`.
+- Synchronization correction retained in history and completed without force push.
 - Telegram reference pipeline inspected and documented.
 - Current language is carried into card-share content.
 - WhatsApp preview uses selected RU/UK/CS/EN with RU fallback.
 - WhatsApp primary action wording matches the Telegram-standard preview.
 - Direct `wa.me`, one preview URL and existing non-WhatsApp behavior are preserved.
 - Targeted parity/regression tests added.
-- Corrected exact-head GitHub Actions run `30855513385`, job `91825484091` — PASS.
-- Repository check, diff check, tests, typecheck, lint, build and bundle budget all passed.
-- Drive report mirror updated and read back.
-- Available Vercel deployments were production `main` only; none was misrepresented as a PR Preview.
+- Exact-head implementation/documentation CI passed before the n8n audit.
+- Read-only n8n inventory returned 34 workflows.
+- Three accessible active GO IRL workflows were fully inspected and verified unrelated to Share003:
+  - `925CFxQK2lRRIWwa` — GO IRL ChatGPT Bridge;
+  - `GgNDCkn0ppU7VJJq` — GO IRL Chief Archivist;
+  - `ulCZrP3Ci0YJy1TY` — GO IRL Orchestrator Telegram.
+- Active inventory workflow `B6RqcoG2DEDRYlAT` could not be opened; the audit stopped before execution inspection.
+- n8n audit commit `9117f087a1bfffb6e9fdc2455f6d02b1d5bb4ecf` verified by GitHub Actions run `30858764607`, job `91835847464` — PASS.
+- Repository check, diff check, tests, typecheck, lint, build and bundle budget passed for the audit commit.
+- Redacted n8n evidence and blocked report stored in the task folder.
+- n8n report mirrored to Google Drive and parent folder verified.
 
 ## Next verified step
 
-Run bounded WhatsApp physical smoke using one current public/invite event. Record Android, iOS and Web/Desktop behavior for RU/UK/CS/EN, rendered title/date/address/image, exact event/calendar actions, app switching and preview-cache behavior.
+Restore read access to `B6RqcoG2DEDRYlAT`, or obtain n8n-admin confirmation that it is a stale inventory entry. Then rerun the complete read-only node-level audit of all relevant workflows and execution metadata and record either Result A or Result B.
+
+Physical WhatsApp smoke may continue independently because the current Share003 runtime path remains direct organic `wa.me`; however, the PR stays Draft until both the provider evidence and the explicit n8n dependency conclusion are recorded.
 
 ## Pending checks
 
+- Resolve access or inventory consistency for `B6RqcoG2DEDRYlAT`;
+- inspect the remaining active workflows at node level;
+- inspect relevant execution metadata without raw production payloads;
+- establish Result A (`n8n not a dependency`) or Result B (`specific n8n dependency found`);
 - Android WhatsApp smoke;
 - iOS WhatsApp smoke;
 - WhatsApp Web/Desktop smoke;
 - preview cache after language/event changes;
-- ClickUp synchronization after connector rate limit clears;
-- owner review after provider evidence.
+- ClickUp synchronization with verified evidence;
+- owner review after all applicable evidence.
 
 ## Blockers
 
+- Active n8n workflow `B6RqcoG2DEDRYlAT` is present in inventory but inaccessible.
+- Empty n8n metadata searches are not proof of absence from node parameters or executions.
+- n8n execution history remains unverified.
 - No branch-specific Vercel Preview was found in the accessible deployment list.
-- ClickUp connector returned explicit rate limit in this pass; no unverified write was sent.
-- WhatsApp-rendered preview, app switching, recipient selection, delivery and crawler cache cannot be inferred from CI, `wa.me` construction or production HTTP behavior.
+- WhatsApp-rendered preview, app switching, recipient selection, delivery and crawler cache cannot be inferred from CI or `wa.me` construction.
+
+## Guardrail for future n8n work
+
+A new n8n workflow for pre-generating attractive share assets may be considered only as a separate task after the dependency audit is conclusive. It must run asynchronously on event create/update, must not sit between the Share button and WhatsApp, and must not introduce WhatsApp Business/API, credentials, production webhook calls or provider sends without separate approval.
 
 ## Completion conditions
 
-Acceptance criteria, physical provider evidence, current STATUS/report/Drive mirror/ClickUp state, branch/commit/PR references and required owner approval. No automatic merge or deployment.
+Acceptance criteria, physical provider evidence, conclusive n8n dependency result, current STATUS/report/Drive mirror/ClickUp state, branch/commit/PR references and required owner approval. No automatic merge or deployment.
