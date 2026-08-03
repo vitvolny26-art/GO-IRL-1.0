@@ -1,0 +1,44 @@
+.beauty-pro-profile-portfolio-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 76%);
+  gap: 12px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scroll-padding-inline: 2px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.beauty-pro-profile-portfolio-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.beauty-pro-profile-portfolio-rail img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border: 1px solid rgba(222, 183, 74, 0.58);
+  border-radius: 22px;
+  object-fit: cover;
+  scroll-snap-align: start;
+  box-shadow: 0 20px 46px rgba(0, 0, 0, 0.34);
+}
+
+.beauty-pro-profile-contact-grid {
+  padding-bottom: calc(118px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 520px) {
+  .beauty-pro-profile-portfolio-rail {
+    grid-auto-columns: 82%;
+    gap: 10px;
+  }
+
+  .beauty-pro-profile-portfolio-rail img {
+    aspect-ratio: 3 / 4;
+    border-radius: 20px;
+  }
+}
