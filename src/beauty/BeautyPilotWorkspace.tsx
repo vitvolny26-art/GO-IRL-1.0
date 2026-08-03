@@ -1,9 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Ban, CalendarDays, Check, Clock3, MessageCircle, Plus, Scissors, UserRound, X, type LucideIcon } from "lucide-react";
+import {
+  listServiceBookings,
+  subscribeServiceBookings,
+  updateServiceBookingStatus,
+  type ServiceBooking,
+  type ServiceBookingStatus,
+} from "../services/servicesBookingRepository";
 import type { BeautyWorkspace } from "./beautySetupModel";
 
-type Status = "pending" | "confirmed" | "declined" | "cancelled" | "completed" | "no_show";
-type Appointment = { id: string; clientName: string; phone: string; date: string; time: string; requestedTime?: string; status: Status; source: "client" | "professional" };
+type Status = ServiceBookingStatus;
+type Appointment = { id: string; clientName: string; phone: string; date: string; time: string; requestedTime?: string; status: Status; source: "client" | "professional"; bookingId?: string };
 type TimeBlock = { id: string; date: string; time: string; label: string };
 type PilotData = { appointments: Appointment[]; blocks: TimeBlock[] };
 type View = "today" | "week" | "client" | "services";
@@ -33,23 +40,52 @@ function NavButton({ active, icon: Icon, label, onClick }: { active: boolean; ic
   return <button className={active ? "is-active" : ""} type="button" onClick={onClick}><Icon size={18} />{label}</button>;
 }
 
+const bookingAppointment = (booking: ServiceBooking): Appointment => ({
+  id: `service-booking:${booking.id}`,
+  bookingId: booking.id,
+  clientName: booking.clientName,
+  phone: "Telegram",
+  date: booking.date,
+  time: booking.time,
+  status: booking.status,
+  source: "client",
+});
+
 export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace; onEdit: () => void }) {
   const [data, setData] = useState<PilotData>(load);
+  const [serviceBookings, setServiceBookings] = useState<ServiceBooking[]>(listServiceBookings);
   const [view, setView] = useState<View>("today");
   const [selected, setSelected] = useState("");
   const [dialog, setDialog] = useState<"appointment" | "block" | "booking" | "reschedule" | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", date: today(), time: "09:00", label: "" });
   const persist = (next: PilotData) => { setData(next); localStorage.setItem(pilotKey, JSON.stringify(next)); };
-  const appointments = useMemo(() => data.appointments.filter((item) => view !== "today" || item.date === today()), [data, view]);
-  const current = data.appointments.find((item) => item.id === selected);
-  const occupied = new Set([...data.appointments.filter((item) => ["pending", "confirmed"].includes(item.status)).map((item) => `${item.date}:${item.time}`), ...data.blocks.map((item) => `${item.date}:${item.time}`)]);
+  const refreshServiceBookings = () => setServiceBookings(listServiceBookings());
+
+  useEffect(() => subscribeServiceBookings(refreshServiceBookings), []);
+
+  const relevantServiceBookings = useMemo(() => serviceBookings.filter((booking) =>
+    booking.professionalName === setup.profile.displayName
+    || booking.serviceName === setup.service.name
+  ), [serviceBookings, setup.profile.displayName, setup.service.name]);
+  const allAppointments = useMemo(() => [
+    ...data.appointments,
+    ...relevantServiceBookings.map(bookingAppointment),
+  ], [data.appointments, relevantServiceBookings]);
+  const appointments = useMemo(() => allAppointments.filter((item) => view !== "today" || item.date === today()), [allAppointments, view]);
+  const current = allAppointments.find((item) => item.id === selected);
+  const occupied = new Set([...allAppointments.filter((item) => ["pending", "confirmed"].includes(item.status)).map((item) => `${item.date}:${item.time}`), ...data.blocks.map((item) => `${item.date}:${item.time}`)]);
   const slots = ["09:00", "10:30", "12:00", "14:30", "16:00"];
   const updateStatus = (status: Status) => {
-    persist({ ...data, appointments: data.appointments.map((item) => item.id === selected ? { ...item, status, requestedTime: undefined } : item) });
+    if (current?.bookingId) {
+      updateServiceBookingStatus(current.bookingId, status);
+      refreshServiceBookings();
+    } else {
+      persist({ ...data, appointments: data.appointments.map((item) => item.id === selected ? { ...item, status, requestedTime: undefined } : item) });
+    }
     setSelected("");
   };
   const approveReschedule = () => {
-    if (!current?.requestedTime) return;
+    if (!current?.requestedTime || current.bookingId) return;
     persist({ ...data, appointments: data.appointments.map((item) => item.id === current.id ? { ...item, time: item.requestedTime!, requestedTime: undefined, status: "confirmed" } : item) });
     setSelected("");
   };
@@ -65,7 +101,7 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
     setForm({ name: "", phone: "", date: today(), time: "09:00", label: "" });
   };
   const requestReschedule = () => {
-    if (!current || occupied.has(`${current.date}:${form.time}`)) return;
+    if (!current || current.bookingId || occupied.has(`${current.date}:${form.time}`)) return;
     persist({ ...data, appointments: data.appointments.map((item) => item.id === current.id ? { ...item, requestedTime: form.time } : item) });
     setDialog(null);
   };
@@ -94,9 +130,9 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
       <div className="beauty-preview-card"><strong>Рабочие часы</strong><span>{setup.availability.weekdays.join(", ")}</span><span>{setup.availability.startTime}–{setup.availability.endTime}</span></div>
       <button className="beauty-secondary" type="button" onClick={onEdit}>Изменить настройки</button>
     </section> : <section>
-      <div className="beauty-pilot-heading"><div><span className="beauty-preview-badge">PROFESSIONAL · LOCAL MOCK</span><h2>{view === "today" ? "Сегодня" : "Неделя"}</h2></div><div><button className="beauty-secondary" type="button" onClick={() => setDialog("block")}>Блок</button><button className="beauty-primary" type="button" onClick={() => setDialog("appointment")}><Plus size={18} />Запись</button></div></div>
+      <div className="beauty-pilot-heading"><div><span className="beauty-preview-badge">PROFESSIONAL · LOCAL PILOT</span><h2>{view === "today" ? "Сегодня" : "Неделя"}</h2></div><div><button className="beauty-secondary" type="button" onClick={() => setDialog("block")}>Блок</button><button className="beauty-primary" type="button" onClick={() => setDialog("appointment")}><Plus size={18} />Запись</button></div></div>
       <div className="beauty-pilot-list">
-        {appointments.map((item) => <button className="beauty-appointment-card" type="button" key={item.id} onClick={() => setSelected(item.id)}><span><b>{item.time}</b><small>{item.date}</small></span><span><strong>{item.clientName}</strong><small>{setup.service.name}</small></span><i className={`status-${item.status}`}>{labels[item.status]}</i></button>)}
+        {appointments.map((item) => <button className="beauty-appointment-card" type="button" key={item.id} onClick={() => setSelected(item.id)}><span><b>{item.time}</b><small>{item.date}</small></span><span><strong>{item.clientName}</strong><small>{item.bookingId ? setup.service.name : setup.service.name}</small></span><i className={`status-${item.status}`}>{labels[item.status]}</i></button>)}
         {data.blocks.filter((item) => view !== "today" || item.date === today()).map((item) => <div className="beauty-time-block" key={item.id}><Ban size={17} /><span><b>{item.time}</b> · {item.label}</span><button type="button" onClick={() => persist({ ...data, blocks: data.blocks.filter((block) => block.id !== item.id) })}><X size={16} /></button></div>)}
         {!appointments.length && <div className="beauty-note">Пока нет записей.</div>}
       </div>
@@ -107,7 +143,7 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
       {current.requestedTime && <div className="beauty-note"><strong>Запрошен перенос на {current.requestedTime}</strong><button className="beauty-primary" type="button" onClick={approveReschedule}>Подтвердить перенос</button></div>}
       <div className="beauty-dialog-actions">
         {current.status === "pending" && <><button className="beauty-primary" type="button" onClick={() => updateStatus("confirmed")}><Check size={17} />Подтвердить</button><button className="beauty-secondary" type="button" onClick={() => updateStatus("declined")}>Отклонить</button></>}
-        {current.status === "confirmed" && <><button className="beauty-secondary" type="button" onClick={() => { setDialog("reschedule"); setForm({ ...form, time: current.time, date: current.date }); }}>Перенести</button><button className="beauty-secondary" type="button" onClick={() => calendarDownload(current)}>В календарь</button><button className="beauty-primary" type="button" onClick={() => updateStatus("completed")}>Завершить</button><button className="beauty-secondary" type="button" onClick={() => updateStatus("no_show")}>No-show</button><button className="beauty-danger" type="button" onClick={() => updateStatus("cancelled")}>Отменить</button></>}
+        {current.status === "confirmed" && <><button className="beauty-secondary" type="button" disabled={Boolean(current.bookingId)} onClick={() => { setDialog("reschedule"); setForm({ ...form, time: current.time, date: current.date }); }}>Перенести</button><button className="beauty-secondary" type="button" onClick={() => calendarDownload(current)}>В календарь</button><button className="beauty-primary" type="button" onClick={() => updateStatus("completed")}>Завершить</button><button className="beauty-secondary" type="button" onClick={() => updateStatus("no_show")}>No-show</button><button className="beauty-danger" type="button" onClick={() => updateStatus("cancelled")}>Отменить</button></>}
       </div>
     </section></div>}
     {dialog && <div className="beauty-dialog-backdrop"><section className="beauty-dialog" role="dialog" aria-modal="true">
