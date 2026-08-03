@@ -44,10 +44,10 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const rootRef = useRef<HTMLSpanElement>(null);
-  const content = { title, date, address, url };
   const activityId = useMemo(() => activityIdFromInviteUrl(url), [url]);
   const joinedIds = useAppStore((state) => state.joinedIds);
   const language = useAppStore((state) => state.language);
+  const content = { title, date, address, url, language };
   const canAccessChat = Boolean(activityId && joinedIds.includes(activityId));
   const showUnread = canShowEventCardUnread(activityId, joinedIds, unreadCount);
 

@@ -1,3 +1,5 @@
+import type { Language } from "./types";
+
 export type CardShareChannel = "telegram" | "whatsapp" | "messenger" | "facebook" | "instagram";
 
 export type CardShareContent = {
@@ -5,6 +7,7 @@ export type CardShareContent = {
   date: string;
   address: string;
   url: string;
+  language?: Language;
 };
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -36,7 +39,7 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
 
     const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
     previewUrl.searchParams.set("event", eventId);
-    previewUrl.searchParams.set("language", "ru");
+    previewUrl.searchParams.set("language", content.language ?? "ru");
     return previewUrl.toString();
   } catch {
     return content.url;
