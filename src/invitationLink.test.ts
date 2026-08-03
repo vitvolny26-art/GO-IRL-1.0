@@ -24,6 +24,12 @@ describe("invitation links", () => {
       .toBe(`https://t.me/GOirl_bot?startapp=${persistedEventId}`);
   });
 
+  it("accepts Beauty startapp slugs without treating them as events", () => {
+    expect(parseInvitationStartParam("test-studio"))
+      .toEqual({ valid: true, eventId: "", beautySlug: "test-studio" });
+    expect(buildTelegramActivityInviteUrl("test-studio", "GOirl_bot")).toBeNull();
+  });
+
   it("rejects invitation text glued to the UUID", () => {
     expect(parseInvitationStartParam(`${eventId}GO IRL: Волейбол`).valid).toBe(false);
     expect(buildTelegramActivityInviteUrl("demo-event", "GOirl_bot")).toBeNull();
