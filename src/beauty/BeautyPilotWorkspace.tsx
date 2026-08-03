@@ -44,7 +44,7 @@ const bookingAppointment = (booking: ServiceBooking): Appointment => ({
   id: `service-booking:${booking.id}`,
   bookingId: booking.id,
   clientName: booking.clientName,
-  phone: "Telegram",
+  phone: booking.clientContact,
   date: booking.date,
   time: booking.time,
   status: booking.status,
@@ -137,7 +137,7 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
         {!appointments.length && <div className="beauty-note">Пока нет записей.</div>}
       </div>
     </section>}
-    {current && <div className="beauty-dialog-backdrop" role="presentation" onMouseDown={() => setSelected("")}><section className="beauty-dialog" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
+    {current && <div className="beauty-dialog-backdrop" role="presentation" onPointerDown={() => setSelected("")}><section className="beauty-dialog" role="dialog" aria-modal="true" onPointerDown={(event) => event.stopPropagation()}>
       <button className="beauty-dialog-close" type="button" onClick={() => setSelected("")}><X /></button><span className={`beauty-preview-badge status-${current.status}`}>{labels[current.status]}</span>
       <h2>{current.clientName}</h2><p>{current.date} · {current.time}</p><p><MessageCircle size={16} /> {current.phone}</p>
       {current.requestedTime && <div className="beauty-note"><strong>Запрошен перенос на {current.requestedTime}</strong><button className="beauty-primary" type="button" onClick={approveReschedule}>Подтвердить перенос</button></div>}
@@ -146,7 +146,7 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
         {current.status === "confirmed" && <><button className="beauty-secondary" type="button" disabled={Boolean(current.bookingId)} onClick={() => { setDialog("reschedule"); setForm({ ...form, time: current.time, date: current.date }); }}>Перенести</button><button className="beauty-secondary" type="button" onClick={() => calendarDownload(current)}>В календарь</button><button className="beauty-primary" type="button" onClick={() => updateStatus("completed")}>Завершить</button><button className="beauty-secondary" type="button" onClick={() => updateStatus("no_show")}>No-show</button><button className="beauty-danger" type="button" onClick={() => updateStatus("cancelled")}>Отменить</button></>}
       </div>
     </section></div>}
-    {dialog && <div className="beauty-dialog-backdrop"><section className="beauty-dialog" role="dialog" aria-modal="true">
+    {dialog && <div className="beauty-dialog-backdrop" onPointerDown={() => setDialog(null)}><section className="beauty-dialog" role="dialog" aria-modal="true" onPointerDown={(event) => event.stopPropagation()}>
       <button className="beauty-dialog-close" type="button" onClick={() => setDialog(null)}><X /></button><h2>{dialog === "booking" ? "Запрос записи" : dialog === "appointment" ? "Ручная запись" : dialog === "block" ? "Блок времени" : "Перенос"}</h2>
       {dialog !== "reschedule" && dialog !== "block" && <><label>Имя<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>Телефон<input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></label></>}
       {dialog === "block" && <label>Причина (только для мастера)<input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} /></label>}

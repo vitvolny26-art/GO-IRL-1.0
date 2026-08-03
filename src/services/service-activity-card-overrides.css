@@ -1,29 +1,317 @@
+.service-activity-card .services-professional-meta {
+  grid-template-columns: 76px 82px 88px minmax(0, 1fr) !important;
+}
+
 .service-activity-card .service-master-avatar {
-  padding: 2px !important;
-  place-items: stretch !important;
+  display: flex !important;
+  min-height: 72px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 4px !important;
 }
 
 .service-activity-card .service-master-avatar > span {
-  width: 100%;
-  height: 100%;
-  min-height: 52px;
-  place-items: center;
-  border-radius: 12px;
+  display: grid !important;
+  width: 61px !important;
+  min-width: 61px !important;
+  height: 61px !important;
+  min-height: 61px !important;
+  place-items: center !important;
+  border-radius: 15px !important;
+  font-size: 19px !important;
 }
 
-.service-card-calendar-popover {
-  right: 14px;
-  left: 14px;
-  width: auto;
+.service-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5200;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(5px);
+}
+
+.service-popup-panel {
+  position: relative;
+  width: min(560px, calc(100vw - 24px));
+  max-height: min(86vh, 760px);
+  overflow: auto;
+  padding: 18px;
+  border: 2px solid #d4af37;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #2a1534, #120917);
+  color: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.78);
+}
+
+.service-popup-panel h3,
+.service-popup-panel p,
+.service-popup-panel > strong,
+.service-popup-panel > small {
+  margin: 0 48px 12px 0;
+}
+
+.service-popup-panel > small,
+.service-popup-panel > p {
+  color: #cbbbcf;
+}
+
+.service-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid #d4af37;
+  border-radius: 50%;
+  background: #1f1028;
+  color: #d4af37;
+}
+
+.service-popup-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.service-popup-panel.service-reminder-popover {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: auto !important;
+  display: grid !important;
+  width: min(560px, calc(100vw - 24px)) !important;
+  gap: 12px !important;
+  padding: 18px !important;
+}
+
+.service-popup-panel.service-reminder-popover > div {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.service-reminder-choice-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.service-reminder-channel-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.service-popup-panel.service-reminder-popover button {
+  min-width: 0;
+  min-height: 46px;
+  padding: 9px 7px;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.service-popup-panel.service-reminder-popover button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.service-popup-panel .service-reminder-save {
+  width: 100%;
+  min-height: 52px !important;
+  margin-top: 2px;
+  background: #d4af37 !important;
+  color: #211126 !important;
+}
+
+.service-picker-list {
+  display: grid;
+  gap: 9px;
+}
+
+.service-picker-list > button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 68px;
+  padding: 12px 14px;
+  border: 1px solid #70587a;
+  border-radius: 15px;
+  background: #24142d;
+  color: #fff;
+  text-align: left;
+}
+
+.service-picker-list > button.is-selected {
+  border-color: #d4af37;
+  box-shadow: inset 0 0 0 1px #d4af37;
+}
+
+.service-picker-list span {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.service-picker-list strong,
+.service-picker-list small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.service-picker-list small {
+  color: #cbbbcf;
+}
+
+.service-picker-list b {
+  color: #f0d36e;
+  white-space: nowrap;
+}
+
+.service-slots-popover .service-free-slots-list {
+  position: static !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  width: 100% !important;
+  margin-top: 8px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.service-slots-popover .service-free-slots-list button {
+  min-height: 46px;
+  border-color: #70587a;
+  background: #24142d;
+}
+
+.service-popup-panel.service-card-calendar-popover {
+  position: relative !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  display: grid !important;
+  width: min(560px, calc(100vw - 24px)) !important;
+  gap: 9px !important;
+  padding: 18px !important;
+}
+
+.service-popup-panel .service-card-calendar-toolbar {
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  margin: 34px 0 4px;
+}
+
+.service-popup-panel .service-card-calendar-toolbar button {
+  width: 42px;
+  height: 42px;
+}
+
+.service-popup-panel .service-card-calendar-toolbar strong {
+  font-size: 16px;
+}
+
+.service-popup-panel .service-card-calendar-weekdays,
+.service-popup-panel .service-card-calendar-grid {
+  gap: 6px;
+}
+
+.service-popup-panel .service-card-calendar-weekdays span {
+  font-size: 11px;
+}
+
+.service-popup-panel .service-card-calendar-grid > button,
+.service-popup-panel .service-card-calendar-grid > span {
+  min-height: 44px;
+}
+
+.service-popup-panel .service-card-calendar-grid > button {
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.service-booking-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.service-booking-contact-grid label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #efe4f1;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.service-booking-contact-grid input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #70587a;
+  border-radius: 12px;
+  background: #1b0f22;
+  color: #fff;
+  font: inherit;
+}
+
+.service-booking-contact-grid input:focus {
+  border-color: #d4af37;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
 }
 
 @media (max-width: 420px) {
-  .service-activity-card .service-master-avatar > span {
-    min-height: 50px;
+  .service-activity-card .services-professional-meta {
+    grid-template-columns: 70px 76px 82px minmax(0, 1fr) !important;
   }
 
-  .service-card-calendar-popover {
-    right: 10px;
-    left: 10px;
+  .service-activity-card .service-master-avatar {
+    min-height: 68px !important;
+    padding: 4px !important;
+  }
+
+  .service-activity-card .service-master-avatar > span {
+    width: 55px !important;
+    min-width: 55px !important;
+    height: 55px !important;
+    min-height: 55px !important;
+    font-size: 17px !important;
+  }
+
+  .service-popup-backdrop {
+    align-items: end;
+    padding: 8px;
+  }
+
+  .service-popup-panel,
+  .service-popup-panel.service-reminder-popover,
+  .service-popup-panel.service-card-calendar-popover {
+    width: calc(100vw - 16px) !important;
+    max-height: 90vh;
+    padding: 16px !important;
+    border-radius: 22px 22px 14px 14px;
+  }
+
+  .service-reminder-choice-grid,
+  .service-reminder-channel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .service-booking-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-slots-popover .service-free-slots-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .service-popup-panel .service-card-calendar-grid > button,
+  .service-popup-panel .service-card-calendar-grid > span {
+    min-height: 40px;
   }
 }
