@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { isBeautyShareSlug, localizeBeautyServiceName } from "./telegram-share-beauty";
 
 describe("Beauty Telegram share", () => {
-  it("accepts legacy and editable English slugs", () => {
+  it("accepts legacy and editable namespaced English slugs", () => {
     expect(isBeautyShareSlug("beauty-06b9689e8b1ee69a")).toBe(true);
-    expect(isBeautyShareSlug("test-studio")).toBe(true);
-    expect(isBeautyShareSlug("Test Studio")).toBe(false);
+    expect(isBeautyShareSlug("beauty-test-studio")).toBe(true);
+    expect(isBeautyShareSlug("test-studio")).toBe(false);
+    expect(isBeautyShareSlug("Beauty Test Studio")).toBe(false);
   });
 
   it("localizes the manicure service in all system languages", () => {
