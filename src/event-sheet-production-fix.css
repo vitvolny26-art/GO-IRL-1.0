@@ -87,3 +87,42 @@
 .sport-card-top-actions {
   transform: translateX(-10px) !important;
 }
+
+.post-save-actions > .card-share-action .card-share-forward-icon,
+.post-save-actions > .card-share-action .card-share-forward-icon path {
+  color: var(--lime) !important;
+  fill: var(--lime) !important;
+}
+
+.post-save-actions > button:nth-of-type(1),
+.post-save-actions > button:nth-of-type(1) > span {
+  color: var(--lime) !important;
+}
+
+.post-save-actions > button:nth-of-type(2) {
+  display: grid !important;
+  flex: 0 0 44px !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  padding: 0 !important;
+  place-items: center;
+  color: var(--lime) !important;
+}
+.post-save-actions > button:nth-of-type(2) > svg {
+  width: 20px !important;
+  height: 20px !important;
+  color: var(--lime) !important;
+  stroke: currentColor !important;
+}
+.post-save-actions > button:nth-of-type(2) > span {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
