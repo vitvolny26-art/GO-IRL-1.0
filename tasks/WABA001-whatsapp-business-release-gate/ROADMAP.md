@@ -2,32 +2,37 @@
 
 ## Current phase
 
-Phase 1 — verified readiness audit and protected-change plan.
+Phase 2 — external Meta Business/WABA asset verification.
 
 ## Verified completed
 
 - owner confirmed AI Fixer role and WhatsApp-first scope;
 - existing ClickUp task `869e81k1r` selected; no duplicate task created;
-- no existing GitHub task folder found for the ClickUp task;
+- no existing GitHub task folder or WABA001 ID found;
 - current `main` verified at `7068b37adeb8756315ce2f6e5fe49a3d2c744273`;
-- task branch created from that commit;
-- existing Cloud API webhook, signature verification, inbound consent/idempotency, join flow, interactive invitation, outbound messages and reminder/template adapters inspected;
+- task branch and required task folder created;
+- existing Cloud API webhook, signature verification, consent/idempotency, join flow, interactive invitation, outbound messages and reminder/template adapters inspected;
 - historical durable evidence inspected: webhook/subscription configured, both GO IRL templates later recorded Active, production number previously blocked;
 - current Vercel project and latest READY production deployment identified;
-- current deployment produced no WhatsApp-matching runtime logs in the inspected 24-hour window;
-- official current Cloud API registration/webhook/template requirements cross-checked.
+- scoped current-deployment logs contained no WhatsApp-matching entry; no absence claim inferred;
+- ClickUp updated and read back as In Progress / High / WhatsApp-only scope;
+- Drive task, Reports and Evidence folders created;
+- redacted owner-readiness checklist created, moved to Evidence and read back;
+- initial report mirrored to Drive and read back;
+- no runtime, Meta/Vercel configuration, secret, provider allowlist, live-message, merge or deployment change made.
 
 ## Next verified step
 
-Produce a redacted account-readiness checklist for the owner and collect fresh evidence of:
+Complete the redacted owner-readiness checklist with fresh statuses for:
 
-- business portfolio verification state;
+- business portfolio verification;
 - intended WABA/app linkage;
-- production phone-number state;
-- app mode and WhatsApp permissions;
-- webhook subscription target;
+- production phone-number ownership, registration and two-step verification;
+- permanent system-user token readiness and permissions;
+- webhook callback/WABA subscription/messages field;
 - template status/languages/component counts;
-- permanent system-user credential readiness.
+- Vercel Production variable presence by name only;
+- one consented owner-controlled test recipient.
 
 ## Pending checks
 
@@ -41,7 +46,8 @@ Produce a redacted account-readiness checklist for the owner and collect fresh e
 - controlled inbound/outbound lifecycle;
 - retry/idempotency and STOP/opt-out;
 - provider allowlist decision;
-- full repository gates if code changes are required.
+- exact-head CI for the documentation branch;
+- full repository gates if code changes are later required.
 
 ## Blockers
 
