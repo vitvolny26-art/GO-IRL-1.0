@@ -42,7 +42,8 @@ export async function sharePreparedTelegramBeauty(
     if (!response.ok) return "unavailable";
 
     const payload = await response.json() as { preparedMessageId?: unknown };
-    if (typeof payload.preparedMessageId !== "string" || !payload.preparedMessageId) return "unavailable";
+    const preparedMessageId = payload.preparedMessageId;
+    if (typeof preparedMessageId !== "string" || !preparedMessageId) return "unavailable";
 
     return await new Promise<PreparedTelegramShareResult>((resolve) => {
       let settled = false;
@@ -53,7 +54,7 @@ export async function sharePreparedTelegramBeauty(
         resolve(result);
       };
       const timeout = window.setTimeout(() => finish("unavailable"), 20_000);
-      webApp.shareMessage?.(payload.preparedMessageId, (success) => finish(success ? "shared" : "cancelled"));
+      webApp.shareMessage?.(preparedMessageId, (success) => finish(success ? "shared" : "cancelled"));
     });
   } catch {
     return "unavailable";
