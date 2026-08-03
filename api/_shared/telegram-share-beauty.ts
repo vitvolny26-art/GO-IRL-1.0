@@ -88,6 +88,8 @@ export async function loadTrustedTelegramBeautyCard(
   _selectedTime: unknown,
   _publicOrigin: string,
 ): Promise<TelegramEventCardInput | null> {
+  void _selectedTime;
+  void _publicOrigin;
   const client = db();
   const result = await client.rpc("go_irl_list_public_beauty_professionals", { p_requested_city_id: "olomouc" });
   if (result.error) throw result.error;
