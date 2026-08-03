@@ -7,9 +7,9 @@ alter table public.beauty_professional_profiles
 alter table public.beauty_professional_profiles
   add constraint beauty_professional_profiles_slug_check
   check (
-    char_length(slug) between 3 and 48
+    char_length(slug) between 10 and 48
     and slug = lower(slug)
-    and slug ~ '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'
+    and slug ~ '^beauty-[a-z0-9]+(-[a-z0-9]+)*$'
   );
 
 create or replace function public.update_my_beauty_slug(p_slug text)
@@ -30,8 +30,8 @@ begin
     raise exception 'current professional role required' using errcode = '42501';
   end if;
 
-  if char_length(v_slug) not between 3 and 48
-    or v_slug !~ '^[a-z][a-z0-9]*(-[a-z0-9]+)*$' then
+  if char_length(v_slug) not between 10 and 48
+    or v_slug !~ '^beauty-[a-z0-9]+(-[a-z0-9]+)*$' then
     return query select 'invalid_slug'::text, v_slug, null::timestamptz;
     return;
   end if;
