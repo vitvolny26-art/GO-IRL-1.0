@@ -5,12 +5,7 @@ import { useAppStore } from "./store";
 import type { Activity, ActivityMember, Language } from "./types";
 
 const normalizeText = (value: string | null | undefined) =>
-  String(value || "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
+  String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase().replace(/\s+/g, " ").trim();
 
 const currentLanguage = (): Language => {
   const visible = document.querySelector<HTMLElement>(".language-control span")?.textContent?.trim().toUpperCase();
@@ -20,7 +15,6 @@ const currentLanguage = (): Language => {
 
 const activityLabel = (activity: Activity, language: Language) =>
   normalizeText(stripLeadingEmoji(activity.activity[language] || activity.activity.en || activity.activity.ru));
-
 const activityTitle = (activity: Activity, language: Language) =>
   normalizeText(stripLeadingEmoji(activity.title[language] || activity.title.en || activity.title.ru));
 
@@ -56,39 +50,48 @@ const closeAllDropdowns = (except?: HTMLElement) => {
   });
   document.querySelectorAll<HTMLElement>(".runtime-sheet-participants-dropdown").forEach((dropdown) => {
     const toggle = dropdown.previousElementSibling;
-    if (toggle instanceof HTMLElement && toggle.matches(".detail-members-toggle")) {
-      toggle.setAttribute("aria-expanded", dropdown.hidden ? "false" : "true");
-    }
+    if (toggle instanceof HTMLElement && toggle.matches(".detail-members-toggle")) toggle.setAttribute("aria-expanded", dropdown.hidden ? "false" : "true");
   });
 };
 
 const isImageAvatar = (value: string) => value.startsWith("data:image/") || /^https?:\/\//.test(value);
 
-const loadParticipantIdentity = async (avatar: HTMLElement, name: HTMLElement, member: ActivityMember) => {
+const syncDropdownWidth = (dropdown: HTMLElement) => {
+  const names = Array.from(dropdown.querySelectorAll<HTMLElement>(".runtime-card-participant-row > strong"));
+  if (!names.length) {
+    dropdown.style.setProperty("--participant-name-width", "100px");
+    return;
+  }
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const style = getComputedStyle(names[0]);
+  if (context) context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const longest = Math.max(...names.map((name) => context?.measureText(name.textContent || "").width || name.scrollWidth));
+  dropdown.style.setProperty("--participant-name-width", `${Math.ceil(longest) + 20}px`);
+};
+
+const loadParticipantIdentity = async (avatar: HTMLElement, name: HTMLElement, member: ActivityMember, dropdown: HTMLElement) => {
   const fallback = organizerInitials(member.name);
   avatar.textContent = fallback;
   name.textContent = member.name;
   const identity = await resolveOrganizerIdentity(member.userKey, member.name);
   if (!avatar.isConnected || !name.isConnected) return;
-
   name.textContent = identity.displayName || member.name;
-  if (!isImageAvatar(identity.avatar)) {
-    avatar.textContent = identity.avatar || fallback;
-    return;
+  if (!isImageAvatar(identity.avatar)) avatar.textContent = identity.avatar || fallback;
+  else {
+    const image = document.createElement("img");
+    image.alt = "";
+    image.src = identity.avatar;
+    image.addEventListener("error", () => image.replaceWith(fallback), { once: true });
+    avatar.replaceChildren(image);
   }
-
-  const image = document.createElement("img");
-  image.alt = "";
-  image.src = identity.avatar;
-  image.addEventListener("error", () => image.replaceWith(fallback), { once: true });
-  avatar.replaceChildren(image);
+  syncDropdownWidth(dropdown);
 };
 
 const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Language) => {
   const t = getTranslation(language);
   const members = joinedParticipants(activity);
   dropdown.replaceChildren();
-
   const header = document.createElement("div");
   header.className = "runtime-card-participants-header";
   const title = document.createElement("strong");
@@ -114,10 +117,11 @@ const renderDropdown = (dropdown: HTMLElement, activity: Activity, language: Lan
       name.textContent = member.name;
       row.append(avatar, name);
       list.append(row);
-      void loadParticipantIdentity(avatar, name, member);
+      void loadParticipantIdentity(avatar, name, member, dropdown);
     });
   }
   dropdown.append(list);
+  syncDropdownWidth(dropdown);
 };
 
 const ensureCardDropdown = (chip: HTMLElement, card: HTMLElement, activity: Activity, language: Language) => {
@@ -162,7 +166,6 @@ const toggleDropdown = (trigger: HTMLElement, dropdown: HTMLElement) => {
 const handleParticipantsClick = (event: Event) => {
   const target = event.target;
   if (!(target instanceof Element)) return;
-
   const chip = target.closest<HTMLElement>(".runtime-participants-chip");
   if (chip) {
     const card = chip.closest<HTMLElement>(".compact-sport-card");
@@ -170,25 +173,19 @@ const handleParticipantsClick = (event: Event) => {
     const language = currentLanguage();
     const activity = findActivityForCard(card, language);
     if (!activity) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+    event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
     toggleDropdown(chip, ensureCardDropdown(chip, card, activity, language));
     return;
   }
 
-  const toggle = target.closest<HTMLElement>(".activity-sheet .detail-members-toggle");
+  const toggle = target.closest<HTMLElement>(".sport-sheet .detail-members-toggle, .activity-sheet .detail-members-toggle");
   if (!toggle) return;
-  const sheet = toggle.closest<HTMLElement>(".activity-sheet");
+  const sheet = toggle.closest<HTMLElement>(".sport-sheet, .activity-sheet");
   if (!sheet) return;
   const language = currentLanguage();
   const activity = findActivityForSheet(sheet, language);
   if (!activity) return;
-
-  event.preventDefault();
-  event.stopPropagation();
-  event.stopImmediatePropagation();
+  event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();
   toggleDropdown(toggle, ensureSheetDropdown(toggle, activity, language));
 };
 
@@ -204,14 +201,11 @@ export function enableCardParticipantsDropdown() {
   const observer = new MutationObserver(removeCompetingChipListeners);
   observer.observe(document.body, { childList: true, subtree: true });
   removeCompetingChipListeners();
-
   document.addEventListener("click", handleParticipantsClick, true);
   document.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof Element) || target.closest(".runtime-participants-chip, .runtime-card-participants-dropdown, .detail-members-toggle, .runtime-sheet-participants-dropdown")) return;
     closeAllDropdowns();
   });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeAllDropdowns();
-  });
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeAllDropdowns(); });
 }

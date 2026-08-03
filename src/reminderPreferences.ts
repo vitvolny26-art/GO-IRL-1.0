@@ -10,7 +10,6 @@ export type EventReminderPreference = {
 };
 
 const storageKey = "go-irl-event-reminders-v1";
-
 export const eventReminderChangedEvent = "go-irl-event-reminder-changed";
 
 const isPreference = (value: unknown): value is EventReminderPreference => {
@@ -28,11 +27,7 @@ const readCookieStorage = () => {
   const prefix = `${encodeURIComponent(storageKey)}=`;
   const entry = document.cookie.split("; ").find((item) => item.startsWith(prefix));
   if (!entry) return null;
-  try {
-    return decodeURIComponent(entry.slice(prefix.length));
-  } catch {
-    return null;
-  }
+  try { return decodeURIComponent(entry.slice(prefix.length)); } catch { return null; }
 };
 
 const readStoredValue = () => {
@@ -41,9 +36,7 @@ const readStoredValue = () => {
       const value = localStorage.getItem(storageKey);
       if (value) return value;
     }
-  } catch {
-    // Telegram WebViews can deny localStorage; fall back to a first-party cookie.
-  }
+  } catch { /* Telegram WebViews can deny localStorage. */ }
   return readCookieStorage();
 };
 
@@ -54,16 +47,12 @@ const writeStoredValue = (value: string) => {
       localStorage.setItem(storageKey, value);
       persisted = true;
     }
-  } catch {
-    // Keep the cookie fallback below.
-  }
+  } catch { /* Keep cookie fallback. */ }
   if (typeof document !== "undefined") {
     try {
       document.cookie = `${encodeURIComponent(storageKey)}=${encodeURIComponent(value)}; Path=/; Max-Age=31536000; SameSite=Lax`;
       persisted = true;
-    } catch {
-      // The caller can still keep the in-memory UI state for this session.
-    }
+    } catch { /* Keep in-memory UI state. */ }
   }
   return persisted;
 };
@@ -72,31 +61,37 @@ const readAllPreferences = () => {
   try {
     const parsed: unknown = JSON.parse(readStoredValue() || "[]");
     return Array.isArray(parsed) ? parsed.filter(isPreference) : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 };
 
-export function readEventReminder(activityId: string) {
-  return readAllPreferences().find((item) => item.activityId === activityId) || null;
+export function readEventReminders(activityId: string) {
+  return readAllPreferences()
+    .filter((item) => item.activityId === activityId)
+    .sort((a, b) => a.leadMinutes - b.leadMinutes);
 }
 
-export function saveEventReminder(preference: EventReminderPreference) {
-  const existing = readAllPreferences();
-  const value = JSON.stringify([
-    preference,
-    ...existing.filter((item) => item.activityId !== preference.activityId),
-  ]);
-  const persisted = writeStoredValue(value);
+export function readEventReminder(activityId: string) {
+  return readEventReminders(activityId)[0] || null;
+}
+
+export function saveEventReminders(preferences: EventReminderPreference[]) {
+  const activityId = preferences[0]?.activityId;
+  if (!activityId) return false;
+  const unique = Array.from(new Map(preferences.map((item) => [`${item.channel}:${item.leadMinutes}`, item])).values());
+  const existing = readAllPreferences().filter((item) => item.activityId !== activityId);
+  const persisted = writeStoredValue(JSON.stringify([...unique, ...existing]));
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent(eventReminderChangedEvent, { detail: preference }));
+    window.dispatchEvent(new CustomEvent(eventReminderChangedEvent, { detail: { activityId, preferences: unique } }));
   }
   return persisted;
 }
 
+export function saveEventReminder(preference: EventReminderPreference) {
+  return saveEventReminders([preference]);
+}
+
 export function removeEventReminder(activityId: string) {
-  const value = JSON.stringify(readAllPreferences().filter((item) => item.activityId !== activityId));
-  const persisted = writeStoredValue(value);
+  const persisted = writeStoredValue(JSON.stringify(readAllPreferences().filter((item) => item.activityId !== activityId)));
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(eventReminderChangedEvent, { detail: { activityId } }));
   }
