@@ -3,12 +3,12 @@ import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { readEnv } from "./env.js";
 import { isShareLanguage, type ShareLanguage } from "./telegram-share-event.js";
 
-const BEAUTY_SLUG_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+const BEAUTY_SLUG_PATTERN = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const isBeautyShareSlug = (value: unknown): value is string => {
   if (typeof value !== "string") return false;
   const slug = value.trim().toLowerCase();
-  return slug.length >= 3 && slug.length <= 48 && BEAUTY_SLUG_PATTERN.test(slug);
+  return slug.length >= 10 && slug.length <= 48 && BEAUTY_SLUG_PATTERN.test(slug);
 };
 
 export { isShareLanguage };
