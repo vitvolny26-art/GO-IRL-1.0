@@ -19,6 +19,7 @@ import { DevPanel, shouldShowAdminDevPanel } from "./components/DevPanel";
 import { resolveAdminRoute } from "./admin/adminSession";
 import { isProfilePath } from "./profile/profileRoute";
 import { BeautyHomeEntryPortal } from "./beauty/BeautyHomeEntryPortal";
+import { BeautyProfessionalProfilePortal } from "./beauty/BeautyProfessionalProfilePortal";
 import { useAppStore } from "./store";
 import { LaunchPage } from "./LaunchPage";
 import { resolveLaunchSurface, type LaunchSurface } from "./launchSurface";
@@ -195,6 +196,7 @@ function MainSurface() {
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}><App /></Suspense>
       <BeautyHomeEntryPortal />
+      <BeautyProfessionalProfilePortal />
       <OrganizerProfilePortal />
       <OrganizerEventDetailsPortal />
       <EventLocationPickerPortal />
