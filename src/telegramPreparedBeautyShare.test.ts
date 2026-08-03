@@ -1,0 +1,13 @@
+import { describe, expect, it } from "vitest";
+import { canPrepareBeautyTelegramShare } from "./telegramPreparedBeautyShare";
+
+describe("Beauty prepared Telegram share", () => {
+  it("recognizes canonical published Beauty links", () => {
+    expect(canPrepareBeautyTelegramShare("https://go-irl-1-0.vercel.app/beauty/beauty-06b9689e8b1ee69a")).toBe(true);
+  });
+
+  it("does not intercept ordinary event or malformed Beauty links", () => {
+    expect(canPrepareBeautyTelegramShare("https://t.me/GOirl_bot?startapp=3b172dd9-d5e2-4328-86a4-d4107a6359fc")).toBe(false);
+    expect(canPrepareBeautyTelegramShare("https://go-irl-1-0.vercel.app/beauty/Test%20Studio")).toBe(false);
+  });
+});
