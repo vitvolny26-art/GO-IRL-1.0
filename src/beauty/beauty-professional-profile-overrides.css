@@ -1,4 +1,4 @@
-/* Beauty009: full-screen professional profile over the saved manicure background. */
+/* Beauty009/010: full-screen professional profile over the saved manicure background. */
 .beauty-pro-profile-backdrop{
   align-items:stretch!important;
   padding:0!important;
@@ -31,9 +31,7 @@
 }
 
 .beauty-pro-profile-hero{
-  min-height:390px!important;
-  border-radius:0!important;
-  background:transparent!important;
+  display:none!important;
 }
 
 .beauty-pro-profile-hero>img{
@@ -52,6 +50,10 @@
 .beauty-pro-profile-stats,
 .beauty-pro-profile-primary-actions{
   display:none!important;
+}
+
+.beauty-pro-profile-primary-actions + .beauty-pro-profile-section{
+  padding-top:78px!important;
 }
 
 .beauty-pro-profile-section{
@@ -96,12 +98,7 @@
     border-radius:0!important;
   }
 
-  .beauty-pro-profile-hero{
-    min-height:390px!important;
-    border-radius:0!important;
-  }
-
-  .beauty-pro-profile-hero-copy{
-    padding:132px 20px 28px!important;
+  .beauty-pro-profile-primary-actions + .beauty-pro-profile-section{
+    padding-top:72px!important;
   }
 }
