@@ -18,13 +18,14 @@
 }
 
 .post-save-actions > button:nth-of-type(1) {
-  width: 100% !important;
+  width: calc(100% - 20px) !important;
   min-width: 0 !important;
   max-width: none !important;
   height: 48px !important;
   min-height: 48px !important;
   padding: 0 12px !important;
   border-radius: 12px !important;
+  justify-self: center !important;
 }
 
 /* Individual dark surfaces and exact mobile offsets for the three controls. */
@@ -42,11 +43,11 @@
 }
 
 .post-save-actions > .card-share-action {
-  transform: translate(-13px, 3px) !important;
+  transform: translate(-4px, 2px) !important;
 }
 
 .post-save-actions > button:nth-of-type(1) {
-  transform: translate(-9px, 3px) !important;
+  transform: translate(-4px, 2px) !important;
 }
 
 .post-save-actions > button:nth-of-type(1) > span {
@@ -63,5 +64,5 @@
 }
 
 .post-save-actions > button:nth-of-type(2) {
-  transform: translate(-11px, 3px) !important;
+  transform: translate(-21px, 2px) !important;
 }
