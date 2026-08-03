@@ -7,6 +7,7 @@ import {
 } from "../cardShare";
 import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
+import { canPrepareBeautyTelegramShare, sharePreparedTelegramBeauty } from "../telegramPreparedBeautyShare";
 import { readUserPreferences, type ShareProvider } from "../userPreferences";
 import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
 import {
@@ -46,6 +47,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   const content = { title, date, address, url };
   const activityId = useMemo(() => activityIdFromInviteUrl(url), [url]);
   const joinedIds = useAppStore((state) => state.joinedIds);
+  const language = useAppStore((state) => state.language);
   const canAccessChat = Boolean(activityId && joinedIds.includes(activityId));
   const showUnread = canShowEventCardUnread(activityId, joinedIds, unreadCount);
 
@@ -132,6 +134,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     if (channel === "telegram") {
       if (onTelegramShare) {
         const result = await onTelegramShare();
+        if (result === "shared" || result === "cancelled") return;
+      } else if (canPrepareBeautyTelegramShare(url)) {
+        const result = await sharePreparedTelegramBeauty(url, date, language);
         if (result === "shared" || result === "cancelled") return;
       }
       openTelegramShareTarget(buildCardShareTarget(channel, content));
