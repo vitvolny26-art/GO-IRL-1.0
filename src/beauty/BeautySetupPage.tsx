@@ -104,6 +104,14 @@ export function BeautySetupPage() {
   const update = (fn: (current: BeautyWorkspace) => BeautyWorkspace) => { setWorkspace(fn); setErrors([]); };
   const goTo = (step: BeautySetupStep) => update((current) => ({ ...current, currentStep: step }));
   const goHome = () => window.location.assign("/services");
+  const closeWorkspace = () => {
+    if (window.opener && !window.opener.closed) {
+      window.close();
+      return;
+    }
+    goHome();
+  };
+  const openWorkspace = () => window.open("/beauty/workspace", "_blank", "noopener,noreferrer");
   const openSetup = () => {
     const next: BeautyWorkspace = { ...workspace, currentStep: "pro_setup_profile" };
     setWorkspace(next);
@@ -125,7 +133,7 @@ export function BeautySetupPage() {
   };
 
   const back = () => {
-    if (workspaceRoute) return goHome();
+    if (workspaceRoute) return closeWorkspace();
     if (workspace.currentStep === "pro_workspace") return goTo("pro_setup_published");
     if (workspace.currentStep === "pro_public_preview") return goTo("pro_setup_published");
     if (workspace.currentStep === "pro_setup_published") return goHome();
@@ -239,7 +247,7 @@ export function BeautySetupPage() {
     <div className="beauty-success"><Check /><div><strong>{text.published}</strong><span>{text.publishedHint}</span></div></div>
     <div className="beauty-public-link"><span>{workspace.publicLink}</span><button type="button" onClick={copyLink}><Share2 size={18} />{text.copyLink}</button></div>
     <button className="beauty-primary" type="button" onClick={() => goTo("pro_public_preview")}><Eye size={19} />{text.openPreview}</button>
-    <button className="beauty-primary" type="button" onClick={() => window.location.assign("/beauty/workspace")}>Открыть кабинет и Booking</button>
+    <button className="beauty-primary" type="button" onClick={openWorkspace}>Открыть кабинет в новой вкладке</button>
     <button className="beauty-secondary" type="button" onClick={() => goTo("pro_setup_review")}>{text.editSetup}</button>
     <button className="beauty-home-button" type="button" onClick={goHome}><House size={19} />{text.home}</button>
   </div>;
@@ -258,10 +266,13 @@ export function BeautySetupPage() {
   const content = workspace.currentStep === "pro_setup_profile" ? profile : workspace.currentStep === "pro_setup_service" ? service : workspace.currentStep === "pro_setup_availability" ? availability : workspace.currentStep === "pro_setup_review" ? review : workspace.currentStep === "pro_setup_published" ? published : preview;
   if (loading) return <main className="beauty-shell"><div className="beauty-loading">{text.loading}</div></main>;
   if (workspaceRoute) return <main className="beauty-shell beauty-workspace-shell">
-    <header className="beauty-topbar"><button className="beauty-icon-button" type="button" onClick={goHome} aria-label={text.back}><ArrowLeft /></button><div><span>GO IRL Beauty · {text.localFirst}</span><h1>{workspaceTitle}</h1></div><button className="beauty-icon-button" type="button" onClick={openSetup} aria-label={text.editSetup}><Settings2 /></button></header>
+    <header className="beauty-topbar"><button className="beauty-icon-button" type="button" onClick={closeWorkspace} aria-label={text.back}><ArrowLeft /></button><div><span>GO IRL Beauty · {text.localFirst}</span><h1>{workspaceTitle}</h1></div><button className="beauty-icon-button" type="button" onClick={openSetup} aria-label={text.editSetup}><Settings2 /></button></header>
     <section className="beauty-workspace-page">
-      <BeautyPilotWorkspace setup={workspace} onEdit={openSetup} />
-      <BeautyWorkspaceContentEditor workspace={workspace} language={language} onChange={(next) => { setWorkspace(next); setErrors([]); }} />
+      <BeautyPilotWorkspace
+        setup={workspace}
+        onEdit={openSetup}
+        pageEditor={<BeautyWorkspaceContentEditor workspace={workspace} language={language} onChange={(next) => { setWorkspace(next); setErrors([]); }} />}
+      />
     </section>
     <div className="beauty-storage-status"><Save size={15} />{saving ? text.saving : text.saved}</div>
   </main>;
