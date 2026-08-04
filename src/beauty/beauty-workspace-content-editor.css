@@ -7,274 +7,51 @@
   box-shadow: 0 22px 50px rgba(0, 0, 0, 0.34);
 }
 
-.beauty-workspace-content-editor > header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.beauty-workspace-content-editor h2 {
-  margin: 0;
-  font-size: clamp(1.25rem, 4vw, 1.75rem);
-}
-
-.beauty-workspace-content-editor p {
-  margin: 6px 0 0;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.45;
-}
-
-.beauty-workspace-content-editor > header > span {
-  flex: 0 0 auto;
-  padding: 7px 10px;
-  border: 1px solid rgba(222, 183, 74, 0.45);
-  border-radius: 999px;
-  color: #e9ca70;
-  font-size: 0.76rem;
-}
-
-.beauty-workspace-content-tabs,
-.beauty-workspace-language-tabs {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  margin-top: 16px;
-  padding-bottom: 3px;
-  scrollbar-width: none;
-}
-
-.beauty-workspace-content-tabs::-webkit-scrollbar,
-.beauty-workspace-language-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.beauty-workspace-content-tabs button,
-.beauty-workspace-language-tabs button {
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid rgba(222, 183, 74, 0.32);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.76);
-  white-space: nowrap;
-}
-
-.beauty-workspace-content-tabs button.is-active,
-.beauty-workspace-language-tabs button.is-active {
-  border-color: #e5c45e;
-  background: rgba(229, 196, 94, 0.14);
-  color: #f7dc87;
-}
-
-.beauty-workspace-content-grid,
-.beauty-workspace-service-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.beauty-workspace-content-editor label {
-  display: grid;
-  gap: 7px;
-}
-
-.beauty-workspace-content-editor label > span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 0.86rem;
-}
-
-.beauty-workspace-content-editor label > span b,
-.beauty-workspace-content-editor label > span i {
-  margin-left: auto;
-  font-size: 0.66rem;
-  font-style: normal;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.beauty-workspace-content-editor label > span b {
-  color: #f4d875;
-}
-
-.beauty-workspace-content-editor label > span i {
-  color: rgba(255, 255, 255, 0.46);
-}
-
-.beauty-workspace-content-editor input,
-.beauty-workspace-content-editor textarea {
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  border: 1px solid rgba(222, 183, 74, 0.28);
-  border-radius: 14px;
-  background: rgba(9, 5, 15, 0.58);
-  color: #fff;
-  padding: 12px 13px;
-  font: inherit;
-}
-
-.beauty-workspace-content-editor textarea {
-  resize: vertical;
-}
-
-.beauty-workspace-content-editor input:focus,
-.beauty-workspace-content-editor textarea:focus {
-  outline: 2px solid rgba(229, 196, 94, 0.35);
-  border-color: #e5c45e;
-}
-
-.beauty-workspace-content-grid .is-wide,
-.beauty-workspace-service-grid .is-wide {
-  grid-column: 1 / -1;
-}
-
-.beauty-workspace-portfolio-editor,
-.beauty-workspace-price-editor {
-  display: grid;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.beauty-workspace-portfolio-editor > p,
-.beauty-workspace-price-editor > p {
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.beauty-workspace-portfolio-editor article,
-.beauty-workspace-price-editor article {
-  display: grid;
-  grid-template-columns: 128px minmax(0, 1fr);
-  gap: 14px;
-  padding: 14px;
-  border: 1px solid rgba(222, 183, 74, 0.3);
-  border-radius: 18px;
-  background: rgba(0, 0, 0, 0.18);
-}
-
-.beauty-workspace-price-editor article {
-  grid-template-columns: 1fr;
-}
-
-.beauty-workspace-price-editor article > header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.beauty-workspace-portfolio-preview {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border: 1px solid rgba(222, 183, 74, 0.3);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.beauty-workspace-portfolio-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.beauty-workspace-portfolio-editor article > div:last-child {
-  display: grid;
-  gap: 12px;
-}
-
-.beauty-workspace-row-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.beauty-workspace-row-actions button,
-.beauty-workspace-add-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 38px;
-  padding: 0 12px;
-  border: 1px solid rgba(222, 183, 74, 0.4);
-  border-radius: 12px;
-  background: rgba(229, 196, 94, 0.1);
-  color: #f2d678;
-}
-
-.beauty-workspace-row-actions button svg,
-.beauty-workspace-add-button svg {
-  width: 17px;
-  height: 17px;
-}
-
-.beauty-workspace-row-actions button.danger {
-  border-color: rgba(255, 116, 116, 0.35);
-  background: rgba(255, 92, 92, 0.08);
-  color: #ffabab;
-}
-
-.beauty-workspace-row-actions button:disabled {
-  opacity: 0.35;
-}
-
-.beauty-workspace-add-button {
-  min-height: 44px;
-  width: 100%;
-  font-weight: 700;
-}
-
-.beauty-workspace-active-toggle {
-  display: inline-flex !important;
-  grid-template-columns: auto auto;
-  align-items: center;
-}
-
-.beauty-workspace-active-toggle input {
-  width: 18px;
-  height: 18px;
-}
+.beauty-workspace-content-editor > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.beauty-workspace-content-editor h2 { margin: 0; font-size: clamp(1.25rem, 4vw, 1.75rem); }
+.beauty-workspace-content-editor p { margin: 6px 0 0; color: rgba(255, 255, 255, 0.7); line-height: 1.45; }
+.beauty-workspace-content-editor > header > span { flex: 0 0 auto; padding: 7px 10px; border: 1px solid rgba(222, 183, 74, 0.45); border-radius: 999px; color: #e9ca70; font-size: 0.76rem; }
+.beauty-workspace-content-tabs, .beauty-workspace-language-tabs { display: flex; gap: 8px; overflow-x: auto; margin-top: 16px; padding-bottom: 3px; scrollbar-width: none; }
+.beauty-workspace-content-tabs::-webkit-scrollbar, .beauty-workspace-language-tabs::-webkit-scrollbar { display: none; }
+.beauty-workspace-content-tabs button, .beauty-workspace-language-tabs button { min-height: 38px; padding: 0 14px; border: 1px solid rgba(222, 183, 74, 0.32); border-radius: 999px; background: rgba(255, 255, 255, 0.04); color: rgba(255, 255, 255, 0.76); white-space: nowrap; }
+.beauty-workspace-content-tabs button.is-active, .beauty-workspace-language-tabs button.is-active { border-color: #e5c45e; background: rgba(229, 196, 94, 0.14); color: #f7dc87; }
+.beauty-workspace-content-grid, .beauty-workspace-service-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.beauty-workspace-content-editor label { display: grid; gap: 7px; }
+.beauty-workspace-content-editor label > span { display: flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.88); font-size: 0.86rem; }
+.beauty-workspace-content-editor label > span b, .beauty-workspace-content-editor label > span i { margin-left: auto; font-size: 0.66rem; font-style: normal; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.beauty-workspace-content-editor label > span b { color: #f4d875; }
+.beauty-workspace-content-editor label > span i { color: rgba(255, 255, 255, 0.46); }
+.beauty-workspace-content-editor input, .beauty-workspace-content-editor textarea { width: 100%; min-width: 0; box-sizing: border-box; border: 1px solid rgba(222, 183, 74, 0.28); border-radius: 14px; background: rgba(9, 5, 15, 0.58); color: #fff; padding: 12px 13px; font: inherit; }
+.beauty-workspace-content-editor textarea { resize: vertical; }
+.beauty-workspace-content-editor input:focus, .beauty-workspace-content-editor textarea:focus { outline: 2px solid rgba(229, 196, 94, 0.35); border-color: #e5c45e; }
+.beauty-workspace-content-grid .is-wide, .beauty-workspace-service-grid .is-wide { grid-column: 1 / -1; }
+.beauty-workspace-portfolio-editor, .beauty-workspace-price-editor { display: grid; gap: 14px; margin-top: 18px; }
+.beauty-workspace-portfolio-editor > p, .beauty-workspace-price-editor > p { margin: 0; padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); }
+.beauty-workspace-portfolio-editor > p small { display: block; margin-top: 4px; color: rgba(255, 255, 255, 0.48); }
+.beauty-workspace-upload-error { padding: 12px 14px; border: 1px solid rgba(255, 116, 116, 0.4); border-radius: 14px; background: rgba(255, 92, 92, 0.1); color: #ffc0c0; }
+.beauty-workspace-portfolio-editor article, .beauty-workspace-price-editor article { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 14px; padding: 14px; border: 1px solid rgba(222, 183, 74, 0.3); border-radius: 18px; background: rgba(0, 0, 0, 0.18); }
+.beauty-workspace-price-editor article { grid-template-columns: 1fr; }
+.beauty-workspace-price-editor article > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.beauty-workspace-portfolio-preview { display: grid; place-items: center; aspect-ratio: 4 / 5; overflow: hidden; border: 1px solid rgba(222, 183, 74, 0.3); border-radius: 16px; background: rgba(255, 255, 255, 0.04); }
+.beauty-workspace-portfolio-preview img { width: 100%; height: 100%; object-fit: cover; }
+.beauty-workspace-portfolio-editor article > div:last-child { display: grid; gap: 12px; }
+.beauty-workspace-row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.beauty-workspace-row-actions button, .beauty-workspace-add-button, .beauty-workspace-upload-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 0 12px; border: 1px solid rgba(222, 183, 74, 0.4); border-radius: 12px; background: rgba(229, 196, 94, 0.1); color: #f2d678; cursor: pointer; }
+.beauty-workspace-upload-button { width: fit-content; font-weight: 700; }
+.beauty-workspace-upload-button input { display: none; }
+.beauty-workspace-upload-button svg, .beauty-workspace-row-actions button svg, .beauty-workspace-add-button svg { width: 17px; height: 17px; }
+.beauty-workspace-row-actions button.danger { border-color: rgba(255, 116, 116, 0.35); background: rgba(255, 92, 92, 0.08); color: #ffabab; }
+.beauty-workspace-row-actions button:disabled { opacity: 0.35; }
+.beauty-workspace-add-button { min-height: 44px; width: 100%; font-weight: 700; }
+.beauty-workspace-active-toggle { display: inline-flex !important; grid-template-columns: auto auto; align-items: center; }
+.beauty-workspace-active-toggle input { width: 18px; height: 18px; }
 
 @media (max-width: 700px) {
-  .beauty-workspace-content-editor {
-    padding: 14px;
-    border-radius: 20px;
-  }
-
-  .beauty-workspace-content-editor > header {
-    display: grid;
-  }
-
-  .beauty-workspace-content-editor > header > span {
-    justify-self: start;
-  }
-
-  .beauty-workspace-content-grid,
-  .beauty-workspace-service-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .beauty-workspace-content-grid .is-wide,
-  .beauty-workspace-service-grid .is-wide {
-    grid-column: auto;
-  }
-
-  .beauty-workspace-portfolio-editor article {
-    grid-template-columns: 86px minmax(0, 1fr);
-  }
-
-  .beauty-workspace-price-editor article > header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
+  .beauty-workspace-content-editor { padding: 14px; border-radius: 20px; }
+  .beauty-workspace-content-editor > header { display: grid; }
+  .beauty-workspace-content-editor > header > span { justify-self: start; }
+  .beauty-workspace-content-grid, .beauty-workspace-service-grid { grid-template-columns: 1fr; }
+  .beauty-workspace-content-grid .is-wide, .beauty-workspace-service-grid .is-wide { grid-column: auto; }
+  .beauty-workspace-portfolio-editor article { grid-template-columns: 86px minmax(0, 1fr); }
+  .beauty-workspace-price-editor article > header { align-items: flex-start; flex-direction: column; }
 }
