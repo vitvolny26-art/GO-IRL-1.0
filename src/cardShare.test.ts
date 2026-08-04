@@ -9,15 +9,18 @@ import {
   buildMessengerShareBridgeTarget,
   buildMetaEventPreviewUrl,
   buildOrganicCardShareContent,
+  buildWhatsAppShareText,
+  whatsappShareCopy,
 } from "./cardShare";
 
 const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
-const content = {
+const baseContent = {
   title: "Ролики в парке",
   date: "16 июл. · 18:00",
   address: "Smetanovy sady, Olomouc",
   url: `https://t.me/GOirl_bot?startapp=${eventId}`,
 };
+const content = { ...baseContent, language: "ru" as const };
 
 const previewUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=${eventId}&language=ru`;
 
@@ -26,12 +29,36 @@ describe("card share", () => {
     expect(buildCardShareText(content)).toBe(`GO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc\n\n${content.url}`);
   });
 
-  it("keeps Telegram on the exact event deep link and gives WhatsApp the rich preview", () => {
+  it("keeps Telegram on the exact event deep link and gives WhatsApp one rich preview action", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", content))).toContain(content.url);
     const whatsappTarget = new URL(buildCardShareTarget("whatsapp", content));
+    const text = whatsappTarget.searchParams.get("text") || "";
     expect(whatsappTarget.origin).toBe("https://wa.me");
-    expect(whatsappTarget.searchParams.get("text")).toContain(previewUrl);
-    expect(whatsappTarget.searchParams.get("text")).not.toContain(content.url);
+    expect(text).toContain(`Открыть событие: ${previewUrl}`);
+    expect(text).not.toContain(content.url);
+    expect(text.match(/https:\/\//g)).toHaveLength(1);
+  });
+
+  it.each([
+    ["ru", "Открыть событие"],
+    ["uk", "Відкрити подію"],
+    ["cs", "Otevřít událost"],
+    ["en", "Open event"],
+  ] as const)("uses the selected %s language and Telegram-standard primary action", (language, openLabel) => {
+    const localizedContent = { ...baseContent, language };
+    const localizedPreview = buildMetaEventPreviewUrl(localizedContent);
+    const whatsappTarget = new URL(buildCardShareTarget("whatsapp", localizedContent));
+    const text = whatsappTarget.searchParams.get("text") || "";
+
+    expect(new URL(localizedPreview).searchParams.get("language")).toBe(language);
+    expect(whatsappShareCopy[language].open).toBe(openLabel);
+    expect(text).toBe(buildWhatsAppShareText(localizedContent));
+    expect(text).toContain(`${openLabel}: ${localizedPreview}`);
+  });
+
+  it("retains the RU fallback when a caller omits language", () => {
+    expect(buildMetaEventPreviewUrl(baseContent)).toBe(previewUrl);
+    expect(buildWhatsAppShareText(baseContent)).toContain(`Открыть событие: ${previewUrl}`);
   });
 
   it("builds one shared Meta preview URL for the same event", () => {
