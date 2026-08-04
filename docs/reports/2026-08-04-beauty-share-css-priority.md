@@ -1,7 +1,7 @@
 ---
 title: Agent Report
 owner: Web Designer Agent
-status: Draft
+status: Ready for review
 source_of_truth: false
 last_review: 2026-08-04
 next_review: 2026-08-11
@@ -36,8 +36,17 @@ After the priority fix was deployed at `67d378b`, the transparent 2-column layou
 
 ## Checks
 
-Pending exact-head GitHub Actions.
+GitHub Actions run `30916212857` on `725394de6e0d2fcf88fe5262a1d21b29cf0d34ae`:
+
+- install dependencies: PASS
+- repository check: PASS
+- diff check: PASS
+- tests: PASS
+- typecheck: PASS
+- lint: PASS
+- build: PASS
+- bundle budget: PASS
 
 ## Next step
 
-Merge only after exact-head CI is green and explicit approval is given, then deploy to VPS and Vercel.
+Merge only after explicit approval, then deploy to VPS and Vercel.
