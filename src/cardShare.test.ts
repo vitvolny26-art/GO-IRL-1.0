@@ -90,7 +90,7 @@ describe("card share", () => {
       url: "https://go-irl-1-0.vercel.app/beauty/beauty-test-studio",
     };
     const preview = new URL(buildMetaEventPreviewUrl(beauty));
-    expect(preview.pathname).toBe("/api/meta/beauty-preview");
+    expect(preview.pathname).toBe("/api/meta/event-preview");
     expect(preview.searchParams.get("slug")).toBe("beauty-test-studio");
     expect(preview.searchParams.get("date")).toBe(beauty.date);
 
@@ -99,3 +99,4 @@ describe("card share", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", beauty))).toContain(beauty.url);
   });
 });
+
