@@ -49,7 +49,18 @@ The client booking form already persisted required name/contact values but had n
 
 ## Checks
 
-Exact-head GitHub Actions is required after the Draft PR is opened.
+GitHub Actions run `30940881101` on code head `8ecaed9c77e934cbce22470d689b7518d55ba93b`: PASS.
+
+- install dependencies: PASS;
+- repository check: PASS;
+- diff check: PASS;
+- test: PASS;
+- typecheck: PASS;
+- lint: PASS;
+- build: PASS;
+- bundle budget: PASS.
+
+The report update creates a documentation-only final head and requires one final exact-head CI confirmation.
 
 Local checks could not run because the execution environment could not resolve `github.com`; this is recorded as an infrastructure limitation rather than an application result.
 
@@ -59,4 +70,4 @@ Revert the task branch commits or remove `contactBeforeConfirmation`, the bookin
 
 ## Next step
 
-Wait for exact-head CI. After green CI, review the booking form and sticky footer on the same mobile viewport shown in the supplied screenshots. Merge and production deployment require separate explicit approval.
+Confirm final-head CI, then review the booking form and sticky footer on the same mobile viewport shown in the supplied screenshots. Merge and production deployment require separate explicit approval.
