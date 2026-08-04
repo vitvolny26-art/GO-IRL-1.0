@@ -45,6 +45,22 @@ const loadSharp = () => {
   return sharpPromise;
 };
 
+const metaDetailsCopy = {
+  ru: "Подробнее",
+  uk: "Детальніше",
+  cs: "Více informací",
+  en: "More details",
+} as const;
+
+export const buildMetaInvitationCtaSvg = (input: TelegramEventCardInput) => {
+  const label = metaDetailsCopy[input.language] || metaDetailsCopy.en;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="120" viewBox="0 0 1080 120">
+    <rect width="1080" height="120" fill="#0a0e10"/>
+    <rect x="60" y="18" width="960" height="84" rx="42" fill="#c9ff3d"/>
+    <text x="540" y="71" text-anchor="middle" dominant-baseline="middle" fill="#101410" font-size="36" font-weight="900" font-family="DejaVu Sans, sans-serif">${xml(label)}</text>
+  </svg>`;
+};
+
 export const hasEventShareBackground = (input: TelegramEventCardInput) => {
   const backgroundUrl = resolveEventShareBackgroundUrl(input);
   return Boolean(backgroundUrl && existsSync(backgroundUrl));
@@ -116,7 +132,8 @@ export const renderMetaInvitationCardJpeg = async (input: TelegramEventCardInput
   const sharp = await loadSharp();
   const portraitCard = await renderShareCardJpeg(buildMetaInvitationCardSvg(input), input);
   return sharp(portraitCard)
-    .resize(1200, 630, { fit: "contain", background: "#0a0e10" })
+    .extend({ bottom: 120, background: "#0a0e10" })
+    .composite([{ input: Buffer.from(buildMetaInvitationCtaSvg(input)), left: 0, top: 900 }])
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };

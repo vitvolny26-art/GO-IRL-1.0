@@ -27,12 +27,11 @@ describe("card share", () => {
     expect(buildCardShareText(content)).toBe(`GO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc\n\n${content.url}`);
   });
 
-  it("keeps Telegram and WhatsApp user text on the exact public event link", () => {
+  it("keeps Telegram on the exact event link and gives WhatsApp the OG web card", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", content))).toContain(content.url);
     const whatsappTarget = new URL(buildCardShareTarget("whatsapp", content));
     expect(whatsappTarget.origin).toBe("https://wa.me");
-    expect(whatsappTarget.searchParams.get("text")).toContain(content.url);
-    expect(whatsappTarget.searchParams.get("text")).not.toContain("/api/meta/event-preview");
+    expect(whatsappTarget.searchParams.get("text")).toContain(previewUrl);
   });
 
   it("builds one shared Meta preview URL for the same event", () => {
@@ -103,8 +102,7 @@ describe("card share", () => {
     expect(preview.searchParams.get("date")).toBe(beauty.date);
 
     const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));
-    expect(whatsapp.searchParams.get("text")).toContain(beauty.url);
-    expect(whatsapp.searchParams.get("text")).not.toContain("/api/meta/event-preview");
+    expect(whatsapp.searchParams.get("text")).toContain(preview.toString());
     expect(decodeURIComponent(buildCardShareTarget("telegram", beauty))).toContain(beauty.url);
   });
 });

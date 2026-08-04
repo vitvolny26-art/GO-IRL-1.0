@@ -24,17 +24,17 @@ const publicOrigin = () => {
 };
 
 export const metaEventPreviewCopy = {
-  ru: { open: "Открыть событие", calendar: "В календарь" },
-  uk: { open: "Відкрити подію", calendar: "У календар" },
-  cs: { open: "Otevřít událost", calendar: "Do kalendáře" },
-  en: { open: "Open event", calendar: "Add to calendar" },
+  ru: { open: "Открыть GO IRL", calendar: "В календарь" },
+  uk: { open: "Відкрити GO IRL", calendar: "У календар" },
+  cs: { open: "Otevřít GO IRL", calendar: "Do kalendáře" },
+  en: { open: "Open GO IRL", calendar: "Add to calendar" },
 } as const;
 
 const metaBeautyPreviewCopy = {
-  ru: "Открыть страницу мастера",
-  uk: "Відкрити сторінку майстра",
-  cs: "Otevřít stránku profesionálky",
-  en: "Open professional page",
+  ru: "Открыть GO IRL",
+  uk: "Відкрити GO IRL",
+  cs: "Otevřít GO IRL",
+  en: "Open GO IRL",
 } as const;
 
 const escapeHtml = (value: string) => value
@@ -45,6 +45,12 @@ const escapeHtml = (value: string) => value
   .replaceAll("'", "&#39;");
 
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
+
+const browserEventUrl = (origin: string, eventId: string) =>
+  `${origin}/join/${encodeURIComponent(eventId)}`;
+
+const browserBeautyUrl = (origin: string, slug: string) =>
+  `${origin}/beauty/${encodeURIComponent(slug)}`;
 
 const sendCardImage = async (card: Parameters<typeof renderMetaInvitationCardJpeg>[0], response: VercelResponse) => {
   const jpeg = await renderMetaInvitationCardJpeg(card);
@@ -72,7 +78,7 @@ const handleBeautyPreview = async (
   const canonicalUrl = `${origin}/api/meta/event-preview?${query.toString()}`;
   const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
   const imageUrl = secret
-    ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=8`
+    ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
     : `${origin}/branding/logo-wide.png`;
   const title = card.activity || card.organizer || "GO IRL Beauty";
   const description = [card.title, card.date, card.address, card.price ? `${card.price} Kč` : ""]
@@ -90,10 +96,10 @@ const handleBeautyPreview = async (
 <meta property="og:description" content="${escapeHtml(description)}" />
 <meta property="og:image" content="${escapeHtml(imageUrl)}" />
 <meta property="og:image:type" content="image/jpeg" />
-<meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
+<meta property="og:image:width" content="1080" /><meta property="og:image:height" content="1020" />
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
-<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:1200/630;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
-</head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(card.inviteUrl)}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
+<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:18/17;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
+</head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(browserBeautyUrl(origin, slug))}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
 };
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
@@ -126,10 +132,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
       response.setHeader("Cache-Control", "private, max-age=300");
       return response.status(200).end(buildMetaEventCalendar(card, origin));
     }
-    const telegramUrl = card.inviteUrl;
+    const openUrl = browserEventUrl(origin, card.eventId);
     const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
     const imageUrl = secret
-      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=7`
+      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
       : `${origin}/branding/logo-wide.png`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
@@ -149,18 +155,18 @@ export default async function handler(request: VercelRequest, response: VercelRe
 <meta property="og:title" content="${escapeHtml(title)}" />
 <meta property="og:description" content="${escapeHtml(description)}" />
 <meta property="og:image" content="${escapeHtml(imageUrl)}" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+<meta property="og:image:width" content="1080" />
+<meta property="og:image:height" content="1020" />
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
 <style>
-:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#f7f8f9}*{box-sizing:border-box}body{margin:0;padding:24px;background:linear-gradient(180deg,#11171b,#080b0d);min-height:100vh}.wrap{max-width:680px;margin:0 auto}.card{background:#12181c;border:1px solid #2d383e;border-radius:24px;overflow:hidden;box-shadow:0 20px 70px #0008}.hero{width:100%;display:block;aspect-ratio:1200/630;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px;font-size:30px;line-height:1.15}.meta{color:#c8d0d5;font-size:17px;line-height:1.5;margin-bottom:20px}.actions{display:grid;gap:12px}.btn{display:block;text-align:center;text-decoration:none;border-radius:14px;padding:15px 18px;font-weight:800;font-size:17px}.primary{background:#c9ff3d;color:#101410}.secondary{background:#263038;color:#fff}.outline{border:1px solid #52616a;color:#fff}
+:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#f7f8f9}*{box-sizing:border-box}body{margin:0;padding:24px;background:linear-gradient(180deg,#11171b,#080b0d);min-height:100vh}.wrap{max-width:680px;margin:0 auto}.card{background:#12181c;border:1px solid #2d383e;border-radius:24px;overflow:hidden;box-shadow:0 20px 70px #0008}.hero{width:100%;display:block;aspect-ratio:18/17;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px;font-size:30px;line-height:1.15}.meta{color:#c8d0d5;font-size:17px;line-height:1.5;margin-bottom:20px}.actions{display:grid;gap:12px}.btn{display:block;text-align:center;text-decoration:none;border-radius:14px;padding:15px 18px;font-weight:800;font-size:17px}.primary{background:#c9ff3d;color:#101410}.secondary{background:#263038;color:#fff}.outline{border:1px solid #52616a;color:#fff}
 </style>
 </head>
 <body><main class="wrap"><article class="card">
 <img class="hero" src="${escapeHtml(imageUrl)}" alt="" />
 <div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div>
 <div class="actions">
-<a class="btn primary" href="${escapeHtml(telegramUrl)}">${escapeHtml(labels.open)}</a>
+<a class="btn primary" href="${escapeHtml(openUrl)}">${escapeHtml(labels.open)}</a>
 <a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">${escapeHtml(labels.calendar)}</a>
 </div></div></article></main></body></html>`);
   } catch {

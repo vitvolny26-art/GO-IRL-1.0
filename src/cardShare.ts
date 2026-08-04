@@ -5,6 +5,7 @@ export type CardShareContent = {
   date: string;
   address: string;
   url: string;
+  language?: "ru" | "uk" | "cs" | "en";
 };
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -37,7 +38,7 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
     if (beautySlugPattern.test(beautySlug)) {
       const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
       previewUrl.searchParams.set("slug", beautySlug);
-      previewUrl.searchParams.set("language", "ru");
+      previewUrl.searchParams.set("language", content.language || "ru");
       if (content.date.trim()) previewUrl.searchParams.set("date", content.date.trim());
       return previewUrl.toString();
     }
@@ -47,7 +48,7 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
 
     const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
     previewUrl.searchParams.set("event", eventId);
-    previewUrl.searchParams.set("language", "ru");
+    previewUrl.searchParams.set("language", content.language || "ru");
     return previewUrl.toString();
   } catch {
     return content.url;
@@ -112,7 +113,8 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     return target.toString();
   }
   if (channel === "whatsapp") {
-    const message = buildCardShareText(normalizedContent);
+    const previewUrl = buildMetaEventPreviewUrl(normalizedContent);
+    const message = buildCardShareText({ ...normalizedContent, url: previewUrl });
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }
   if (channel === "facebook") return buildFacebookShareTarget(normalizedContent);
