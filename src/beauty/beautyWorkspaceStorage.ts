@@ -1,7 +1,7 @@
 export {
   loadBeautyWorkspace,
   resetBeautyWorkspace,
-  saveBeautyWorkspace,
   updateBeautyPublicSlug,
 } from "./beautyWorkspaceRepository";
+export { saveBeautyWorkspace } from "./beautyWorkspaceSaveQueue";
 export { beautyStorageMetadata } from "./beautyWorkspaceLocalStorage";
