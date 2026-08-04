@@ -13,6 +13,7 @@ import {
   profilePathForSection,
   resolveProfileSectionFromPath,
 } from "../profile/profileRoute";
+import { useBeautyWorkspaceAttentionCount } from "../beauty/beautyWorkspaceAttention";
 import type { ProfilePanelSection, ProfilePanelState } from "../profile/profilePanelTypes";
 import type { Language } from "../types";
 
@@ -29,7 +30,7 @@ const copy: Record<Language, ProfilePanelCopy> = {
     title: "Мой профиль",
     hint: "Управляйте личностью, приложениями по умолчанию и своей активностью GO IRL.",
     editing: "Сначала завершите редактирование профиля",
-    beautyHint: "Локальная настройка страницы записи для мастера",
+    beautyHint: "Запросы, записи, расписание и страница мастера",
     sections: {
       identity: { label: "Личность", hint: "Имя, фото, город и интересы" },
       preferences: { label: "Предпочтения", hint: "Карты, календарь, отправка и напоминания" },
@@ -42,20 +43,20 @@ const copy: Record<Language, ProfilePanelCopy> = {
     title: "Мій профіль",
     hint: "Керуйте особистістю, типовими застосунками та своєю активністю GO IRL.",
     editing: "Спочатку завершіть редагування профілю",
-    beautyHint: "Локальне налаштування сторінки запису для майстра",
+    beautyHint: "Запити, записи, розклад і сторінка майстра",
     sections: {
       identity: { label: "Особистість", hint: "Ім’я, фото, місто та інтереси" },
       preferences: { label: "Налаштування", hint: "Карти, календар, поширення та нагадування" },
       "my-go-irl": { label: "Мій GO IRL", hint: "Майбутні, створені, заявки та минулі події" },
       privacy: { label: "Приватність", hint: "Видимість, публічний перегляд і права" },
-      diagnostics: { label: "Діагностика", hint: "Стан синхронізації та повернення до Telegram" },
+      diagnostics: { label: "Діагностика", hint: "Стан синхронізації та повернення до Telegramу" },
     },
   },
   cs: {
     title: "Můj profil",
     hint: "Spravujte identitu, výchozí aplikace a svou aktivitu v GO IRL.",
     editing: "Nejprve dokončete úpravu profilu",
-    beautyHint: "Lokální nastavení rezervační stránky pro profesionálku",
+    beautyHint: "Žádosti, rezervace, rozvrh a stránka profesionála",
     sections: {
       identity: { label: "Identita", hint: "Jméno, fotografie, město a zájmy" },
       preferences: { label: "Předvolby", hint: "Mapy, kalendář, sdílení a připomínky" },
@@ -68,7 +69,7 @@ const copy: Record<Language, ProfilePanelCopy> = {
     title: "My profile",
     hint: "Manage identity, default apps and your GO IRL activity.",
     editing: "Finish editing your profile first",
-    beautyHint: "Local booking-page setup for a professional",
+    beautyHint: "Requests, bookings, schedule and professional page",
     sections: {
       identity: { label: "Identity", hint: "Name, photo, city and interests" },
       preferences: { label: "Preferences", hint: "Maps, calendar, sharing and reminders" },
@@ -98,6 +99,7 @@ export function ProfilePanel({ language, editing, renderSection, onSectionChange
   const [activeSection, setActiveSection] = useState<ProfilePanelSection>(() => (
     typeof window === "undefined" ? defaultProfilePanelSection : resolveProfileSectionFromPath(window.location.pathname)
   ));
+  const attentionCount = useBeautyWorkspaceAttentionCount();
   const labels = copy[language];
   const applySection = useCallback((section: ProfilePanelSection) => {
     setActiveSection(section);
@@ -133,7 +135,11 @@ export function ProfilePanel({ language, editing, renderSection, onSectionChange
     <ProfileLayout activeSection={activeSection} editing={editing} onSectionChange={applySection}>
       <div className="profile-panel" data-profile-panel-section={activeSection}>
         <header className="profile-panel-header"><h2>{labels.title}</h2><p>{labels.hint}</p></header>
-        <a className="profile-panel-beauty-entry" href="/beauty"><Sparkles /><span><strong>GO IRL Beauty</strong><small>{labels.beautyHint}</small></span></a>
+        <a className="profile-panel-beauty-entry" href="/beauty/workspace" target="_blank" rel="noopener noreferrer">
+          <Sparkles />
+          <span><strong>GO IRL Beauty</strong><small>{labels.beautyHint}</small></span>
+          {attentionCount > 0 && <b className="profile-panel-beauty-badge" aria-label={`${attentionCount}`}>{attentionCount > 99 ? "99+" : attentionCount}</b>}
+        </a>
         {activeSection === defaultProfilePanelSection ? content : null}
         <nav className="profile-panel-navigation" aria-label={labels.title}>
           {profilePanelSections.map(({ id }) => {

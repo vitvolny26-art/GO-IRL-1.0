@@ -363,7 +363,6 @@
   .beauty-dialog-actions { grid-template-columns: 1fr; }
 }
 
-
 .beauty-workspace-shell {
   padding-bottom: calc(118px + env(safe-area-inset-bottom));
 }
@@ -399,4 +398,58 @@
 @media (max-width: 620px) {
   .beauty-workspace-page { padding: 14px; border-radius: 18px; }
   .beauty-workspace-shell .beauty-pilot-nav { width: 100%; }
+}
+
+/* Professional workspace information architecture. */
+.beauty-workspace-view { display: grid; gap: 18px; }
+.beauty-workspace-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.beauty-workspace-section-head > div:first-child { display: grid; gap: 7px; min-width: 0; }
+.beauty-workspace-section-head h2 { margin: 0; font-size: clamp(26px, 6vw, 36px); line-height: 1; }
+.beauty-workspace-section-head p { max-width: 540px; margin: 0; color: var(--beauty-muted); line-height: 1.45; }
+.beauty-workspace-head-actions { display: flex; gap: 8px; }
+.beauty-workspace-count { display: grid; min-width: 48px; height: 48px; place-items: center; border: 1px solid var(--beauty-gold); border-radius: 15px; color: #ffe5a0; font-size: 20px; }
+.beauty-workspace-summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.beauty-workspace-summary > button,
+.beauty-workspace-summary > div { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 76px; padding: 13px; border: 1px solid rgba(216, 177, 90, .52); border-radius: 16px; background: linear-gradient(135deg, rgba(57, 37, 68, .84), rgba(29, 20, 38, .96)); color: var(--beauty-text); text-align: left; }
+.beauty-workspace-summary > button { cursor: pointer; }
+.beauty-workspace-summary svg { width: 22px; color: var(--beauty-gold); }
+.beauty-workspace-summary span { color: var(--beauty-muted); font-size: 12px; font-weight: 750; }
+.beauty-workspace-summary strong { color: #fff2bd; font-size: 20px; text-align: right; }
+.beauty-workspace-summary > div:last-child strong { max-width: 150px; font-size: 13px; line-height: 1.35; }
+.beauty-workspace-subsection { display: grid; gap: 11px; padding-top: 4px; }
+.beauty-workspace-subsection-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.beauty-workspace-subsection-head h3 { margin: 0; font-size: 20px; }
+.beauty-workspace-subsection-head p { margin: 4px 0 0; color: var(--beauty-muted); font-size: 12px; }
+.beauty-workspace-empty { padding: 24px 16px; border: 1px dashed rgba(216, 177, 90, .46); border-radius: 16px; color: var(--beauty-muted); text-align: center; }
+.beauty-workspace-page-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 16px; border: 1px solid var(--beauty-gold); border-radius: 18px; background: linear-gradient(135deg, rgba(63, 36, 75, .82), rgba(27, 17, 34, .96)); }
+.beauty-workspace-page-card > div:first-child { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.beauty-workspace-page-card svg { flex: 0 0 auto; width: 28px; color: var(--beauty-gold); }
+.beauty-workspace-page-card span { display: grid; min-width: 0; gap: 4px; }
+.beauty-workspace-page-card span strong { overflow: hidden; font-size: 19px; text-overflow: ellipsis; white-space: nowrap; }
+.beauty-workspace-page-card small { color: var(--beauty-muted); }
+.beauty-workspace-page-card > div:last-child { display: grid; gap: 2px; text-align: right; }
+.beauty-workspace-page-card > div:last-child strong { color: #ffe6a2; font-size: 24px; }
+.beauty-workspace-page-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.beauty-workspace-page-editor { display: grid; gap: 14px; padding-top: 6px; border-top: 1px solid rgba(216, 177, 90, .26); }
+.beauty-workspace-page-editor > * { margin: 0; }
+.beauty-workspace-shell .beauty-pilot-nav button { position: relative; grid-template-rows: 22px auto; align-content: center; min-height: 58px; padding: 7px 4px; border: 0; border-radius: 12px; background: transparent; font-size: 11px; font-weight: 850; }
+.beauty-workspace-shell .beauty-pilot-nav button svg { width: 21px; height: 21px; }
+.beauty-workspace-shell .beauty-pilot-nav button > span { line-height: 1; }
+.beauty-workspace-shell .beauty-pilot-nav button.is-active { background: rgba(216, 177, 90, .13); box-shadow: inset 0 0 0 1px rgba(216, 177, 90, .48); }
+.beauty-workspace-shell .beauty-pilot-nav button > b { position: absolute; top: 3px; left: calc(50% + 8px); display: grid; min-width: 19px; height: 19px; padding: 0 5px; place-items: center; border: 2px solid #0e0a15; border-radius: 999px; background: #ff5a7a; color: #fff; font-size: 9px; font-weight: 950; line-height: 1; }
+.profile-panel-beauty-entry { position: relative; justify-content: flex-start; }
+.profile-panel-beauty-entry > svg { flex: 0 0 auto; }
+.profile-panel-beauty-entry > span { flex: 1; min-width: 0; }
+.profile-panel-beauty-badge { display: grid; min-width: 26px; height: 26px; padding: 0 7px; place-items: center; border-radius: 999px; background: #ff5a7a; color: #fff; font-size: 11px; font-weight: 950; box-shadow: 0 8px 20px rgba(0, 0, 0, .32); }
+
+@media (max-width: 620px) {
+  .beauty-workspace-section-head { flex-direction: column; }
+  .beauty-workspace-section-head > button,
+  .beauty-workspace-head-actions { width: 100%; }
+  .beauty-workspace-head-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .beauty-workspace-summary { grid-template-columns: 1fr; }
+  .beauty-workspace-subsection-head { align-items: stretch; flex-direction: column; }
+  .beauty-workspace-page-actions { grid-template-columns: 1fr; }
+  .beauty-workspace-shell .beauty-pilot-nav { gap: 3px; padding-right: 7px; padding-left: 7px; }
+  .beauty-workspace-shell .beauty-pilot-nav button { min-height: 56px; font-size: 10px; }
 }
