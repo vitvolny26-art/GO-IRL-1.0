@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Ban, CalendarDays, Check, Clock3, MessageCircle, Plus, Scissors, UserRound, X, type LucideIcon } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Ban, BellDot, CalendarDays, Check, Clock3, House, MessageCircle, Plus, Scissors, UserRound, X, type LucideIcon } from "lucide-react";
 import {
   listServiceBookings,
   subscribeServiceBookings,
@@ -13,12 +13,14 @@ type Status = ServiceBookingStatus;
 type Appointment = { id: string; clientName: string; phone: string; date: string; time: string; requestedTime?: string; contactBeforeConfirmation?: boolean; status: Status; source: "client" | "professional"; bookingId?: string };
 type TimeBlock = { id: string; date: string; time: string; label: string };
 type PilotData = { appointments: Appointment[]; blocks: TimeBlock[] };
-type View = "today" | "week" | "client" | "services";
+type View = "overview" | "requests" | "appointments" | "page";
 
 const pilotKey = "go-irl-beauty-pilot-v1";
 export const resetBeautyPilotWorkspace = () => localStorage.removeItem(pilotKey);
 const today = () => new Date().toISOString().slice(0, 10);
 const uid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+const appointmentKey = (item: Appointment) => `${item.date}T${item.time}`;
+const sortAppointments = (items: Appointment[]) => [...items].sort((left, right) => appointmentKey(left).localeCompare(appointmentKey(right)));
 const initialData = (): PilotData => ({
   appointments: [
     { id: uid(), clientName: "Petra K.", phone: "+420 777 222 333", date: today(), time: "10:30", status: "pending", source: "client" },
@@ -36,8 +38,8 @@ const labels: Record<Status, string> = {
   pending: "Ожидает", confirmed: "Подтверждена", declined: "Отклонена",
   cancelled: "Отменена", completed: "Завершена", no_show: "Не пришла",
 };
-function NavButton({ active, icon: Icon, label, onClick }: { active: boolean; icon: LucideIcon; label: string; onClick: () => void }) {
-  return <button className={active ? "is-active" : ""} type="button" onClick={onClick}><Icon size={18} />{label}</button>;
+function NavButton({ active, icon: Icon, label, badge = 0, onClick }: { active: boolean; icon: LucideIcon; label: string; badge?: number; onClick: () => void }) {
+  return <button className={active ? "is-active" : ""} type="button" aria-current={active ? "page" : undefined} onClick={onClick}><Icon size={19} /><span>{label}</span>{badge > 0 && <b>{badge > 99 ? "99+" : badge}</b>}</button>;
 }
 
 const bookingAppointment = (booking: ServiceBooking): Appointment => ({
@@ -52,10 +54,16 @@ const bookingAppointment = (booking: ServiceBooking): Appointment => ({
   source: "client",
 });
 
-export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace; onEdit: () => void }) {
+type BeautyPilotWorkspaceProps = {
+  setup: BeautyWorkspace;
+  onEdit: () => void;
+  pageEditor?: ReactNode;
+};
+
+export function BeautyPilotWorkspace({ setup, onEdit, pageEditor }: BeautyPilotWorkspaceProps) {
   const [data, setData] = useState<PilotData>(load);
   const [serviceBookings, setServiceBookings] = useState<ServiceBooking[]>(listServiceBookings);
-  const [view, setView] = useState<View>("today");
+  const [view, setView] = useState<View>("overview");
   const [selected, setSelected] = useState("");
   const [dialog, setDialog] = useState<"appointment" | "block" | "booking" | "reschedule" | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", date: today(), time: "09:00", label: "" });
@@ -68,14 +76,21 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
     booking.professionalName === setup.profile.displayName
     || booking.serviceName === setup.service.name
   ), [serviceBookings, setup.profile.displayName, setup.service.name]);
-  const allAppointments = useMemo(() => [
+  const allAppointments = useMemo(() => sortAppointments([
     ...data.appointments,
     ...relevantServiceBookings.map(bookingAppointment),
-  ], [data.appointments, relevantServiceBookings]);
-  const appointments = useMemo(() => allAppointments.filter((item) => view !== "today" || item.date === today()), [allAppointments, view]);
+  ]), [data.appointments, relevantServiceBookings]);
+  const pendingAppointments = useMemo(() => allAppointments.filter((item) => item.status === "pending"), [allAppointments]);
+  const upcomingAppointments = useMemo(() => allAppointments.filter((item) => item.status === "confirmed" && item.date >= today()), [allAppointments]);
+  const todayAppointments = useMemo(() => allAppointments.filter((item) => item.date === today() && ["pending", "confirmed"].includes(item.status)), [allAppointments]);
+  const upcomingBlocks = useMemo(() => data.blocks.filter((item) => item.date >= today()).sort((left, right) => `${left.date}T${left.time}`.localeCompare(`${right.date}T${right.time}`)), [data.blocks]);
+  const todayBlocks = upcomingBlocks.filter((item) => item.date === today());
   const current = allAppointments.find((item) => item.id === selected);
   const occupied = new Set([...allAppointments.filter((item) => ["pending", "confirmed"].includes(item.status)).map((item) => `${item.date}:${item.time}`), ...data.blocks.map((item) => `${item.date}:${item.time}`)]);
   const slots = ["09:00", "10:30", "12:00", "14:30", "16:00"];
+  const nextAppointment = upcomingAppointments[0];
+  const activeServiceCount = setup.services.filter((service) => service.active && !service.archived).length || 1;
+
   const updateStatus = (status: Status) => {
     if (current?.bookingId) {
       updateServiceBookingStatus(current.bookingId, status);
@@ -113,31 +128,54 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
     const link = document.createElement("a"); link.href = URL.createObjectURL(file); link.download = "go-irl-beauty.ics"; link.click(); URL.revokeObjectURL(link.href);
   };
 
+  const appointmentList = (items: Appointment[], emptyText: string) => <div className="beauty-pilot-list">
+    {items.map((item) => <button className="beauty-appointment-card" type="button" key={item.id} onClick={() => setSelected(item.id)}>
+      <span><b>{item.time}</b><small>{item.date}</small></span>
+      <span><strong>{item.clientName}</strong><small>{setup.service.name}{item.contactBeforeConfirmation ? " · сначала связаться" : ""}</small></span>
+      <i className={`status-${item.status}`}>{labels[item.status]}</i>
+    </button>)}
+    {!items.length && <div className="beauty-workspace-empty">{emptyText}</div>}
+  </div>;
+
+  const timeBlocks = (items: TimeBlock[]) => items.map((item) => <div className="beauty-time-block" key={item.id}><Ban size={17} /><span><b>{item.date} · {item.time}</b> · {item.label}</span><button type="button" aria-label="Удалить блок" onClick={() => persist({ ...data, blocks: data.blocks.filter((block) => block.id !== item.id) })}><X size={16} /></button></div>);
+
+  const overview = <section className="beauty-workspace-view">
+    <div className="beauty-workspace-section-head"><div><span className="beauty-preview-badge">РАБОЧИЙ ДЕНЬ</span><h2>Обзор</h2><p>Новые запросы, подтверждённые записи и ближайшее свободное действие.</p></div><button className="beauty-primary" type="button" onClick={() => setDialog("appointment")}><Plus size={18} />Добавить запись</button></div>
+    <div className="beauty-workspace-summary">
+      <button type="button" onClick={() => setView("requests")}><BellDot /><span>Новые запросы</span><strong>{pendingAppointments.length}</strong></button>
+      <button type="button" onClick={() => setView("appointments")}><CalendarDays /><span>Будущие записи</span><strong>{upcomingAppointments.length}</strong></button>
+      <div><Clock3 /><span>Сегодня</span><strong>{todayAppointments.length}</strong></div>
+      <div><UserRound /><span>Следующая запись</span><strong>{nextAppointment ? `${nextAppointment.date} · ${nextAppointment.time}` : "—"}</strong></div>
+    </div>
+    <div className="beauty-workspace-subsection"><div className="beauty-workspace-subsection-head"><div><h3>Сегодня</h3><p>Запросы и подтверждённые записи на текущий день.</p></div><button className="beauty-secondary" type="button" onClick={() => setDialog("block")}>Заблокировать время</button></div>{appointmentList(todayAppointments, "На сегодня записей нет.")}{timeBlocks(todayBlocks)}</div>
+  </section>;
+
+  const requests = <section className="beauty-workspace-view">
+    <div className="beauty-workspace-section-head"><div><span className="beauty-preview-badge">ТРЕБУЕТ РЕШЕНИЯ</span><h2>Запросы</h2><p>Новые заявки клиентов. Откройте заявку, свяжитесь с клиентом при необходимости и подтвердите или отклоните её.</p></div><strong className="beauty-workspace-count">{pendingAppointments.length}</strong></div>
+    {appointmentList(pendingAppointments, "Новых запросов нет.")}
+  </section>;
+
+  const appointments = <section className="beauty-workspace-view">
+    <div className="beauty-workspace-section-head"><div><span className="beauty-preview-badge">КАЛЕНДАРЬ</span><h2>Записи</h2><p>Подтверждённые будущие записи и заблокированное время.</p></div><div className="beauty-workspace-head-actions"><button className="beauty-secondary" type="button" onClick={() => setDialog("block")}>Блок</button><button className="beauty-primary" type="button" onClick={() => setDialog("appointment")}><Plus size={18} />Запись</button></div></div>
+    {appointmentList(upcomingAppointments, "Подтверждённых записей пока нет.")}
+    {upcomingBlocks.length > 0 && <div className="beauty-workspace-subsection"><div className="beauty-workspace-subsection-head"><div><h3>Заблокированное время</h3><p>Перерывы и личные дела, недоступные клиентам.</p></div></div><div className="beauty-pilot-list">{timeBlocks(upcomingBlocks)}</div></div>}
+  </section>;
+
+  const page = <section className="beauty-workspace-view beauty-workspace-page-view">
+    <div className="beauty-workspace-section-head"><div><span className="beauty-preview-badge">{setup.published ? "ОПУБЛИКОВАНА" : "ЧЕРНОВИК"}</span><h2>Страница мастера</h2><p>Предпросмотр, услуги, контент и данные, которые видит клиент.</p></div><button className="beauty-secondary" type="button" onClick={onEdit}><Scissors size={18} />Основные данные</button></div>
+    <div className="beauty-workspace-page-card"><div><UserRound /><span><strong>{setup.profile.displayName}</strong><small>{setup.profile.publicLocation}</small></span></div><div><strong>{activeServiceCount}</strong><small>активных услуг</small></div></div>
+    <div className="beauty-workspace-page-actions"><button className="beauty-secondary" type="button" onClick={() => window.open(new URL(setup.publicLink, window.location.origin).toString(), "_blank", "noopener,noreferrer")}>Открыть страницу клиента</button><button className="beauty-primary" type="button" onClick={onEdit}>Профиль, прайс и расписание</button></div>
+    {pageEditor && <div className="beauty-workspace-page-editor">{pageEditor}</div>}
+  </section>;
+
   return <div className="beauty-pilot">
+    {view === "overview" ? overview : view === "requests" ? requests : view === "appointments" ? appointments : page}
     <nav className="beauty-pilot-nav" aria-label="Разделы кабинета мастера">
-      <NavButton active={view === "today"} icon={Clock3} label="Сегодня" onClick={() => setView("today")} />
-      <NavButton active={view === "week"} icon={CalendarDays} label="Неделя" onClick={() => setView("week")} />
-      <NavButton active={view === "client"} icon={UserRound} label="Клиент" onClick={() => setView("client")} />
-      <NavButton active={view === "services"} icon={Scissors} label="Услуга" onClick={() => setView("services")} />
+      <NavButton active={view === "overview"} icon={House} label="Обзор" onClick={() => setView("overview")} />
+      <NavButton active={view === "requests"} icon={BellDot} label="Запросы" badge={pendingAppointments.length} onClick={() => setView("requests")} />
+      <NavButton active={view === "appointments"} icon={CalendarDays} label="Записи" onClick={() => setView("appointments")} />
+      <NavButton active={view === "page"} icon={UserRound} label="Страница" onClick={() => setView("page")} />
     </nav>
-    {view === "client" ? <section className="beauty-pilot-public">
-      <span className="beauty-preview-badge">PUBLIC MOCK · БЕЗ РЕГИСТРАЦИИ</span><h2>{setup.profile.displayName}</h2><p>{setup.profile.publicLocation}</p>
-      <div className="beauty-preview-card"><strong>{setup.service.name}</strong><span>{setup.service.durationMinutes} мин</span><b>{setup.service.priceCzk} Kč</b></div>
-      <p className="beauty-muted">Точный адрес появится только после подтверждения мастером.</p>
-      <button className="beauty-primary" type="button" onClick={() => setDialog("booking")}>Запросить запись</button>
-    </section> : view === "services" ? <section className="beauty-pilot-public">
-      <h2>Услуга и доступность</h2>
-      <div className="beauty-preview-card"><strong>{setup.service.name}</strong><span>{setup.service.durationMinutes} мин + {setup.service.bufferMinutes} мин буфер</span><b>{setup.service.priceCzk} Kč</b></div>
-      <div className="beauty-preview-card"><strong>Рабочие часы</strong><span>{setup.availability.weekdays.join(", ")}</span><span>{setup.availability.startTime}–{setup.availability.endTime}</span></div>
-      <button className="beauty-secondary" type="button" onClick={onEdit}>Изменить настройки</button>
-    </section> : <section>
-      <div className="beauty-pilot-heading"><div><span className="beauty-preview-badge">PROFESSIONAL · LOCAL PILOT</span><h2>{view === "today" ? "Сегодня" : "Неделя"}</h2></div><div><button className="beauty-secondary" type="button" onClick={() => setDialog("block")}>Блок</button><button className="beauty-primary" type="button" onClick={() => setDialog("appointment")}><Plus size={18} />Запись</button></div></div>
-      <div className="beauty-pilot-list">
-        {appointments.map((item) => <button className="beauty-appointment-card" type="button" key={item.id} onClick={() => setSelected(item.id)}><span><b>{item.time}</b><small>{item.date}</small></span><span><strong>{item.clientName}</strong><small>{item.bookingId ? setup.service.name : setup.service.name}</small></span><i className={`status-${item.status}`}>{labels[item.status]}</i></button>)}
-        {data.blocks.filter((item) => view !== "today" || item.date === today()).map((item) => <div className="beauty-time-block" key={item.id}><Ban size={17} /><span><b>{item.time}</b> · {item.label}</span><button type="button" onClick={() => persist({ ...data, blocks: data.blocks.filter((block) => block.id !== item.id) })}><X size={16} /></button></div>)}
-        {!appointments.length && <div className="beauty-note">Пока нет записей.</div>}
-      </div>
-    </section>}
     {current && <div className="beauty-dialog-backdrop" role="presentation" onPointerDown={() => setSelected("")}><section className="beauty-dialog" role="dialog" aria-modal="true" onPointerDown={(event) => event.stopPropagation()}>
       <button className="beauty-dialog-close" type="button" onClick={() => setSelected("")}><X /></button><span className={`beauty-preview-badge status-${current.status}`}>{labels[current.status]}</span>
       <h2>{current.clientName}</h2><p>{current.date} · {current.time}</p><p><MessageCircle size={16} /> {current.phone}</p>
