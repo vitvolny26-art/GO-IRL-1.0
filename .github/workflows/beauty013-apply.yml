@@ -1,0 +1,96 @@
+name: Beauty013 Apply and Verify
+
+on:
+  push:
+    branches:
+      - feature/beauty013-workspace-content-20260804
+    paths:
+      - .github/workflows/beauty013-apply.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beauty013-apply
+  cancel-in-progress: false
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/beauty013-workspace-content-20260804
+          fetch-depth: 0
+
+      - name: Reconstruct and verify payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat scripts/.beauty013-payload-* | base64 --decode > /tmp/beauty013-payload.tar.gz
+          echo "a0437692d6230b6a1ab1e2e94fad5201dfe50898b59ae988d7d94041fd7ae1a4  /tmp/beauty013-payload.tar.gz" | sha256sum --check --strict
+          mkdir -p /tmp/beauty013-payload
+          tar -xzf /tmp/beauty013-payload.tar.gz -C /tmp/beauty013-payload
+          cp -a /tmp/beauty013-payload/. .
+          rm -f scripts/.beauty013-payload-*
+          rm -f .github/workflows/beauty013-apply.yml
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Repository check
+        run: pnpm run repo:check
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Diff check
+        run: git diff --check
+
+      - name: Commit verified Beauty013 patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- \
+            .github/workflows/beauty013-apply.yml \
+            scripts/.beauty013-payload-00 \
+            scripts/.beauty013-payload-01 \
+            scripts/.beauty013-payload-02 \
+            scripts/.beauty013-payload-03 \
+            scripts/.beauty013-payload-04 \
+            scripts/.beauty013-payload-05 \
+            scripts/.beauty013-payload-06 \
+            scripts/.beauty013-payload-07 \
+            docs/reports/2026-08-04-beauty013-workspace-content.md \
+            src/beauty/BeautyProfessionalProfilePortal.tsx \
+            src/beauty/BeautySetupPage.tsx \
+            src/beauty/BeautyWorkspaceContentEditor.tsx \
+            src/beauty/beauty-portfolio-rail.css \
+            src/beauty/beauty-workspace-content-editor.css \
+            src/beauty/beautyProfessionalProfileModel.test.ts \
+            src/beauty/beautyProfessionalProfileModel.ts \
+            src/beauty/beautySetupModel.test.ts \
+            src/beauty/beautySetupModel.ts \
+            src/beauty/beautyWorkspaceRepository.ts \
+            src/services/servicesProfessionalDirectory.test.ts \
+            src/services/servicesProfessionalDirectory.ts \
+            supabase/migrations/20260804013000_beauty013_workspace_content.sql
+          git diff --cached --check
+          git commit -m "Beauty013: add editable professional profile content"
+          git push origin HEAD:feature/beauty013-workspace-content-20260804
