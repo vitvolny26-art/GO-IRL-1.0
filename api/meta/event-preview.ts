@@ -1,7 +1,6 @@
 import { readEnv } from "../_shared/env.js";
 import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "../_shared/meta-event-calendar.js";
 import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from "../_shared/telegram-share-event.js";
-import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
 
 type VercelRequest = {
   method?: string;
@@ -62,10 +61,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return response.status(200).end(buildMetaEventCalendar(card, origin));
     }
     const telegramUrl = card.inviteUrl;
-    const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
-    const imageUrl = secret
-      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=7`
-      : `${origin}/branding/logo-wide.png`;
+    const imageUrl = `${origin}/api/meta/event-invitation-card?${eventQuery}&v=8`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
     const labels = metaEventPreviewCopy[card.language];
