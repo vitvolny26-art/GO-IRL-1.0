@@ -37,8 +37,19 @@ The shared Activity menu already renders a transparent two-column grid to the le
 
 ## Checks
 
-Pending exact-head GitHub Actions.
+GitHub Actions run `30872785260` on code head `b43bb70f20bd3df1874e0c1d5c2c29369eabf7cf` passed:
+
+- install dependencies;
+- repository check;
+- diff check;
+- tests;
+- typecheck;
+- lint;
+- build;
+- bundle budget.
+
+The final report-only commit requires its own exact-head CI confirmation.
 
 ## Next step
 
-Review the mobile Beauty card against the Activity screenshot, then merge only after explicit approval.
+Confirm final exact-head CI, review the mobile Beauty card against the Activity screenshot, then merge only after explicit approval.
