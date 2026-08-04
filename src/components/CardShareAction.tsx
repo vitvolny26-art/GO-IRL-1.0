@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MessageCircle, Share2 } from "lucide-react";
+import { MessageCircle, MoreHorizontal, Share2 } from "lucide-react";
 import {
   buildCardShareImageUrl,
   buildCardShareTarget,
@@ -9,7 +9,7 @@ import {
 import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 import { canPrepareBeautyTelegramShare, sharePreparedTelegramBeauty } from "../telegramPreparedBeautyShare";
-import { readUserPreferences, type ShareProvider } from "../userPreferences";
+import type { ShareProvider } from "../userPreferences";
 import { getCurrentChatIdentity, loadActivityChatMessages } from "../activityChatFeature";
 import {
   activityChatUnreadChangedEvent,
@@ -41,8 +41,16 @@ const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> 
   { id: "native", label: "Поделиться", icon: null },
 ];
 
+const moreLabels = {
+  ru: "Все варианты",
+  uk: "Усі варіанти",
+  cs: "Další možnosti",
+  en: "More options",
+} as const;
+
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const rootRef = useRef<HTMLSpanElement>(null);
   const content = { title, date, address, url };
@@ -55,10 +63,16 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   useEffect(() => {
     if (!open) return;
     const closeOutside = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+        setExpanded(false);
+      }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        setExpanded(false);
+      }
     };
     document.addEventListener("pointerdown", closeOutside);
     document.addEventListener("keydown", closeOnEscape);
@@ -131,6 +145,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
 
   const share = async (channel: ShareChannel) => {
     setOpen(false);
+    setExpanded(false);
 
     if (channel === "telegram") {
       if (onTelegramShare) {
@@ -182,12 +197,13 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   };
 
   const activate = () => {
-    const preferred = readUserPreferences().shareProvider;
-    if (preferred) {
-      void share(preferred);
+    if (open) {
+      setOpen(false);
+      setExpanded(false);
       return;
     }
-    setOpen((current) => !current);
+    setExpanded(false);
+    setOpen(true);
   };
 
   const openUnreadChat = () => {
@@ -197,6 +213,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     setUnreadCount(0);
     chatAction.click();
   };
+
+  const visibleChannels = expanded ? channels : channels.slice(0, 1);
+  const moreLabel = moreLabels[language];
 
   return (
     <span className="card-share-action" ref={rootRef}>
@@ -232,8 +251,8 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         </svg>
       </button>
       {open ? (
-        <span className="card-share-channel-list" role="menu" aria-label={label}>
-          {channels.map((channel) => (
+        <span className={`card-share-channel-list ${expanded ? "is-expanded" : "is-compact"}`} role="menu" aria-label={label}>
+          {visibleChannels.map((channel) => (
             <button
               key={channel.id}
               type="button"
@@ -253,6 +272,24 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               </span>
             </button>
           ))}
+          {!expanded ? (
+            <button
+              className="card-share-more-action"
+              type="button"
+              role="menuitem"
+              aria-label={moreLabel}
+              title={moreLabel}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setExpanded(true);
+              }}
+            >
+              <span className="card-share-icon-circle">
+                <MoreHorizontal size={30} aria-hidden="true" />
+              </span>
+            </button>
+          ) : null}
         </span>
       ) : null}
     </span>

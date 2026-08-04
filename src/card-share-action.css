@@ -15,6 +15,14 @@
   gap: 8px;
 }
 
+.card-share-channel-list.is-compact {
+  grid-template-columns: 52px;
+}
+
+.card-share-channel-list.is-expanded {
+  grid-template-columns: repeat(2, 52px);
+}
+
 .card-share-channel-list > button {
   display: grid;
   width: 52px;
@@ -37,6 +45,7 @@
   border: 1px solid rgba(255, 255, 255, .16);
   border-radius: 999px;
   background: #fff;
+  color: #111;
   box-shadow: 0 12px 28px rgba(0, 0, 0, .32);
 }
 
