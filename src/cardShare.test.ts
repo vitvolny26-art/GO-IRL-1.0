@@ -81,4 +81,21 @@ describe("card share", () => {
     const fallback = { ...content, url: "https://example.com/event" };
     expect(buildMetaEventPreviewUrl(fallback)).toBe(fallback.url);
   });
+
+  it("builds a dynamic Beauty preview for WhatsApp without changing Telegram sharing", () => {
+    const beauty = {
+      title: "Test Studio",
+      date: "03 авг · 09:00",
+      address: "Центр, Оломоуц",
+      url: "https://go-irl-1-0.vercel.app/beauty/beauty-test-studio",
+    };
+    const preview = new URL(buildMetaEventPreviewUrl(beauty));
+    expect(preview.pathname).toBe("/api/meta/beauty-preview");
+    expect(preview.searchParams.get("slug")).toBe("beauty-test-studio");
+    expect(preview.searchParams.get("date")).toBe(beauty.date);
+
+    const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));
+    expect(whatsapp.searchParams.get("text")).toContain(preview.toString());
+    expect(decodeURIComponent(buildCardShareTarget("telegram", beauty))).toContain(beauty.url);
+  });
 });
