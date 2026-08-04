@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg";
-import { configureTelegramShareCardFonts, hasEventShareBackground, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
+import { buildMetaInvitationCtaSvg, configureTelegramShareCardFonts, hasEventShareBackground, renderMetaInvitationCardJpeg, renderTelegramShareCardJpeg } from "./telegram-share-card-image";
 import type { TelegramEventCardInput } from "./telegram-event-card";
 
 const card: TelegramEventCardInput = {
@@ -140,8 +140,16 @@ describe("Telegram event share-card image", () => {
 
     const jpeg = await renderMetaInvitationCardJpeg(metaCard);
     const metadata = await sharp(jpeg).metadata();
-    expect(metadata.width).toBe(1200);
-    expect(metadata.height).toBe(630);
+    expect(metadata.width).toBe(1080);
+    expect(metadata.height).toBe(1020);
     expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
+  });
+
+  it("adds a localized details CTA below the WhatsApp image without changing Telegram", () => {
+    expect(buildMetaInvitationCtaSvg({ ...card, language: "ru" })).toContain("Подробнее");
+    expect(buildMetaInvitationCtaSvg({ ...card, language: "uk" })).toContain("Детальніше");
+    expect(buildMetaInvitationCtaSvg({ ...card, language: "cs" })).toContain("Více informací");
+    expect(buildMetaInvitationCtaSvg({ ...card, language: "en" })).toContain("More details");
+    expect(buildTelegramShareCardSvg(card)).not.toContain("Подробнее");
   });
 });

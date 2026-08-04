@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, MoreHorizontal, Share2 } from "lucide-react";
 import {
   buildCardShareImageUrl,
+  buildMetaEventPreviewUrl,
   buildCardShareTarget,
   buildOrganicCardShareContent,
   buildCardShareText,
@@ -53,10 +54,10 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   const [expanded, setExpanded] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const rootRef = useRef<HTMLSpanElement>(null);
-  const content = { title, date, address, url };
   const activityId = useMemo(() => activityIdFromInviteUrl(url), [url]);
   const joinedIds = useAppStore((state) => state.joinedIds);
   const language = useAppStore((state) => state.language);
+  const content = { title, date, address, url, language };
   const canAccessChat = Boolean(activityId && joinedIds.includes(activityId));
   const showUnread = canShowEventCardUnread(activityId, joinedIds, unreadCount);
 
@@ -166,7 +167,8 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           const response = await fetch(imageUrl);
           if (response.ok) {
             const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
-            const shareData = { files: [file], text: buildCardShareText(content) };
+            const previewUrl = buildMetaEventPreviewUrl(content);
+            const shareData = { files: [file], text: buildCardShareText({ ...content, url: previewUrl }) };
             if (!navigator.canShare || navigator.canShare({ files: [file] })) {
               await navigator.share(shareData);
               return;
