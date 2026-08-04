@@ -8,9 +8,6 @@ export type BeautyProfessionalProfileSummary = {
   durationTo: number;
 };
 
-const serviceIdentity = (service: ServicesProfessional) =>
-  `${service.serviceName}:${service.durationMinutes}:${service.priceCzk}:${service.currency}`;
-
 export const buildBeautyProfessionalProfileSummary = (
   professionals: readonly ServicesProfessional[],
   slug: string,
@@ -21,7 +18,7 @@ export const buildBeautyProfessionalProfileSummary = (
   const services = Array.from(new Map(
     professionals
       .filter((item) => item.profileId === professional.profileId)
-      .map((item) => [serviceIdentity(item), item]),
+      .map((item) => [item.serviceId, item]),
   ).values()).sort((left, right) => left.priceCzk - right.priceCzk || left.durationMinutes - right.durationMinutes);
 
   const prices = services.map((item) => item.priceCzk);
