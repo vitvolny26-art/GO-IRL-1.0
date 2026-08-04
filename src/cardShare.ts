@@ -8,6 +8,7 @@ export type CardShareContent = {
 };
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const beautySlugPattern = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const fallbackOrigin = "https://go-irl-1-0.vercel.app";
 const shareTextMarker = "GO IRL:";
 export const metaAppId = "1348703396728256";
@@ -31,6 +32,16 @@ export const buildCardShareText = ({ title, date, address, url }: CardShareConte
 export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
   try {
     const inviteUrl = new URL(content.url);
+    const beautyMatch = inviteUrl.pathname.match(/^\/beauty\/([^/]+)\/?$/i);
+    const beautySlug = beautyMatch?.[1] ? decodeURIComponent(beautyMatch[1]).trim().toLowerCase() : "";
+    if (beautySlugPattern.test(beautySlug)) {
+      const previewUrl = new URL("/api/meta/beauty-preview", fallbackOrigin);
+      previewUrl.searchParams.set("slug", beautySlug);
+      previewUrl.searchParams.set("language", "ru");
+      if (content.date.trim()) previewUrl.searchParams.set("date", content.date.trim());
+      return previewUrl.toString();
+    }
+
     const eventId = inviteUrl.searchParams.get("startapp")?.trim() || "";
     if (!eventIdPattern.test(eventId)) return content.url;
 
