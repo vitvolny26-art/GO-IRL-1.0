@@ -105,15 +105,16 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
 
 export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagram">, content: CardShareContent) => {
   const normalizedContent = { ...content, url: normalizeCardShareUrl(content.url) };
-  const organicContent = buildOrganicCardShareContent(normalizedContent);
-  const message = buildCardShareText({ ...normalizedContent, url: organicContent.url });
   if (channel === "telegram") {
     const target = new URL("https://t.me/share/url");
     target.searchParams.set("url", normalizedContent.url);
     target.searchParams.set("text", buildCardShareText({ ...normalizedContent, url: "" }));
     return target.toString();
   }
-  if (channel === "whatsapp") return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  if (channel === "whatsapp") {
+    const message = buildCardShareText(normalizedContent);
+    return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  }
   if (channel === "facebook") return buildFacebookShareTarget(normalizedContent);
   return buildMessengerSendTarget(normalizedContent);
 };
