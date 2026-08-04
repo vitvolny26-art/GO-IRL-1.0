@@ -15,7 +15,7 @@ Prepare Beauty007-B as a repository-only additive schema patch with database inv
 
 Issue: `#592 — Beauty007 — Server-backed Beauty booking foundation`.
 
-Base commit: `652350f1437d492cfa64f18c219612dcf3198e39`.
+Base commit: `498006d65b916c64383137f995c24c22e90ca971`.
 
 ## Files inspected
 
