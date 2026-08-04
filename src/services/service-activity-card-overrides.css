@@ -265,6 +265,30 @@
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
 }
 
+/* Match the Beauty sharing menu to the Activity card presentation. */
+.service-activity-card .card-share-channel-list {
+  top: 0;
+  right: 56px;
+  grid-template-columns: repeat(2, 52px);
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.service-activity-card .card-share-channel-list > button {
+  width: 52px;
+  height: 52px;
+  background: transparent !important;
+}
+
+.service-activity-card .card-share-icon-circle {
+  width: 48px;
+  height: 48px;
+}
+
 @media (max-width: 420px) {
   .service-activity-card .services-professional-meta {
     grid-template-columns: 70px 76px 82px minmax(0, 1fr) !important;
