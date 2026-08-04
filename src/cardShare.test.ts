@@ -7,6 +7,8 @@ import {
   buildMessengerAppTarget,
   buildMessengerPreviewUrl,
   buildMessengerShareBridgeTarget,
+  buildMetaBeautyPreviewUrl,
+  buildMetaCardPreviewUrl,
   buildMetaEventPreviewUrl,
   buildOrganicCardShareContent,
 } from "./cardShare";
@@ -20,6 +22,19 @@ const content = {
 };
 
 const previewUrl = `https://go-irl-1-0.vercel.app/api/meta/event-preview?event=${eventId}&language=ru`;
+const beautyContent = {
+  title: "Test Studio",
+  date: "04 авг · 09:00",
+  address: "Центр, Оломоуц",
+  url: "https://go-irl-1-0.vercel.app/beauty/beauty-test",
+  language: "ru" as const,
+};
+const beautyPreview = new URL("https://go-irl-1-0.vercel.app/api/meta/beauty-preview");
+beautyPreview.searchParams.set("slug", "beauty-test");
+beautyPreview.searchParams.set("language", "ru");
+beautyPreview.searchParams.set("date", beautyContent.date);
+beautyPreview.searchParams.set("v", "1");
+const beautyPreviewUrl = beautyPreview.toString();
 
 describe("card share", () => {
   it("keeps the exact event deep link in the share text", () => {
@@ -36,6 +51,7 @@ describe("card share", () => {
 
   it("builds one shared Meta preview URL for the same event", () => {
     expect(buildMetaEventPreviewUrl(content)).toBe(previewUrl);
+    expect(buildMetaCardPreviewUrl(content)).toBe(previewUrl);
     expect(buildMessengerPreviewUrl(content)).toBe(previewUrl);
     expect(buildOrganicCardShareContent(content)).toEqual({
       title: "GO IRL: Ролики в парке",
@@ -80,5 +96,23 @@ describe("card share", () => {
   it("falls back to the original URL when no valid event id is present", () => {
     const fallback = { ...content, url: "https://example.com/event" };
     expect(buildMetaEventPreviewUrl(fallback)).toBe(fallback.url);
+  });
+
+  it("builds a localized Beauty preview URL from the public profile slug", () => {
+    expect(buildMetaBeautyPreviewUrl(beautyContent)).toBe(beautyPreviewUrl);
+    expect(buildMetaCardPreviewUrl(beautyContent)).toBe(beautyPreviewUrl);
+  });
+
+  it("sends only the Beauty preview URL to WhatsApp so the result can render as one card", () => {
+    const target = new URL(buildCardShareTarget("whatsapp", beautyContent));
+    expect(target.origin).toBe("https://wa.me");
+    expect(target.searchParams.get("text")).toBe(beautyPreviewUrl);
+    expect(target.searchParams.get("text")).not.toContain("GO IRL:");
+    expect(target.searchParams.get("text")).not.toContain("/beauty/beauty-test");
+  });
+
+  it("falls back to the original URL for an invalid Beauty public slug", () => {
+    const invalid = { ...beautyContent, url: "https://go-irl-1-0.vercel.app/beauty/test" };
+    expect(buildMetaBeautyPreviewUrl(invalid)).toBe(invalid.url);
   });
 });
