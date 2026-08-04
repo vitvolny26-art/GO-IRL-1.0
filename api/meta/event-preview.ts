@@ -5,6 +5,7 @@ import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from ".
 type VercelRequest = {
   method?: string;
   query?: Record<string, string | string[] | undefined>;
+  headers?: Record<string, string | string[] | undefined>;
 };
 
 type VercelResponse = {
@@ -13,11 +14,49 @@ type VercelResponse = {
   status(code: number): VercelResponse;
 };
 
-const publicOrigin = () => {
+const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
+const fallbackOrigin = "https://go-irl-1-0.vercel.app";
+
+const normalizeVercelHost = (value: string | string[] | undefined) => {
+  const host = (first(value)?.split(",")[0]?.trim().toLowerCase() || "")
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "")
+    .replace(/\.$/, "");
+  return host.endsWith(".vercel.app") ? host : "";
+};
+
+const configuredVercelHosts = () => {
+  const deploymentHost = normalizeVercelHost(readEnv("VERCEL_URL"));
+  const branchHost = normalizeVercelHost(readEnv("VERCEL_BRANCH_URL"));
+  const productionHost = normalizeVercelHost(readEnv("VERCEL_PROJECT_PRODUCTION_URL"));
+  return { deploymentHost, branchHost, productionHost };
+};
+
+const deploymentOrigin = () => {
+  const { deploymentHost, branchHost, productionHost } = configuredVercelHosts();
   const host = readEnv("VERCEL_ENV") === "preview"
-    ? readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL")
-    : readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
-  return host ? `https://${host.replace(/^https?:\/\//, "")}` : "https://go-irl-1-0.vercel.app";
+    ? deploymentHost || branchHost || productionHost
+    : productionHost || deploymentHost || branchHost;
+  return host ? `https://${host}` : fallbackOrigin;
+};
+
+export const resolveMetaEventPreviewOrigin = (
+  request: Pick<VercelRequest, "headers"> = {},
+) => {
+  const requestHost = normalizeVercelHost(
+    request.headers?.["x-forwarded-host"] || request.headers?.host,
+  );
+  const { deploymentHost, branchHost, productionHost } = configuredVercelHosts();
+  const trustedHosts = new Set([
+    new URL(fallbackOrigin).host,
+    deploymentHost,
+    branchHost,
+    productionHost,
+  ].filter(Boolean));
+
+  return requestHost && trustedHosts.has(requestHost)
+    ? `https://${requestHost}`
+    : deploymentOrigin();
 };
 
 export const metaEventPreviewCopy = {
@@ -34,8 +73,6 @@ const escapeHtml = (value: string) => value
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#39;");
 
-const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
-
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
@@ -50,7 +87,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const card = await loadTrustedTelegramEventCard(eventId, language);
     if (!card) return response.status(404).end("not_found");
 
-    const origin = publicOrigin();
+    const origin = resolveMetaEventPreviewOrigin(request);
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
     const canonicalUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
     const addToCalendarUrl = buildMetaEventGoogleCalendarUrl(card, origin) || `${canonicalUrl}&format=ics`;

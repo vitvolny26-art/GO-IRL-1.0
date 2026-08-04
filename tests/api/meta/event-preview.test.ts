@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { metaEventPreviewCopy } from "../../../api/meta/event-preview.js";
+import { metaEventPreviewCopy, resolveMetaEventPreviewOrigin } from "../../../api/meta/event-preview.js";
 import { whatsappShareCopy } from "../../../src/cardShare.js";
 
 describe("Meta event preview copy", () => {
@@ -14,5 +14,21 @@ describe("Meta event preview copy", () => {
     for (const language of ["ru", "uk", "cs", "en"] as const) {
       expect(whatsappShareCopy[language].open).toBe(metaEventPreviewCopy[language].open);
     }
+  });
+
+  it("uses the trusted public share request host for canonical and image URLs", () => {
+    expect(resolveMetaEventPreviewOrigin({
+      headers: { "x-forwarded-host": "go-irl-1-0.vercel.app" },
+    })).toBe("https://go-irl-1-0.vercel.app");
+
+    expect(resolveMetaEventPreviewOrigin({
+      headers: { host: "go-irl-1-0.vercel.app" },
+    })).toBe("https://go-irl-1-0.vercel.app");
+  });
+
+  it("rejects arbitrary forwarded hosts", () => {
+    expect(resolveMetaEventPreviewOrigin({
+      headers: { "x-forwarded-host": "attacker.example" },
+    })).not.toBe("https://attacker.example");
   });
 });
