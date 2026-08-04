@@ -265,6 +265,57 @@
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
 }
 
+.service-booking-contact-preference {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #70587a;
+  border-radius: 13px;
+  background: rgba(27, 15, 34, 0.78);
+  color: #f1e7f2;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.service-booking-contact-preference input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.service-booking-contact-preference-box {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid #8b7194;
+  border-radius: 7px;
+  background: #160c1c;
+  color: #211126;
+}
+
+.service-booking-contact-preference-box svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 3;
+}
+
+.service-booking-contact-preference input:checked + .service-booking-contact-preference-box {
+  border-color: #d4af37;
+  background: #d4af37;
+}
+
+.service-booking-contact-preference:focus-within {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
+}
+
 /* Match the Beauty sharing menu to the Activity card presentation. */
 .service-activity-card .card-share-channel-list {
   top: 0;
@@ -328,6 +379,12 @@
 
   .service-booking-contact-grid {
     grid-template-columns: 1fr;
+  }
+
+  .service-booking-contact-preference {
+    min-height: 44px;
+    padding: 9px 10px;
+    font-size: 12px;
   }
 
   .service-slots-popover .service-free-slots-list {

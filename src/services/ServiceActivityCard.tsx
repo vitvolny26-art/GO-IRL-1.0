@@ -23,10 +23,10 @@ const locale: Record<Language, string> = { ru: "ru-RU", uk: "uk-UA", cs: "cs-CZ"
 const weekdayNumber: Record<string, number> = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
 
 const text = {
-  ru: { services: "Услуги", selectService: "Выберите услугу", book: "Записаться", duration: "Длительность", price: "Цена", address: "Адрес", date: "Дата", master: "Мастер", close: "Закрыть", booking: "Запись к мастеру", chooseDate: "Выберите дату", chooseTime: "Выберите время", send: "Отправить запрос", sent: "Запрос отправлен", reminder: "Напомнить", reminderTitle: "Напоминание о записи", save: "Сохранить напоминание", slots: "Свободные окна", noSlots: "Нет свободного времени", previousMonth: "Предыдущий месяц", nextMonth: "Следующий месяц", name: "Имя", contact: "Контакт", required: "Обязательное поле" },
-  uk: { services: "Послуги", selectService: "Оберіть послугу", book: "Записатися", duration: "Тривалість", price: "Ціна", address: "Адреса", date: "Дата", master: "Майстер", close: "Закрити", booking: "Запис до майстра", chooseDate: "Оберіть дату", chooseTime: "Оберіть час", send: "Надіслати запит", sent: "Запит надіслано", reminder: "Нагадати", reminderTitle: "Нагадування про запис", save: "Зберегти нагадування", slots: "Вільні вікна", noSlots: "Немає вільного часу", previousMonth: "Попередній місяць", nextMonth: "Наступний місяць", name: "Ім’я", contact: "Контакт", required: "Обов’язкове поле" },
-  cs: { services: "Služby", selectService: "Vyberte službu", book: "Rezervovat", duration: "Délka", price: "Cena", address: "Adresa", date: "Datum", master: "Profesionál", close: "Zavřít", booking: "Rezervace", chooseDate: "Vyberte datum", chooseTime: "Vyberte čas", send: "Odeslat žádost", sent: "Žádost odeslána", reminder: "Připomenout", reminderTitle: "Připomínka rezervace", save: "Uložit připomínku", slots: "Volné termíny", noSlots: "Žádný volný termín", previousMonth: "Předchozí měsíc", nextMonth: "Další měsíc", name: "Jméno", contact: "Kontakt", required: "Povinné pole" },
-  en: { services: "Services", selectService: "Choose a service", book: "Book", duration: "Duration", price: "Price", address: "Address", date: "Date", master: "Professional", close: "Close", booking: "Book a professional", chooseDate: "Choose a date", chooseTime: "Choose a time", send: "Send request", sent: "Request sent", reminder: "Remind me", reminderTitle: "Booking reminder", save: "Save reminder", slots: "Available slots", noSlots: "No available time", previousMonth: "Previous month", nextMonth: "Next month", name: "Name", contact: "Contact", required: "Required field" },
+  ru: { services: "Услуги", selectService: "Выберите услугу", book: "Записаться", duration: "Длительность", price: "Цена", address: "Адрес", date: "Дата", master: "Мастер", close: "Закрыть", booking: "Запись к мастеру", chooseDate: "Выберите дату", chooseTime: "Выберите время", send: "Отправить запрос", sent: "Запрос отправлен", reminder: "Напомнить", reminderTitle: "Напоминание о записи", save: "Сохранить напоминание", slots: "Свободные окна", noSlots: "Нет свободного времени", previousMonth: "Предыдущий месяц", nextMonth: "Следующий месяц", name: "Имя", contact: "Контакт", required: "Обязательное поле", contactBeforeConfirmation: "Перед подтверждением записи свяжитесь со мной" },
+  uk: { services: "Послуги", selectService: "Оберіть послугу", book: "Записатися", duration: "Тривалість", price: "Ціна", address: "Адреса", date: "Дата", master: "Майстер", close: "Закрити", booking: "Запис до майстра", chooseDate: "Оберіть дату", chooseTime: "Оберіть час", send: "Надіслати запит", sent: "Запит надіслано", reminder: "Нагадати", reminderTitle: "Нагадування про запис", save: "Зберегти нагадування", slots: "Вільні вікна", noSlots: "Немає вільного часу", previousMonth: "Попередній місяць", nextMonth: "Наступний місяць", name: "Ім’я", contact: "Контакт", required: "Обов’язкове поле", contactBeforeConfirmation: "Перед підтвердженням запису зв’яжіться зі мною" },
+  cs: { services: "Služby", selectService: "Vyberte službu", book: "Rezervovat", duration: "Délka", price: "Cena", address: "Adresa", date: "Datum", master: "Profesionál", close: "Zavřít", booking: "Rezervace", chooseDate: "Vyberte datum", chooseTime: "Vyberte čas", send: "Odeslat žádost", sent: "Žádost odeslána", reminder: "Připomenout", reminderTitle: "Připomínka rezervace", save: "Uložit připomínku", slots: "Volné termíny", noSlots: "Žádný volný termín", previousMonth: "Předchozí měsíc", nextMonth: "Další měsíc", name: "Jméno", contact: "Kontakt", required: "Povinné pole", contactBeforeConfirmation: "Před potvrzením rezervace mě kontaktujte" },
+  en: { services: "Services", selectService: "Choose a service", book: "Book", duration: "Duration", price: "Price", address: "Address", date: "Date", master: "Professional", close: "Close", booking: "Book a professional", chooseDate: "Choose a date", chooseTime: "Choose a time", send: "Send request", sent: "Request sent", reminder: "Remind me", reminderTitle: "Booking reminder", save: "Save reminder", slots: "Available slots", noSlots: "No available time", previousMonth: "Previous month", nextMonth: "Next month", name: "Name", contact: "Contact", required: "Required field", contactBeforeConfirmation: "Contact me before confirming the booking" },
 } satisfies Record<Language, Record<string, string>>;
 
 const localDateKey = (value = new Date()) => {
@@ -166,6 +166,7 @@ export function ServiceActivityCard({ professional: initialProfessional, service
   const [calendarMonth, setCalendarMonth] = useState(() => cardDate.slice(0, 7));
   const [bookingName, setBookingName] = useState("");
   const [bookingContact, setBookingContact] = useState("");
+  const [contactBeforeConfirmation, setContactBeforeConfirmation] = useState(false);
   const cardSlots = useMemo(() => freeSlotsFor(cardDate, professional.profileId, professional.serviceName), [cardDate, professional.profileId, professional.serviceName, bookingSent]);
   const bookingSlots = useMemo(() => freeSlotsFor(bookingDate, professional.profileId, professional.serviceName), [bookingDate, professional.profileId, professional.serviceName, bookingSent]);
   const [time, setTime] = useState(() => freeSlotsFor(cardDate, initialProfessional.profileId, initialProfessional.serviceName)[0] || "");
@@ -247,6 +248,7 @@ export function ServiceActivityCard({ professional: initialProfessional, service
       serviceName: professional.serviceName,
       clientName: bookingName.trim(),
       clientContact: bookingContact.trim(),
+      contactBeforeConfirmation,
       date: bookingDate,
       time,
       durationMinutes: professional.durationMinutes,
@@ -289,6 +291,11 @@ export function ServiceActivityCard({ professional: initialProfessional, service
         <label><span>{labels.name} *</span><input required value={bookingName} onChange={(event) => { setBookingName(event.target.value); setBookingSent(false); }} placeholder={labels.required} /></label>
         <label><span>{labels.contact} *</span><input required value={bookingContact} onChange={(event) => { setBookingContact(event.target.value); setBookingSent(false); }} placeholder="Telegram / phone / email" /></label>
       </div>
+      <label className="service-booking-contact-preference">
+        <input type="checkbox" checked={contactBeforeConfirmation} onChange={(event) => { setContactBeforeConfirmation(event.target.checked); setBookingSent(false); }} />
+        <span className="service-booking-contact-preference-box" aria-hidden="true">{contactBeforeConfirmation && <Check />}</span>
+        <span>{labels.contactBeforeConfirmation}</span>
+      </label>
       <div className="service-calendar-toolbar">
         <button type="button" aria-label={labels.previousMonth} onClick={() => moveMonth(-1)} disabled={calendarMonth <= todayDate.slice(0, 7)}><ChevronLeft /></button>
         <input aria-label={labels.chooseDate} type="month" min={todayDate.slice(0, 7)} value={calendarMonth} onChange={(event) => setCalendarMonth(event.target.value || todayDate.slice(0, 7))} />
