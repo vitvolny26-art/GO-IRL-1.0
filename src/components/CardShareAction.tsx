@@ -5,7 +5,11 @@ import {
   buildOrganicCardShareContent,
   buildCardShareText,
 } from "../cardShare";
-import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
+import {
+  openExternalShareTarget,
+  openMessengerShareTarget,
+  openTelegramShareTarget,
+} from "../cardShareNavigation";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 import { canPrepareBeautyTelegramShare, sharePreparedTelegramBeauty } from "../telegramPreparedBeautyShare";
 import { readUserPreferences, type ShareProvider } from "../userPreferences";
@@ -157,7 +161,12 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         if (error instanceof DOMException && error.name === "AbortError") return;
       }
     }
+
     await copyShareText(organicContent.url);
+    if (channel === "messenger") {
+      openMessengerShareTarget(content);
+      return;
+    }
     if (channel === "instagram") openExternalShareTarget("https://www.instagram.com/");
   };
 
