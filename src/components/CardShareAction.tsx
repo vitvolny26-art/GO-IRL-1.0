@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MessageCircle, MoreHorizontal, Share2 } from "lucide-react";
 import {
   buildCardShareImageUrl,
@@ -32,6 +33,11 @@ type CardShareActionProps = {
 
 type ShareChannel = ShareProvider | "facebook" | "native";
 type ActivityChatUnreadChangedDetail = { activityId?: string };
+type PreparedWhatsAppShare = {
+  file: File;
+  imageUrl: string;
+  text: string;
+};
 
 const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
@@ -49,10 +55,19 @@ const moreLabels = {
   en: "More options",
 } as const;
 
+const whatsappLabels = {
+  ru: { preparing: "Готовим карточку…", title: "Карточка готова", send: "Отправить в WhatsApp", close: "Закрыть" },
+  uk: { preparing: "Готуємо картку…", title: "Картка готова", send: "Надіслати у WhatsApp", close: "Закрити" },
+  cs: { preparing: "Připravuji kartu…", title: "Karta je připravena", send: "Odeslat přes WhatsApp", close: "Zavřít" },
+  en: { preparing: "Preparing card…", title: "Card ready", send: "Send to WhatsApp", close: "Close" },
+} as const;
+
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [preparingWhatsApp, setPreparingWhatsApp] = useState(false);
+  const [preparedWhatsApp, setPreparedWhatsApp] = useState<PreparedWhatsAppShare | null>(null);
   const rootRef = useRef<HTMLSpanElement>(null);
   const activityId = useMemo(() => activityIdFromInviteUrl(url), [url]);
   const joinedIds = useAppStore((state) => state.joinedIds);
@@ -60,6 +75,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   const content = { title, date, address, url, language };
   const canAccessChat = Boolean(activityId && joinedIds.includes(activityId));
   const showUnread = canShowEventCardUnread(activityId, joinedIds, unreadCount);
+  const whatsappCopy = whatsappLabels[language];
 
   useEffect(() => {
     if (!open) return;
@@ -160,7 +176,8 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       return;
     }
 
-    if (channel === "whatsapp" && navigator.share) {
+    if (channel === "whatsapp" && typeof navigator.share === "function") {
+      setPreparingWhatsApp(true);
       try {
         const imageUrl = buildCardShareImageUrl(content);
         if (imageUrl) {
@@ -168,15 +185,20 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           if (response.ok) {
             const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
             const landingUrl = buildCardShareLandingUrl(content);
-            const shareData = { files: [file], text: buildCardShareText({ ...content, url: landingUrl }) };
             if (!navigator.canShare || navigator.canShare({ files: [file] })) {
-              await navigator.share(shareData);
+              setPreparedWhatsApp({
+                file,
+                imageUrl,
+                text: buildCardShareText({ ...content, url: landingUrl }),
+              });
               return;
             }
           }
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
+      } finally {
+        setPreparingWhatsApp(false);
       }
     }
 
@@ -196,6 +218,24 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
     await copyShareText(organicContent.url);
     if (channel === "instagram") openExternalShareTarget("https://www.instagram.com/");
+  };
+
+  const sendPreparedWhatsApp = () => {
+    if (!preparedWhatsApp || typeof navigator.share !== "function") return;
+
+    // The native share call must happen synchronously inside this second click.
+    // Awaiting the image fetch here would lose transient user activation in
+    // Telegram's Android WebView and fall back to a text-only wa.me link.
+    const sharePromise = navigator.share({
+      files: [preparedWhatsApp.file],
+      text: preparedWhatsApp.text,
+    });
+    void sharePromise.then(
+      () => setPreparedWhatsApp(null),
+      (error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      },
+    );
   };
 
   const activate = () => {
@@ -293,6 +333,26 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
             </button>
           ) : null}
         </span>
+      ) : null}
+      {typeof document !== "undefined" && (preparingWhatsApp || preparedWhatsApp) ? createPortal(
+        <div className="whatsapp-share-prepared-backdrop" role="presentation">
+          <section className="whatsapp-share-prepared" role="dialog" aria-modal="true" aria-label={whatsappCopy.title}>
+            {preparedWhatsApp ? (
+              <>
+                <strong>{whatsappCopy.title}</strong>
+                <img src={preparedWhatsApp.imageUrl} alt={title} />
+                <button className="whatsapp-share-send" type="button" onClick={sendPreparedWhatsApp}>
+                  <img src="/icons/whatsapp.svg" alt="" />
+                  {whatsappCopy.send}
+                </button>
+                <button className="whatsapp-share-close" type="button" onClick={() => setPreparedWhatsApp(null)}>
+                  {whatsappCopy.close}
+                </button>
+              </>
+            ) : <strong>{whatsappCopy.preparing}</strong>}
+          </section>
+        </div>,
+        document.body,
       ) : null}
     </span>
   );
