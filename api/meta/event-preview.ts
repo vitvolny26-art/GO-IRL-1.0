@@ -3,6 +3,7 @@ import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "../_sha
 import { isBeautyShareSlug, loadTrustedTelegramBeautyCard } from "../_shared/telegram-share-beauty.js";
 import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from "../_shared/telegram-share-event.js";
 import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
+import { renderMetaInvitationCardJpeg } from "../_shared/telegram-share-card-image.js";
 
 type VercelRequest = {
   method?: string;
@@ -10,7 +11,7 @@ type VercelRequest = {
 };
 
 type VercelResponse = {
-  end(body?: string): void;
+  end(body?: string | Uint8Array): void;
   setHeader(name: string, value: string): void;
   status(code: number): VercelResponse;
 };
@@ -45,15 +46,26 @@ const escapeHtml = (value: string) => value
 
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
 
+const sendCardImage = async (card: Parameters<typeof renderMetaInvitationCardJpeg>[0], response: VercelResponse) => {
+  const jpeg = await renderMetaInvitationCardJpeg(card);
+  response.setHeader("Content-Type", "image/jpeg");
+  response.setHeader("Content-Length", String(jpeg.length));
+  response.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  return response.status(200).end(jpeg);
+};
+
 const handleBeautyPreview = async (
   slug: string,
   language: keyof typeof metaBeautyPreviewCopy,
   date: string,
+  format: string,
   response: VercelResponse,
 ) => {
   const origin = publicOrigin();
   const card = await loadTrustedTelegramBeautyCard(slug, language, date, "", origin);
   if (!card) return response.status(404).end("not_found");
+  if (format === "image") return sendCardImage(card, response);
 
   const query = new URLSearchParams({ slug, language });
   if (date) query.set("date", date);
@@ -94,13 +106,15 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const beautySlug = first(request.query?.slug);
   const language = first(request.query?.language) || "ru";
   const date = first(request.query?.date) || "";
+  const format = first(request.query?.format) || "";
   if (!isShareLanguage(language) || date.length > 80) return response.status(404).end("not_found");
 
   try {
-    if (isBeautyShareSlug(beautySlug)) return await handleBeautyPreview(beautySlug, language, date, response);
+    if (isBeautyShareSlug(beautySlug)) return await handleBeautyPreview(beautySlug, language, date, format, response);
     if (!isShareEventId(eventId)) return response.status(404).end("not_found");
     const card = await loadTrustedTelegramEventCard(eventId, language);
     if (!card) return response.status(404).end("not_found");
+    if (format === "image") return await sendCardImage(card, response);
 
     const origin = publicOrigin();
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
