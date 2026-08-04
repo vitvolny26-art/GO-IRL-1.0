@@ -160,23 +160,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
   };
 
-  const share = async (channel: ShareChannel) => {
+  const prepareWhatsAppCard = async () => {
     setOpen(false);
     setExpanded(false);
 
-    if (channel === "telegram") {
-      if (onTelegramShare) {
-        const result = await onTelegramShare();
-        if (result === "shared" || result === "cancelled") return;
-      } else if (canPrepareBeautyTelegramShare(url)) {
-        const result = await sharePreparedTelegramBeauty(url, date, language);
-        if (result === "shared" || result === "cancelled") return;
-      }
-      openTelegramShareTarget(buildCardShareTarget(channel, content));
-      return;
-    }
-
-    if (channel === "whatsapp" && typeof navigator.share === "function") {
+    if (typeof navigator.share === "function") {
       setPreparingWhatsApp(true);
       try {
         const imageUrl = buildCardShareImageUrl(content);
@@ -202,7 +190,26 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       }
     }
 
-    if (channel === "facebook" || channel === "whatsapp") {
+    openExternalShareTarget(buildCardShareTarget("whatsapp", content));
+  };
+
+  const share = async (channel: Exclude<ShareChannel, "whatsapp">) => {
+    setOpen(false);
+    setExpanded(false);
+
+    if (channel === "telegram") {
+      if (onTelegramShare) {
+        const result = await onTelegramShare();
+        if (result === "shared" || result === "cancelled") return;
+      } else if (canPrepareBeautyTelegramShare(url)) {
+        const result = await sharePreparedTelegramBeauty(url, date, language);
+        if (result === "shared" || result === "cancelled") return;
+      }
+      openTelegramShareTarget(buildCardShareTarget(channel, content));
+      return;
+    }
+
+    if (channel === "facebook") {
       openExternalShareTarget(buildCardShareTarget(channel, content));
       return;
     }
@@ -304,7 +311,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                void share(channel.id);
+                if (channel.id === "whatsapp") {
+                  void prepareWhatsAppCard();
+                } else {
+                  void share(channel.id);
+                }
               }}
             >
               <span className="card-share-icon-circle">
