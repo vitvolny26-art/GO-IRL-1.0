@@ -16,19 +16,133 @@
   display: none;
 }
 
-.beauty-pro-profile-portfolio-rail img {
+.beauty-pro-profile-portfolio-rail button {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid rgba(222, 183, 74, 0.58);
   border-radius: 22px;
-  object-fit: cover;
+  background: transparent;
   scroll-snap-align: start;
   box-shadow: 0 20px 46px rgba(0, 0, 0, 0.34);
 }
 
+.beauty-pro-profile-portfolio-rail img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.beauty-pro-profile-portfolio-rail button:active img {
+  transform: scale(0.985);
+}
+
+.beauty-pro-profile-instagram {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 0 14px;
+  border: 1px solid rgba(222, 183, 74, 0.45);
+  border-radius: 15px;
+  background: rgba(229, 196, 94, 0.08);
+  color: #f3d879;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.beauty-pro-profile-instagram svg {
+  width: 19px;
+  height: 19px;
+}
+
+.beauty-pro-profile-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.beauty-pro-profile-details article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(222, 183, 74, 0.26);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.beauty-pro-profile-details article > svg {
+  width: 19px;
+  height: 19px;
+  color: #e5c45e;
+}
+
+.beauty-pro-profile-details strong {
+  display: block;
+  color: #f1d574;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.beauty-pro-profile-details p {
+  margin: 5px 0 0 !important;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.beauty-pro-profile-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  background: rgba(4, 2, 8, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+.beauty-pro-profile-lightbox > button {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(222, 183, 74, 0.55);
+  border-radius: 999px;
+  background: rgba(20, 10, 30, 0.9);
+  color: #f4d875;
+}
+
+.beauty-pro-profile-lightbox > img {
+  display: block;
+  max-width: min(94vw, 920px);
+  max-height: 88vh;
+  border: 1px solid rgba(222, 183, 74, 0.52);
+  border-radius: 20px;
+  object-fit: contain;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.62);
+}
+
 .beauty-pro-profile-contact-grid {
   padding-bottom: calc(118px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 700px) {
+  .beauty-pro-profile-details {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 520px) {
@@ -37,8 +151,11 @@
     gap: 10px;
   }
 
+  .beauty-pro-profile-portfolio-rail button {
+    border-radius: 20px;
+  }
+
   .beauty-pro-profile-portfolio-rail img {
     aspect-ratio: 3 / 4;
-    border-radius: 20px;
   }
 }

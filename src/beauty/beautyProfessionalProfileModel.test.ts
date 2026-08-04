@@ -4,14 +4,25 @@ import { buildBeautyProfessionalProfileSummary } from "./beautyProfessionalProfi
 
 const service = (overrides: Partial<ServicesProfessional> = {}): ServicesProfessional => ({
   profileId: "profile-1",
+  serviceId: "service-1",
   slug: "beauty-studio-vita",
   displayName: "Studio Vita",
   cityId: "olomouc",
   publicLocation: "Centrum, Olomouc",
   description: "Localized professional description.",
+  instagramUrl: "",
+  experience: "",
+  specialization: "",
+  hygiene: "",
+  materials: "",
+  spokenLanguages: "",
+  certificates: "",
+  bookingNotes: "",
+  portfolio: [],
   serviceName: "Gel manicure",
   durationMinutes: 75,
   priceCzk: 890,
+  bufferMinutes: 15,
   currency: "CZK",
   publicLink: "/beauty/beauty-studio-vita",
   updatedAt: "2026-08-03T00:00:00.000Z",
@@ -22,9 +33,9 @@ describe("Beauty professional profile summary", () => {
   it("groups, deduplicates, and sorts services for one professional", () => {
     const summary = buildBeautyProfessionalProfileSummary([
       service(),
-      service({ serviceName: "Nail repair", durationMinutes: 30, priceCzk: 290 }),
+      service({ serviceId: "service-2", serviceName: "Nail repair", durationMinutes: 30, priceCzk: 290 }),
       service(),
-      service({ profileId: "profile-2", slug: "beauty-other", priceCzk: 100 }),
+      service({ profileId: "profile-2", serviceId: "service-3", slug: "beauty-other", priceCzk: 100 }),
     ], "beauty-studio-vita");
 
     expect(summary?.services.map((item) => item.serviceName)).toEqual(["Nail repair", "Gel manicure"]);

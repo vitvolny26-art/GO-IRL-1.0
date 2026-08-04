@@ -1,9 +1,15 @@
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Award,
+  BadgeCheck,
+  BookOpen,
+  Brush,
   CalendarDays,
   ChevronRight,
   Clock3,
+  ExternalLink,
+  Languages,
   MapPin,
   MessageCircle,
   Scissors,
@@ -43,12 +49,19 @@ const copy = {
     book: "Записаться",
     services: "Услуги и цены",
     about: "О мастере",
-    aboutText: "Здесь собраны актуальные услуги, цены и время процедуры. Запрос на запись отправляется мастеру напрямую через GO IRL.",
     benefits: "Всё для удобной записи",
     benefitPrice: "Прозрачные цены до подтверждения",
     benefitTime: "Выбор свободной даты и времени",
     benefitContact: "Контакт передаётся только с запросом",
     works: "Примеры работ",
+    moreInstagram: "Больше в Instagram",
+    experience: "Опыт",
+    specialization: "Специализация",
+    hygiene: "Гигиена и стерилизация",
+    materials: "Материалы и бренды",
+    spokenLanguages: "Языки общения",
+    certificates: "Обучение и сертификаты",
+    bookingNotes: "Важно перед записью",
     rating: "Рейтинг",
     newProfile: "Новый профиль",
     ratingHint: "Рейтинг появится после опубликованных отзывов.",
@@ -61,6 +74,7 @@ const copy = {
     loading: "Загружаем профиль мастера…",
     unavailable: "Профиль временно недоступен",
     close: "Закрыть",
+    closeImage: "Закрыть фотографию",
     minutes: "мин",
   },
   uk: {
@@ -72,12 +86,19 @@ const copy = {
     book: "Записатися",
     services: "Послуги та ціни",
     about: "Про майстра",
-    aboutText: "Тут зібрані актуальні послуги, ціни та тривалість процедури. Запит на запис надсилається майстру напряму через GO IRL.",
     benefits: "Усе для зручного запису",
     benefitPrice: "Прозорі ціни до підтвердження",
     benefitTime: "Вибір вільної дати й часу",
     benefitContact: "Контакт передається лише із запитом",
     works: "Приклади робіт",
+    moreInstagram: "Більше в Instagram",
+    experience: "Досвід",
+    specialization: "Спеціалізація",
+    hygiene: "Гігієна та стерилізація",
+    materials: "Матеріали та бренди",
+    spokenLanguages: "Мови спілкування",
+    certificates: "Навчання та сертифікати",
+    bookingNotes: "Важливо перед записом",
     rating: "Рейтинг",
     newProfile: "Новий профіль",
     ratingHint: "Рейтинг з’явиться після опублікованих відгуків.",
@@ -90,6 +111,7 @@ const copy = {
     loading: "Завантажуємо профіль майстра…",
     unavailable: "Профіль тимчасово недоступний",
     close: "Закрити",
+    closeImage: "Закрити фотографію",
     minutes: "хв",
   },
   cs: {
@@ -101,12 +123,19 @@ const copy = {
     book: "Rezervovat",
     services: "Služby a ceny",
     about: "O profesionálovi",
-    aboutText: "Zde najdete aktuální služby, ceny a délku procedury. Žádost o rezervaci se odešle profesionálovi přímo přes GO IRL.",
     benefits: "Vše pro snadnou rezervaci",
     benefitPrice: "Jasné ceny před potvrzením",
     benefitTime: "Výběr volného data a času",
     benefitContact: "Kontakt se předá jen se žádostí",
     works: "Ukázky práce",
+    moreInstagram: "Více na Instagramu",
+    experience: "Praxe",
+    specialization: "Specializace",
+    hygiene: "Hygiena a sterilizace",
+    materials: "Materiály a značky",
+    spokenLanguages: "Jazyky komunikace",
+    certificates: "Vzdělání a certifikáty",
+    bookingNotes: "Důležité před rezervací",
     rating: "Hodnocení",
     newProfile: "Nový profil",
     ratingHint: "Hodnocení se zobrazí po zveřejnění recenzí.",
@@ -119,6 +148,7 @@ const copy = {
     loading: "Načítáme profil profesionála…",
     unavailable: "Profil je dočasně nedostupný",
     close: "Zavřít",
+    closeImage: "Zavřít fotografii",
     minutes: "min",
   },
   en: {
@@ -130,12 +160,19 @@ const copy = {
     book: "Book now",
     services: "Services and prices",
     about: "About the professional",
-    aboutText: "This profile collects the current services, prices, and treatment times. Booking requests are sent directly to the professional through GO IRL.",
     benefits: "Everything for easy booking",
     benefitPrice: "Clear prices before confirmation",
     benefitTime: "Choose an available date and time",
     benefitContact: "Contact is shared only with a request",
     works: "Work preview",
+    moreInstagram: "More on Instagram",
+    experience: "Experience",
+    specialization: "Specialization",
+    hygiene: "Hygiene and sterilization",
+    materials: "Materials and brands",
+    spokenLanguages: "Spoken languages",
+    certificates: "Training and certificates",
+    bookingNotes: "Before booking",
     rating: "Rating",
     newProfile: "New profile",
     ratingHint: "The rating will appear after reviews are published.",
@@ -148,6 +185,7 @@ const copy = {
     loading: "Loading the professional profile…",
     unavailable: "Profile temporarily unavailable",
     close: "Close",
+    closeImage: "Close image",
     minutes: "min",
   },
 } satisfies Record<Language, Record<string, string>>;
@@ -159,6 +197,7 @@ export function BeautyProfessionalProfilePortal() {
   const language = useAppStore((state) => state.language);
   const selectedCityId = useAppStore((state) => state.selectedCityId);
   const [openProfile, setOpenProfile] = useState<OpenProfile | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
   const [professionals, setProfessionals] = useState<ServicesProfessional[]>([]);
   const [state, setState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const text = copy[language];
@@ -201,8 +240,10 @@ export function BeautyProfessionalProfilePortal() {
     document.body.style.overflow = "hidden";
     document.body.classList.add("beauty-profile-open");
     const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (selectedImage) return setSelectedImage(null);
       const nestedOverlayOpen = document.querySelector(".service-sheet-backdrop, .service-popup-backdrop");
-      if (event.key === "Escape" && !nestedOverlayOpen) setOpenProfile(null);
+      if (!nestedOverlayOpen) setOpenProfile(null);
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => {
@@ -210,7 +251,7 @@ export function BeautyProfessionalProfilePortal() {
       document.body.classList.remove("beauty-profile-open");
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [openProfile]);
+  }, [openProfile, selectedImage]);
 
   const summary = useMemo(
     () => openProfile ? buildBeautyProfessionalProfileSummary(professionals, openProfile.slug) : null,
@@ -240,6 +281,17 @@ export function BeautyProfessionalProfilePortal() {
   const { professional, services, priceFrom, durationFrom, durationTo } = summary;
   const artwork = getServiceArtwork(professional.serviceName);
   const durationRange = durationFrom === durationTo ? `${durationFrom} ${text.minutes}` : `${durationFrom}–${durationTo} ${text.minutes}`;
+  const details = [
+    { label: text.experience, value: professional.experience, icon: Award },
+    { label: text.specialization, value: professional.specialization, icon: Sparkles },
+    { label: text.hygiene, value: professional.hygiene, icon: ShieldCheck },
+    { label: text.materials, value: professional.materials, icon: Brush },
+    { label: text.spokenLanguages, value: professional.spokenLanguages, icon: Languages },
+    { label: text.certificates, value: professional.certificates, icon: BadgeCheck },
+    { label: text.bookingNotes, value: professional.bookingNotes, icon: BookOpen },
+  ].filter((item) => item.value.trim());
+  const showAbout = Boolean(professional.description.trim() || details.length);
+  const showPortfolio = professional.portfolio.length > 0;
 
   return createPortal(
     <div className="beauty-pro-profile-backdrop" onPointerDown={() => setOpenProfile(null)}>
@@ -268,31 +320,33 @@ export function BeautyProfessionalProfilePortal() {
           <button className="primary" type="button" onClick={() => triggerCardAction(".services-professional-actions .primary")}><CalendarDays />{text.book}</button>
         </nav>
 
-        <section className="beauty-pro-profile-section beauty-pro-profile-about">
+        {showAbout && <section className="beauty-pro-profile-section beauty-pro-profile-about">
           <div className="beauty-pro-profile-heading"><div><small>01</small><h2>{text.about}</h2></div><Sparkles /></div>
-          <p>{professional.description || text.aboutText}</p>
+          {professional.description && <p>{professional.description}</p>}
+          {details.length > 0 && <div className="beauty-pro-profile-details">{details.map(({ label, value, icon: Icon }) => <article key={label}><Icon /><div><strong>{label}</strong><p>{value}</p></div></article>)}</div>}
           <div className="beauty-pro-profile-benefits">
             <h3>{text.benefits}</h3>
             <div><ShieldCheck /><span>{text.benefitPrice}</span></div>
             <div><CalendarDays /><span>{text.benefitTime}</span></div>
             <div><MessageCircle /><span>{text.benefitContact}</span></div>
           </div>
-        </section>
+        </section>}
 
         <section className="beauty-pro-profile-section">
           <div className="beauty-pro-profile-heading"><div><small>02</small><h2>{text.services}</h2></div><Scissors /></div>
-          <div className="beauty-pro-profile-price-list">{services.map((service) => <button type="button" key={`${service.serviceName}-${service.durationMinutes}-${service.priceCzk}`} onClick={() => triggerCardAction(".services-professional-actions .secondary")}>
+          <div className="beauty-pro-profile-price-list">{services.map((service) => <button type="button" key={service.serviceId} onClick={() => triggerCardAction(".services-professional-actions .secondary")}>
             <span><strong>{service.serviceName}</strong><small><Clock3 />{service.durationMinutes} {text.minutes}</small></span>
             <b>{price(service.priceCzk, service.currency, language)}</b>
             <ChevronRight />
           </button>)}</div>
         </section>
 
-        {artwork && <section className="beauty-pro-profile-section">
+        {showPortfolio && <section className="beauty-pro-profile-section">
           <div className="beauty-pro-profile-heading"><div><small>03</small><h2>{text.works}</h2></div><Sparkles /></div>
           <div className="beauty-pro-profile-portfolio-rail" aria-label={text.works}>
-            {[artwork.portfolio, artwork.share, artwork.card].map((source, index) => <img key={source} src={source} alt="" loading="lazy" decoding="async" data-portfolio-index={index + 1} />)}
+            {professional.portfolio.map((item, index) => <button type="button" key={item.id} onClick={() => setSelectedImage({ url: item.imageUrl, alt: item.alt })} data-portfolio-index={index + 1}><img src={item.imageUrl} alt={item.alt} loading="lazy" decoding="async" /></button>)}
           </div>
+          {professional.instagramUrl && <a className="beauty-pro-profile-instagram" href={professional.instagramUrl} target="_blank" rel="noreferrer"><ExternalLink />{text.moreInstagram}<ChevronRight /></a>}
         </section>}
 
         <section className="beauty-pro-profile-section beauty-pro-profile-rating">
@@ -320,6 +374,10 @@ export function BeautyProfessionalProfilePortal() {
           <button className="primary" type="button" onClick={() => triggerCardAction(".services-professional-actions .primary")}><CalendarDays />{text.book}</button>
         </footer>
       </article>
+      {selectedImage && <div className="beauty-pro-profile-lightbox" role="dialog" aria-modal="true" aria-label={selectedImage.alt || text.works} onPointerDown={() => setSelectedImage(null)}>
+        <button type="button" aria-label={text.closeImage} onClick={() => setSelectedImage(null)}><X /></button>
+        <img src={selectedImage.url} alt={selectedImage.alt} onPointerDown={(event) => event.stopPropagation()} />
+      </div>}
     </div>,
     document.body,
   );

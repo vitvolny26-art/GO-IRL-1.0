@@ -2,11 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   BEAUTY_SCHEMA_VERSION,
   buildBeautyPublicProfile,
+  createBeautyPortfolioItem,
+  createBeautyService,
   createDefaultBeautyWorkspace,
+  emptyBeautyLocalizedText,
   getBeautyStepProgress,
   resolveBeautyLocalizedText,
   upgradeBeautyWorkspace,
   validateBeautyStep,
+  withBeautyServices,
 } from "./beautySetupModel";
 
 describe("Beauty setup model", () => {
@@ -40,27 +44,64 @@ describe("Beauty setup model", () => {
       .toBe("Legacy");
   });
 
-  it("upgrades a version 2 workspace without losing the existing service name", () => {
+  it("upgrades a version 3 workspace into a multi-service workspace without losing the existing service", () => {
     const legacy = createDefaultBeautyWorkspace("ru") as unknown as Record<string, unknown>;
-    legacy.schemaVersion = 2;
+    legacy.schemaVersion = 3;
+    delete legacy.services;
+    delete legacy.portfolio;
     const service = { ...(legacy.service as Record<string, unknown>) };
-    delete service.nameByLanguage;
     service.name = "Старое название";
+    delete service.id;
+    delete service.active;
+    delete service.sortOrder;
     legacy.service = service;
-    const profile = { ...(legacy.profile as Record<string, unknown>) };
-    delete profile.description;
-    delete profile.descriptionByLanguage;
-    legacy.profile = profile;
 
     const upgraded = upgradeBeautyWorkspace(legacy, "ru");
     expect(upgraded?.schemaVersion).toBe(BEAUTY_SCHEMA_VERSION);
-    expect(upgraded?.service.nameByLanguage.ru).toBe("Старое название");
+    expect(upgraded?.services).toHaveLength(1);
+    expect(upgraded?.services[0].name).toBe("Старое название");
+    expect(upgraded?.service.name).toBe("Старое название");
+  });
+
+  it("publishes only completed optional blocks and active services", () => {
+    let workspace = createDefaultBeautyWorkspace("en");
+    workspace.profile.experienceByLanguage.en = "8 years";
+    workspace.profile.materialsByLanguage = emptyBeautyLocalizedText();
+    workspace.profile.instagramUrl = "https://instagram.com/studio";
+    const second = createBeautyService("en", 1, "second");
+    second.nameByLanguage.en = "Nail repair";
+    second.name = "Nail repair";
+    second.priceCzk = 290;
+    const inactive = createBeautyService("en", 2, "inactive");
+    inactive.active = false;
+    workspace = withBeautyServices(workspace, [workspace.service, second, inactive]);
+    const work = createBeautyPortfolioItem(0, "work-1");
+    work.imageUrl = "https://images.example/work.jpg";
+    work.altByLanguage.en = "Gel manicure";
+    workspace.portfolio = [work];
+
+    const publicProfile = buildBeautyPublicProfile(workspace, "en");
+    expect(publicProfile.experience).toBe("8 years");
+    expect(publicProfile.materials).toBe("");
+    expect(publicProfile.services.map((item) => item.name)).toEqual(["Gel manicure", "Nail repair"]);
+    expect(publicProfile.portfolio).toEqual([{ id: "work-1", imageUrl: "https://images.example/work.jpg", alt: "Gel manicure" }]);
+  });
+
+  it("requires at least one valid active service", () => {
+    const workspace = createDefaultBeautyWorkspace();
+    workspace.services[0].active = false;
+    workspace.service.active = false;
+    expect(validateBeautyStep(workspace, "pro_setup_service")).toContain("service_name_required");
+
+    workspace.services[0].active = true;
+    workspace.services[0].durationMinutes = 0;
+    expect(validateBeautyStep(workspace, "pro_setup_service")).toContain("service_duration_invalid");
   });
 
   it("returns language-neutral validation codes", () => {
     const workspace = createDefaultBeautyWorkspace();
     workspace.profile.displayName = "";
-    workspace.service.durationMinutes = 0;
+    workspace.services[0].durationMinutes = 0;
     workspace.availability.weekdays = [];
 
     expect(validateBeautyStep(workspace, "pro_setup_profile")).toContain("profile_display_name_required");

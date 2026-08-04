@@ -9,6 +9,8 @@ import {
   getBeautyStepProgress,
   resolveBeautyLocalizedText,
   validateBeautyStep,
+  withBeautyServices,
+  type BeautyService,
   type BeautySetupStep,
   type BeautyValidationCode,
   type BeautyWeekday,
@@ -17,6 +19,7 @@ import {
 import { getBeautyCopy, readBeautyLanguage } from "./beautyI18n";
 import { loadBeautyWorkspace, resetBeautyWorkspace, saveBeautyWorkspace } from "./beautyWorkspaceStorage";
 import { BeautyPilotWorkspace, resetBeautyPilotWorkspace } from "./BeautyPilotWorkspace";
+import { BeautyWorkspaceContentEditor } from "./BeautyWorkspaceContentEditor";
 import "./beauty-setup.css";
 import "./beauty-multilingual-editor.css";
 
@@ -107,6 +110,13 @@ export function BeautySetupPage() {
     void saveBeautyWorkspace(next).finally(() => window.location.assign("/beauty"));
   };
 
+  const updatePrimaryService = (fn: (service: BeautyService) => BeautyService) => update((current) => {
+    const services = current.services.length ? current.services : [current.service];
+    const primaryIndex = Math.max(0, services.findIndex((item) => item.active));
+    const nextServices = services.map((item, index) => index === primaryIndex ? fn(item) : item);
+    return withBeautyServices(current, nextServices);
+  });
+
   const next = () => {
     const validation = validateBeautyStep(workspace, workspace.currentStep);
     if (validation.length) return setErrors(validation);
@@ -161,20 +171,17 @@ export function BeautySetupPage() {
       profile: {
         ...current.profile,
         descriptionByLanguage,
-        description: resolveBeautyLocalizedText(descriptionByLanguage, language, current.profile.description),
+        description: resolveBeautyLocalizedText(descriptionByLanguage, language, ""),
       },
     };
   });
 
-  const updateServiceName = (contentLanguage: Language, value: string) => update((current) => {
-    const nameByLanguage = { ...current.service.nameByLanguage, [contentLanguage]: value };
+  const updateServiceName = (contentLanguage: Language, value: string) => updatePrimaryService((service) => {
+    const nameByLanguage = { ...service.nameByLanguage, [contentLanguage]: value };
     return {
-      ...current,
-      service: {
-        ...current.service,
-        nameByLanguage,
-        name: resolveBeautyLocalizedText(nameByLanguage, language, current.service.name),
-      },
+      ...service,
+      nameByLanguage,
+      name: resolveBeautyLocalizedText(nameByLanguage, language, ""),
     };
   });
 
@@ -205,9 +212,9 @@ export function BeautySetupPage() {
 
   const service = <div className="beauty-form-grid">
     {serviceNameEditor}
-    <label>{text.duration}<input type="number" min="1" value={workspace.service.durationMinutes} onChange={(e) => update((c) => ({ ...c, service: { ...c.service, durationMinutes: Number(e.target.value) } }))} /></label>
-    <label>{text.price}<input type="number" min="0" value={workspace.service.priceCzk} onChange={(e) => update((c) => ({ ...c, service: { ...c.service, priceCzk: Number(e.target.value) } }))} /></label>
-    <label>{text.buffer}<input type="number" min="0" value={workspace.service.bufferMinutes} onChange={(e) => update((c) => ({ ...c, service: { ...c.service, bufferMinutes: Number(e.target.value) } }))} /></label>
+    <label>{text.duration}<input type="number" min="5" max="480" value={workspace.service.durationMinutes} onChange={(e) => updatePrimaryService((item) => ({ ...item, durationMinutes: Number(e.target.value) }))} /></label>
+    <label>{text.price}<input type="number" min="0" max="100000" value={workspace.service.priceCzk} onChange={(e) => updatePrimaryService((item) => ({ ...item, priceCzk: Number(e.target.value) }))} /></label>
+    <label>{text.buffer}<input type="number" min="0" max="240" value={workspace.service.bufferMinutes} onChange={(e) => updatePrimaryService((item) => ({ ...item, bufferMinutes: Number(e.target.value) }))} /></label>
   </div>;
 
   const availability = <div className="beauty-stack">
@@ -240,8 +247,8 @@ export function BeautySetupPage() {
   const preview = <div className="beauty-public-preview" aria-label={text.previewTitle}>
     <span className="beauty-preview-badge">{text.publicPreview}</span>
     <h2>{publicProfile.displayName}</h2><p>{publicProfile.publicLocation}</p>
-    <div className="beauty-preview-card"><strong>{publicProfile.description}</strong><span>{publicProfile.serviceName}</span></div>
-    <div className="beauty-preview-card"><strong>{publicProfile.serviceName}</strong><span>{publicProfile.durationMinutes} min</span><b>{publicProfile.priceCzk} Kč</b></div>
+    {publicProfile.description && <div className="beauty-preview-card"><strong>{publicProfile.description}</strong><span>{publicProfile.serviceName}</span></div>}
+    {publicProfile.services.map((item) => <div className="beauty-preview-card" key={item.id}><strong>{item.name}</strong><span>{item.durationMinutes} min</span><b>{item.priceCzk} Kč</b></div>)}
     <div className="beauty-preview-card"><strong>{text.available}</strong><span>{publicProfile.weekdays.map((day) => text.weekdays[day]).join(", ")}</span><span>{publicProfile.startTime}–{publicProfile.endTime}</span></div>
     <div className="beauty-note"><strong>{text.privacy}</strong><span>{text.privacyHint}</span></div>
     <button className="beauty-primary" type="button" disabled>{text.chooseTime}</button>
@@ -252,7 +259,10 @@ export function BeautySetupPage() {
   if (loading) return <main className="beauty-shell"><div className="beauty-loading">{text.loading}</div></main>;
   if (workspaceRoute) return <main className="beauty-shell beauty-workspace-shell">
     <header className="beauty-topbar"><button className="beauty-icon-button" type="button" onClick={goHome} aria-label={text.back}><ArrowLeft /></button><div><span>GO IRL Beauty · {text.localFirst}</span><h1>{workspaceTitle}</h1></div><button className="beauty-icon-button" type="button" onClick={openSetup} aria-label={text.editSetup}><Settings2 /></button></header>
-    <section className="beauty-workspace-page"><BeautyPilotWorkspace setup={workspace} onEdit={openSetup} /></section>
+    <section className="beauty-workspace-page">
+      <BeautyPilotWorkspace setup={workspace} onEdit={openSetup} />
+      <BeautyWorkspaceContentEditor workspace={workspace} language={language} onChange={(next) => { setWorkspace(next); setErrors([]); }} />
+    </section>
     <div className="beauty-storage-status"><Save size={15} />{saving ? text.saving : text.saved}</div>
   </main>;
 
