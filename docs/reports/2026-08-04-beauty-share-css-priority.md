@@ -36,7 +36,7 @@ After the priority fix was deployed at `67d378b`, the transparent 2-column layou
 
 ## Checks
 
-GitHub Actions run `30916704648` on `14315e6f719bd1ddcf2a62f6e020b27648d2e8dc`:
+GitHub Actions run `30916812062` on `69dd08a8d86f5ffd8d5e2c6f881be0ae54f94b6b`:
 
 - install dependencies: PASS
 - repository check: PASS
