@@ -167,7 +167,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           if (response.ok) {
             const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
             const shareData = { files: [file], text: buildCardShareText(content) };
-            if (!navigator.canShare || navigator.canShare(shareData)) {
+            if (!navigator.canShare || navigator.canShare({ files: [file] })) {
               await navigator.share(shareData);
               return;
             }
