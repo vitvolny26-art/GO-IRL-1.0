@@ -1,7 +1,7 @@
 ---
 title: Agent Report
 owner: Web Designer Agent
-status: Ready for review
+status: Draft
 source_of_truth: false
 last_review: 2026-08-04
 next_review: 2026-08-11
@@ -32,21 +32,12 @@ After the priority fix was deployed at `67d378b`, the transparent 2-column layou
 - Added `src/services/beauty-share-priority-fix.css` with explicit `!important` parity rules.
 - Imported the priority stylesheet from `src/main.tsx` after the existing service override stylesheet.
 - Kept share behavior and destinations unchanged.
-- Follow-up: moved the Beauty share group 16 px further left by changing `right: 56px` to `right: 72px`.
+- Follow-up: moved the Beauty share group 32 px further left by changing `right: 56px` to `right: 88px`.
 
 ## Checks
 
-GitHub Actions run `30915924927` on `0b9497d2c25a2ef53d7604239d54aba4795f351e`:
-
-- install dependencies: PASS
-- repository check: PASS
-- diff check: PASS
-- tests: PASS
-- typecheck: PASS
-- lint: PASS
-- build: PASS
-- bundle budget: PASS
+Pending exact-head GitHub Actions.
 
 ## Next step
 
-Merge only after explicit approval, then deploy to VPS and Vercel.
+Merge only after exact-head CI is green and explicit approval is given, then deploy to VPS and Vercel.
