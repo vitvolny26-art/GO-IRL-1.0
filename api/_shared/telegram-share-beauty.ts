@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { readEnv } from "./env.js";
 import { isShareLanguage, type ShareLanguage } from "./telegram-share-event.js";
@@ -81,6 +81,33 @@ type PublicBeautyRow = {
   currency: string;
 };
 
+type RpcError = { code?: string; message?: string } | null;
+
+const isMissingRpc = (error: RpcError) => error?.code === "PGRST202"
+  || Boolean(error?.message?.includes("Could not find the function"));
+
+export async function loadPublicBeautyRows(
+  client: SupabaseClient,
+  language: ShareLanguage,
+): Promise<PublicBeautyRow[]> {
+  const expanded = await client.rpc("go_irl_list_public_beauty_professionals_v3", {
+    p_requested_city_id: "olomouc",
+    p_language: language,
+  });
+  let result = expanded;
+  if (expanded.error && isMissingRpc(expanded.error)) {
+    const localized = await client.rpc("go_irl_list_public_beauty_professionals_v2", {
+      p_requested_city_id: "olomouc",
+      p_language: language,
+    });
+    result = localized.error && isMissingRpc(localized.error)
+      ? await client.rpc("go_irl_list_public_beauty_professionals", { p_requested_city_id: "olomouc" })
+      : localized;
+  }
+  if (result.error) throw result.error;
+  return (result.data || []) as PublicBeautyRow[];
+}
+
 export async function loadTrustedTelegramBeautyCard(
   slug: string,
   language: ShareLanguage,
@@ -91,9 +118,8 @@ export async function loadTrustedTelegramBeautyCard(
   void _selectedTime;
   void _publicOrigin;
   const client = db();
-  const result = await client.rpc("go_irl_list_public_beauty_professionals", { p_requested_city_id: "olomouc" });
-  if (result.error) throw result.error;
-  const row = ((result.data || []) as PublicBeautyRow[]).find((item) => item.slug === slug);
+  const rows = await loadPublicBeautyRows(client, language);
+  const row = rows.find((item) => item.slug === slug);
   if (!row) return null;
 
   const date = normalizeDate(selectedDate, language);
