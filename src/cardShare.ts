@@ -35,7 +35,7 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
     const beautyMatch = inviteUrl.pathname.match(/^\/beauty\/([^/]+)\/?$/i);
     const beautySlug = beautyMatch?.[1] ? decodeURIComponent(beautyMatch[1]).trim().toLowerCase() : "";
     if (beautySlugPattern.test(beautySlug)) {
-      const previewUrl = new URL("/api/meta/beauty-preview", fallbackOrigin);
+      const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
       previewUrl.searchParams.set("slug", beautySlug);
       previewUrl.searchParams.set("language", "ru");
       if (content.date.trim()) previewUrl.searchParams.set("date", content.date.trim());
