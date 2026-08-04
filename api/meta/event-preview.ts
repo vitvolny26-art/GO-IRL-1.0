@@ -49,8 +49,24 @@ const first = (value: string | string[] | undefined) => Array.isArray(value) ? v
 const browserEventUrl = (origin: string, eventId: string) =>
   `${origin}/join/${encodeURIComponent(eventId)}`;
 
-const browserBeautyUrl = (origin: string, slug: string) =>
-  `${origin}/beauty/${encodeURIComponent(slug)}`;
+const browserBeautyUrl = (origin: string, slug: string, date: string) => {
+  const url = new URL(`/beauty/${encodeURIComponent(slug)}`, origin);
+  if (date) url.searchParams.set("date", date);
+  return url.toString();
+};
+
+const eventLandingUrl = (origin: string, eventId: string, language: string) => {
+  const url = new URL(`/e/${encodeURIComponent(eventId)}`, origin);
+  if (language !== "ru") url.searchParams.set("language", language);
+  return url.toString();
+};
+
+const beautyLandingUrl = (origin: string, slug: string, language: string, date: string) => {
+  const url = new URL(`/s/${encodeURIComponent(slug)}`, origin);
+  if (language !== "ru") url.searchParams.set("language", language);
+  if (date) url.searchParams.set("date", date);
+  return url.toString();
+};
 
 const sendCardImage = async (card: Parameters<typeof renderMetaInvitationCardJpeg>[0], response: VercelResponse) => {
   const jpeg = await renderMetaInvitationCardJpeg(card);
@@ -75,7 +91,7 @@ const handleBeautyPreview = async (
 
   const query = new URLSearchParams({ slug, language });
   if (date) query.set("date", date);
-  const canonicalUrl = `${origin}/api/meta/event-preview?${query.toString()}`;
+  const canonicalUrl = beautyLandingUrl(origin, slug, language, date);
   const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
   const imageUrl = secret
     ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
@@ -99,7 +115,7 @@ const handleBeautyPreview = async (
 <meta property="og:image:width" content="1080" /><meta property="og:image:height" content="1020" />
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
 <style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:18/17;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
-</head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(browserBeautyUrl(origin, slug))}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
+</head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(browserBeautyUrl(origin, slug, date))}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
 };
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
@@ -124,8 +140,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
     const origin = publicOrigin();
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
-    const canonicalUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
-    const addToCalendarUrl = buildMetaEventGoogleCalendarUrl(card, origin) || `${canonicalUrl}&format=ics`;
+    const canonicalUrl = eventLandingUrl(origin, card.eventId, card.language);
+    const previewApiUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
+    const addToCalendarUrl = buildMetaEventGoogleCalendarUrl(card, origin) || `${previewApiUrl}&format=ics`;
     if (first(request.query?.format) === "ics") {
       response.setHeader("Content-Type", "text/calendar; charset=utf-8");
       response.setHeader("Content-Disposition", `attachment; filename="go-irl-${card.eventId}.ics"`);

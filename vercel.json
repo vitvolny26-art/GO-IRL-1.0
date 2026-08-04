@@ -14,6 +14,14 @@
   },
   "rewrites": [
     {
+      "source": "/e/:id",
+      "destination": "/api/meta/event-preview?event=:id"
+    },
+    {
+      "source": "/s/:slug",
+      "destination": "/api/meta/event-preview?slug=:slug"
+    },
+    {
       "source": "/privacy",
       "destination": "/privacy.html"
     },

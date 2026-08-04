@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, MoreHorizontal, Share2 } from "lucide-react";
 import {
   buildCardShareImageUrl,
-  buildMetaEventPreviewUrl,
+  buildCardShareLandingUrl,
   buildCardShareTarget,
   buildOrganicCardShareContent,
   buildCardShareText,
@@ -167,8 +167,8 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
           const response = await fetch(imageUrl);
           if (response.ok) {
             const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
-            const previewUrl = buildMetaEventPreviewUrl(content);
-            const shareData = { files: [file], text: buildCardShareText({ ...content, url: previewUrl }) };
+            const landingUrl = buildCardShareLandingUrl(content);
+            const shareData = { files: [file], text: buildCardShareText({ ...content, url: landingUrl }) };
             if (!navigator.canShare || navigator.canShare({ files: [file] })) {
               await navigator.share(shareData);
               return;

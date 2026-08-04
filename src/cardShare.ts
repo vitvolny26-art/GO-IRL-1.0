@@ -55,6 +55,31 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
   }
 };
 
+export const buildCardShareLandingUrl = (content: CardShareContent) => {
+  try {
+    const previewUrl = new URL(buildMetaEventPreviewUrl(content));
+    const language = content.language || "ru";
+    const eventId = previewUrl.searchParams.get("event") || "";
+    if (eventIdPattern.test(eventId)) {
+      const landingUrl = new URL(`/e/${encodeURIComponent(eventId)}`, fallbackOrigin);
+      if (language !== "ru") landingUrl.searchParams.set("language", language);
+      return landingUrl.toString();
+    }
+
+    const beautySlug = previewUrl.searchParams.get("slug") || "";
+    if (beautySlugPattern.test(beautySlug)) {
+      const landingUrl = new URL(`/s/${encodeURIComponent(beautySlug)}`, fallbackOrigin);
+      if (language !== "ru") landingUrl.searchParams.set("language", language);
+      const date = previewUrl.searchParams.get("date") || "";
+      if (date) landingUrl.searchParams.set("date", date);
+      return landingUrl.toString();
+    }
+  } catch {
+    // Fall through to the original public URL.
+  }
+  return normalizeCardShareUrl(content.url);
+};
+
 export const buildMessengerPreviewUrl = buildMetaEventPreviewUrl;
 
 export const buildCardShareImageUrl = (content: CardShareContent) => {
@@ -113,8 +138,8 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     return target.toString();
   }
   if (channel === "whatsapp") {
-    const previewUrl = buildMetaEventPreviewUrl(normalizedContent);
-    const message = buildCardShareText({ ...normalizedContent, url: previewUrl });
+    const landingUrl = buildCardShareLandingUrl(normalizedContent);
+    const message = buildCardShareText({ ...normalizedContent, url: landingUrl });
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }
   if (channel === "facebook") return buildFacebookShareTarget(normalizedContent);

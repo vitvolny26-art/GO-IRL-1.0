@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildCardShareTarget,
   buildCardShareImageUrl,
+  buildCardShareLandingUrl,
   buildCardShareText,
   buildFacebookShareTarget,
   buildMessengerAndroidIntentTarget,
@@ -27,11 +28,16 @@ describe("card share", () => {
     expect(buildCardShareText(content)).toBe(`GO IRL: Ролики в парке\n16 июл. · 18:00\nSmetanovy sady, Olomouc\n\n${content.url}`);
   });
 
-  it("keeps Telegram on the exact event link and gives WhatsApp the OG web card", () => {
+  it("keeps Telegram on the exact event link and gives WhatsApp the short landing", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", content))).toContain(content.url);
     const whatsappTarget = new URL(buildCardShareTarget("whatsapp", content));
     expect(whatsappTarget.origin).toBe("https://wa.me");
-    expect(whatsappTarget.searchParams.get("text")).toContain(previewUrl);
+    expect(whatsappTarget.searchParams.get("text")).toContain(`https://go-irl-1-0.vercel.app/e/${eventId}`);
+  });
+
+  it("builds a short Activity landing URL while keeping the API as the image source", () => {
+    expect(buildCardShareLandingUrl(content)).toBe(`https://go-irl-1-0.vercel.app/e/${eventId}`);
+    expect(buildCardShareImageUrl(content)).toContain("/api/meta/event-preview?");
   });
 
   it("builds one shared Meta preview URL for the same event", () => {
@@ -102,7 +108,10 @@ describe("card share", () => {
     expect(preview.searchParams.get("date")).toBe(beauty.date);
 
     const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));
-    expect(whatsapp.searchParams.get("text")).toContain(preview.toString());
+    expect(buildCardShareLandingUrl(beauty)).toBe(
+      "https://go-irl-1-0.vercel.app/s/beauty-test-studio?date=03+%D0%B0%D0%B2%D0%B3+%C2%B7+09%3A00",
+    );
+    expect(whatsapp.searchParams.get("text")).toContain("https://go-irl-1-0.vercel.app/s/beauty-test-studio");
     expect(decodeURIComponent(buildCardShareTarget("telegram", beauty))).toContain(beauty.url);
   });
 });
