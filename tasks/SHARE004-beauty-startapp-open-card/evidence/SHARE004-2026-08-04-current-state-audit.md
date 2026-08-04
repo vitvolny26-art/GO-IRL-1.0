@@ -18,7 +18,7 @@ Reconcile the historical SHARE004 release report with current GitHub, Drive and 
   - `src/services/beautyDeepLink.ts`, blob `496da7f56109b742bb1feacb3de3e7d89fe279e0`;
   - `src/services/beautyDeepLink.test.ts`, blob `a9d7e9612fdc1c542c2a84b7aa78f52be52bbb22`.
 
-### Google Drive
+### Google Drive before remediation
 
 - existing report ID `1QZJaT5l8RW3vTMIiv1cwHMJVDOvg9CHby9VcwIWVqBc`;
 - title `2026-08-03 — SHARE004 — Beauty startapp opens professional card — Release Report`;
@@ -49,16 +49,34 @@ Reconcile the historical SHARE004 release report with current GitHub, Drive and 
 - historical implementation CI: PASS as recorded in the existing release report;
 - historical deployment record: present, not re-executed;
 - current physical Telegram exact-card smoke: NOT VERIFIED;
-- task documentation completeness before remediation: FAIL;
+- task documentation completeness before remediation: FAIL.
 
-## Changes authorized by this audit
+## Documentation writes and readback
 
-Documentation only:
+### GitHub
 
-- restore the SHARE004 task folder in GitHub;
-- correct status to verification pending;
-- add task roadmap and handoff;
-- update the report and create Drive mirrors.
+- branch: `docs/share004-roadmap-handoff-20260804`;
+- initial documentation commit: `4027154b21e362c13ac126422b25b4d88759dfa2`;
+- Draft PR: #630;
+- six task-workspace files were created and the commit was read back;
+- no product code was changed;
+- exact-head workflow/status result was not returned at the last check and remains pending.
+
+### Google Drive
+
+- task folder: `1E-K42aikstPkxIu4Q2wSi2Lq89r6sjuV`;
+- Reports folder: `1MBZxvniL3Sy_bwrHhUa0uDz3qv6Uwclj`;
+- corrected historical release report: `1QZJaT5l8RW3vTMIiv1cwHMJVDOvg9CHby9VcwIWVqBc`;
+- corrected report revision: `AIroW34Wz9Nqmc6H9u8mer4MRvfZ_uOSjvKeK6rTs2YUdT8Vqw_23JYb--q67Tw4v4Amgjqnn2orZnEsjDwbGORkUxsnHJLGn9pt4WggEBI`;
+- Roadmap: `1CYBIM9Br1ebJ_bHXgNQ6H7XAVToPAhnTxHtl85-uBOY`, revision `AIroW34VSR-bE028OnvuKGhSbx-2tU6nVllfYLl0r047uj5NOEqMY5udEDwm60VycZP2olprlVssKm4b4cM8m_FJoQT-AovdNC1En0iOwP8`;
+- Handoff: `1KYSSbwtcXpS-cqr3OxnwfrfHudugL4VNMOPbDVq_0Pw`, revision `AIroW36wuVm79ILVJm6icyk9B15EUl1yeXhnbyhiIT_2x0MC29rqz5beRwDuPhW86j8Irt879YZnnkfkS_QnL-Pylvi4mt90VObv9GB4ySY`;
+- Chief Archivist report: `1v9e48RVdHy3_DP_pdZQnKJGqECivRfm3RrNMU2-RNbg`, revision `AIroW37Nw8y3g13CTKqEs_yre7NjBIwApBR7kBv9xWc9OIR3PBQFogO5l0S84YlAAomwRmMi9onI7KD9zQ-xbsbL3YkenSHK2A3MZSpxg2E`;
+- all listed documents were read back after writing;
+- the historical release report was moved into the SHARE004 Reports folder without changing its file ID.
+
+## Status correction
+
+SHARE004 is `Verification pending`, not complete, until a PII-free physical Telegram smoke proves the exact professional card opens after the Mini App link is selected.
 
 ## Safety
 

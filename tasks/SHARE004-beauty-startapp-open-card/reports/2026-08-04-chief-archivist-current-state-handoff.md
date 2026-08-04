@@ -65,7 +65,11 @@ This documentation pass did not reproduce the exact post-click Telegram behavior
 - added `TASK.md`, `ROADMAP.md`, `STATUS.md` and `HANDOFF.md`;
 - added a current-state audit evidence file;
 - corrected SHARE004 status to `Verification pending`;
-- prepared Google Drive report, roadmap and handoff mirrors.
+- created Google Drive task and Reports folders;
+- moved the historical release report into the Reports folder;
+- corrected the historical release report status and appended a current-state section;
+- created and read back Drive Roadmap, Handoff and Chief Archivist report mirrors;
+- opened GitHub Draft PR #630.
 
 No product code was changed.
 
@@ -75,8 +79,10 @@ No product code was changed.
 - current-main implementation presence: PASS;
 - regression-test presence: PASS;
 - Drive report inconsistency identified: PASS;
-- ClickUp duplicate search: PASS, no SHARE004 task found;
-- exact-head CI for this documentation branch: pending;
+- ClickUp search: PASS, no SHARE004 task found;
+- Google Drive folder/document writes and readbacks: PASS;
+- GitHub task workspace readback: PASS;
+- exact-head CI for the final documentation head: pending; no workflow/status result was returned at the last check;
 - physical Telegram exact-card smoke: pending.
 
 ## Evidence
@@ -93,15 +99,17 @@ Repository: `vitvolny26-art/Go-IRL-1.1`
 
 ## Commit
 
+Initial documentation commit: `4027154b21e362c13ac126422b25b4d88759dfa2`.
+
 Implementation merge commit: `e3fd56624ccee6d0a441037b844d8d280b48b503`.
 
-The documentation commit is the head commit of this branch and is referenced by the documentation pull request.
+The final mirror-synchronization commit is the current head of Draft PR #630.
 
 ## Pull request
 
 Implementation: #607, merged.
 
-Documentation pull request: created after this report commit; no automatic merge.
+Documentation: #630, Draft, not merged.
 
 ## ClickUp
 
@@ -109,9 +117,14 @@ No verified SHARE004 task was found. No ClickUp write was made.
 
 ## Google Drive
 
-Existing report ID: `1QZJaT5l8RW3vTMIiv1cwHMJVDOvg9CHby9VcwIWVqBc`.
+- task folder: `1E-K42aikstPkxIu4Q2wSi2Lq89r6sjuV`;
+- Reports folder: `1MBZxvniL3Sy_bwrHhUa0uDz3qv6Uwclj`;
+- corrected historical release report: `1QZJaT5l8RW3vTMIiv1cwHMJVDOvg9CHby9VcwIWVqBc`;
+- Roadmap: `1CYBIM9Br1ebJ_bHXgNQ6H7XAVToPAhnTxHtl85-uBOY`;
+- Handoff: `1KYSSbwtcXpS-cqr3OxnwfrfHudugL4VNMOPbDVq_0Pw`;
+- current-state report: `1v9e48RVdHy3_DP_pdZQnKJGqECivRfm3RrNMU2-RNbg`.
 
-The report status must be corrected and task-specific Roadmap and Handoff documents created under a SHARE004 folder in the Share workspace.
+All listed documents were read back after writing.
 
 ## Blockers
 

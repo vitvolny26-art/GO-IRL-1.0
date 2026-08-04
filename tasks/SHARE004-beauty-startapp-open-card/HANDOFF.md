@@ -22,6 +22,8 @@ QA Engineer or Release Manager for one bounded Telegram runtime verification.
 - implementation merge SHA: `e3fd56624ccee6d0a441037b844d8d280b48b503`;
 - the implementation and regression tests remain present on current `main` commit `84954a666a41c6d72aa3773dd11f31ff6fcdca2c`;
 - the historical release report recorded successful CI and deployment evidence on 2026-08-03;
+- GitHub task workspace and Draft PR #630 now exist;
+- Google Drive report, Roadmap and Handoff mirrors were written and read back;
 - no current physical evidence proves the exact card opens after the Telegram Mini App link is selected.
 
 ## Required smoke
@@ -55,16 +57,35 @@ WhatsApp Beauty preview rendering is not SHARE004. It belongs to `BEAUTY014`.
 
 Current GitHub state contains:
 
-- canonical-looking issue #626, referenced by Draft PR #628;
-- later duplicate issue #629 created with nearly identical scope.
+- issue #626, referenced by Draft PR #628;
+- later duplicate issue #629 with nearly identical scope.
 
 Do not resolve or implement that duplication while executing SHARE004. Route it to the active BEAUTY014 owner.
+
+## ClickUp
+
+No verified SHARE004 task was found on 2026-08-04. Do not create a duplicate without coordination.
+
+## Google Drive
+
+- task folder: `1E-K42aikstPkxIu4Q2wSi2Lq89r6sjuV`;
+- historical release report: `1QZJaT5l8RW3vTMIiv1cwHMJVDOvg9CHby9VcwIWVqBc`;
+- Roadmap: `1CYBIM9Br1ebJ_bHXgNQ6H7XAVToPAhnTxHtl85-uBOY`;
+- Handoff: `1KYSSbwtcXpS-cqr3OxnwfrfHudugL4VNMOPbDVq_0Pw`;
+- Chief Archivist report: `1v9e48RVdHy3_DP_pdZQnKJGqECivRfm3RrNMU2-RNbg`.
 
 ## Safety
 
 - no merge, deployment or production configuration change for this handoff;
 - no auth, RLS, SQL, migration, secret or production-data change;
 - do not store screenshots containing account names, chat names or personal data.
+
+## GitHub references
+
+- implementation PR: #607;
+- documentation PR: #630;
+- initial documentation commit: `4027154b21e362c13ac126422b25b4d88759dfa2`;
+- final synchronization commit: current head of Draft PR #630.
 
 ## Next verified step
 
