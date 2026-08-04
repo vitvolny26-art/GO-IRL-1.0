@@ -10,7 +10,7 @@ import {
 import type { BeautyWorkspace } from "./beautySetupModel";
 
 type Status = ServiceBookingStatus;
-type Appointment = { id: string; clientName: string; phone: string; date: string; time: string; requestedTime?: string; status: Status; source: "client" | "professional"; bookingId?: string };
+type Appointment = { id: string; clientName: string; phone: string; date: string; time: string; requestedTime?: string; contactBeforeConfirmation?: boolean; status: Status; source: "client" | "professional"; bookingId?: string };
 type TimeBlock = { id: string; date: string; time: string; label: string };
 type PilotData = { appointments: Appointment[]; blocks: TimeBlock[] };
 type View = "today" | "week" | "client" | "services";
@@ -45,6 +45,7 @@ const bookingAppointment = (booking: ServiceBooking): Appointment => ({
   bookingId: booking.id,
   clientName: booking.clientName,
   phone: booking.clientContact,
+  contactBeforeConfirmation: booking.contactBeforeConfirmation,
   date: booking.date,
   time: booking.time,
   status: booking.status,
@@ -140,6 +141,7 @@ export function BeautyPilotWorkspace({ setup, onEdit }: { setup: BeautyWorkspace
     {current && <div className="beauty-dialog-backdrop" role="presentation" onPointerDown={() => setSelected("")}><section className="beauty-dialog" role="dialog" aria-modal="true" onPointerDown={(event) => event.stopPropagation()}>
       <button className="beauty-dialog-close" type="button" onClick={() => setSelected("")}><X /></button><span className={`beauty-preview-badge status-${current.status}`}>{labels[current.status]}</span>
       <h2>{current.clientName}</h2><p>{current.date} · {current.time}</p><p><MessageCircle size={16} /> {current.phone}</p>
+      {current.contactBeforeConfirmation && <div className="beauty-note"><strong>Связаться с клиентом до подтверждения записи.</strong></div>}
       {current.requestedTime && <div className="beauty-note"><strong>Запрошен перенос на {current.requestedTime}</strong><button className="beauty-primary" type="button" onClick={approveReschedule}>Подтвердить перенос</button></div>}
       <div className="beauty-dialog-actions">
         {current.status === "pending" && <><button className="beauty-primary" type="button" onClick={() => updateStatus("confirmed")}><Check size={17} />Подтвердить</button><button className="beauty-secondary" type="button" onClick={() => updateStatus("declined")}>Отклонить</button></>}
