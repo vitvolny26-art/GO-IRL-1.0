@@ -56,6 +56,13 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
 
 export const buildMessengerPreviewUrl = buildMetaEventPreviewUrl;
 
+export const buildCardShareImageUrl = (content: CardShareContent) => {
+  const url = new URL(buildMetaEventPreviewUrl(content));
+  if (url.pathname !== "/api/meta/event-preview") return "";
+  url.searchParams.set("format", "image");
+  return url.toString();
+};
+
 export const buildOrganicCardShareContent = (content: CardShareContent) => ({
   title: `GO IRL: ${content.title}`,
   text: [content.date, content.address].filter(Boolean).join("\n"),

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCardShareTarget,
+  buildCardShareImageUrl,
   buildCardShareText,
   buildFacebookShareTarget,
   buildMessengerAndroidIntentTarget,
@@ -42,6 +43,13 @@ describe("card share", () => {
       text: "16 июл. · 18:00\nSmetanovy sady, Olomouc",
       url: previewUrl,
     });
+  });
+
+  it("builds a JPEG media URL on the shared preview function", () => {
+    const image = new URL(buildCardShareImageUrl(content));
+    expect(image.pathname).toBe("/api/meta/event-preview");
+    expect(image.searchParams.get("event")).toBe(eventId);
+    expect(image.searchParams.get("format")).toBe("image");
   });
 
   it("keeps Facebook separate from Messenger and never puts preview URL in user text", () => {

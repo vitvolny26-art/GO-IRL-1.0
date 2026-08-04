@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Share2 } from "lucide-react";
 import {
+  buildCardShareImageUrl,
   buildCardShareTarget,
   buildOrganicCardShareContent,
   buildCardShareText,
@@ -141,6 +142,25 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       }
       openTelegramShareTarget(buildCardShareTarget(channel, content));
       return;
+    }
+
+    if (channel === "whatsapp" && navigator.share) {
+      try {
+        const imageUrl = buildCardShareImageUrl(content);
+        if (imageUrl) {
+          const response = await fetch(imageUrl);
+          if (response.ok) {
+            const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
+            const shareData = { files: [file], text: buildCardShareText(content) };
+            if (!navigator.canShare || navigator.canShare(shareData)) {
+              await navigator.share(shareData);
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
     }
 
     if (channel === "facebook" || channel === "whatsapp") {
