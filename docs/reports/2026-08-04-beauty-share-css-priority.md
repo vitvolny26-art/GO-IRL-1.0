@@ -1,7 +1,7 @@
 ---
 title: Agent Report
 owner: Web Designer Agent
-status: Draft
+status: Ready for review
 source_of_truth: false
 last_review: 2026-08-04
 next_review: 2026-08-11
@@ -36,8 +36,17 @@ After the priority fix was deployed at `67d378b`, the transparent 2-column layou
 
 ## Checks
 
-Pending exact-head GitHub Actions for branch `fix/beauty-share-left-offset-20260804`.
+GitHub Actions run `30915924927` on `0b9497d2c25a2ef53d7604239d54aba4795f351e`:
+
+- install dependencies: PASS
+- repository check: PASS
+- diff check: PASS
+- tests: PASS
+- typecheck: PASS
+- lint: PASS
+- build: PASS
+- bundle budget: PASS
 
 ## Next step
 
-Merge only after exact-head CI is green and explicit approval is given.
+Merge only after explicit approval, then deploy to VPS and Vercel.
