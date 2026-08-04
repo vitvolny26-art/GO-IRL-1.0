@@ -89,7 +89,7 @@ export function BeautyPilotWorkspace({ setup, onEdit, pageEditor }: BeautyPilotW
   const occupied = new Set([...allAppointments.filter((item) => ["pending", "confirmed"].includes(item.status)).map((item) => `${item.date}:${item.time}`), ...data.blocks.map((item) => `${item.date}:${item.time}`)]);
   const slots = ["09:00", "10:30", "12:00", "14:30", "16:00"];
   const nextAppointment = upcomingAppointments[0];
-  const activeServiceCount = setup.services.filter((service) => service.active && !service.archived).length || 1;
+  const activeServiceCount = setup.services.filter((service) => service.active).length || 1;
 
   const updateStatus = (status: Status) => {
     if (current?.bookingId) {
