@@ -26,7 +26,9 @@ describe("WhatsApp prepared share UX", () => {
     );
     expect(handler).not.toContain("openExternalShareTarget");
     expect(handler).not.toContain('buildCardShareTarget("whatsapp"');
-    expect(handler).toContain("error: canShareFile ? null : whatsappCopy.unsupported");
+    expect(handler).not.toContain("navigator.canShare");
+    expect(handler).toContain("file,");
+    expect(handler).toContain("error: null");
   });
 
   it("does not await network work inside the final share click", () => {
@@ -37,5 +39,6 @@ describe("WhatsApp prepared share UX", () => {
     expect(handler).not.toContain("fetch(");
     expect(handler).not.toContain("await ");
     expect(handler).toContain("navigator.share({");
+    expect(handler).toContain("error: whatsappCopy.unsupported");
   });
 });
