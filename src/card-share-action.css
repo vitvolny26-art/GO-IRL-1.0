@@ -92,6 +92,15 @@
   border-radius: 14px;
 }
 
+.whatsapp-share-prepared > [role="alert"] {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 85, 85, 0.14);
+  color: #ffb4b4;
+  text-align: center;
+}
+
 .whatsapp-share-prepared button {
   min-height: 52px;
   border: 0;
@@ -107,6 +116,11 @@
   gap: 10px;
   background: #a3f500;
   color: #080b06;
+}
+
+.whatsapp-share-send:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .whatsapp-share-send img {

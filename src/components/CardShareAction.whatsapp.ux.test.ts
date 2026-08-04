@@ -19,6 +19,16 @@ describe("WhatsApp prepared share UX", () => {
     expect(channelClick).not.toContain("navigator.share(");
   });
 
+  it("never falls back to the text-only WhatsApp target", () => {
+    const handler = source.slice(
+      source.indexOf("const prepareWhatsAppCard = async () =>"),
+      source.indexOf("const share = async"),
+    );
+    expect(handler).not.toContain("openExternalShareTarget");
+    expect(handler).not.toContain('buildCardShareTarget("whatsapp"');
+    expect(handler).toContain("error: canShareFile ? null : whatsappCopy.unsupported");
+  });
+
   it("does not await network work inside the final share click", () => {
     const handler = source.slice(
       source.indexOf("const sendPreparedWhatsApp = () =>"),

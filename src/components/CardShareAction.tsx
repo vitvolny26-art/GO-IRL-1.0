@@ -34,9 +34,10 @@ type CardShareActionProps = {
 type ShareChannel = ShareProvider | "facebook" | "native";
 type ActivityChatUnreadChangedDetail = { activityId?: string };
 type PreparedWhatsAppShare = {
-  file: File;
+  file: File | null;
   imageUrl: string;
   text: string;
+  error: string | null;
 };
 
 const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> = [
@@ -56,10 +57,10 @@ const moreLabels = {
 } as const;
 
 const whatsappLabels = {
-  ru: { preparing: "Готовим карточку…", title: "Карточка готова", send: "Отправить в WhatsApp", close: "Закрыть" },
-  uk: { preparing: "Готуємо картку…", title: "Картка готова", send: "Надіслати у WhatsApp", close: "Закрити" },
-  cs: { preparing: "Připravuji kartu…", title: "Karta je připravena", send: "Odeslat přes WhatsApp", close: "Zavřít" },
-  en: { preparing: "Preparing card…", title: "Card ready", send: "Send to WhatsApp", close: "Close" },
+  ru: { preparing: "Готовим карточку…", title: "Карточка готова", send: "Отправить в WhatsApp", close: "Закрыть", unsupported: "Этот телефон не поддерживает отправку JPEG из GO IRL.", failed: "Не удалось подготовить JPEG. Попробуйте ещё раз." },
+  uk: { preparing: "Готуємо картку…", title: "Картка готова", send: "Надіслати у WhatsApp", close: "Закрити", unsupported: "Цей телефон не підтримує надсилання JPEG із GO IRL.", failed: "Не вдалося підготувати JPEG. Спробуйте ще раз." },
+  cs: { preparing: "Připravuji kartu…", title: "Karta je připravena", send: "Odeslat přes WhatsApp", close: "Zavřít", unsupported: "Tento telefon nepodporuje odeslání JPEG z GO IRL.", failed: "JPEG se nepodařilo připravit. Zkuste to znovu." },
+  en: { preparing: "Preparing card…", title: "Card ready", send: "Send to WhatsApp", close: "Close", unsupported: "This phone cannot share a JPEG from GO IRL.", failed: "Could not prepare the JPEG. Please try again." },
 } as const;
 
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
@@ -163,34 +164,33 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   const prepareWhatsAppCard = async () => {
     setOpen(false);
     setExpanded(false);
+    setPreparingWhatsApp(true);
+    const imageUrl = buildCardShareImageUrl(content);
+    const landingUrl = buildCardShareLandingUrl(content);
 
-    if (typeof navigator.share === "function") {
-      setPreparingWhatsApp(true);
-      try {
-        const imageUrl = buildCardShareImageUrl(content);
-        if (imageUrl) {
-          const response = await fetch(imageUrl);
-          if (response.ok) {
-            const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
-            const landingUrl = buildCardShareLandingUrl(content);
-            if (!navigator.canShare || navigator.canShare({ files: [file] })) {
-              setPreparedWhatsApp({
-                file,
-                imageUrl,
-                text: buildCardShareText({ ...content, url: landingUrl }),
-              });
-              return;
-            }
-          }
-        }
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-      } finally {
-        setPreparingWhatsApp(false);
-      }
+    if (!imageUrl) {
+      setPreparedWhatsApp({ file: null, imageUrl: "", text: "", error: whatsappCopy.failed });
+      setPreparingWhatsApp(false);
+      return;
     }
 
-    openExternalShareTarget(buildCardShareTarget("whatsapp", content));
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error(`Card image request failed: ${response.status}`);
+      const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
+      const canShareFile = typeof navigator.share === "function"
+        && (!navigator.canShare || navigator.canShare({ files: [file] }));
+      setPreparedWhatsApp({
+        file: canShareFile ? file : null,
+        imageUrl,
+        text: buildCardShareText({ ...content, url: landingUrl }),
+        error: canShareFile ? null : whatsappCopy.unsupported,
+      });
+    } catch {
+      setPreparedWhatsApp({ file: null, imageUrl, text: "", error: whatsappCopy.failed });
+    } finally {
+      setPreparingWhatsApp(false);
+    }
   };
 
   const share = async (channel: Exclude<ShareChannel, "whatsapp">) => {
@@ -228,7 +228,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   };
 
   const sendPreparedWhatsApp = () => {
-    if (!preparedWhatsApp || typeof navigator.share !== "function") return;
+    if (!preparedWhatsApp?.file || typeof navigator.share !== "function") return;
 
     // The native share call must happen synchronously inside this second click.
     // Awaiting the image fetch here would lose transient user activation in
@@ -351,8 +351,9 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
             {preparedWhatsApp ? (
               <>
                 <strong>{whatsappCopy.title}</strong>
-                <img src={preparedWhatsApp.imageUrl} alt={title} />
-                <button className="whatsapp-share-send" type="button" onClick={sendPreparedWhatsApp}>
+                {preparedWhatsApp.imageUrl ? <img src={preparedWhatsApp.imageUrl} alt={title} /> : null}
+                {preparedWhatsApp.error ? <p role="alert">{preparedWhatsApp.error}</p> : null}
+                <button className="whatsapp-share-send" type="button" onClick={sendPreparedWhatsApp} disabled={!preparedWhatsApp.file}>
                   <img src="/icons/whatsapp.svg" alt="" />
                   {whatsappCopy.send}
                 </button>
