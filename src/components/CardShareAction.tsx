@@ -178,13 +178,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       const response = await fetch(imageUrl);
       if (!response.ok) throw new Error(`Card image request failed: ${response.status}`);
       const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
-      const canShareFile = typeof navigator.share === "function"
-        && (!navigator.canShare || navigator.canShare({ files: [file] }));
       setPreparedWhatsApp({
-        file: canShareFile ? file : null,
+        file,
         imageUrl,
         text: buildCardShareText({ ...content, url: landingUrl }),
-        error: canShareFile ? null : whatsappCopy.unsupported,
+        error: null,
       });
     } catch {
       setPreparedWhatsApp({ file: null, imageUrl, text: "", error: whatsappCopy.failed });
@@ -228,7 +226,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   };
 
   const sendPreparedWhatsApp = () => {
-    if (!preparedWhatsApp?.file || typeof navigator.share !== "function") return;
+    if (!preparedWhatsApp?.file) return;
+    if (typeof navigator.share !== "function") {
+      setPreparedWhatsApp((current) => current ? { ...current, error: whatsappCopy.unsupported } : current);
+      return;
+    }
 
     // The native share call must happen synchronously inside this second click.
     // Awaiting the image fetch here would lose transient user activation in
@@ -241,6 +243,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
       () => setPreparedWhatsApp(null),
       (error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
+        setPreparedWhatsApp((current) => current ? { ...current, error: whatsappCopy.unsupported } : current);
       },
     );
   };
