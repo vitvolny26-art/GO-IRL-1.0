@@ -36,6 +36,7 @@ Prepare organic WhatsApp sharing for public Beauty profiles using server-rendere
 - Routed valid `/beauty/beauty-*` shares through that endpoint for WhatsApp and other organic preview consumers.
 - Preserved Telegram sharing on the original public Beauty URL and prepared-inline path.
 - Added regression coverage for Beauty preview routing and Telegram isolation.
+- Prepared a one-line Vercel NodeNext compatibility hotfix by adding the explicit `.js` extension to the `beautyPublicSlug` import in `src/invitationLink.ts`.
 
 ## Checks
 
@@ -45,11 +46,15 @@ Prepare organic WhatsApp sharing for public Beauty profiles using server-rendere
 - Vitest: 141 files, 666 tests PASS.
 - `pnpm run test:staff-os` with `CI=true`: PASS.
 - `git diff --check`: PASS.
-- GitHub Actions exact-head verification: pending because no release commit exists.
+- Original GitHub Actions run `30877397565` on `f4c9814`: PASS.
+- PR #632 merged as `0adc8cf`; VPS workflow `8030`: PASS, HTTP 200.
+- Vercel deployment `dpl_2DtbBQDEHCum8t9LXoJd4ueBmqP4`: RED because TypeScript 6 NodeNext required an explicit extension in `src/invitationLink.ts`.
+- Local hotfix verification: lint PASS with the same pre-existing warning; typecheck, build, 666 Vitest tests, Staff OS, and `git diff --check` PASS.
+- GitHub Actions exact-head verification for the hotfix: pending.
 - Physical WhatsApp preview smoke: pending deployment.
 
 ## Next step
 
-After explicit release authorization, create one commit, run GitHub Actions on that exact head, merge only if green, deploy only with explicit production permission, then send a public Beauty link in a fresh WhatsApp chat and record PII-free preview evidence.
+Release the authorized hotfix through GitHub Actions, merge only if green, verify the Vercel production deployment, then send a public Beauty link in a fresh WhatsApp chat and record PII-free preview evidence.
 
-Commit: not created
+Commit: pending exact remote SHA

@@ -1,4 +1,4 @@
-import { parseBeautyStartParam } from "./beauty/beautyPublicSlug";
+import { parseBeautyStartParam } from "./beauty/beautyPublicSlug.js";
 
 const eventUuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const demoEventIdPattern = /^demo-[a-z0-9]+(?:-[a-z0-9]+)*$/i;
