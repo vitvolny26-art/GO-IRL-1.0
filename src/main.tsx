@@ -62,6 +62,7 @@ import "./unified-event-primary-controls.css";
 import "./event-sheet-priority-layout.css";
 import "./event-sheet-production-fix.css";
 import "./services/service-activity-card-overrides.css";
+import "./services/beauty-share-priority-fix.css";
 import "./beauty/beauty-booking-notice-overrides.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";

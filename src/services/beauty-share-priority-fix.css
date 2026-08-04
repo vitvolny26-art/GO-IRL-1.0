@@ -1,0 +1,24 @@
+/* Final cross-chunk priority fix for Beauty share parity with Activity cards. */
+.service-activity-card .card-share-channel-list {
+  top: 0 !important;
+  right: 56px !important;
+  grid-template-columns: repeat(2, 52px) !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.service-activity-card .card-share-channel-list > button {
+  width: 52px !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  background: transparent !important;
+}
+
+.service-activity-card .card-share-icon-circle {
+  width: 48px !important;
+  height: 48px !important;
+}
