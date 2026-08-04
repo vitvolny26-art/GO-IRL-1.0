@@ -12,6 +12,7 @@ export type ServiceBooking = {
   clientUserKey: string;
   clientName: string;
   clientContact: string;
+  contactBeforeConfirmation: boolean;
   date: string;
   time: string;
   durationMinutes: number;
@@ -55,6 +56,7 @@ const normalizeBooking = (value: unknown): ServiceBooking | null => {
     clientUserKey: typeof item.clientUserKey === "string" ? item.clientUserKey : getCurrentUserKey(),
     clientName: typeof item.clientName === "string" && item.clientName.trim() ? item.clientName : getCurrentDisplayName("GO IRL User"),
     clientContact: typeof item.clientContact === "string" && item.clientContact.trim() ? item.clientContact : "Telegram",
+    contactBeforeConfirmation: item.contactBeforeConfirmation === true,
     date: item.date,
     time: item.time,
     durationMinutes: typeof item.durationMinutes === "number" ? item.durationMinutes : 60,
@@ -133,7 +135,7 @@ const bookingActivity = (booking: ServiceBooking): Activity => {
     organizer: booking.professionalName,
     organizerKey: `service-professional:${booking.profileId}`,
     visibility: "private",
-    metadata: { custom: { serviceBooking: true, bookingId: booking.id, durationMinutes: booking.durationMinutes, status: booking.status } },
+    metadata: { custom: { serviceBooking: true, bookingId: booking.id, durationMinutes: booking.durationMinutes, status: booking.status, contactBeforeConfirmation: booking.contactBeforeConfirmation } },
   };
 };
 
