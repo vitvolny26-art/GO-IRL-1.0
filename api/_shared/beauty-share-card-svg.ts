@@ -20,7 +20,7 @@ const wrap = (value: string, maxChars: number, maxLines: number) => {
   const words = clean(value, maxChars * maxLines * 2).split(" ").filter(Boolean);
   const lines: string[] = [];
   for (const word of words) {
-    const current = lines.at(-1) || "";
+    const current = lines[lines.length - 1] || "";
     const candidate = current ? `${current} ${word}` : word;
     if (candidate.length <= maxChars) {
       if (current) lines[lines.length - 1] = candidate;
@@ -28,7 +28,7 @@ const wrap = (value: string, maxChars: number, maxLines: number) => {
     } else if (lines.length < maxLines) {
       lines.push(word.slice(0, maxChars));
     } else {
-      const last = lines.at(-1) || "";
+      const last = lines[lines.length - 1] || "";
       lines[lines.length - 1] = `${last.slice(0, Math.max(0, maxChars - 1))}…`;
       break;
     }
