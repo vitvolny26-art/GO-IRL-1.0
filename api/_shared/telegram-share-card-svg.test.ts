@@ -83,12 +83,14 @@ describe("Telegram event share-card image", () => {
     expect(hasEventShareBackground({ ...card, icon: "", activity: "Пользовательское событие", title: "Пользовательское событие" })).toBe(false);
   });
 
-  it("bundles regular and bold Cyrillic fonts for serverless rendering", () => {
+  it("bundles sans-serif and Great Vibes fonts for serverless rendering", () => {
     const fonts = configureTelegramShareCardFonts();
     expect(fonts.regularFont).toMatch(/DejaVuSans\.ttf$/);
     expect(fonts.boldFont).toMatch(/DejaVuSans-Bold\.ttf$/);
+    expect(fonts.greatVibesFont).toMatch(/great-vibes-cyrillic-400-normal\.woff2$/);
     expect(existsSync(fonts.regularFont)).toBe(true);
     expect(existsSync(fonts.boldFont)).toBe(true);
+    expect(existsSync(fonts.greatVibesFont)).toBe(true);
     expect(existsSync(fonts.configFile)).toBe(true);
   });
 
