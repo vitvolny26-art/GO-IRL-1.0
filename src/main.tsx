@@ -21,6 +21,7 @@ import { isProfilePath } from "./profile/profileRoute";
 import { BeautyHomeEntryPortal } from "./beauty/BeautyHomeEntryPortal";
 import { BeautyProfessionalProfilePortal } from "./beauty/BeautyProfessionalProfilePortal";
 import { ServicesBottomNavigationPortal } from "./beauty/ServicesBottomNavigationPortal";
+import { ServicesBookingsPortal } from "./services/ServicesBookingsPortal";
 import { useAppStore } from "./store";
 import { LaunchPage } from "./LaunchPage";
 import { resolveLaunchSurface, type LaunchSurface } from "./launchSurface";
@@ -199,6 +200,7 @@ function MainSurface() {
       <Suspense fallback={<div className="app-shell-loading">GO IRL</div>}><App /></Suspense>
       <BeautyHomeEntryPortal />
       <ServicesBottomNavigationPortal />
+      <ServicesBookingsPortal />
       <BeautyProfessionalProfilePortal />
       <OrganizerProfilePortal />
       <OrganizerEventDetailsPortal />
