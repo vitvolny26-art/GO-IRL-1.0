@@ -53,7 +53,7 @@ const categoryFiles: Readonly<Record<string, string>> = {
   creativity: "36-drawing.webp",
 };
 
-const resolveFile = (file?: string) => file ? `/activity-icons/${file}` : null;
+const resolveFile = (file?: string) => file ? `/activities/icons/${file}` : null;
 
 const cityWalkPattern = /^(?:прогулка|прогулянка|procházka|walk)$/iu;
 
