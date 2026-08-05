@@ -20,6 +20,7 @@ const xml = (value: string) => value
 export function configureTelegramShareCardFonts() {
   const regularFont = require.resolve("dejavu-fonts-ttf/ttf/DejaVuSans.ttf");
   const boldFont = require.resolve("dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf");
+  const greatVibesFont = require.resolve("@fontsource/great-vibes/files/great-vibes-cyrillic-400-normal.woff2");
   const configDirectory = join(tmpdir(), "go-irl-fontconfig");
   const cacheDirectory = join(configDirectory, "cache");
   const configFile = join(configDirectory, "fonts.conf");
@@ -29,15 +30,17 @@ export function configureTelegramShareCardFonts() {
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig>
   <dir>${xml(dirname(regularFont))}</dir>
+  <dir>${xml(dirname(greatVibesFont))}</dir>
   <cachedir>${xml(cacheDirectory)}</cachedir>
   <alias><family>sans-serif</family><prefer><family>DejaVu Sans</family></prefer></alias>
-  <alias><family>Arial</family><prefer><family>DejaVu Sans</family></prefer></alias>
+  <alias><family>Arial</family><prefer><family>DejaVu Sans</family></alias>
+  <alias><family>Great Vibes</family><prefer><family>Great Vibes</family></prefer></alias>
   <alias><family>Segoe UI Emoji</family><prefer><family>DejaVu Sans</family></prefer></alias>
 </fontconfig>`, "utf8");
 
   process.env.FONTCONFIG_PATH = configDirectory;
   process.env.FONTCONFIG_FILE = configFile;
-  return { regularFont, boldFont, configFile };
+  return { regularFont, boldFont, greatVibesFont, configFile };
 }
 
 const loadSharp = () => {
@@ -81,7 +84,7 @@ export const isTrustedOrganizerAvatarUrl = (value: string) => {
   }
 };
 
-const loadOrganizerAvatar = async (value?: string) => {
+const loadOrganizerAvatar = async (value?: string, size = 128, radius = 16) => {
   if (!value || !isTrustedOrganizerAvatarUrl(value)) return null;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4_000);
@@ -93,9 +96,9 @@ const loadOrganizerAvatar = async (value?: string) => {
     const bytes = Buffer.from(await response.arrayBuffer());
     if (bytes.length > 2_000_000) return null;
     const sharp = await loadSharp();
-    const mask = Buffer.from('<svg width="128" height="128"><rect width="128" height="128" rx="16" fill="white"/></svg>');
+    const mask = Buffer.from(`<svg width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${radius}" fill="white"/></svg>`);
     return sharp(bytes)
-      .resize(128, 128, { fit: "cover", position: "attention" })
+      .resize(size, size, { fit: "cover", position: "attention" })
       .composite([{ input: mask, blend: "dest-in" }])
       .png()
       .toBuffer();
@@ -133,15 +136,17 @@ const renderBeautyCardJpeg = async (input: TelegramEventCardInput, telegram = fa
   const backgroundUrl = serviceShareBackgroundUrls.manicure;
   const svg = telegram ? buildTelegramBeautyShareCardSvg(input) : buildBeautyShareCardSvg(input);
   const overlay = { input: Buffer.from(svg), left: 0, top: 0 };
+  const beautyLogo = telegram ? await loadOrganizerAvatar(input.organizerAvatarUrl, 158, 12) : null;
+  const overlays = [overlay, ...(beautyLogo ? [{ input: beautyLogo, left: 841, top: 71 }] : [])];
   if (existsSync(backgroundUrl)) {
     return sharp(readFileSync(backgroundUrl))
       .resize(width, height, { fit: "cover", position: "attention" })
-      .composite([overlay])
+      .composite(overlays)
       .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
       .toBuffer();
   }
   return sharp({ create: { width, height, channels: 3, background: "#160d1d" } })
-    .composite([overlay])
+    .composite(overlays)
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };
