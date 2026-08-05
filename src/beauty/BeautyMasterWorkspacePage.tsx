@@ -10,6 +10,7 @@ import { loadBeautyWorkspace, saveBeautyWorkspace } from "./beautyWorkspaceStora
 import { canShowBeautyWorkspaceEntry } from "./servicesRoleNavigation";
 import "./beauty-setup.css";
 import "./beauty-multilingual-editor.css";
+import "./beauty-master-mobile-nav.css";
 
 const title: Record<Language, string> = {
   ru: "Кабинет мастера",
