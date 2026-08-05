@@ -54,3 +54,14 @@ export const buildBeautyShareCardFingerprint = (
   logoImage: hash(workspace.shareCard.logoImageDataUrl),
   backgroundPositionY: workspace.shareCard.backgroundPositionY,
 }));
+
+export const formatBeautyShareCardPublicLink = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "goirl.app";
+  try {
+    const url = new URL(trimmed, "https://goirl.app");
+    return `${url.hostname}${url.pathname}`.replace(/\/$/, "");
+  } catch {
+    return trimmed.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  }
+};
