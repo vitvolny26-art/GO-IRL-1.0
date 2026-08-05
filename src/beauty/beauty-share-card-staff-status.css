@@ -1,0 +1,8 @@
+.beauty-share-card-staff-status{display:grid;gap:4px;margin:6px 16px 0;padding:12px 14px;border:1px solid rgba(226,189,78,.42);border-radius:16px;background:rgba(35,15,41,.78);color:#f5edf6}
+.beauty-share-card-staff-status small{color:#a995ad;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.beauty-share-card-staff-status strong{font-size:13px;line-height:1.35}
+.beauty-share-card-staff-status.is-ready strong{color:#c9f0b0}
+.beauty-share-card-staff-status.is-updating strong,.beauty-share-card-staff-status.is-loading strong{color:#f0d873}
+.beauty-share-card-staff-status.is-error strong{color:#ffb8b8}
+.beauty-share-card-staff-status.is-deleted strong{color:#b6a8ba}
+@media(max-width:520px){.beauty-share-card-staff-status{margin-right:12px;margin-left:12px}}
