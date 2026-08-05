@@ -16,11 +16,11 @@ const xml = (value: string) => value
 
 const clean = (value: string, max = 140) => value.trim().replace(/\s+/g, " ").slice(0, max);
 
-const wrap = (value: string, maxChars = 46, maxLines = 2) => {
-  const words = clean(value, 180).split(" ").filter(Boolean);
+const wrap = (value: string, maxChars: number, maxLines: number) => {
+  const words = clean(value, maxChars * maxLines * 2).split(" ").filter(Boolean);
   const lines: string[] = [];
   for (const word of words) {
-    const current = lines.length ? lines[lines.length - 1] : "";
+    const current = lines.at(-1) || "";
     const candidate = current ? `${current} ${word}` : word;
     if (candidate.length <= maxChars) {
       if (current) lines[lines.length - 1] = candidate;
@@ -28,7 +28,7 @@ const wrap = (value: string, maxChars = 46, maxLines = 2) => {
     } else if (lines.length < maxLines) {
       lines.push(word.slice(0, maxChars));
     } else {
-      const last = lines.length ? lines[lines.length - 1] : "";
+      const last = lines.at(-1) || "";
       lines[lines.length - 1] = `${last.slice(0, Math.max(0, maxChars - 1))}…`;
       break;
     }
@@ -36,17 +36,12 @@ const wrap = (value: string, maxChars = 46, maxLines = 2) => {
   return lines.slice(0, maxLines);
 };
 
-const descriptionTspans = (
-  value: string,
-  options: { x: number; startY: number; step: number; maxLines: number; maxChars: number },
-) => wrap(value, options.maxChars, options.maxLines).map((line, index) =>
-  `<tspan data-beauty-description-line="${index + 1}" x="${options.x}" y="${options.startY + index * options.step}">${xml(line)}</tspan>`).join("");
+const tspans = (lines: string[], x: number, startY: number, step: number, marker: string) =>
+  lines.map((line, index) => `<tspan data-${marker}-line="${index + 1}" x="${x}" y="${startY + index * step}">${xml(line)}</tspan>`).join("");
 
-const placeholderIcon = `<g data-beauty-photo-placeholder="true">
-  <rect x="74" y="70" width="126" height="126" rx="30" fill="#24182b" fill-opacity=".82" stroke="#e2bd66" stroke-opacity=".8" stroke-width="3"/>
-  <circle cx="166" cy="103" r="11" fill="#e2bd66"/>
-  <path d="M96 164l29-31 22 21 14-15 23 25H96z" fill="none" stroke="#e2bd66" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-</g>`;
+const monogramFor = (value: string) => Array.from(value)
+  .find((character) => /[\p{L}\p{N}]/u.test(character))
+  ?.toUpperCase() || "G";
 
 type BeautyShareCardVariant = "default" | "telegram";
 
@@ -55,68 +50,77 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
   const labels = copy[input.language] || copy.en;
   const name = clean(input.activity || input.organizer || "GO IRL Beauty", 48);
   const description = clean(input.description || input.level || input.title, 180);
-  const nameFontSize = isTelegram
-    ? name.length > 34 ? 44 : name.length > 24 ? 50 : 58
-    : name.length > 34 ? 44 : name.length > 24 ? 50 : 60;
+  const nameFontSize = name.length > 34 ? 58 : name.length > 24 ? 70 : 88;
   const services = (input.beautyServices?.length
     ? input.beautyServices
     : [{ name: input.title, priceCzk: input.price }])
     .filter((service) => clean(service.name))
     .slice(0, 3);
-  const serviceStartY = isTelegram ? 380 : 430;
-  const serviceGap = isTelegram ? 90 : 100;
-  const serviceHeight = isTelegram ? 72 : 78;
   const serviceRows = services.map((service, index) => {
-    const y = serviceStartY + index * serviceGap;
-    const serviceName = clean(service.name, 44);
-    const serviceFontSize = serviceName.length > 34 ? 25 : serviceName.length > 25 ? 28 : 31;
-    return `<g data-beauty-service-row="${index + 1}">
-      <rect x="74" y="${y}" width="932" height="${serviceHeight}" rx="22" fill="#24182b" fill-opacity=".82" stroke="#e2bd66" stroke-opacity=".46" stroke-width="2"/>
-      <text x="104" y="${y + (isTelegram ? 46 : 50)}" fill="#fff7fb" font-size="${serviceFontSize}" font-weight="750">${xml(serviceName)}</text>
-      <text x="976" y="${y + (isTelegram ? 46 : 50)}" text-anchor="end" fill="#f1cb72" font-size="29" font-weight="850">${xml(`${labels.priceFrom} ${Math.round(service.priceCzk)} Kč`)}</text>
+    const y = 330 + index * 115;
+    const serviceName = clean(service.name, 60);
+    const lines = wrap(serviceName, 25, 2);
+    const startY = lines.length > 1 ? y + 36 : y + 54;
+    return `<g data-beauty-service-row="${index + 1}" transform="translate(80 ${y})">
+      <rect width="520" height="90" rx="14" fill="#180b1f" fill-opacity=".92" stroke="url(#goldGrad)" stroke-width="2"/>
+      <rect x="5" y="5" width="510" height="80" rx="10" fill="none" stroke="url(#goldGrad)" stroke-width=".8" stroke-opacity=".4"/>
+      <text fill="#fff" font-family="DejaVu Serif, Georgia, serif" font-size="24" font-weight="500">${tspans(lines, 22, startY - y, 29, "beauty-service-name")}</text>
+      <text x="495" y="55" text-anchor="end" fill="#e8bc59" font-family="DejaVu Serif, Georgia, serif">
+        <tspan font-size="22" font-weight="700">${xml(labels.priceFrom)} </tspan><tspan font-size="30" font-weight="800">${Math.round(service.priceCzk)} Kč</tspan>
+      </text>
     </g>`;
   }).join("");
-  const location = clean(input.address || input.city, 80);
+  const location = clean(input.address || input.city, 48);
   const height = isTelegram ? 900 : 1020;
-  const descriptionOptions = isTelegram
-    ? { x: 232, startY: 188, step: 34, maxLines: 3, maxChars: 44 }
-    : { x: 232, startY: 184, step: 42, maxLines: 2, maxChars: 46 };
-  const locationY = isTelegram ? 730 : 782;
-  const frame = isTelegram
-    ? `<g data-beauty-telegram-frame="true" fill="none" stroke="url(#beautyGold)" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="24" y="24" width="1032" height="852" rx="16" stroke-width="3"/>
-      <rect x="40" y="40" width="1000" height="820" rx="10" stroke-width="1.4" stroke-opacity=".7"/>
-      <path d="M24 102h18V68c0-15 11-26 26-26h34V24M978 24v18h34c15 0 26 11 26 26v34h18M24 798h18v34c0 15 11 26 26 26h34v18M978 876v-18h34c15 0 26-11 26-26v-34h18" stroke-width="3"/>
-    </g>`
-    : `<rect x="28" y="28" width="1024" height="${height - 56}" rx="44" fill="none" stroke="#e0bc65" stroke-opacity=".92" stroke-width="3"/>`;
-  const title = isTelegram
-    ? `<text data-beauty-telegram-title="true" x="232" y="122" fill="url(#beautyGold)" font-family="DejaVu Serif, Georgia, serif" font-size="${nameFontSize}" font-style="italic" font-weight="650" letter-spacing=".6">${xml(name)}</text>
-    <g data-beauty-title-flourish="true" fill="none" stroke="url(#beautyGold)" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M232 148h122c28 0 32-18 52-18 18 0 24 18 50 18h120" stroke-width="2.6"/>
-      <path d="M576 148h92c22 0 28-13 44-13 15 0 22 13 43 13h87" stroke-width="1.8" stroke-opacity=".78"/>
-      <path d="M445 148l11-8 11 8-11 8z" fill="url(#beautyGold)" stroke="none"/>
-    </g>`
-    : `<text x="232" y="124" fill="#fff9fb" font-size="${nameFontSize}" font-weight="900">${xml(name)}</text>`;
+  const descriptionLines = wrap(description, 48, 2);
+  const monogram = monogramFor(name);
+  const footer = isTelegram ? "" : `<g data-beauty-default-cta="true">
+    <rect y="900" width="1080" height="120" fill="#0a030d"/>
+    <rect x="80" y="924" width="920" height="72" rx="36" fill="url(#goldGrad)"/>
+    <text x="120" y="970" fill="#180b1f" font-family="DejaVu Sans, Arial, sans-serif" font-size="31" font-weight="900">${xml(labels.cta)}</text>
+    <text x="960" y="971" text-anchor="end" fill="#180b1f" font-family="DejaVu Sans, Arial, sans-serif" font-size="38" font-weight="900">→</text>
+  </g>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}" data-beauty-template="premium-v2">
   <defs>
-    <linearGradient id="beautyTop" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#0d0812" stop-opacity=".86"/><stop offset="1" stop-color="#0d0812" stop-opacity=".12"/></linearGradient>
-    <linearGradient id="beautyShade" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#120a18" stop-opacity=".08"/><stop offset=".42" stop-color="#120a18" stop-opacity=".68"/><stop offset="1" stop-color="#0a060e" stop-opacity=".96"/></linearGradient>
-    <linearGradient id="beautyGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0b5"/><stop offset=".34" stop-color="#d6a94d"/><stop offset=".68" stop-color="#f7d884"/><stop offset="1" stop-color="#b77925"/></linearGradient>
+    <linearGradient id="leftShade" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a030d" stop-opacity=".98"/>
+      <stop offset="55%" stop-color="#0a030d" stop-opacity=".88"/>
+      <stop offset="80%" stop-color="#0a030d" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#0a030d" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8d6"/>
+      <stop offset="25%" stop-color="#e2b453"/>
+      <stop offset="50%" stop-color="#ffea9f"/>
+      <stop offset="75%" stop-color="#a87122"/>
+      <stop offset="100%" stop-color="#f5d685"/>
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#c48528" flood-opacity=".6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <rect width="1080" height="${isTelegram ? 330 : 360}" fill="url(#beautyTop)"/>
-  <rect y="${isTelegram ? 220 : 250}" width="1080" height="${height - (isTelegram ? 220 : 250)}" fill="url(#beautyShade)"/>
-  ${frame}
-  <g font-family="DejaVu Sans, Arial, sans-serif">
-    ${placeholderIcon}
-    ${title}
-    <text fill="#e7dce9" font-size="${isTelegram ? 27 : 30}" font-weight="600">${descriptionTspans(description, descriptionOptions)}</text>
-    ${serviceRows}
-    <text x="76" y="${locationY}" fill="#d9cddd" font-size="30" font-weight="650">⌖ ${xml(location)}</text>
-    ${isTelegram ? "" : `<rect x="74" y="826" width="932" height="92" rx="25" fill="#e2bd66"/>
-    <text x="112" y="884" fill="#1b111f" font-size="33" font-weight="900">${xml(labels.cta)}</text>
-    <text x="966" y="884" text-anchor="end" fill="#1b111f" font-size="40" font-weight="900">→</text>`}
+  <rect width="1080" height="900" fill="url(#leftShade)"/>
+  <g data-beauty-double-frame="true" stroke="url(#goldGrad)" fill="none">
+    <path d="M32 60A28 28 0 0 0 60 32H1020A28 28 0 0 0 1048 60V840A28 28 0 0 0 1020 868H60A28 28 0 0 0 32 840Z" stroke-width="2.5" stroke-opacity=".9"/>
+    <path d="M42 64A22 22 0 0 0 64 42H1016A22 22 0 0 0 1038 64V836A22 22 0 0 0 1016 858H64A22 22 0 0 0 42 836Z" stroke-width="1" stroke-opacity=".45"/>
   </g>
+  <g data-beauty-logo-slot="true" transform="translate(835 65)">
+    <rect width="170" height="170" rx="18" fill="#180b1f" fill-opacity=".92" stroke="url(#goldGrad)" stroke-width="2.5"/>
+    <rect x="6" y="6" width="158" height="158" rx="12" fill="none" stroke="url(#goldGrad)" stroke-width="1" stroke-opacity=".5"/>
+    <text data-beauty-monogram="true" x="85" y="114" text-anchor="middle" fill="url(#goldGrad)" filter="url(#goldGlow)" font-family="DejaVu Serif, Georgia, serif" font-size="96" font-style="italic" font-weight="600">${xml(monogram)}</text>
+  </g>
+  <text data-beauty-premium-title="true" x="80" y="140" fill="url(#goldGrad)" filter="url(#goldGlow)" font-family="DejaVu Serif, Georgia, serif" font-size="${nameFontSize}" font-style="italic" font-weight="600">${xml(name)}</text>
+  <text fill="#ebdbe8" font-size="26" font-family="DejaVu Serif, Georgia, serif">${tspans(descriptionLines, 80, 215, 37, "beauty-description")}</text>
+  ${serviceRows}
+  <g data-beauty-location="true">
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" fill="url(#goldGrad)" transform="translate(620 807) scale(1.15)"/>
+    <text x="1006" y="835" text-anchor="end" fill="#e6d8eb" font-size="28" font-family="DejaVu Serif, Georgia, serif">${xml(location)}</text>
+  </g>
+  ${footer}
 </svg>`;
 };
 
