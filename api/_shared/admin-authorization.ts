@@ -189,7 +189,12 @@ export const productionAdminAuthorizationDependencies = (): AdminAuthorizationDe
   jwtSecret: requireEnv("GO_IRL_JWT_SECRET"),
   loadRole: productionRoleLoader,
   logger: (event, details) => {
-    if (event === "admin_login_allowed") console.info(event, details);
-    else console.warn(event, details);
+    if (event === "admin_login_allowed") {
+      // Successful admin authorization is an intentional audit event, not a warning.
+      // eslint-disable-next-line no-console
+      console.info(event, details);
+    } else {
+      console.warn(event, details);
+    }
   },
 });
