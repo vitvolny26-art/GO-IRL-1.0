@@ -10,6 +10,7 @@ import {
   buildBeautyShareCardFingerprint,
   resolveBeautyShareCardServices,
 } from "./beautyShareCardModel";
+import { buildBeautyShareCardPreviewSvg } from "./beautyShareCardPreview";
 import "./beauty-share-card-editor.css";
 
 const defaultBackground = "/services/share-6x5/s-01-manicure.webp";
@@ -23,7 +24,7 @@ const localeByLanguage: Record<Language, string> = {
 const copy = {
   ru: {
     title: "Визитка для шаринга",
-    hint: "Предпросмотр JPEG для Telegram и WhatsApp. Данные берутся из профиля и прайса.",
+    hint: "Предпросмотр Telegram-визитки. Данные берутся из профиля и прайса.",
     background: "Фон визитки",
     logo: "Логотип или аватар",
     uploadBackground: "Загрузить фон",
@@ -41,15 +42,13 @@ const copy = {
     create: "Создать визитку",
     remove: "Удалить визитку",
     download: "Скачать JPEG",
-    profile: "Услуги и запись",
-    priceFrom: "от",
     imageError: "Не удалось обработать изображение. Используйте JPG, PNG или WebP до 6 МБ.",
     maxServices: "Можно выбрать не более трёх услуг.",
     emptyServices: "Сначала добавьте активную услугу в прайс.",
   },
   uk: {
     title: "Візитка для поширення",
-    hint: "Попередній перегляд JPEG для Telegram і WhatsApp. Дані беруться з профілю та прайса.",
+    hint: "Попередній перегляд Telegram-візитки. Дані беруться з профілю та прайса.",
     background: "Фон візитки",
     logo: "Логотип або аватар",
     uploadBackground: "Завантажити фон",
@@ -67,15 +66,13 @@ const copy = {
     create: "Створити візитку",
     remove: "Видалити візитку",
     download: "Завантажити JPEG",
-    profile: "Послуги та запис",
-    priceFrom: "від",
     imageError: "Не вдалося обробити зображення. Використовуйте JPG, PNG або WebP до 6 МБ.",
     maxServices: "Можна обрати не більше трьох послуг.",
     emptyServices: "Спочатку додайте активну послугу до прайса.",
   },
   cs: {
     title: "Vizitka pro sdílení",
-    hint: "Náhled JPEG pro Telegram a WhatsApp. Údaje se přebírají z profilu a ceníku.",
+    hint: "Náhled Telegram vizitky. Údaje se přebírají z profilu a ceníku.",
     background: "Pozadí vizitky",
     logo: "Logo nebo avatar",
     uploadBackground: "Nahrát pozadí",
@@ -93,15 +90,13 @@ const copy = {
     create: "Vytvořit vizitku",
     remove: "Odstranit vizitku",
     download: "Stáhnout JPEG",
-    profile: "Služby a rezervace",
-    priceFrom: "od",
     imageError: "Obrázek se nepodařilo zpracovat. Použijte JPG, PNG nebo WebP do 6 MB.",
     maxServices: "Lze vybrat nejvýše tři služby.",
     emptyServices: "Nejprve přidejte aktivní službu do ceníku.",
   },
   en: {
     title: "Sharing business card",
-    hint: "JPEG preview for Telegram and WhatsApp. Content comes from the profile and price list.",
+    hint: "Telegram business-card preview. Content comes from the profile and price list.",
     background: "Card background",
     logo: "Logo or avatar",
     uploadBackground: "Upload background",
@@ -119,8 +114,6 @@ const copy = {
     create: "Create business card",
     remove: "Delete business card",
     download: "Download JPEG",
-    profile: "Services and booking",
-    priceFrom: "from",
     imageError: "The image could not be processed. Use JPG, PNG or WebP up to 6 MB.",
     maxServices: "You can select up to three services.",
     emptyServices: "Add an active service to the price list first.",
@@ -163,165 +156,33 @@ const roundedRect = (
   context.roundRect(x, y, width, height, radius);
 };
 
-const fitText = (
-  context: CanvasRenderingContext2D,
-  value: string,
-  maxWidth: number,
-  startSize: number,
-  minSize: number,
-  weight = 800,
-) => {
-  let size = startSize;
-  context.font = `${weight} ${size}px Inter, Arial, sans-serif`;
-  while (size > minSize && context.measureText(value).width > maxWidth) {
-    size -= 2;
-    context.font = `${weight} ${size}px Inter, Arial, sans-serif`;
-  }
-  return size;
-};
-
-const wrapText = (
-  context: CanvasRenderingContext2D,
-  value: string,
-  maxWidth: number,
-  maxLines: number,
-) => {
-  const words = value.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
-  const lines: string[] = [];
-  for (const word of words) {
-    const current = lines.at(-1) || "";
-    const candidate = current ? `${current} ${word}` : word;
-    if (context.measureText(candidate).width <= maxWidth) {
-      if (current) lines[lines.length - 1] = candidate;
-      else lines.push(candidate);
-    } else if (lines.length < maxLines) {
-      lines.push(word);
-    } else {
-      let last = lines.at(-1) || "";
-      while (last.length && context.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
-      lines[lines.length - 1] = `${last}…`;
-      break;
-    }
-  }
-  return lines.slice(0, maxLines);
-};
-
-const drawPhotoPlaceholder = (context: CanvasRenderingContext2D) => {
-  context.fillStyle = "rgba(36,24,43,.82)";
-  roundedRect(context, 74, 70, 126, 126, 30);
-  context.fill();
-  context.strokeStyle = "rgba(226,189,102,.8)";
-  context.lineWidth = 3;
-  context.stroke();
-  context.fillStyle = "#e2bd66";
-  context.beginPath();
-  context.arc(166, 103, 11, 0, Math.PI * 2);
-  context.fill();
-  context.strokeStyle = "#e2bd66";
-  context.lineWidth = 8;
-  context.lineCap = "round";
-  context.lineJoin = "round";
-  context.beginPath();
-  context.moveTo(96, 164);
-  context.lineTo(125, 133);
-  context.lineTo(147, 154);
-  context.lineTo(161, 139);
-  context.lineTo(184, 164);
-  context.stroke();
-};
-
 export const renderBeautyShareCard = async (workspace: BeautyWorkspace, language: Language) => {
-  const text = copy[language];
   const canvas = document.createElement("canvas");
   canvas.width = 1080;
-  canvas.height = 1020;
+  canvas.height = 900;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("beauty_share_canvas_unavailable");
 
   const background = await loadImage(workspace.shareCard.backgroundImageDataUrl || defaultBackground);
   drawCoverAt(context, background, 0, 0, canvas.width, canvas.height, workspace.shareCard.backgroundPositionY);
 
-  const topShade = context.createLinearGradient(0, 0, 0, 360);
-  topShade.addColorStop(0, "rgba(13,8,18,.86)");
-  topShade.addColorStop(1, "rgba(13,8,18,.12)");
-  context.fillStyle = topShade;
-  context.fillRect(0, 0, canvas.width, 360);
-  const shade = context.createLinearGradient(0, 250, 0, canvas.height);
-  shade.addColorStop(0, "rgba(18,10,24,.08)");
-  shade.addColorStop(.42, "rgba(18,10,24,.68)");
-  shade.addColorStop(1, "rgba(10,6,14,.96)");
-  context.fillStyle = shade;
-  context.fillRect(0, 250, canvas.width, canvas.height - 250);
-
-  context.strokeStyle = "rgba(224,188,101,.92)";
-  context.lineWidth = 3;
-  roundedRect(context, 28, 28, 1024, 964, 44);
-  context.stroke();
-
-  if (workspace.shareCard.logoImageDataUrl) {
-    roundedRect(context, 74, 70, 126, 126, 30);
-    context.save();
-    context.clip();
-    const logo = await loadImage(workspace.shareCard.logoImageDataUrl);
-    drawCoverAt(context, logo, 74, 70, 126, 126, 50);
-    context.restore();
-    context.strokeStyle = "rgba(226,189,102,.8)";
-    context.lineWidth = 3;
-    roundedRect(context, 74, 70, 126, 126, 30);
-    context.stroke();
-  } else {
-    drawPhotoPlaceholder(context);
+  const svg = buildBeautyShareCardPreviewSvg(workspace, language);
+  const svgUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+  try {
+    const overlay = await loadImage(svgUrl);
+    context.drawImage(overlay, 0, 0, canvas.width, canvas.height);
+  } finally {
+    URL.revokeObjectURL(svgUrl);
   }
 
-  const name = workspace.profile.displayName.trim() || "GO IRL Beauty";
-  context.fillStyle = "#fff9fb";
-  fitText(context, name, 770, 60, 42, 900);
-  context.fillText(name, 232, 124);
-
-  const description = resolveBeautyLocalizedText(
-    workspace.profile.specializationByLanguage,
-    language,
-    resolveBeautyLocalizedText(workspace.profile.descriptionByLanguage, language, workspace.profile.description),
-  ).trim();
-  context.fillStyle = "#e7dce9";
-  context.font = "600 30px Inter, Arial, sans-serif";
-  wrapText(context, description, 770, 2).forEach((line, index) => {
-    context.fillText(line, 232, 184 + index * 42);
-  });
-
-  const services = resolveBeautyShareCardServices(workspace, language);
-  services.forEach((service, index) => {
-    const y = 430 + index * 100;
-    context.fillStyle = "rgba(36,24,43,.82)";
-    roundedRect(context, 74, y, 932, 78, 22);
-    context.fill();
-    context.strokeStyle = "rgba(226,189,102,.46)";
-    context.lineWidth = 2;
-    context.stroke();
-    context.fillStyle = "#fff7fb";
-    fitText(context, service.name, 650, 31, 24, 750);
-    context.fillText(service.name.slice(0, 70), 104, y + 50);
-    context.fillStyle = "#f1cb72";
-    context.font = "850 29px Inter, Arial, sans-serif";
-    context.textAlign = "right";
-    context.fillText(`${text.priceFrom} ${Math.round(service.priceCzk)} Kč`, 976, y + 50);
-    context.textAlign = "start";
-  });
-
-  context.fillStyle = "#d9cddd";
-  context.font = "650 30px Inter, Arial, sans-serif";
-  context.fillText(`⌖ ${workspace.profile.publicLocation || workspace.profile.city}`, 76, 782);
-
-  context.fillStyle = "#e2bd66";
-  roundedRect(context, 74, 826, 932, 92, 25);
-  context.fill();
-  context.fillStyle = "#1b111f";
-  context.font = "900 33px Inter, Arial, sans-serif";
-  context.fillText(text.profile, 112, 884);
-  context.textAlign = "right";
-  context.font = "900 40px Inter, Arial, sans-serif";
-  context.fillText("→", 966, 884);
-  context.textAlign = "start";
+  if (workspace.shareCard.logoImageDataUrl) {
+    const logo = await loadImage(workspace.shareCard.logoImageDataUrl);
+    context.save();
+    roundedRect(context, 841, 71, 158, 158, 12);
+    context.clip();
+    drawCoverAt(context, logo, 841, 71, 158, 158, 50);
+    context.restore();
+  }
 
   return canvas.toDataURL("image/jpeg", 0.9);
 };
