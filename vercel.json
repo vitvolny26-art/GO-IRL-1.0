@@ -9,7 +9,7 @@
   "framework": "vite",
   "functions": {
     "api/**/*.ts": {
-      "includeFiles": "images/events/share-6x5/**"
+      "includeFiles": "images/activities/share-6x5/**"
     }
   },
   "rewrites": [
