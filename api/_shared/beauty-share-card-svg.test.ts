@@ -32,33 +32,35 @@ const card: TelegramEventCardInput = {
 };
 
 describe("Beauty share card SVG", () => {
-  it("renders the clean horizontal 1080x1020 card with two-line description support", () => {
+  it("renders the premium v2 1080x1020 card with dynamic content", () => {
     const svg = buildBeautyShareCardSvg(card);
     expect(svg).toContain('width="1080" height="1020"');
     expect(svg.match(/data-beauty-service-row=/g)).toHaveLength(3);
-    expect(svg).toContain('data-beauty-photo-placeholder="true"');
+    expect(svg).toContain('data-beauty-template="premium-v2"');
+    expect(svg).toContain('data-beauty-double-frame="true"');
+    expect(svg).toContain('data-beauty-logo-slot="true"');
     expect(svg).toContain("Studio Vita");
     expect(svg).toContain("Комбинированный маникюр");
     expect(svg).toContain("Услуги и запись");
     expect(svg).not.toContain("GO IRL BEAUTY");
     expect(svg).not.toContain("LESS SCROLLING. MORE LIFE.");
     expect(svg).not.toContain("go-irl-1-0.vercel.app/beauty/beauty-test");
-    expect(svg).not.toContain('data-beauty-telegram-frame="true"');
+    expect(svg).toContain('data-beauty-default-cta="true"');
   });
 
-  it("renders a wider Telegram-only 1080x900 card with three description lines and no fake CTA", () => {
+  it("renders a Telegram-only 1080x900 premium card with two description lines and no fake CTA", () => {
     const svg = buildTelegramBeautyShareCardSvg({
       ...card,
       description: "Комбинированный маникюр, выравнивание и укрепление натуральных ногтей, однотонные покрытия и минималистичный дизайн",
     });
     expect(svg).toContain('width="1080" height="900"');
-    expect(svg.match(/data-beauty-description-line=/g)).toHaveLength(3);
+    expect(svg.match(/data-beauty-description-line=/g)).toHaveLength(2);
     expect(svg.match(/data-beauty-service-row=/g)).toHaveLength(3);
     expect(svg).toContain("Центр, Оломоуц");
-    expect(svg).toContain('data-beauty-telegram-frame="true"');
-    expect(svg).toContain('data-beauty-telegram-title="true"');
-    expect(svg).toContain('data-beauty-title-flourish="true"');
-    expect(svg).toContain('fill="url(#beautyGold)"');
+    expect(svg).toContain('data-beauty-template="premium-v2"');
+    expect(svg).toContain('data-beauty-premium-title="true"');
+    expect(svg).not.toContain('data-beauty-default-cta="true"');
+    expect(svg).toContain('fill="url(#goldGrad)"');
     expect(svg).not.toContain("Услуги и запись");
   });
 
