@@ -4,7 +4,7 @@ import type { BeautyShareCard, BeautyWorkspace } from "./beautySetupModel";
 
 const assetBucket = "beauty-share-assets";
 const generatedBucket = "beauty-share-cards";
-const templateVersion = 1;
+const templateVersion = 2;
 let expectedCardUpdatedAt: string | null = null;
 let currentBackgroundObjectPath: string | null = null;
 let currentLogoObjectPath: string | null = null;
