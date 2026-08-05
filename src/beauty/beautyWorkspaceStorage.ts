@@ -9,6 +9,7 @@ import {
   resetRemoteBeautyShareCardState,
   saveRemoteBeautyShareCard,
 } from "./beautyShareCardRepository";
+import { createBeautyWorkspaceSaveQueue } from "./beautyWorkspaceSaveQueue";
 import type { Language } from "../types";
 import type { BeautyWorkspace } from "./beautySetupModel";
 
@@ -18,10 +19,15 @@ export const loadBeautyWorkspace = async (language: Language = "en") => {
   return withShareCard;
 };
 
-export const saveBeautyWorkspace = async (workspace: BeautyWorkspace) => {
+const saveBeautyWorkspaceNow = async (workspace: BeautyWorkspace) => {
   await saveBeautyWorkspaceBase(workspace);
   await saveRemoteBeautyShareCard(workspace);
 };
+
+const enqueueBeautyWorkspaceSave = createBeautyWorkspaceSaveQueue(saveBeautyWorkspaceNow);
+
+export const saveBeautyWorkspace = (workspace: BeautyWorkspace) =>
+  enqueueBeautyWorkspaceSave(workspace);
 
 export const resetBeautyWorkspace = async () => {
   resetRemoteBeautyShareCardState();
