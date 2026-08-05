@@ -1,0 +1,76 @@
+import { ArrowLeft, Settings2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useAppStore } from "../store";
+import type { Language } from "../types";
+import { BeautyPilotWorkspace } from "./BeautyPilotWorkspace";
+import { BeautyShareCardEditor } from "./BeautyShareCardEditor";
+import { BeautyWorkspaceContentEditor } from "./BeautyWorkspaceContentEditor";
+import { createDefaultBeautyWorkspace, type BeautyWorkspace } from "./beautySetupModel";
+import { loadBeautyWorkspace, saveBeautyWorkspace } from "./beautyWorkspaceStorage";
+import { canShowBeautyWorkspaceEntry } from "./servicesRoleNavigation";
+import "./beauty-setup.css";
+import "./beauty-multilingual-editor.css";
+
+const title: Record<Language, string> = {
+  ru: "Кабинет мастера",
+  uk: "Кабінет майстра",
+  cs: "Kabinet profesionála",
+  en: "Professional workspace",
+};
+
+const loadingCopy: Record<Language, string> = {
+  ru: "Загружаем кабинет…",
+  uk: "Завантажуємо кабінет…",
+  cs: "Načítáme kabinet…",
+  en: "Loading workspace…",
+};
+
+export function BeautyMasterWorkspacePage() {
+  const language = useAppStore((state) => state.language);
+  const userRole = useAppStore((state) => state.userRole);
+  const [workspace, setWorkspace] = useState<BeautyWorkspace>(() => createDefaultBeautyWorkspace(language));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    void loadBeautyWorkspace(language)
+      .then((loaded) => { if (active) setWorkspace(loaded); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [language]);
+
+  useEffect(() => {
+    if (loading) return;
+    void saveBeautyWorkspace(workspace);
+  }, [loading, workspace]);
+
+  useEffect(() => {
+    const app = document.querySelector<HTMLElement>("#root > .app, #root .app");
+    if (!app) return undefined;
+    const previous = app.style.display;
+    app.style.display = "none";
+    return () => { app.style.display = previous; };
+  }, []);
+
+  if (!canShowBeautyWorkspaceEntry(userRole)) return null;
+  if (loading) return <main className="beauty-shell beauty-workspace-shell"><div className="beauty-loading">{loadingCopy[language]}</div></main>;
+
+  const changeWorkspace = (next: BeautyWorkspace) => setWorkspace(next);
+  const openSetup = () => window.location.assign("/beauty");
+
+  return <main className="beauty-shell beauty-workspace-shell" data-beauty-master-route="/services/beauty/master">
+    <header className="beauty-topbar">
+      <button className="beauty-icon-button" type="button" onClick={() => window.location.assign("/services")} aria-label="Назад"><ArrowLeft /></button>
+      <div><span>GO IRL · Services / Beauty / Master</span><h1>{title[language]}</h1></div>
+      <button className="beauty-icon-button" type="button" onClick={openSetup} aria-label="Основные настройки"><Settings2 /></button>
+    </header>
+    <section className="beauty-workspace-page">
+      <BeautyPilotWorkspace
+        setup={workspace}
+        onEdit={openSetup}
+        pageEditor={<BeautyWorkspaceContentEditor workspace={workspace} language={language} onChange={changeWorkspace} />}
+        businessCardEditor={<BeautyShareCardEditor workspace={workspace} language={language} onChange={changeWorkspace} />}
+      />
+    </section>
+  </main>;
+}
