@@ -47,12 +47,23 @@ Adjust the Beauty sharing card from the rejected vertical design to the previous
 
 ## Checks
 
-Pending exact-head GitHub Actions.
+- PR: `#660`
+- code head before this report-only update: `e8330d3177addb48c40235e752518057235f12aa`
+- GitHub Actions CI `#1716`: PASS
+- Repository check: PASS
+- Diff check: PASS
+- Tests: PASS
+- Typecheck: PASS
+- Lint: PASS
+- Build: PASS
+- Bundle budget: PASS
+- Real server JPEG regression: PASS — opaque JPEG, `1080×1020`, below 5 MB
 
 ## Not touched
 
 - auth, roles, RLS, SQL, migrations, secrets, `.env`, production data, DNS, domains, merge, or deployment
+- separate Telegram/WhatsApp provider-sharing failure
 
 ## Next step
 
-Open a Draft PR, run exact-head CI, then obtain visual approval before merge or production deployment.
+Obtain visual approval for Draft PR #660 before merge or production deployment. Test the provider-sharing failure as a separate bounded task.
