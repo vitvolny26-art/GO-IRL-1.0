@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 import source from "./CardShareAction.tsx?raw";
 
 describe("WhatsApp prepared share UX", () => {
-  it("prepares the JPEG before a second user-triggered native share", () => {
-    expect(source).toContain("const prepareWhatsAppCard = async () =>");
-    expect(source).toContain("setPreparedWhatsApp({");
-    expect(source).toContain("const sendPreparedWhatsApp = () =>");
-    expect(source).toContain("onClick={sendPreparedWhatsApp}");
-    expect(source).toContain("files: [preparedWhatsApp.file]");
+  it("prepares separate preview and download URLs before showing the modal", () => {
+    const handler = source.slice(
+      source.indexOf("const prepareWhatsAppCard = async () =>"),
+      source.indexOf("const share = async"),
+    );
+    expect(handler).toContain("buildCardShareImageUrl(content)");
+    expect(handler).toContain("buildCardShareDownloadUrl(content)");
+    expect(handler).toContain("downloadAccepted: false");
+    expect(handler).not.toContain("openExternalShareTarget");
   });
 
   it("binds card preparation directly to the WhatsApp channel button", () => {
@@ -19,26 +22,43 @@ describe("WhatsApp prepared share UX", () => {
     expect(channelClick).not.toContain("navigator.share(");
   });
 
-  it("never falls back to the text-only WhatsApp target", () => {
+  it("uses Telegram downloadFile without requiring an in-memory File", () => {
     const handler = source.slice(
-      source.indexOf("const prepareWhatsAppCard = async () =>"),
-      source.indexOf("const share = async"),
+      source.indexOf("const downloadPreparedWhatsApp = () =>"),
+      source.indexOf("const openPreparedWhatsApp = () =>"),
     );
-    expect(handler).not.toContain("openExternalShareTarget");
-    expect(handler).not.toContain('buildCardShareTarget("whatsapp"');
-    expect(handler).not.toContain("navigator.canShare");
-    expect(handler).toContain("file,");
-    expect(handler).toContain("error: null");
+    expect(handler).toContain("if (!prepared?.downloadUrl) return");
+    expect(handler).toContain('webApp.isVersionAtLeast("8.0")');
+    expect(handler).toContain("webApp.downloadFile(");
+    expect(handler).toContain('file_name: "go-irl-card.jpg"');
+    expect(handler.indexOf("webApp.downloadFile(")).toBeLessThan(handler.indexOf("if (!prepared.file)"));
   });
 
-  it("does not await network work inside the final share click", () => {
+  it("keeps an object URL download only as the browser fallback", () => {
     const handler = source.slice(
-      source.indexOf("const sendPreparedWhatsApp = () =>"),
+      source.indexOf("const downloadPreparedWhatsApp = () =>"),
+      source.indexOf("const openPreparedWhatsApp = () =>"),
+    );
+    expect(handler).toContain("URL.createObjectURL(prepared.file)");
+    expect(handler).toContain('anchor.download = "go-irl-card.jpg"');
+    expect(handler).toContain("URL.revokeObjectURL(objectUrl)");
+  });
+
+  it("opens wa.me only after a separate accepted download and never shares files", () => {
+    const handler = source.slice(
+      source.indexOf("const openPreparedWhatsApp = () =>"),
       source.indexOf("const activate = () =>"),
     );
-    expect(handler).not.toContain("fetch(");
-    expect(handler).not.toContain("await ");
-    expect(handler).toContain("navigator.share({");
-    expect(handler).toContain("error: whatsappCopy.unsupported");
+    expect(handler).toContain("if (!preparedWhatsApp?.downloadAccepted) return");
+    expect(handler).toContain("https://wa.me/?text=");
+    expect(handler).toContain("openExternalShareTarget(whatsappUrl)");
+    expect(source).not.toContain("files: [preparedWhatsApp.file]");
+    expect(source).not.toContain("sendPreparedWhatsApp");
+  });
+
+  it("labels the second action honestly as opening WhatsApp", () => {
+    expect(source).toContain('open: "Открыть WhatsApp"');
+    expect(source).toContain('download: "Скачать JPEG"');
+    expect(source).toContain("disabled={!preparedWhatsApp.downloadAccepted}");
   });
 });

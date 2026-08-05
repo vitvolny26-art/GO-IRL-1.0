@@ -1,0 +1,133 @@
+.beauty-share-card-editor {
+  display: grid;
+  gap: 20px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(216, 177, 90, 0.34);
+}
+
+.beauty-share-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.beauty-share-card-heading > div:first-child > span {
+  color: var(--beauty-gold);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.beauty-share-card-heading h2 { margin: 5px 0 7px; font-size: 28px; }
+.beauty-share-card-heading p,
+.beauty-share-card-controls section > p { margin: 0; color: var(--beauty-muted); line-height: 1.45; }
+
+.beauty-share-card-status {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 9px 12px;
+  border: 1px solid var(--beauty-line);
+  border-radius: 999px;
+  background: rgba(15, 10, 20, .7);
+  font-size: 12px;
+}
+
+.beauty-share-card-status.is-ready { border-color: rgba(126, 226, 193, .42); color: #aef1da; }
+.beauty-share-card-status.is-updating { border-color: rgba(241, 203, 114, .45); color: #f1d897; }
+.beauty-share-card-status.is-error { border-color: rgba(255, 143, 159, .48); color: #ffb4c0; }
+.beauty-share-card-status.is-deleted { color: var(--beauty-muted); }
+.beauty-share-card-status button { border: 0; background: transparent; color: inherit; font: inherit; font-weight: 850; text-decoration: underline; cursor: pointer; }
+
+.beauty-share-card-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 340px) 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.beauty-share-card-preview {
+  position: sticky;
+  top: 14px;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid rgba(226, 189, 102, .65);
+  border-radius: 22px;
+  background: #130d18;
+  box-shadow: 0 22px 48px rgba(3, 2, 6, .36);
+}
+
+.beauty-share-card-preview > img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.beauty-share-card-empty { height: 100%; display: grid; place-items: center; align-content: center; gap: 12px; color: var(--beauty-muted); text-align: center; }
+.beauty-share-card-empty svg { width: 42px; height: 42px; color: var(--beauty-gold); }
+.beauty-share-card-updating { position: absolute; inset: auto 12px 12px; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 9px; border: 1px solid rgba(241, 203, 114, .4); border-radius: 12px; background: rgba(14, 9, 18, .84); color: #f1d897; font-size: 12px; font-weight: 800; backdrop-filter: blur(10px); }
+.beauty-share-card-updating svg { width: 16px; animation: beauty-share-card-spin 1s linear infinite; }
+
+@keyframes beauty-share-card-spin { to { transform: rotate(360deg); } }
+
+.beauty-share-card-controls { display: grid; gap: 14px; }
+.beauty-share-card-controls > section { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--beauty-line); border-radius: 16px; background: rgba(41, 29, 54, .64); }
+.beauty-share-card-controls h3 { margin: 0; font-size: 16px; }
+
+.beauty-share-card-upload-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.beauty-share-card-upload-row label,
+.beauty-share-card-upload-row button,
+.beauty-share-card-actions a,
+.beauty-share-card-delete {
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid rgba(216, 177, 90, .36);
+  border-radius: 11px;
+  background: rgba(216, 177, 90, .08);
+  color: #f2dea9;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.beauty-share-card-upload-row svg,
+.beauty-share-card-actions svg { width: 17px; height: 17px; }
+.beauty-share-card-upload-row input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.beauty-share-card-range { display: grid; gap: 6px; color: var(--beauty-muted); font-size: 12px; }
+.beauty-share-card-range input { width: 100%; accent-color: var(--beauty-gold); }
+
+.beauty-share-card-services { display: grid; gap: 7px; }
+.beauty-share-card-services > div { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 9px 10px; border: 1px solid var(--beauty-line); border-radius: 12px; background: rgba(16, 11, 22, .6); }
+.beauty-share-card-services > div.is-selected { border-color: rgba(216, 177, 90, .58); }
+.beauty-share-card-services label { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; min-width: 0; cursor: pointer; }
+.beauty-share-card-services label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.beauty-share-card-services label b { color: var(--beauty-gold); font-size: 12px; }
+.beauty-share-card-services input { accent-color: var(--beauty-gold); }
+.beauty-share-card-services > div > div { display: flex; gap: 4px; }
+.beauty-share-card-services button { width: 32px; height: 32px; padding: 0; border: 1px solid var(--beauty-line); border-radius: 9px; background: var(--beauty-surface-2); color: var(--beauty-text); cursor: pointer; }
+.beauty-share-card-services button:disabled { opacity: .35; cursor: default; }
+.beauty-share-card-services svg { width: 15px; }
+
+.beauty-share-card-warning { margin: 0; padding: 10px 12px; border: 1px solid rgba(255, 143, 159, .38); border-radius: 12px; background: rgba(255, 143, 159, .09); color: #ffc0ca; font-size: 13px; }
+.beauty-share-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.beauty-share-card-actions .beauty-primary { min-height: 46px; }
+.beauty-share-card-delete { grid-column: 1 / -1; border-color: rgba(255, 143, 159, .32); background: rgba(255, 143, 159, .08); color: #ffb4c0; }
+
+@media (max-width: 720px) {
+  .beauty-share-card-heading { display: grid; }
+  .beauty-share-card-status { justify-self: start; }
+  .beauty-share-card-layout { grid-template-columns: 1fr; }
+  .beauty-share-card-preview { position: relative; top: auto; width: min(100%, 390px); margin: 0 auto; }
+}
+
+@media (max-width: 480px) {
+  .beauty-share-card-actions { grid-template-columns: 1fr; }
+  .beauty-share-card-delete { grid-column: auto; }
+  .beauty-share-card-services > div { grid-template-columns: 1fr; }
+  .beauty-share-card-services > div > div { justify-self: end; }
+}

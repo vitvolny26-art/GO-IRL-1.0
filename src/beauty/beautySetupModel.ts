@@ -1,6 +1,6 @@
 import type { Language } from "../types";
 
-export const BEAUTY_SCHEMA_VERSION = 4 as const;
+export const BEAUTY_SCHEMA_VERSION = 5 as const;
 export const beautyContentLanguages = ["ru", "uk", "cs", "en"] as const satisfies readonly Language[];
 export type BeautyLocalizedText = Record<Language, string>;
 
@@ -54,6 +54,21 @@ export type BeautyPortfolioItem = {
   sortOrder: number;
 };
 
+export type BeautyShareCardStatus = "ready" | "updating" | "error" | "deleted";
+
+export type BeautyShareCard = {
+  enabled: boolean;
+  backgroundImageDataUrl: string;
+  logoImageDataUrl: string;
+  backgroundPositionY: number;
+  serviceIds: string[];
+  status: BeautyShareCardStatus;
+  generatedImageDataUrl: string;
+  generatedAt: string;
+  sourceFingerprint: string;
+  errorMessage: string;
+};
+
 export type BeautyWorkspace = {
   schemaVersion: typeof BEAUTY_SCHEMA_VERSION;
   currentStep: BeautySetupStep;
@@ -80,6 +95,7 @@ export type BeautyWorkspace = {
   service: BeautyService;
   services: BeautyService[];
   portfolio: BeautyPortfolioItem[];
+  shareCard: BeautyShareCard;
   availability: {
     weekdays: BeautyWeekday[];
     startTime: string;
@@ -87,6 +103,49 @@ export type BeautyWorkspace = {
     breakEnabled: boolean;
     breakStart: string;
     breakEnd: string;
+  };
+};
+
+export const createDefaultBeautyShareCard = (serviceIds: string[] = []): BeautyShareCard => ({
+  enabled: true,
+  backgroundImageDataUrl: "",
+  logoImageDataUrl: "",
+  backgroundPositionY: 50,
+  serviceIds: serviceIds.slice(0, 3),
+  status: "updating",
+  generatedImageDataUrl: "",
+  generatedAt: "",
+  sourceFingerprint: "",
+  errorMessage: "",
+});
+
+const normalizeBeautyShareCard = (
+  value: Partial<BeautyShareCard> | null | undefined,
+  services: BeautyService[],
+): BeautyShareCard => {
+  const activeIds = services.filter((item) => item.active).map((item) => item.id);
+  const defaults = createDefaultBeautyShareCard(activeIds);
+  const selectedIds = Array.isArray(value?.serviceIds)
+    ? value.serviceIds.filter((id): id is string => typeof id === "string" && activeIds.includes(id))
+    : defaults.serviceIds;
+  const status = value?.status;
+  return {
+    ...defaults,
+    ...value,
+    enabled: value?.enabled !== false,
+    backgroundImageDataUrl: typeof value?.backgroundImageDataUrl === "string" ? value.backgroundImageDataUrl : "",
+    logoImageDataUrl: typeof value?.logoImageDataUrl === "string" ? value.logoImageDataUrl : "",
+    backgroundPositionY: Number.isFinite(value?.backgroundPositionY)
+      ? Math.min(100, Math.max(0, Number(value?.backgroundPositionY)))
+      : defaults.backgroundPositionY,
+    serviceIds: Array.from(new Set(selectedIds)).slice(0, 3),
+    status: status === "ready" || status === "updating" || status === "error" || status === "deleted"
+      ? status
+      : defaults.status,
+    generatedImageDataUrl: typeof value?.generatedImageDataUrl === "string" ? value.generatedImageDataUrl : "",
+    generatedAt: typeof value?.generatedAt === "string" ? value.generatedAt : "",
+    sourceFingerprint: typeof value?.sourceFingerprint === "string" ? value.sourceFingerprint : "",
+    errorMessage: typeof value?.errorMessage === "string" ? value.errorMessage : "",
   };
 };
 
@@ -317,6 +376,7 @@ export const createDefaultBeautyWorkspace = (language: Language = "en"): BeautyW
     service,
     services: [service],
     portfolio: [],
+    shareCard: createDefaultBeautyShareCard([service.id]),
     availability: {
       weekdays: ["mon", "tue", "wed", "thu", "fri"],
       startTime: "09:00",
@@ -336,6 +396,7 @@ export const upgradeBeautyWorkspace = (value: unknown, language: Language = "en"
     service?: Partial<BeautyService>;
     services?: Array<Partial<BeautyService>>;
     portfolio?: Array<Partial<BeautyPortfolioItem>>;
+    shareCard?: Partial<BeautyShareCard>;
   };
   if (!candidate.profile || !candidate.service || !candidate.availability || typeof candidate.currentStep !== "string") return undefined;
 
@@ -376,6 +437,7 @@ export const upgradeBeautyWorkspace = (value: unknown, language: Language = "en"
     portfolio: Array.isArray(candidate.portfolio)
       ? candidate.portfolio.map(normalizePortfolioItem).filter((item) => item.imageUrl)
       : [],
+    shareCard: normalizeBeautyShareCard(candidate.shareCard, services),
     availability: {
       ...defaults.availability,
       ...candidate.availability,

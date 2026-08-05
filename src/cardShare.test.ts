@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCardShareTarget,
+  buildCardShareDownloadUrl,
   buildCardShareImageUrl,
   buildCardShareLandingUrl,
   buildCardShareText,
@@ -50,11 +51,15 @@ describe("card share", () => {
     });
   });
 
-  it("builds a JPEG media URL on the shared preview function", () => {
+  it("builds separate JPEG preview and attachment URLs", () => {
     const image = new URL(buildCardShareImageUrl(content));
+    const download = new URL(buildCardShareDownloadUrl(content));
     expect(image.pathname).toBe("/api/meta/event-preview");
     expect(image.searchParams.get("event")).toBe(eventId);
     expect(image.searchParams.get("format")).toBe("image");
+    expect(download.pathname).toBe(image.pathname);
+    expect(download.searchParams.get("event")).toBe(eventId);
+    expect(download.searchParams.get("format")).toBe("download");
   });
 
   it("keeps Facebook separate from Messenger and never puts preview URL in user text", () => {
@@ -93,6 +98,7 @@ describe("card share", () => {
   it("falls back to the original URL when no valid event id is present", () => {
     const fallback = { ...content, url: "https://example.com/event" };
     expect(buildMetaEventPreviewUrl(fallback)).toBe(fallback.url);
+    expect(buildCardShareDownloadUrl(fallback)).toBe("");
   });
 
   it("builds a dynamic Beauty preview for WhatsApp without changing Telegram sharing", () => {
@@ -106,6 +112,10 @@ describe("card share", () => {
     expect(preview.pathname).toBe("/api/meta/event-preview");
     expect(preview.searchParams.get("slug")).toBe("beauty-test-studio");
     expect(preview.searchParams.get("date")).toBe(beauty.date);
+
+    const download = new URL(buildCardShareDownloadUrl(beauty));
+    expect(download.searchParams.get("slug")).toBe("beauty-test-studio");
+    expect(download.searchParams.get("format")).toBe("download");
 
     const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));
     expect(buildCardShareLandingUrl(beauty)).toBe(

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { metaEventPreviewCopy } from "../../../api/meta/event-preview.js";
+import {
+  metaEventPreviewCopy,
+  setCardImageResponseHeaders,
+} from "../../../api/meta/event-preview.js";
 import vercel from "../../../vercel.json";
+import source from "../../../api/meta/event-preview.ts?raw";
 
 describe("Meta event preview copy", () => {
   it("localizes the same two public actions as the Telegram card", () => {
@@ -19,5 +23,28 @@ describe("Meta event preview copy", () => {
       source: "/s/:slug",
       destination: "/api/meta/event-preview?slug=:slug",
     });
+  });
+
+  it("returns Telegram-compatible attachment headers only for downloads", () => {
+    const attachmentHeaders = new Map<string, string>();
+    setCardImageResponseHeaders({
+      setHeader: (name, value) => attachmentHeaders.set(name, value),
+    }, 1234, true);
+    expect(attachmentHeaders.get("Content-Type")).toBe("image/jpeg");
+    expect(attachmentHeaders.get("Content-Length")).toBe("1234");
+    expect(attachmentHeaders.get("Content-Disposition")).toContain("attachment");
+    expect(attachmentHeaders.get("Access-Control-Allow-Origin")).toBe("https://web.telegram.org");
+
+    const previewHeaders = new Map<string, string>();
+    setCardImageResponseHeaders({
+      setHeader: (name, value) => previewHeaders.set(name, value),
+    }, 1234);
+    expect(previewHeaders.get("Access-Control-Allow-Origin")).toBe("*");
+    expect(previewHeaders.has("Content-Disposition")).toBe(false);
+  });
+
+  it("routes both Activity and Service download formats through attachment mode", () => {
+    expect(source.match(/format === "image" \|\| format === "download"/g)).toHaveLength(2);
+    expect(source.match(/format === "download"/g)?.length).toBeGreaterThanOrEqual(4);
   });
 });
