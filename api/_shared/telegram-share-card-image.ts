@@ -1,4 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
@@ -10,6 +18,10 @@ import { readEnv } from "./env.js";
 
 const require = createRequire(import.meta.url);
 let sharpPromise: Promise<typeof import("sharp").default> | null = null;
+let beautyScriptFontPromise: Promise<string | null> | null = null;
+
+const beautyScriptFontUrl = "https://raw.githubusercontent.com/google/fonts/main/ofl/greatvibes/GreatVibes-Regular.ttf";
+const beautyScriptFontFileName = "GreatVibes-Regular.ttf";
 
 const xml = (value: string) => value
   .replaceAll("&", "&amp;")
@@ -17,31 +29,87 @@ const xml = (value: string) => value
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;");
 
-export function configureTelegramShareCardFonts() {
+const isUsableFontFile = (path: string) => {
+  try {
+    const size = statSync(path).size;
+    return size >= 100_000 && size <= 1_000_000;
+  } catch {
+    return false;
+  }
+};
+
+const downloadBeautyScriptFont = async () => {
+  const configuredPath = process.env.GO_IRL_BEAUTY_SCRIPT_FONT_PATH?.trim();
+  if (configuredPath && isUsableFontFile(configuredPath)) return configuredPath;
+
+  const fontDirectory = join(tmpdir(), "go-irl-fonts");
+  const fontPath = join(fontDirectory, beautyScriptFontFileName);
+  if (isUsableFontFile(fontPath)) return fontPath;
+
+  mkdirSync(fontDirectory, { recursive: true });
+  const temporaryPath = `${fontPath}.${process.pid}.tmp`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6_000);
+  try {
+    const response = await fetch(beautyScriptFontUrl, {
+      signal: controller.signal,
+      redirect: "follow",
+      headers: { accept: "font/ttf,application/octet-stream;q=0.9,*/*;q=0.1" },
+    });
+    if (!response.ok) throw new Error("beauty_script_font_download_failed");
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (bytes.length < 100_000 || bytes.length > 1_000_000) {
+      throw new Error("beauty_script_font_size_invalid");
+    }
+    writeFileSync(temporaryPath, bytes);
+    renameSync(temporaryPath, fontPath);
+    return fontPath;
+  } finally {
+    clearTimeout(timeout);
+    rmSync(temporaryPath, { force: true });
+  }
+};
+
+const resolveBeautyScriptFont = () => {
+  beautyScriptFontPromise ||= downloadBeautyScriptFont().catch(() => null);
+  return beautyScriptFontPromise;
+};
+
+export function configureTelegramShareCardFonts(scriptFontPath: string | null = null) {
   const regularFont = require.resolve("dejavu-fonts-ttf/ttf/DejaVuSans.ttf");
   const boldFont = require.resolve("dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf");
   const configDirectory = join(tmpdir(), "go-irl-fontconfig");
   const cacheDirectory = join(configDirectory, "cache");
   const configFile = join(configDirectory, "fonts.conf");
+  const fontDirectories = Array.from(new Set([
+    dirname(regularFont),
+    ...(scriptFontPath ? [dirname(scriptFontPath)] : []),
+  ]));
 
   mkdirSync(cacheDirectory, { recursive: true });
   writeFileSync(configFile, `<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig>
-  <dir>${xml(dirname(regularFont))}</dir>
+${fontDirectories.map((directory) => `  <dir>${xml(directory)}</dir>`).join("\n")}
   <cachedir>${xml(cacheDirectory)}</cachedir>
   <alias><family>sans-serif</family><prefer><family>DejaVu Sans</family></prefer></alias>
   <alias><family>Arial</family><prefer><family>DejaVu Sans</family></prefer></alias>
   <alias><family>Segoe UI Emoji</family><prefer><family>DejaVu Sans</family></prefer></alias>
+  <alias binding="strong">
+    <family>GO IRL Beauty Script</family>
+    <prefer><family>Great Vibes</family></prefer>
+    <default><family>DejaVu Serif</family></default>
+  </alias>
 </fontconfig>`, "utf8");
 
   process.env.FONTCONFIG_PATH = configDirectory;
   process.env.FONTCONFIG_FILE = configFile;
-  return { regularFont, boldFont, configFile };
+  return { regularFont, boldFont, scriptFontPath, configFile };
 }
 
-const loadSharp = () => {
-  configureTelegramShareCardFonts();
+const loadSharp = async () => {
+  const scriptFontPath = await resolveBeautyScriptFont();
+  configureTelegramShareCardFonts(scriptFontPath);
   sharpPromise ||= import("sharp").then((module) => module.default);
   return sharpPromise;
 };
