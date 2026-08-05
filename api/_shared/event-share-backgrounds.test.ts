@@ -13,7 +13,7 @@ describe("event share backgrounds", () => {
 
     for (const [code, url] of entries) {
       expect(code).toMatch(/^[A-Z]{2}$/);
-      expect(url.pathname).toMatch(/\/images\/events\/share-6x5\/\d{2}-[a-z0-9-]+\.webp$/);
+      expect(url.pathname).toMatch(/\/images\/activities\/share-6x5\/\d{2}-[a-z0-9-]+\.webp$/);
       expect(existsSync(url), url.pathname).toBe(true);
     }
   });
