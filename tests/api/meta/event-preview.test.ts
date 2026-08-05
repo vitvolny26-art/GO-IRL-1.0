@@ -43,8 +43,10 @@ describe("Meta event preview copy", () => {
     expect(previewHeaders.has("Content-Disposition")).toBe(false);
   });
 
-  it("routes both Activity and Service download formats through attachment mode", () => {
+  it("routes Activity downloads through attachment mode and Beauty through the canonical renderer", () => {
     expect(source.match(/format === "image" \|\| format === "download"/g)).toHaveLength(2);
-    expect(source.match(/format === "download"/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(source).toContain("renderBeautyShareCardJpeg");
+    expect(source).toContain('image.searchParams.set("v", "10")');
+    expect(source).toContain('og:image:height" content="1350"');
   });
 });

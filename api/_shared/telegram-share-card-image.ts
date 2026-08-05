@@ -3,7 +3,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
-import { resolveEventShareBackgroundUrl } from "./event-share-backgrounds.js";
+import { resolveEventShareBackgroundUrl, serviceShareBackgroundUrls } from "./event-share-backgrounds.js";
+import { buildBeautyShareCardSvg } from "./beauty-share-card-svg.js";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
 import { readEnv } from "./env.js";
 
@@ -127,6 +128,23 @@ const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) =
 
 export const renderTelegramShareCardJpeg = (input: TelegramEventCardInput) =>
   renderShareCardJpeg(buildTelegramShareCardSvg(input), input);
+
+export const renderBeautyShareCardJpeg = async (input: TelegramEventCardInput) => {
+  const sharp = await loadSharp();
+  const backgroundUrl = serviceShareBackgroundUrls.manicure;
+  const overlay = { input: Buffer.from(buildBeautyShareCardSvg(input)), left: 0, top: 0 };
+  if (existsSync(backgroundUrl)) {
+    return sharp(readFileSync(backgroundUrl))
+      .resize(1080, 1350, { fit: "cover", position: "attention" })
+      .composite([overlay])
+      .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
+      .toBuffer();
+  }
+  return sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#160d1d" } })
+    .composite([overlay])
+    .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
+    .toBuffer();
+};
 
 export const renderMetaInvitationCardJpeg = async (input: TelegramEventCardInput) => {
   const sharp = await loadSharp();

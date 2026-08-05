@@ -22,6 +22,17 @@ describe("WhatsApp prepared share UX", () => {
     expect(channelClick).not.toContain("navigator.share(");
   });
 
+  it("bypasses the manual JPEG modal for Beauty and opens one WhatsApp preview URL", () => {
+    const channelClick = source.slice(
+      source.indexOf('if (channel.id === "whatsapp")'),
+      source.indexOf("</button>", source.indexOf('if (channel.id === "whatsapp")')),
+    );
+    expect(channelClick).toContain("canPrepareBeautyTelegramShare(url)");
+    expect(channelClick).toContain('buildCardShareTarget("whatsapp", content)');
+    expect(channelClick).toContain("openExternalShareTarget");
+    expect(channelClick.indexOf("openExternalShareTarget")).toBeLessThan(channelClick.indexOf("void prepareWhatsAppCard()"));
+  });
+
   it("uses Telegram downloadFile without requiring an in-memory File", () => {
     const handler = source.slice(
       source.indexOf("const downloadPreparedWhatsApp = () =>"),

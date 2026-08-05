@@ -1,7 +1,6 @@
 import { readEnv } from "../_shared/env.js";
-import { buildTelegramEventCard } from "../_shared/telegram-event-card.js";
+import { buildTelegramBeautyCard } from "../_shared/telegram-event-card.js";
 import { isBeautyShareSlug, isShareLanguage, loadTrustedTelegramBeautyCard } from "../_shared/telegram-share-beauty.js";
-import { createTelegramShareCardToken } from "../_shared/telegram-share-card-token.js";
 import { TelegramInitDataValidationError, validateTelegramInitData } from "../../supabase/functions/_shared/telegramInitData.js";
 
 type VercelRequest = {
@@ -65,14 +64,19 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const card = await loadTrustedTelegramBeautyCard(body.slug, body.language, body.date, body.time, publicOrigin());
     if (!card) return json(response, 404, { error: "beauty_profile_not_found" });
 
-    const imageToken = createTelegramShareCardToken(card, botToken);
-    const imageUrl = `${publicOrigin()}/api/telegram/event-share-card?token=${encodeURIComponent(imageToken)}&v=8`;
+    const image = new URL("/api/meta/event-preview", publicOrigin());
+    image.searchParams.set("slug", body.slug);
+    image.searchParams.set("language", card.language);
+    if (typeof body.date === "string" && body.date.trim()) image.searchParams.set("date", body.date.trim());
+    image.searchParams.set("format", "image");
+    image.searchParams.set("v", "10");
+    const imageUrl = image.toString();
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user_id: verified.user.id,
-        result: buildTelegramEventCard(card, imageUrl),
+        result: buildTelegramBeautyCard(card, imageUrl),
         allow_user_chats: true,
         allow_bot_chats: false,
         allow_group_chats: true,

@@ -30,16 +30,30 @@ export const normalizeCardShareUrl = (value: string) => {
 export const buildCardShareText = ({ title, date, address, url }: CardShareContent) =>
   [[`GO IRL: ${title}`, date, address].filter(Boolean).join("\n"), url].filter(Boolean).join("\n\n");
 
+const beautyShareSlugFromUrl = (value: string) => {
+  try {
+    const url = new URL(value);
+    const match = url.pathname.match(/^\/beauty\/([^/]+)\/?$/i);
+    const slug = match?.[1] ? decodeURIComponent(match[1]).trim().toLowerCase() : "";
+    return beautySlugPattern.test(slug) ? slug : "";
+  } catch {
+    return "";
+  }
+};
+
+export const isBeautyCardShareContent = (content: CardShareContent) =>
+  Boolean(beautyShareSlugFromUrl(content.url));
+
 export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
   try {
     const inviteUrl = new URL(content.url);
-    const beautyMatch = inviteUrl.pathname.match(/^\/beauty\/([^/]+)\/?$/i);
-    const beautySlug = beautyMatch?.[1] ? decodeURIComponent(beautyMatch[1]).trim().toLowerCase() : "";
-    if (beautySlugPattern.test(beautySlug)) {
+    const beautySlug = beautyShareSlugFromUrl(inviteUrl.toString());
+    if (beautySlug) {
       const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
       previewUrl.searchParams.set("slug", beautySlug);
       previewUrl.searchParams.set("language", content.language || "ru");
       if (content.date.trim()) previewUrl.searchParams.set("date", content.date.trim());
+      previewUrl.searchParams.set("v", "10");
       return previewUrl.toString();
     }
 
@@ -147,6 +161,9 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     return target.toString();
   }
   if (channel === "whatsapp") {
+    if (isBeautyCardShareContent(normalizedContent)) {
+      return `https://wa.me/?text=${encodeURIComponent(buildMetaEventPreviewUrl(normalizedContent))}`;
+    }
     const landingUrl = buildCardShareLandingUrl(normalizedContent);
     const message = buildCardShareText({ ...normalizedContent, url: landingUrl });
     return `https://wa.me/?text=${encodeURIComponent(message)}`;

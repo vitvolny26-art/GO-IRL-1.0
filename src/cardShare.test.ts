@@ -12,6 +12,7 @@ import {
   buildMessengerShareBridgeTarget,
   buildMetaEventPreviewUrl,
   buildOrganicCardShareContent,
+  isBeautyCardShareContent,
 } from "./cardShare";
 
 const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
@@ -101,7 +102,7 @@ describe("card share", () => {
     expect(buildCardShareDownloadUrl(fallback)).toBe("");
   });
 
-  it("builds a dynamic Beauty preview for WhatsApp without changing Telegram sharing", () => {
+  it("sends Beauty to WhatsApp as exactly one versioned preview URL", () => {
     const beauty = {
       title: "Test Studio",
       date: "03 авг · 09:00",
@@ -112,16 +113,13 @@ describe("card share", () => {
     expect(preview.pathname).toBe("/api/meta/event-preview");
     expect(preview.searchParams.get("slug")).toBe("beauty-test-studio");
     expect(preview.searchParams.get("date")).toBe(beauty.date);
-
-    const download = new URL(buildCardShareDownloadUrl(beauty));
-    expect(download.searchParams.get("slug")).toBe("beauty-test-studio");
-    expect(download.searchParams.get("format")).toBe("download");
+    expect(preview.searchParams.get("v")).toBe("10");
+    expect(isBeautyCardShareContent(beauty)).toBe(true);
 
     const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));
-    expect(buildCardShareLandingUrl(beauty)).toBe(
-      "https://go-irl-1-0.vercel.app/s/beauty-test-studio?date=03+%D0%B0%D0%B2%D0%B3+%C2%B7+09%3A00",
-    );
-    expect(whatsapp.searchParams.get("text")).toContain("https://go-irl-1-0.vercel.app/s/beauty-test-studio");
+    expect(whatsapp.searchParams.get("text")).toBe(preview.toString());
+    expect(whatsapp.searchParams.get("text")).not.toContain(beauty.title);
+    expect(whatsapp.searchParams.get("text")).not.toContain(beauty.address);
     expect(decodeURIComponent(buildCardShareTarget("telegram", beauty))).toContain(beauty.url);
   });
 });
