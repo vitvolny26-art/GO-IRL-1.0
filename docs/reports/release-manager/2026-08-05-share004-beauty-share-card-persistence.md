@@ -87,6 +87,13 @@ Released the following repository and production contract:
 - Vercel state: `READY`
 - Vercel Git SHA: `b8cfed3b4f5a642be3b582165e2ecfc04ea46b7c`
 
+## Drive mirror and handoff
+
+- SHARE004 Drive folder: `1L3sTLTlvb_o3Wn6vV9AHCrrg8hHcv0Av`
+- Production handoff document: `1htAWqM_0RlN_DseD_XoXli6YsC4EhK0UwTrTMiEUf10`
+- Production handoff URL: `https://docs.google.com/document/d/1htAWqM_0RlN_DseD_XoXli6YsC4EhK0UwTrTMiEUf10/edit`
+- GitHub handoff: `docs/reports/release-manager/2026-08-05-share004-production-handoff.md`
+
 ## Checks
 
 - GitHub exact-head CI: PASS
@@ -98,6 +105,7 @@ Released the following repository and production contract:
 - VPS atomic publish and health check: PASS
 - External production HTTP check: PASS
 - Vercel production deployment and exact-SHA check: PASS
+- Drive production handoff write/readback: PASS
 
 ## Not changed
 
