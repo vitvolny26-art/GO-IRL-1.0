@@ -30,6 +30,8 @@ The first verified Telegram account to redeem the bearer link receives the reque
 
 The Roles tab lists current organizers, professionals, moderators, and administrators through protected server actions. An administrator can demote organizer, professional, or moderator to `user` after confirmation. Admin accounts are protected from this operation. A successful demotion writes an `audit_log` record.
 
+Corrective PR #518 normalized the protected backend snake_case demotion payload into the client camelCase contract, added explicit handling for `invalid`, `not_found`, and `role_conflict`, and added regression coverage. It was squash-merged as `949b1fe8308079094cd0a70f7a71beefc163a7e7` and subsequently delivered through the VPS release workflow.
+
 ### ADMIN007 — mobile admin navigation
 
 The protected panel has four bottom tabs:
@@ -72,14 +74,13 @@ The requested topology `Telegram -> Vercel` is **not verified** and must not be 
 
 Direct runtime evidence on 2026-08-01 shows a split topology:
 
-- public application URL `https://goirl.realitka.pp.ua` returns HTTP 200 from `Server: Caddy` and has no `x-vercel-id` header;
-- `https://go-irl-1-1.vercel.app` returns HTTP 200 from `Server: Vercel` with an `x-vercel-id` header;
-- the two HTML bodies differ;
-- latest READY Vercel production deployment is `dpl_BntrDPTtWvNv6sJgZpDXWRppPAnp` at commit `e43be4ece9a5908984add70dc9dfd99cc501b2a3` (ADMIN009);
-- GitHub `main` observed during this reconciliation is `f9aa349d7d300070767ec8b8da4a284bf08273b6`;
-- the exact Git commit served by the public Caddy endpoint is not exposed by current runtime evidence.
+- public application URL `https://goirl.realitka.pp.ua` is served through Caddy/VPS;
+- a separate Vercel production runtime also exists;
+- the two runtimes may drift unless explicitly reconciled;
+- the latest verified VPS deployment execution for current `main` was n8n execution `6909`;
+- that execution deployed branch `main`, SHA `7375dd8d7517c0192f97f343f8d6f0717b0cc772`, with SSH exit code `0` and `goirl_http=200`.
 
-Therefore the safe operational model is: public Caddy/VPS runtime plus a separate Vercel production runtime with known commit drift. Changing routing or redeploying either runtime requires a separate approved release task.
+Therefore the safe operational model is: public Caddy/VPS runtime plus a separate Vercel production runtime. Changing routing or redeploying either runtime requires a separate approved release task.
 
 ## Gate A release-readiness status
 
@@ -89,7 +90,8 @@ Completed repository hygiene:
 - PR #500 closed as superseded by merged PR #501;
 - historical Draft PR #444 closed as superseded by ADMIN006-009;
 - historical conflicting Draft PR #443 closed without merge as superseded by ADMIN005-009 and the current tabbed Admin Panel;
-- corrective PR #518 remains Draft, open, and unmerged with exact-head CI green.
+- corrective PR #518 merged and deployed;
+- Issue #519 closed as completed.
 
 Still required before ADMIN010:
 
