@@ -57,7 +57,7 @@ const buildTelegramTitleTspans = (value: string, baseSize: number) => value
     const initial = word.slice(0, 1);
     const rest = word.slice(1);
     const spacer = index ? `<tspan font-size="${baseSize * 0.44}"> </tspan>` : "";
-    return `${spacer}<tspan font-size="${baseSize + 14}">${xml(initial)}</tspan><tspan font-size="${baseSize}">${xml(rest)}</tspan>`;
+    return `${spacer}<tspan font-size="${baseSize + 22}">${xml(initial)}</tspan><tspan font-size="${baseSize}">${xml(rest)}</tspan>`;
   })
   .join("");
 
@@ -67,7 +67,7 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
   const name = clean(input.activity || input.organizer || "GO IRL Beauty", 48);
   const description = clean(input.description || input.level || input.title, 180);
   const nameFontSize = isTelegram
-    ? name.length > 34 ? 44 : name.length > 24 ? 52 : 64
+    ? name.length > 34 ? 54 : name.length > 24 ? 66 : 82
     : name.length > 34 ? 44 : name.length > 24 ? 50 : 60;
   const services = (input.beautyServices?.length
     ? input.beautyServices
@@ -90,33 +90,28 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
   const location = clean(input.address || input.city, 80);
   const height = isTelegram ? 900 : 1020;
   const descriptionOptions = isTelegram
-    ? { x: 232, startY: 204, step: 34, maxLines: 3, maxChars: 44 }
+    ? { x: 232, startY: 218, step: 34, maxLines: 3, maxChars: 44 }
     : { x: 232, startY: 184, step: 42, maxLines: 2, maxChars: 46 };
   const locationY = isTelegram ? 730 : 782;
   const frame = isTelegram
     ? `<g data-beauty-telegram-frame="true" fill="none" stroke="url(#beautyGold)" stroke-linecap="round" stroke-linejoin="round">
-      <rect data-beauty-telegram-frame-outer="true" x="18" y="18" width="1044" height="864" stroke-width="1.6" stroke-opacity=".92"/>
-      <rect data-beauty-telegram-frame-inner="true" x="28" y="28" width="1024" height="844" stroke-width=".8" stroke-opacity=".5"/>
-      <path data-beauty-telegram-frame-corner="true" d="M18 72h10c16 0 28-12 28-28V34h22V18" stroke-width="2.2"/>
-      <path d="M18 72h10c16 0 28-12 28-28V34h22V18" transform="translate(1080 0) scale(-1 1)" stroke-width="2.2"/>
-      <path d="M18 72h10c16 0 28-12 28-28V34h22V18" transform="translate(0 900) scale(1 -1)" stroke-width="2.2"/>
-      <path d="M18 72h10c16 0 28-12 28-28V34h22V18" transform="translate(1080 900) scale(-1 -1)" stroke-width="2.2"/>
-      <path d="M28 78h8c12 0 22-10 22-22v-8h20" stroke-width="1" stroke-opacity=".66"/>
-      <path d="M28 78h8c12 0 22-10 22-22v-8h20" transform="translate(1080 0) scale(-1 1)" stroke-width="1" stroke-opacity=".66"/>
-      <path d="M28 78h8c12 0 22-10 22-22v-8h20" transform="translate(0 900) scale(1 -1)" stroke-width="1" stroke-opacity=".66"/>
-      <path d="M28 78h8c12 0 22-10 22-22v-8h20" transform="translate(1080 900) scale(-1 -1)" stroke-width="1" stroke-opacity=".66"/>
+      <rect data-beauty-telegram-frame-line="true" x="22" y="22" width="1036" height="856" rx="8" stroke-width="1.8" stroke-opacity=".94"/>
+      <path data-beauty-telegram-frame-corner="true" d="M22 76h10c18 0 32-14 32-32V34h24V22" stroke-width="2.2"/>
+      <path d="M22 76h10c18 0 32-14 32-32V34h24V22" transform="translate(1080 0) scale(-1 1)" stroke-width="2.2"/>
+      <path d="M22 76h10c18 0 32-14 32-32V34h24V22" transform="translate(0 900) scale(1 -1)" stroke-width="2.2"/>
+      <path d="M22 76h10c18 0 32-14 32-32V34h24V22" transform="translate(1080 900) scale(-1 -1)" stroke-width="2.2"/>
     </g>`
     : `<rect x="28" y="28" width="1024" height="${height - 56}" rx="44" fill="none" stroke="#e0bc65" stroke-opacity=".92" stroke-width="3"/>`;
   const title = isTelegram
     ? `<g data-beauty-telegram-wordmark="true">
-      <text data-beauty-telegram-title="true" x="232" y="130" fill="url(#beautyGold)" stroke="#5b3512" stroke-width=".6" paint-order="stroke fill" filter="url(#beautyGoldGlow)" font-family="DejaVu Serif Condensed, DejaVu Serif, Georgia, serif" font-size="${nameFontSize}" font-style="italic" font-weight="400" letter-spacing="-1.8">${buildTelegramTitleTspans(name, nameFontSize)}</text>
-      <path data-beauty-title-swash="true" d="M220 132c18-39 48-58 76-48-24 2-39 16-39 34 0 18 15 29 37 29" fill="none" stroke="url(#beautyGold)" stroke-width="1.5" stroke-linecap="round" stroke-opacity=".72"/>
+      <text data-beauty-telegram-title="true" x="214" y="144" fill="url(#beautyGold)" stroke="#5b3512" stroke-width=".45" paint-order="stroke fill" filter="url(#beautyGoldGlow)" font-family="DejaVu Serif, Georgia, serif" font-size="${nameFontSize}" font-style="italic" font-weight="400" letter-spacing="-2.6">${buildTelegramTitleTspans(name, nameFontSize)}</text>
+      <path data-beauty-title-swash="true" d="M202 148c20-48 52-70 84-57-27 3-43 21-41 41 2 19 19 30 43 28" fill="none" stroke="url(#beautyGold)" stroke-width="1.35" stroke-linecap="round" stroke-opacity=".68"/>
     </g>
     <g data-beauty-title-flourish="true" data-beauty-title-ornament="true" fill="none" stroke="url(#beautyGold)" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M232 164h238M610 164h232" stroke-width="1.2" stroke-opacity=".78"/>
-      <path d="M470 164c18 0 24-18 39-18 10 0 17 7 17 16 0 8-6 14-14 14-7 0-12-4-12-9 0-4 3-7 7-7M610 164c-18 0-24-18-39-18-10 0-17 7-17 16 0 8 6 14 14 14 7 0 12-4 12-9 0-4-3-7-7-7" stroke-width="1.7"/>
-      <path d="M540 159c-7-9-7-18 0-27 7 9 7 18 0 27zm0 10c-7 9-7 18 0 27 7-9 7-18 0-27z" fill="url(#beautyGold)" stroke="none"/>
-      <circle cx="540" cy="164" r="3.2" fill="url(#beautyGold)" stroke="none"/>
+      <path d="M428 178h54M598 178h54" stroke-width="1" stroke-opacity=".7"/>
+      <path d="M482 178c13 0 18-12 29-12 8 0 13 5 13 11 0 6-5 10-11 10M598 178c-13 0-18-12-29-12-8 0-13 5-13 11 0 6 5 10 11 10" stroke-width="1.45"/>
+      <path d="M540 174c-5-7-5-13 0-20 5 7 5 13 0 20zm0 8c-5 7-5 13 0 20 5-7 5-13 0-20z" fill="url(#beautyGold)" stroke="none"/>
+      <circle cx="540" cy="178" r="2.4" fill="url(#beautyGold)" stroke="none"/>
     </g>`
     : `<text x="232" y="124" fill="#fff9fb" font-size="${nameFontSize}" font-weight="900">${xml(name)}</text>`;
 
