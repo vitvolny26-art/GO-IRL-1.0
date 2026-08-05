@@ -18,8 +18,7 @@ describe("Beauty workspace save queue", () => {
     const first = enqueue({ ...base, profile: { ...base.profile, displayName: "First" } });
     const second = enqueue({ ...base, profile: { ...base.profile, displayName: "Second" } });
 
-    await Promise.resolve();
-    expect(order).toEqual(["start:First"]);
+    await vi.waitFor(() => expect(order).toEqual(["start:First"]));
 
     releaseFirst?.();
     await Promise.all([first, second]);
