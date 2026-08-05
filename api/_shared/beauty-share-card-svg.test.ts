@@ -8,7 +8,7 @@ const card: TelegramEventCardInput = {
   eventId: "profile-1",
   title: "Маникюр с гель-лаком",
   activity: "Studio Vita",
-  description: "Комбинированный маникюр, выравнивание и укрепление натуральных ногтей",
+  description: "Комбинированный маникюр, выравнивание и укрепление натуральных ногтей, однотонные покрытия",
   date: "",
   eventDate: "",
   time: "",
@@ -26,49 +26,38 @@ const card: TelegramEventCardInput = {
   language: "ru",
   beautyServices: [
     { name: "Маникюр с гель-лаком", priceCzk: 890 },
-    { name: "Педикюр и долговременное покрытие", priceCzk: 990 },
-    { name: "Nail art", priceCzk: 250 },
+    { name: "Укрепление натуральных ногтей", priceCzk: 1090 },
+    { name: "Снятие покрытия и маникюр", priceCzk: 590 },
   ],
 };
 
 describe("Beauty share card SVG", () => {
-  it("renders the clean horizontal 1080x1020 card with two-line description support", () => {
+  it("keeps the existing web/WhatsApp card unchanged", () => {
     const svg = buildBeautyShareCardSvg(card);
     expect(svg).toContain('width="1080" height="1020"');
     expect(svg.match(/data-beauty-service-row=/g)).toHaveLength(3);
     expect(svg).toContain('data-beauty-photo-placeholder="true"');
     expect(svg).toContain("Studio Vita");
-    expect(svg).toContain("Комбинированный маникюр");
     expect(svg).toContain("Услуги и запись");
-    expect(svg).not.toContain("GO IRL BEAUTY");
-    expect(svg).not.toContain("LESS SCROLLING. MORE LIFE.");
-    expect(svg).not.toContain("go-irl-1-0.vercel.app/beauty/beauty-test");
-    expect(svg).not.toContain('data-beauty-telegram-frame="true"');
-    expect(svg).not.toContain('data-beauty-telegram-wordmark="true"');
+    expect(svg).not.toContain('data-beauty-telegram-logo-slot="true"');
+    expect(svg).not.toContain('font-family="Great Vibes"');
   });
 
-  it("renders a reference-inspired Telegram-only frame, wordmark, and divider", () => {
-    const svg = buildTelegramBeautyShareCardSvg({
-      ...card,
-      description: "Комбинированный маникюр, выравнивание и укрепление натуральных ногтей, однотонные покрытия и минималистичный дизайн",
-    });
+  it("renders the supplied Telegram Beauty template with dynamic profile data", () => {
+    const svg = buildTelegramBeautyShareCardSvg(card);
     expect(svg).toContain('width="1080" height="900"');
+    expect(svg).toContain('id="beautyLeftShade"');
+    expect(svg).toContain('id="beautyGold"');
+    expect(svg).toContain('data-beauty-telegram-frame-outer="true"');
+    expect(svg).toContain('data-beauty-telegram-frame-inner="true"');
+    expect(svg).toContain('data-beauty-telegram-logo-slot="true"');
+    expect(svg).toContain('data-beauty-telegram-title="true"');
+    expect(svg).toContain('font-family="Great Vibes"');
     expect(svg.match(/data-beauty-description-line=/g)).toHaveLength(3);
     expect(svg.match(/data-beauty-service-row=/g)).toHaveLength(3);
+    expect(svg).toContain('width="520" height="90"');
+    expect(svg).toContain('data-beauty-location="bottom-right"');
     expect(svg).toContain("Центр, Оломоуц");
-    expect(svg).toContain('data-beauty-telegram-frame="true"');
-    expect(svg).toContain('data-beauty-telegram-frame-line="true"');
-    expect(svg).toContain('data-beauty-telegram-frame-corner="true"');
-    expect(svg).not.toContain('data-beauty-telegram-frame-inner="true"');
-    expect(svg).toContain('data-beauty-telegram-wordmark="true"');
-    expect(svg).toContain('data-beauty-telegram-title="true"');
-    expect(svg).toContain('font-family="DejaVu Serif, Georgia, serif"');
-    expect(svg).toContain('font-weight="400"');
-    expect(svg).toContain('filter="url(#beautyGoldGlow)"');
-    expect(svg).toContain('data-beauty-title-flourish="true"');
-    expect(svg).toContain('data-beauty-title-ornament="true"');
-    expect(svg).toContain('M428 178h54M598 178h54');
-    expect(svg).toContain('fill="url(#beautyGold)"');
     expect(svg).not.toContain("Услуги и запись");
   });
 
