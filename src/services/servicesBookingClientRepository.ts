@@ -1,4 +1,4 @@
-import { getCurrentDisplayName, initializeTrustedAuth, isBrowserMockMode } from "../authSession";
+import { initializeTrustedAuth, isBrowserMockMode } from "../authSession";
 import { supabase } from "../supabase";
 import type { Language } from "../types";
 import { listServiceBookings, type ServiceBooking } from "./servicesBookingRepository";
@@ -173,7 +173,7 @@ const mapServerBooking = (
     startsAt,
     durationMinutes: Number.isFinite(Number(row.duration_minutes)) ? Number(row.duration_minutes) : 60,
     priceCzk: Number.isFinite(Number(row.price_czk)) ? Number(row.price_czk) : 0,
-    currency: row.currency === "CZK" ? "CZK" : "CZK",
+    currency: "CZK",
     publicLocation: typeof row.public_location === "string" ? row.public_location.trim() : "Olomouc",
     exactAddress,
     createdAt: typeof row.created_at === "string" ? row.created_at : startsAt,
@@ -209,12 +209,7 @@ export const loadClientServiceBookings = async (
   }
 
   const loadDirectory = dependencies.loadDirectory || loadProfessionalDirectory;
-  let professionals: ServicesProfessional[] = [];
-  try {
-    professionals = await loadDirectory("olomouc", language);
-  } catch {
-    professionals = [];
-  }
+  const professionals = await loadDirectory("olomouc", language).catch(() => []);
   const lookup = professionalLookup(professionals);
   const rows = Array.isArray(result.data) ? result.data as ServerBookingRow[] : [];
   const bookings = rows
