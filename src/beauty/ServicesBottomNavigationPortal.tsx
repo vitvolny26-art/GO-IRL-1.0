@@ -8,7 +8,10 @@ import { canShowBeautyWorkspaceEntry, servicesBottomNavigationCount } from "./se
 
 const normalizedPath = () => window.location.pathname.replace(/\/+$/, "");
 const isServicesPath = () => normalizedPath() === "/services";
-const isMasterWorkspacePath = () => normalizedPath() === "/services/beauty/master";
+const isMasterWorkspacePath = () => {
+  const path = normalizedPath();
+  return path === "/beauty/workspace" || path === "/services/beauty/master";
+};
 
 export function ServicesBottomNavigationPortal() {
   const language = useAppStore((state) => state.language);
@@ -38,7 +41,7 @@ export function ServicesBottomNavigationPortal() {
     const workspaceLink = target.querySelector<HTMLAnchorElement>('a[href="/beauty/workspace"], a[href="/services/beauty/master"]');
     target.style.gridTemplateColumns = `repeat(${servicesBottomNavigationCount(userRole)}, minmax(0, 1fr))`;
     if (workspaceLink) {
-      workspaceLink.href = "/services/beauty/master";
+      workspaceLink.href = "/beauty/workspace";
       workspaceLink.hidden = !showWorkspace;
       workspaceLink.style.order = "5";
     }
