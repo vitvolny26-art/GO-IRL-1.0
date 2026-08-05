@@ -39,7 +39,7 @@ export const buildBeautyShareCardFingerprint = (
   workspace: BeautyWorkspace,
   language: Language,
 ) => hash(JSON.stringify({
-  version: 1,
+  version: 2,
   language,
   displayName: workspace.profile.displayName,
   specialization: resolveBeautyLocalizedText(
@@ -49,20 +49,8 @@ export const buildBeautyShareCardFingerprint = (
   ),
   publicLocation: workspace.profile.publicLocation,
   city: workspace.profile.city,
-  publicLink: workspace.publicLink,
   services: resolveBeautyShareCardServices(workspace, language),
   backgroundImage: hash(workspace.shareCard.backgroundImageDataUrl),
   logoImage: hash(workspace.shareCard.logoImageDataUrl),
   backgroundPositionY: workspace.shareCard.backgroundPositionY,
 }));
-
-export const formatBeautyShareCardPublicLink = (value: string) => {
-  const trimmed = value.trim();
-  if (!trimmed) return "goirl.app";
-  try {
-    const url = new URL(trimmed, "https://goirl.app");
-    return `${url.hostname}${url.pathname}`.replace(/\/$/, "");
-  } catch {
-    return trimmed.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  }
-};

@@ -113,7 +113,7 @@ describe("card share", () => {
     expect(preview.pathname).toBe("/api/meta/event-preview");
     expect(preview.searchParams.get("slug")).toBe("beauty-test-studio");
     expect(preview.searchParams.get("date")).toBe(beauty.date);
-    expect(preview.searchParams.get("v")).toBe("10");
+    expect(preview.searchParams.get("v")).toBe("11");
     expect(isBeautyCardShareContent(beauty)).toBe(true);
 
     const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));

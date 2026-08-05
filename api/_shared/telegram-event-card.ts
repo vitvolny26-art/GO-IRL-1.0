@@ -30,6 +30,7 @@ export type TelegramEventCardInput = {
   language: "ru" | "uk" | "cs" | "en";
   beautyServices?: Array<{ name: string; priceCzk: number }>;
   publicProfileUrl?: string;
+  description?: string;
 };
 
 const copy = {
@@ -90,7 +91,7 @@ export function buildTelegramBeautyCard(input: TelegramEventCardInput, imageUrl:
     photo_url: imageUrl,
     thumbnail_url: imageUrl,
     photo_width: 1080,
-    photo_height: 1350,
+    photo_height: 1020,
     caption: "",
     reply_markup: {
       inline_keyboard: [[{ text: labels.open, url: input.inviteUrl }]],

@@ -120,10 +120,10 @@ const handleBeautyPreview = async (
   image.searchParams.set("language", language);
   if (date) image.searchParams.set("date", date);
   image.searchParams.set("format", "image");
-  image.searchParams.set("v", "10");
+  image.searchParams.set("v", "11");
   const imageUrl = image.toString();
   const title = card.activity || card.organizer || "GO IRL Beauty";
-  const description = [card.title, card.date, card.address, card.price ? `${card.price} Kč` : ""]
+  const description = card.description || [card.title, card.date, card.address, card.price ? `${card.price} Kč` : ""]
     .filter(Boolean)
     .join(" · ");
 
@@ -138,9 +138,9 @@ const handleBeautyPreview = async (
 <meta property="og:description" content="${escapeHtml(description)}" />
 <meta property="og:image" content="${escapeHtml(imageUrl)}" />
 <meta property="og:image:type" content="image/jpeg" />
-<meta property="og:image:width" content="1080" /><meta property="og:image:height" content="1350" />
+<meta property="og:image:width" content="1080" /><meta property="og:image:height" content="1020" />
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
-<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:4/5;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
+<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:18/17;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
 </head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(browserBeautyUrl(origin, slug, date))}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
 };
 

@@ -75,6 +75,8 @@ export type PublicBeautyRow = {
   display_name: string;
   city_id: string;
   public_location: string;
+  description?: string;
+  specialization?: string;
   service_name: string;
   duration_minutes: number;
   price_czk: number;
@@ -141,11 +143,13 @@ export function buildTrustedBeautyCardFromRows(
     priceCzk: row.price_czk,
   };
   const city = row.city_id === "olomouc" ? "Olomouc" : row.city_id;
+  const description = (row.specialization || row.description || primaryService.name).trim();
 
   return {
     eventId: row.profile_id,
     title: primaryService.name,
     activity: row.display_name,
+    description,
     date: date.display,
     eventDate: date.raw,
     time: "",

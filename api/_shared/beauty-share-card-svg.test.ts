@@ -8,6 +8,7 @@ const card: TelegramEventCardInput = {
   eventId: "profile-1",
   title: "Маникюр с гель-лаком",
   activity: "Studio Vita",
+  description: "Комбинированный маникюр, выравнивание и укрепление натуральных ногтей",
   date: "",
   eventDate: "",
   time: "",
@@ -31,23 +32,26 @@ const card: TelegramEventCardInput = {
 };
 
 describe("Beauty share card SVG", () => {
-  it("renders the canonical 1080x1350 business card with three services", () => {
+  it("renders the clean horizontal 1080x1020 card with two-line description support", () => {
     const svg = buildBeautyShareCardSvg(card);
-    expect(svg).toContain('width="1080" height="1350"');
+    expect(svg).toContain('width="1080" height="1020"');
     expect(svg.match(/data-beauty-service-row=/g)).toHaveLength(3);
-    expect(svg).toContain("GO IRL BEAUTY");
+    expect(svg).toContain('data-beauty-photo-placeholder="true"');
+    expect(svg).toContain("Studio Vita");
+    expect(svg).toContain("Комбинированный маникюр");
     expect(svg).toContain("Услуги и запись");
-    expect(svg).toContain("LESS SCROLLING. MORE LIFE.");
-    expect(svg).toContain("go-irl-1-0.vercel.app/beauty/beauty-test");
+    expect(svg).not.toContain("GO IRL BEAUTY");
+    expect(svg).not.toContain("LESS SCROLLING. MORE LIFE.");
+    expect(svg).not.toContain("go-irl-1-0.vercel.app/beauty/beauty-test");
   });
 
-  it("produces an opaque server JPEG with the canonical dimensions", async () => {
+  it("produces an opaque server JPEG with the horizontal dimensions", async () => {
     const jpeg = await renderBeautyShareCardJpeg(card);
     const metadata = await sharp(jpeg).metadata();
     const stats = await sharp(jpeg).stats();
     expect(metadata.format).toBe("jpeg");
     expect(metadata.width).toBe(1080);
-    expect(metadata.height).toBe(1350);
+    expect(metadata.height).toBe(1020);
     expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
     expect(stats.isOpaque).toBe(true);
   });
