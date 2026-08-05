@@ -16,8 +16,9 @@ describe("Beauty sharing business-card workspace UX", () => {
     expect(editorSource).toContain("— Визитка удалена");
   });
 
-  it("does not present the Beauty card as an appointment card", () => {
-    expect(editorSource).toContain("Услуги и запись");
+  it("presents the canonical Telegram business card rather than an appointment card", () => {
+    expect(editorSource).toContain("Предпросмотр Telegram-визитки");
+    expect(editorSource).toContain("buildBeautyShareCardPreviewSvg");
     expect(editorSource).not.toContain("В календарь");
     expect(editorSource).not.toContain("Билет");
   });
