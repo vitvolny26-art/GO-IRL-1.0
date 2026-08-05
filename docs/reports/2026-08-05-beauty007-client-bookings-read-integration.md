@@ -16,7 +16,7 @@ Continue Beauty007 with one bounded client-integration slice after Beauty007-D0:
 - read authenticated client bookings through the Beauty007-C RPC contract;
 - render a dedicated Services `My bookings` surface;
 - keep Browser Mock Mode local;
-- retain an explicit temporary local fallback while the protected backend PRs remain unmerged.
+- retain an explicit temporary local fallback until the protected backend migrations are applied to the target environment.
 
 ## Files inspected
 
@@ -31,16 +31,18 @@ Continue Beauty007 with one bounded client-integration slice after Beauty007-D0:
 - `src/services/servicesBookingRepository.ts`
 - `src/services/servicesProfessionalDirectory.ts`
 - `src/beauty/BeautyPilotWorkspace.tsx`
-- `supabase/migrations/20260804203000_beauty007_booking_rpc_rls.sql` from PR #645
+- `supabase/migrations/20260804203000_beauty007_booking_rpc_rls.sql`
 - Beauty007 Drive roadmap
 
-Base commit: `9a2a9a158530273976942c6d1b4f67a090dd0331`.
+Original base commit: `9a2a9a158530273976942c6d1b4f67a090dd0331`.
+
+Backend prerequisite merged to `main` through PR #645 at merge commit `321acacd95aa03bfe5d3fe12e5099443b62be452`.
 
 ## Findings
 
 The current Services `My bookings` tab depends on synthetic activities produced from same-device localStorage. It cannot read the server projection defined by `go_irl_list_my_beauty_bookings`, and terminal booking states are not represented reliably by the generic activity-membership view.
 
-The protected Beauty007-B/C/C1 backend sequence remains unmerged and unapplied to production. Therefore this slice must not assume the RPC is already present. Browser Mock Mode must remain local-only, and trusted sessions need a narrow temporary fallback only when the RPC is missing.
+Beauty007-B/C/C1 is now present in repository `main`, but the migrations remain unapplied to production Supabase. Browser Mock Mode must remain local-only, and trusted sessions need a narrow temporary fallback only when the RPC is missing.
 
 The server client projection intentionally hides the exact address until the booking is confirmed or completed. The frontend must preserve that boundary rather than infer or reconstruct a private address.
 
@@ -61,7 +63,7 @@ The server client projection intentionally hides the exact address until the boo
 
 ## Checks
 
-Exact-head GitHub Actions is required for:
+The original exact-head CI passed before PR #645 merged. A fresh pull-request CI run against current `main` is required for:
 
 - repository check;
 - diff check;
@@ -70,8 +72,6 @@ Exact-head GitHub Actions is required for:
 - lint;
 - build;
 - bundle budget.
-
-No local execution was possible in the current connector environment, so no check is claimed before CI completes.
 
 ## Safety
 
@@ -82,7 +82,8 @@ No local execution was possible in the current connector environment, so no chec
 - No server booking write path yet.
 - No client cancellation mutation yet.
 - Existing local booking creation remains unchanged.
+- Production Supabase remains unchanged.
 
 ## Next step
 
-After exact-head CI and review, continue with Beauty007-D2: server availability plus transactional create-booking mutation. Do not replace the local create path until PR #645 is approved and the RPC boundary is available in the target environment.
+After fresh CI against current `main`, review and merge Beauty007-D1. Continue separately with Beauty007-D2: server availability plus transactional create-booking mutation. Do not replace the local create path until the booking migrations are explicitly approved and applied to the target environment.
