@@ -6,6 +6,9 @@ const assetBucket = "beauty-share-assets";
 const generatedBucket = "beauty-share-cards";
 const templateVersion = 1;
 let expectedCardUpdatedAt: string | null = null;
+let currentBackgroundObjectPath: string | null = null;
+let currentLogoObjectPath: string | null = null;
+let currentGeneratedObjectPath: string | null = null;
 
 type ShareCardRow = {
   profile_id: string;
@@ -52,8 +55,9 @@ const uploadDataUrl = async (
   bucket: string,
   pathWithoutExtension: string,
   value: string,
+  existingPath: string | null,
 ) => {
-  if (!value.startsWith("data:image/")) return null;
+  if (!value.startsWith("data:image/")) return existingPath;
   const blob = await dataUrlToBlob(value);
   const path = `${pathWithoutExtension}.${extensionForType(blob.type)}`;
   const { error } = await supabase.storage.from(bucket).upload(path, blob, {
@@ -88,10 +92,16 @@ export const loadRemoteBeautyShareCard = async (workspace: BeautyWorkspace): Pro
   const row = (Array.isArray(result.data) ? result.data[0] : result.data) as ShareCardRow | undefined;
   if (!row) {
     expectedCardUpdatedAt = null;
+    currentBackgroundObjectPath = null;
+    currentLogoObjectPath = null;
+    currentGeneratedObjectPath = null;
     return workspace;
   }
 
   expectedCardUpdatedAt = row.updated_at;
+  currentBackgroundObjectPath = row.background_object_path;
+  currentLogoObjectPath = row.logo_object_path;
+  currentGeneratedObjectPath = row.generated_object_path;
   const [backgroundImageDataUrl, logoImageDataUrl] = await Promise.all([
     signedAssetUrl(row.background_object_path),
     signedAssetUrl(row.logo_object_path),
@@ -122,11 +132,26 @@ export const saveRemoteBeautyShareCard = async (workspace: BeautyWorkspace) => {
   const prefix = `${userKey}/beauty-share-card`;
   const card = workspace.shareCard;
   const [backgroundObjectPath, logoObjectPath, generatedObjectPath] = await Promise.all([
-    uploadDataUrl(assetBucket, `${prefix}/background/current`, card.backgroundImageDataUrl),
-    uploadDataUrl(assetBucket, `${prefix}/logo/current`, card.logoImageDataUrl),
+    uploadDataUrl(
+      assetBucket,
+      `${prefix}/background/current`,
+      card.backgroundImageDataUrl,
+      card.backgroundImageDataUrl ? currentBackgroundObjectPath : null,
+    ),
+    uploadDataUrl(
+      assetBucket,
+      `${prefix}/logo/current`,
+      card.logoImageDataUrl,
+      card.logoImageDataUrl ? currentLogoObjectPath : null,
+    ),
     card.status === "deleted"
       ? Promise.resolve(null)
-      : uploadDataUrl(generatedBucket, `${prefix}/generated/current`, card.generatedImageDataUrl),
+      : uploadDataUrl(
+        generatedBucket,
+        `${prefix}/generated/current`,
+        card.generatedImageDataUrl,
+        card.generatedImageDataUrl ? currentGeneratedObjectPath : null,
+      ),
   ]);
 
   const result = await supabase.rpc("save_my_beauty_share_card", {
@@ -152,8 +177,14 @@ export const saveRemoteBeautyShareCard = async (workspace: BeautyWorkspace) => {
   if (!row) throw new Error("beauty_share_card_save_empty_response");
   if (row.save_status === "conflict") throw new Error("beauty_share_card_conflict");
   expectedCardUpdatedAt = row.updated_at;
+  currentBackgroundObjectPath = backgroundObjectPath;
+  currentLogoObjectPath = logoObjectPath;
+  currentGeneratedObjectPath = generatedObjectPath;
 };
 
 export const resetRemoteBeautyShareCardState = () => {
   expectedCardUpdatedAt = null;
+  currentBackgroundObjectPath = null;
+  currentLogoObjectPath = null;
+  currentGeneratedObjectPath = null;
 };
