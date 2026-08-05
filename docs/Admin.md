@@ -1,89 +1,77 @@
-# Admin Architecture
+# Admin Panel
 
-Admin tools exist to protect local communities and keep activities healthy. They must be built after backend roles and RLS are stable.
+Status: Active product-area locator. GitHub `main` and verified runtime remain authoritative.
+Last reviewed: 2026-08-05.
 
-## Roles
+## Purpose
 
-- `user`: regular participant.
-- `organizer`: creator/owner of an Activity.
-- `moderator`: reviews reports, unsafe events, and chat moderation holds.
-- `admin`: manages platform configuration and high-risk actions.
+The Admin Panel protects GO IRL operations through server-verified Telegram administration. This file is a concise repository locator; durable workflow, roadmap, reports, and handoff context live in the canonical Google Drive workspace.
 
-Current Sprint 1 admin visibility still uses a temporary frontend allowlist, but backend enforcement now has a forward-compatible `public.user_roles` design in `supabase/migration_v2_backend_foundation.sql`. Production identity enforcement must move to trusted Telegram `initData` validation and backend/RLS claims.
+## Implemented baseline
 
-## Admin Capabilities
+The merged ADMIN005-ADMIN009 baseline includes:
 
-Future admin surfaces:
+- protected Telegram-authenticated admin access with fail-closed server verification;
+- single-use role invitations with a maximum 24-hour lifetime for `organizer` and `professional`;
+- server-backed listing of elevated roles;
+- guarded demotion of `organizer`, `professional`, and `moderator` to `user`;
+- protection of `admin` from demotion;
+- PII-safe audit logging for successful demotions;
+- mobile-first tabs for Overview, Roles, Integrations, and Updates;
+- truthful read-only integration and update states without browser deployment, rollback, SQL, migration, secret, auth, RLS, or production-data controls.
 
-- categories
-- cities
-- activity types
-- users
-- activities
-- reports
-- source management
-- notification/digest health
-- analytics
-- RLI review
-- moderation queue
+The ADMIN006 response-contract correction was merged through PR #518:
 
-## Permissions
+- head: `60d53749a22e48a66595c853c5196560f1f63e56`;
+- merge SHA: `949b1fe8308079094cd0a70f7a71beefc163a7e7`;
+- exact-head CI run `30699129636`: PASS.
 
-Admin permissions must be least-privilege:
+## Current verification boundary
 
-- category/city management requires admin.
-- report review requires moderator or admin.
-- user bans require admin or elevated moderator.
-- event deletion requires organizer or admin.
-- participant approve/reject requires organizer, moderator, or admin.
-- source management requires admin.
-- analytics access must avoid raw private data.
+At review time, the latest verified Vercel production deployment was `dpl_9Kp4xyVArtuUnCC5Wkemogaie8cq`, READY on Git SHA `f34ee1f6285aeed5df68254ad04a7b46d9fd1b4c`.
 
-## Safety Rules
+That deployment proves a current production build of `main`; it does not prove fresh Admin Panel behavior on that exact SHA.
 
-- Admin actions must be logged.
-- Admin UI must not rely only on frontend checks.
-- Service-role operations stay on backend/n8n only.
-- Admin panel must not expose unnecessary personal data.
+Gate A remains Partial / Blocked. ADMIN010 must not start until all required evidence is recorded:
 
-## Admin005 Role Invitations
+- disposable-account organizer and professional invitation redemption;
+- replay, expiry, malformed-token, and role-conflict handling;
+- guarded demotion of a disposable elevated-role account;
+- verification of the expected PII-safe `audit_log` row;
+- exact tested deployment SHA and Telegram client evidence.
 
-The repository implementation supports admin-created bearer invitations for two bounded role promotions:
+## Safety boundaries
 
-- `user` to `organizer`;
-- `user` to `professional` (shown as `Мастер` in the Services UI).
+Separate explicit approval is required for:
 
-The administrator selects only the target role. Telegram supplies the recipient identity when the link is opened inside the Mini App. Invitations are deliberately not bound to an identity in advance, so the first verified Telegram account to redeem a link receives the role.
+- `.env` and secrets;
+- auth and RLS;
+- SQL, migrations, Edge Function production deployment, and production data;
+- force push;
+- merge and production deployment;
+- destructive admin actions, impersonation, private-chat access, or permanent deletion.
 
-Security boundaries:
+## Canonical workspace
 
-- one use only;
-- maximum lifetime of 24 hours;
-- 256-bit random bearer token;
-- only the SHA-256 token hash is stored;
-- creation requires a freshly verified Telegram identity whose current database role is `admin`;
-- redemption accepts only a current `user` role and does not overwrite organizer, professional, moderator, or admin roles;
-- role assignment and token consumption occur atomically;
-- raw token, Telegram `initData`, bearer session, and JWT are excluded from audit metadata;
-- role invitation parameters are not treated as Activity invitation claims.
+- Admin Panel workspace: https://drive.google.com/drive/folders/1anTWsX51AAIahuk27wvf6QO7Lc83RfzT
+- README: https://docs.google.com/document/d/1XPjqvfSa8zVSZZidp5YfI3JjWKcfcryKRkquLeMkRcI/edit
+- Task workflow: https://docs.google.com/document/d/1n33bJcWvRD0QDfs-UJ-CyBgoQXTP38Vh2tm01M230mU/edit
+- Roadmap: https://docs.google.com/document/d/1y0_MLIkwVj1ecJ5z2vXkRyyELopcLJ5jPjDEgAolx2A/edit
+- Reports index: https://docs.google.com/document/d/11sVjjYHZ7sHW1Exl2LLYO1jpfMZFvFL3pB0JCNcGZQg/edit
+- Current consistency audit: https://docs.google.com/document/d/1AHwpyYx1uzZnhcuavg8RRVsCNJDqdlluE7GdkUsWcJs/edit
 
-Repository presence does not prove that the migration or Edge Function is deployed. Production application remains a separate approval and verification gate.
+## Resume sequence
 
-## Backend Foundation
+1. Read the Drive README and workflow.
+2. Read the current roadmap and consistency audit.
+3. Resolve the current GitHub Issue/PR, `main`, CI, and runtime state.
+4. Perform one bounded ADMIN task only.
+5. Save a new immutable report and update the reports index.
 
-Migration v2 adds:
+## Current repository snapshot
 
-- `user_roles` for `user`, `organizer`, `professional`, `moderator`, and `admin`.
-- role-aware Supabase helper functions.
-- `audit_log`.
-- database audit triggers for activity and membership changes.
-- verification SQL in `supabase/verify_backend_foundation.sql`.
+This reconciliation branch was created from `main` at `321acacd95aa03bfe5d3fe12e5099443b62be452`.
 
-`admin_users` remains for backward compatibility and seeds existing admins into `user_roles`.
+## Next action
 
-## Not Implemented Now
-
-- no admin runtime UI
-- no new admin API
-- no moderation dashboard
-- no analytics dashboard
+Review and merge the docs-only reconciliation PR after its exact-head checks are resolved. Deploy target: none. After merge, complete the separately authorized Gate A disposable-account production smoke before starting ADMIN010.
