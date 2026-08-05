@@ -1,18 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, it } from "vitest";
-import { useAppStore } from "../store";
+import { describe, expect, it } from "vitest";
 import { ProfilePanel } from "./ProfilePanel";
 
 describe("ProfilePanel", () => {
-  beforeEach(() => {
-    useAppStore.setState({ userRole: "user" });
-  });
-
   it("renders the compact owned shell without portal coupling", () => {
     const html = renderToStaticMarkup(
       <ProfilePanel
         language="en"
         editing={false}
+        userRole="user"
         renderSection={(section) => <div>{section}</div>}
       />,
     );
@@ -27,11 +23,11 @@ describe("ProfilePanel", () => {
   });
 
   it("shows the Beauty workspace entry to professionals", () => {
-    useAppStore.setState({ userRole: "professional" });
     const html = renderToStaticMarkup(
       <ProfilePanel
         language="en"
         editing={false}
+        userRole="professional"
         renderSection={(section) => <div>{section}</div>}
       />,
     );
@@ -41,11 +37,11 @@ describe("ProfilePanel", () => {
   });
 
   it("shows the Beauty workspace entry to admins", () => {
-    useAppStore.setState({ userRole: "admin" });
     const html = renderToStaticMarkup(
       <ProfilePanel
         language="en"
         editing={false}
+        userRole="admin"
         renderSection={(section) => <div>{section}</div>}
       />,
     );
@@ -58,6 +54,7 @@ describe("ProfilePanel", () => {
       <ProfilePanel
         language="en"
         editing
+        userRole="user"
         renderSection={(section) => <div>{section}</div>}
       />,
     );
