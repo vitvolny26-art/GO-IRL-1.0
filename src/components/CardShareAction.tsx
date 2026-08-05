@@ -40,6 +40,7 @@ type PreparedWhatsAppShare = {
   imageUrl: string;
   downloadUrl: string;
   text: string;
+  directSend: boolean;
   downloadAccepted: boolean;
   error: string | null;
 };
@@ -66,7 +67,7 @@ const whatsappLabels = {
     title: "Карточка готова",
     steps: ["Скачайте JPEG-карточку.", "Откройте WhatsApp.", "Прикрепите карточку из загрузок."],
     download: "Скачать JPEG",
-    open: "Открыть WhatsApp",
+    open: "Отправить в WhatsApp",
     close: "Закрыть",
     cancelled: "Скачивание карточки отменено.",
     failed: "Не удалось подготовить JPEG. Попробуйте ещё раз.",
@@ -76,7 +77,7 @@ const whatsappLabels = {
     title: "Картка готова",
     steps: ["Завантажте JPEG-картку.", "Відкрийте WhatsApp.", "Прикріпіть картку із завантажень."],
     download: "Завантажити JPEG",
-    open: "Відкрити WhatsApp",
+    open: "Надіслати у WhatsApp",
     close: "Закрити",
     cancelled: "Завантаження картки скасовано.",
     failed: "Не вдалося підготувати JPEG. Спробуйте ще раз.",
@@ -86,7 +87,7 @@ const whatsappLabels = {
     title: "Karta je připravena",
     steps: ["Stáhněte kartu JPEG.", "Otevřete WhatsApp.", "Přiložte kartu ze stažených souborů."],
     download: "Stáhnout JPEG",
-    open: "Otevřít WhatsApp",
+    open: "Odeslat do WhatsApp",
     close: "Zavřít",
     cancelled: "Stažení karty bylo zrušeno.",
     failed: "JPEG se nepodařilo připravit. Zkuste to znovu.",
@@ -96,7 +97,7 @@ const whatsappLabels = {
     title: "Card ready",
     steps: ["Download the JPEG card.", "Open WhatsApp.", "Attach the card from your downloads."],
     download: "Download JPEG",
-    open: "Open WhatsApp",
+    open: "Send to WhatsApp",
     close: "Close",
     cancelled: "Card download was cancelled.",
     failed: "Could not prepare the JPEG. Please try again.",
@@ -205,6 +206,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     setOpen(false);
     setExpanded(false);
     setPreparingWhatsApp(true);
+    const directSend = canPrepareBeautyTelegramShare(url);
     const imageUrl = buildCardShareImageUrl(content);
     const downloadUrl = buildCardShareDownloadUrl(content);
     const landingUrl = buildCardShareLandingUrl(content);
@@ -215,6 +217,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         imageUrl: "",
         downloadUrl: "",
         text: "",
+        directSend,
         downloadAccepted: false,
         error: whatsappCopy.failed,
       });
@@ -231,6 +234,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         imageUrl,
         downloadUrl,
         text: buildCardShareText({ ...content, url: landingUrl }),
+        directSend,
         downloadAccepted: false,
         error: null,
       });
@@ -240,6 +244,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
         imageUrl,
         downloadUrl,
         text: buildCardShareText({ ...content, url: landingUrl }),
+        directSend,
         downloadAccepted: false,
         error: whatsappCopy.failed,
       });
@@ -341,8 +346,11 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   };
 
   const openPreparedWhatsApp = () => {
-    if (!preparedWhatsApp?.downloadAccepted) return;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(preparedWhatsApp.text)}`;
+    const prepared = preparedWhatsApp;
+    if (!prepared || (!prepared.directSend && !prepared.downloadAccepted)) return;
+    const whatsappUrl = prepared.directSend
+      ? buildCardShareTarget("whatsapp", content)
+      : `https://wa.me/?text=${encodeURIComponent(prepared.text)}`;
     openExternalShareTarget(whatsappUrl);
     setPreparedWhatsApp(null);
   };
@@ -414,13 +422,7 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
                 event.preventDefault();
                 event.stopPropagation();
                 if (channel.id === "whatsapp") {
-                  if (canPrepareBeautyTelegramShare(url)) {
-                    setOpen(false);
-                    setExpanded(false);
-                    openExternalShareTarget(buildCardShareTarget("whatsapp", content));
-                  } else {
-                    void prepareWhatsAppCard();
-                  }
+                  void prepareWhatsAppCard();
                 } else {
                   void share(channel.id);
                 }
@@ -460,23 +462,27 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
               <>
                 <strong>{whatsappCopy.title}</strong>
                 {preparedWhatsApp.imageUrl ? <img src={preparedWhatsApp.imageUrl} alt={title} /> : null}
-                <ol className="whatsapp-share-instruction">
-                  {whatsappCopy.steps.map((step) => <li key={step}>{step}</li>)}
-                </ol>
+                {!preparedWhatsApp.directSend ? (
+                  <ol className="whatsapp-share-instruction">
+                    {whatsappCopy.steps.map((step) => <li key={step}>{step}</li>)}
+                  </ol>
+                ) : null}
                 {preparedWhatsApp.error ? <p role="alert">{preparedWhatsApp.error}</p> : null}
-                <button
-                  className="whatsapp-share-download"
-                  type="button"
-                  onClick={downloadPreparedWhatsApp}
-                  disabled={!preparedWhatsApp.downloadUrl}
-                >
-                  {whatsappCopy.download}
-                </button>
+                {!preparedWhatsApp.directSend ? (
+                  <button
+                    className="whatsapp-share-download"
+                    type="button"
+                    onClick={downloadPreparedWhatsApp}
+                    disabled={!preparedWhatsApp.downloadUrl}
+                  >
+                    {whatsappCopy.download}
+                  </button>
+                ) : null}
                 <button
                   className="whatsapp-share-send"
                   type="button"
                   onClick={openPreparedWhatsApp}
-                  disabled={!preparedWhatsApp.downloadAccepted}
+                  disabled={!preparedWhatsApp.directSend && !preparedWhatsApp.downloadAccepted}
                 >
                   <img src="/icons/whatsapp.svg" alt="" />
                   {whatsappCopy.open}
