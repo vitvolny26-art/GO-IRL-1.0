@@ -1,0 +1,51 @@
+name: SHARE004 Migration Smoke
+
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/20260805193000_share004_beauty_share_card_persistence.sql"
+      - "supabase/migrations/20260805194000_share004_beauty_share_card_service_keys_hotfix.sql"
+      - "supabase/migrations/20260805195000_share004_beauty_share_card_advisor_hardening.sql"
+      - "scripts/test-share004-migrations.cjs"
+      - ".github/workflows/share004-migration-smoke.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260805193000_share004_beauty_share_card_persistence.sql"
+      - "supabase/migrations/20260805194000_share004_beauty_share_card_service_keys_hotfix.sql"
+      - "supabase/migrations/20260805195000_share004_beauty_share_card_advisor_hardening.sql"
+      - "scripts/test-share004-migrations.cjs"
+      - ".github/workflows/share004-migration-smoke.yml"
+
+jobs:
+  migration-smoke:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: go_irl_share004
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d go_irl_share004"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Verify exact migration chain
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/go_irl_share004
+        run: node scripts/test-share004-migrations.cjs
