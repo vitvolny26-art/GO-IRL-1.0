@@ -17,7 +17,7 @@ import { useBeautyWorkspaceAttentionCount } from "../beauty/beautyWorkspaceAtten
 import { canShowBeautyWorkspaceEntry } from "../beauty/servicesRoleNavigation";
 import { useAppStore } from "../store";
 import type { ProfilePanelSection, ProfilePanelState } from "../profile/profilePanelTypes";
-import type { Language } from "../types";
+import type { Language, UserRole } from "../types";
 
 type ProfilePanelCopy = {
   title: string;
@@ -95,13 +95,15 @@ type ProfilePanelProps = {
   editing: boolean;
   renderSection: (section: ProfilePanelSection) => ReactNode;
   onSectionChange?: (section: ProfilePanelSection) => void;
+  userRole?: UserRole;
 };
 
-export function ProfilePanel({ language, editing, renderSection, onSectionChange }: ProfilePanelProps) {
+export function ProfilePanel({ language, editing, renderSection, onSectionChange, userRole: userRoleOverride }: ProfilePanelProps) {
   const [activeSection, setActiveSection] = useState<ProfilePanelSection>(() => (
     typeof window === "undefined" ? defaultProfilePanelSection : resolveProfileSectionFromPath(window.location.pathname)
   ));
-  const userRole = useAppStore((state) => state.userRole);
+  const storedUserRole = useAppStore((state) => state.userRole);
+  const userRole = userRoleOverride ?? storedUserRole;
   const attentionCount = useBeautyWorkspaceAttentionCount();
   const labels = copy[language];
   const applySection = useCallback((section: ProfilePanelSection) => {
