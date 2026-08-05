@@ -22,8 +22,16 @@ type BeautyShareCardStatusRow = {
   updated_at: string;
 };
 
+type RpcError = { code?: string; message?: string } | null;
+type BeautyShareCardStatusClient = {
+  rpc: (
+    functionName: string,
+    parameters: { p_profile_id: string },
+  ) => Promise<{ data: unknown; error: RpcError }>;
+};
+
 type BeautyShareCardStatusDependencies = {
-  client?: Pick<typeof supabase, "rpc">;
+  client?: BeautyShareCardStatusClient;
   role?: UserRole;
   browserMock?: boolean;
 };
@@ -35,8 +43,8 @@ const lifecycleStatuses = new Set<BeautyShareCardLifecycleStatus>([
   "deleted",
 ]);
 
-const isMissingRpc = (error: { code?: string; message?: string } | null) =>
-  error?.code === "PGRST202" || Boolean(error?.message?.includes("Could not find the function"));
+const isMissingRpc = (error: RpcError) => error?.code === "PGRST202"
+  || Boolean(error?.message?.includes("Could not find the function"));
 
 export const canReadBeautyShareCardStatus = (role: UserRole) => role === "organizer" || role === "admin";
 
@@ -48,7 +56,7 @@ export const loadBeautyShareCardStatus = async (
   const browserMock = dependencies.browserMock ?? isBrowserMockMode();
   if (!profileId || browserMock || !canReadBeautyShareCardStatus(role)) return null;
 
-  const client = dependencies.client || supabase;
+  const client = dependencies.client || (supabase as unknown as BeautyShareCardStatusClient);
   const result = await client.rpc("go_irl_get_beauty_share_card_status", {
     p_profile_id: profileId,
   });
