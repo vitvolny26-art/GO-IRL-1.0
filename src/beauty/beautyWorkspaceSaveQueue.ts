@@ -90,7 +90,7 @@ const renderDock = () => {
   dock.className = `beauty-workspace-save-dock${saveStatus === "error" ? " is-error" : ""}`;
   dock.setAttribute("role", "status");
 
-  let message = saveCopy[currentLanguage()].saved;
+  let message: string = saveCopy[currentLanguage()].saved;
   if (saveStatus === "idle") message = saveCopy[currentLanguage()].action;
   if (saveStatus === "saving") message = saveCopy[currentLanguage()].saving;
   if (saveStatus === "error") message = saveCopy[currentLanguage()].error;
