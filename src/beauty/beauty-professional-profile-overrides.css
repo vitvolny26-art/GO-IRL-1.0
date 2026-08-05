@@ -74,7 +74,7 @@
   border-radius:50%;
   background:
     linear-gradient(145deg,rgba(27,10,32,.28),rgba(8,2,10,.66)),
-    url('/service-icons/s-01-manicure.webp') center/cover no-repeat;
+    url('/services/icons/s-01-manicure.webp') center/cover no-repeat;
   box-shadow:0 12px 30px rgba(0,0,0,.34);
   content:"";
 }
