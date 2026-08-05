@@ -1,3 +1,5 @@
+.services-bookings-portal-active > :not([data-services-bookings-portal]) { display: none !important; }
+[data-services-bookings-portal] { display: block; }
 .services-bookings-view { display: grid; gap: 14px; }
 .services-bookings-list { display: grid; gap: 10px; }
 .services-bookings-fallback, .services-bookings-state { padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 13px; line-height: 1.45; }
