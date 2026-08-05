@@ -39,12 +39,24 @@ Prevent overlapping Beauty professional workspace autosaves from using the same 
 
 ## Checks
 
-- exact-head GitHub Actions: pending.
+- base `main`: `7a5d9131c7f43ed2376de66755bb3839a45c0a29`;
+- Draft PR: #681;
+- implementation/report head: `dcf443a144b1a62b7b46b6839268c42006d9320a`;
+- GitHub Actions CI #1788, run `31056164524`, job `92474017028`: PASS;
+- dependency install: PASS;
+- repository check: PASS, 1284 tracked files;
+- diff check: PASS;
+- tests: PASS, 155 files and 723 tests including Staff OS;
+- focused save-queue tests: PASS, 2 tests;
+- typecheck: PASS;
+- lint: PASS with one pre-existing warning in `api/_shared/admin-authorization.ts` outside this scope;
+- build: PASS;
+- bundle budget: PASS.
 
 ## Rollback
 
-Close the pull request without merging. No production state was changed.
+Close PR #681 without merging. No production state was changed.
 
 ## Next step
 
-Require exact-head CI. Merge and deployment require separate explicit approval.
+Require exact-head CI after this report-only update. Then mark PR #681 ready for review. Merge and deployment require separate explicit approval.
