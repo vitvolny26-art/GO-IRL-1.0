@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import type { TelegramEventCardInput } from "./telegram-event-card.js";
 import { resolveEventShareBackgroundUrl, serviceShareBackgroundUrls } from "./event-share-backgrounds.js";
-import { buildBeautyShareCardSvg } from "./beauty-share-card-svg.js";
+import { buildBeautyShareCardSvg, buildTelegramBeautyShareCardSvg } from "./beauty-share-card-svg.js";
 import { buildMetaInvitationCardSvg, buildTelegramShareCardSvg } from "./telegram-share-card-svg.js";
 import { readEnv } from "./env.js";
 
@@ -126,25 +126,34 @@ const renderShareCardJpeg = async (svg: string, input: TelegramEventCardInput) =
     .toBuffer();
 };
 
-export const renderTelegramShareCardJpeg = (input: TelegramEventCardInput) =>
-  renderShareCardJpeg(buildTelegramShareCardSvg(input), input);
-
-export const renderBeautyShareCardJpeg = async (input: TelegramEventCardInput) => {
+const renderBeautyCardJpeg = async (input: TelegramEventCardInput, telegram = false) => {
   const sharp = await loadSharp();
+  const width = 1080;
+  const height = telegram ? 900 : 1020;
   const backgroundUrl = serviceShareBackgroundUrls.manicure;
-  const overlay = { input: Buffer.from(buildBeautyShareCardSvg(input)), left: 0, top: 0 };
+  const svg = telegram ? buildTelegramBeautyShareCardSvg(input) : buildBeautyShareCardSvg(input);
+  const overlay = { input: Buffer.from(svg), left: 0, top: 0 };
   if (existsSync(backgroundUrl)) {
     return sharp(readFileSync(backgroundUrl))
-      .resize(1080, 1020, { fit: "cover", position: "attention" })
+      .resize(width, height, { fit: "cover", position: "attention" })
       .composite([overlay])
       .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
       .toBuffer();
   }
-  return sharp({ create: { width: 1080, height: 1020, channels: 3, background: "#160d1d" } })
+  return sharp({ create: { width, height, channels: 3, background: "#160d1d" } })
     .composite([overlay])
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();
 };
+
+export const renderTelegramShareCardJpeg = (input: TelegramEventCardInput) =>
+  renderShareCardJpeg(buildTelegramShareCardSvg(input), input);
+
+export const renderBeautyShareCardJpeg = (input: TelegramEventCardInput) =>
+  renderBeautyCardJpeg(input);
+
+export const renderTelegramBeautyShareCardJpeg = (input: TelegramEventCardInput) =>
+  renderBeautyCardJpeg(input, true);
 
 export const renderMetaInvitationCardJpeg = async (input: TelegramEventCardInput) => {
   const sharp = await loadSharp();

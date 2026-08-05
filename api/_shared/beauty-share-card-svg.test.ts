@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
-import { buildBeautyShareCardSvg } from "./beauty-share-card-svg";
-import { renderBeautyShareCardJpeg } from "./telegram-share-card-image";
+import { buildBeautyShareCardSvg, buildTelegramBeautyShareCardSvg } from "./beauty-share-card-svg";
+import { renderBeautyShareCardJpeg, renderTelegramBeautyShareCardJpeg } from "./telegram-share-card-image";
 import type { TelegramEventCardInput } from "./telegram-event-card";
 
 const card: TelegramEventCardInput = {
@@ -45,14 +45,34 @@ describe("Beauty share card SVG", () => {
     expect(svg).not.toContain("go-irl-1-0.vercel.app/beauty/beauty-test");
   });
 
-  it("produces an opaque server JPEG with the horizontal dimensions", async () => {
+  it("renders a wider Telegram-only 1080x900 card with three description lines and no fake CTA", () => {
+    const svg = buildTelegramBeautyShareCardSvg({
+      ...card,
+      description: "Комбинированный маникюр, выравнивание и укрепление натуральных ногтей, однотонные покрытия и минималистичный дизайн",
+    });
+    expect(svg).toContain('width="1080" height="900"');
+    expect(svg.match(/data-beauty-description-line=/g)).toHaveLength(3);
+    expect(svg.match(/data-beauty-service-row=/g)).toHaveLength(3);
+    expect(svg).toContain("Центр, Оломоуц");
+    expect(svg).not.toContain("Услуги и запись");
+  });
+
+  it("produces opaque server JPEGs with channel-specific dimensions", async () => {
     const jpeg = await renderBeautyShareCardJpeg(card);
+    const telegramJpeg = await renderTelegramBeautyShareCardJpeg(card);
     const metadata = await sharp(jpeg).metadata();
+    const telegramMetadata = await sharp(telegramJpeg).metadata();
     const stats = await sharp(jpeg).stats();
+    const telegramStats = await sharp(telegramJpeg).stats();
     expect(metadata.format).toBe("jpeg");
     expect(metadata.width).toBe(1080);
     expect(metadata.height).toBe(1020);
+    expect(telegramMetadata.format).toBe("jpeg");
+    expect(telegramMetadata.width).toBe(1080);
+    expect(telegramMetadata.height).toBe(900);
     expect(jpeg.length).toBeLessThan(5 * 1024 * 1024);
+    expect(telegramJpeg.length).toBeLessThan(5 * 1024 * 1024);
     expect(stats.isOpaque).toBe(true);
+    expect(telegramStats.isOpaque).toBe(true);
   });
 });

@@ -64,12 +64,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const card = await loadTrustedTelegramBeautyCard(body.slug, body.language, body.date, body.time, publicOrigin());
     if (!card) return json(response, 404, { error: "beauty_profile_not_found" });
 
-    const image = new URL("/api/meta/event-preview", publicOrigin());
+    const image = new URL("/api/meta/telegram-beauty-card", publicOrigin());
     image.searchParams.set("slug", body.slug);
     image.searchParams.set("language", card.language);
     if (typeof body.date === "string" && body.date.trim()) image.searchParams.set("date", body.date.trim());
-    image.searchParams.set("format", "image");
-    image.searchParams.set("v", "11");
+    image.searchParams.set("v", "12");
     const imageUrl = image.toString();
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
       method: "POST",
