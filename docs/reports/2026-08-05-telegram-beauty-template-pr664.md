@@ -26,9 +26,12 @@ Implement the supplied 1080x900 Telegram Beauty share-card template with dynamic
 
 The supplied HTML wrapper is not part of the server JPEG pipeline. The SVG design can be implemented directly, while the Google Fonts @import must be replaced by a self-hosted font for deterministic Sharp rendering on VPS and Vercel.
 
+The initial PR description required one thin gold frame without an inner frame, but the implementation and regression test still retained a second inner path. This mismatch was found during exact-head review after CI had passed.
+
 ## Changes made
 
-- Implemented a Telegram-only 1080x900 template with left shade, double inward-rounded gold frame, top-right logo/photo slot, Great Vibes title, three-line description, three dynamic service slots, prices, and bottom-right address.
+- Implemented a Telegram-only 1080x900 template with left shade, one thin inward-rounded gold frame, top-right logo/photo slot, Great Vibes title, three-line description, three dynamic service slots, prices, and bottom-right address.
+- Removed the duplicate inner Telegram frame and added a negative regression assertion preventing its return.
 - Preserved dynamic profile data and the photo-icon fallback when no trusted avatar/logo exists.
 - Added self-hosted @fontsource/great-vibes 5.3.0 and fontconfig registration.
 - Preserved the existing web, WhatsApp, and OG Beauty card.
@@ -36,14 +39,11 @@ The supplied HTML wrapper is not part of the server JPEG pipeline. The SVG desig
 
 ## Checks
 
-- pnpm run repo:check: PASS
-- pnpm run lint: PASS
-- pnpm run typecheck: PASS
-- pnpm run build: PASS
-- pnpm run test: PASS
-- git diff --check: PASS
-- GitHub Actions CI #1729 on implementation head 12ca9d7789f101c2d0d84cfbd792d8197b91e83a: PASS
+- Earlier implementation head 12ca9d7789f101c2d0d84cfbd792d8197b91e83a: GitHub Actions CI #1729 PASS.
+- Earlier report head 936625a6ff0988b8a2626282466aa4ce6b88d0df: GitHub Actions CI #1730 PASS.
+- Single-frame correction commits: baa0deffedaeda38ff7ac0dc7523dd3e84d5830c and 764e2b4070db96f5810d0a0dca500da39d3045d7.
+- Exact-head CI after this report update: pending.
 
 ## Next step
 
-Visual approval, then explicit merge and deployment approval.
+Require exact-head GitHub Actions success and visual approval. Merge and production deployment require separate explicit authorization.
