@@ -43,14 +43,24 @@ Restore an in-app Beauty card preview before opening WhatsApp.
 
 - base `main`: `70180a89bde4b09c381582c99857b506a616a653`;
 - branch: `fix/beauty-whatsapp-preview-20260806`;
-- implementation head before this report: `6dd0564a46d7f06f109d1c642e7a18f3fc1b6570`;
-- compare against base: 2 modified source/test files, 53 additions and 39 deletions before report;
-- GitHub Actions exact-head CI: pending.
+- Draft PR: #685;
+- implementation/report head: `e21f7816ee649d4e2d24e0fe8f20d3e6448c58a0`;
+- GitHub Actions CI #1797, run `31058163567`, job `92480119037`: PASS;
+- dependency install: PASS;
+- repository check: PASS, 1284 tracked files;
+- diff check: PASS;
+- tests: PASS, 155 files and 723 tests including Staff OS;
+- focused WhatsApp UX tests: PASS, 7 tests;
+- typecheck: PASS;
+- lint: PASS with one pre-existing warning in `api/_shared/admin-authorization.ts` outside this scope;
+- build: PASS;
+- bundle budget: PASS, 10 JavaScript chunks checked;
+- compare against base before this report update: 2 modified source/test files, 53 additions and 39 deletions.
 
 ## Rollback
 
-Close the PR without merging. Production remains unchanged.
+Close PR #685 without merging. Production remains unchanged.
 
 ## Next step
 
-Open a Draft PR, verify exact-head GitHub Actions, then mark ready only if all required gates pass. Merge and deployment require explicit approval.
+Require exact-head CI after this report-only update. Then mark PR #685 ready for review. Merge and deployment require explicit approval.
