@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { initializeTrustedAuth } from "../authSession";
 import { resolveCurrentUserRole, useAppStore } from "../store";
 import type { Language, UserRole } from "../types";
+import { BeautyMasterWorkspacePage } from "./BeautyMasterWorkspacePage";
 import { BeautyPublicSlugEditor } from "./BeautyPublicSlugEditor";
 import { beautyRouteAccess } from "./beautyRouteAccess";
 import "./beauty-setup.css";
@@ -12,6 +13,8 @@ const accessCopy: Record<Language, { loading: string; title: string; message: st
   cs: { loading: "Ověřujeme přístup…", title: "Přístup omezen", message: "Beauty workspace je dostupný pouze profesionálnímu vlastníkovi. Vracíme vás do služeb.", action: "Zpět na služby" },
   en: { loading: "Checking access…", title: "Access denied", message: "The Beauty workspace is available only to its professional owner. Returning you to Services.", action: "Back to Services" },
 };
+
+const isWorkspaceRoute = () => window.location.pathname.replace(/\/+$/, "") === "/beauty/workspace";
 
 export function BeautyRouteGuard({ children }: { children: ReactNode }) {
   const language = useAppStore((state) => state.language);
@@ -44,5 +47,5 @@ export function BeautyRouteGuard({ children }: { children: ReactNode }) {
     return <main className="beauty-shell"><section className="beauty-card" role="alert"><div className="beauty-note"><strong>{text.title}</strong><span>{text.message}</span></div><a className="beauty-home-button" href="/services">{text.action}</a></section></main>;
   }
 
-  return <>{children}<BeautyPublicSlugEditor /></>;
+  return <>{isWorkspaceRoute() ? <BeautyMasterWorkspacePage /> : children}<BeautyPublicSlugEditor /></>;
 }
