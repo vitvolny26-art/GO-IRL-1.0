@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Ban, BellDot, CalendarDays, Check, Clock3, House, MessageCircle, Plus, Scissors, UserRound, X, type LucideIcon } from "lucide-react";
+import { Ban, BellDot, CalendarDays, Check, Clock3, CreditCard, House, MessageCircle, Plus, Scissors, UserRound, X, type LucideIcon } from "lucide-react";
 import {
   listServiceBookings,
   subscribeServiceBookings,
@@ -13,7 +13,7 @@ type Status = ServiceBookingStatus;
 type Appointment = { id: string; clientName: string; phone: string; date: string; time: string; requestedTime?: string; contactBeforeConfirmation?: boolean; status: Status; source: "client" | "professional"; bookingId?: string };
 type TimeBlock = { id: string; date: string; time: string; label: string };
 type PilotData = { appointments: Appointment[]; blocks: TimeBlock[] };
-type View = "overview" | "requests" | "appointments" | "page";
+type View = "overview" | "requests" | "appointments" | "page" | "business-card";
 
 const pilotKey = "go-irl-beauty-pilot-v1";
 export const resetBeautyPilotWorkspace = () => localStorage.removeItem(pilotKey);
@@ -58,9 +58,10 @@ type BeautyPilotWorkspaceProps = {
   setup: BeautyWorkspace;
   onEdit: () => void;
   pageEditor?: ReactNode;
+  businessCardEditor?: ReactNode;
 };
 
-export function BeautyPilotWorkspace({ setup, onEdit, pageEditor }: BeautyPilotWorkspaceProps) {
+export function BeautyPilotWorkspace({ setup, onEdit, pageEditor, businessCardEditor }: BeautyPilotWorkspaceProps) {
   const [data, setData] = useState<PilotData>(load);
   const [serviceBookings, setServiceBookings] = useState<ServiceBooking[]>(listServiceBookings);
   const [view, setView] = useState<View>("overview");
@@ -168,13 +169,29 @@ export function BeautyPilotWorkspace({ setup, onEdit, pageEditor }: BeautyPilotW
     {pageEditor && <div className="beauty-workspace-page-editor">{pageEditor}</div>}
   </section>;
 
+  const businessCard = <section className="beauty-workspace-view beauty-workspace-business-card-view">
+    <div className="beauty-workspace-section-head"><div><span className="beauty-preview-badge">ВИЗИТКА</span><h2>Визитка мастера</h2><p>Предпросмотр, фон, логотип, услуги и статус карточки для шаринга.</p></div></div>
+    {businessCardEditor ? <div className="beauty-workspace-business-card-editor">{businessCardEditor}</div> : <div className="beauty-workspace-empty">Редактор визитки недоступен.</div>}
+  </section>;
+
+  const currentView = view === "overview"
+    ? overview
+    : view === "requests"
+      ? requests
+      : view === "appointments"
+        ? appointments
+        : view === "page"
+          ? page
+          : businessCard;
+
   return <div className="beauty-pilot">
-    {view === "overview" ? overview : view === "requests" ? requests : view === "appointments" ? appointments : page}
+    {currentView}
     <nav className="beauty-pilot-nav" aria-label="Разделы кабинета мастера">
       <NavButton active={view === "overview"} icon={House} label="Обзор" onClick={() => setView("overview")} />
       <NavButton active={view === "requests"} icon={BellDot} label="Запросы" badge={pendingAppointments.length} onClick={() => setView("requests")} />
       <NavButton active={view === "appointments"} icon={CalendarDays} label="Записи" onClick={() => setView("appointments")} />
       <NavButton active={view === "page"} icon={UserRound} label="Страница" onClick={() => setView("page")} />
+      <NavButton active={view === "business-card"} icon={CreditCard} label="Визитка" onClick={() => setView("business-card")} />
     </nav>
     {current && <div className="beauty-dialog-backdrop" role="presentation" onPointerDown={() => setSelected("")}><section className="beauty-dialog" role="dialog" aria-modal="true" onPointerDown={(event) => event.stopPropagation()}>
       <button className="beauty-dialog-close" type="button" onClick={() => setSelected("")}><X /></button><span className={`beauty-preview-badge status-${current.status}`}>{labels[current.status]}</span>
