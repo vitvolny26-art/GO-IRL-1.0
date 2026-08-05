@@ -43,10 +43,10 @@ const files: Readonly<Record<string,string>> = {
 
 export const getEventBackground = (code:string) => {
   const file = files[code];
-  return file ? `/events/cards-3x4/${file.split("#")[0]}` : null;
+  return file ? `/activities/cards-3x4/${file.split("#")[0]}` : null;
 };
 
 export const getEventSheetBackground = (code:string) => {
   const file = files[code];
-  return file ? `/events/sheets-9x16/${file.split("#")[0]}` : null;
+  return file ? `/activities/sheets-9x16/${file.split("#")[0]}` : null;
 };
