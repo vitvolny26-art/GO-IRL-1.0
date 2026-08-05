@@ -41,10 +41,20 @@ Expose the released Beauty share-card lifecycle status to authorized organizer a
 
 ## Checks
 
-Exact-head GitHub Actions CI is pending.
+GitHub Actions CI run `31039941425` passed on commit `6172ee27eb0b8753f54bb653a08106ab431ca43d`:
+
+- repository check — PASS;
+- diff check — PASS;
+- tests — PASS;
+- typecheck — PASS;
+- lint — PASS;
+- build — PASS;
+- bundle budget — PASS.
+
+The report-only follow-up commit requires a final exact-head CI confirmation.
 
 No SQL, migration, RLS, authentication, Storage policy, secret, environment, production-data or deployment change was made.
 
 ## Next step
 
-Keep the pull request Draft until exact-head repository check, diff check, tests, typecheck, lint, build and bundle budget are green. Merge and deployment require separate approval.
+Keep PR `#673` Draft until final exact-head CI is green. Merge and deployment require separate approval.
