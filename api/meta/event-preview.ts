@@ -3,7 +3,7 @@ import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "../_sha
 import { isBeautyShareSlug, loadTrustedTelegramBeautyCard } from "../_shared/telegram-share-beauty.js";
 import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from "../_shared/telegram-share-event.js";
 import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
-import { renderBeautyShareCardJpeg, renderMetaInvitationCardJpeg } from "../_shared/telegram-share-card-image.js";
+import { renderBeautyShareCardJpeg, renderMetaInvitationCardJpeg, renderTelegramBeautyShareCardJpeg } from "../_shared/telegram-share-card-image.js";
 
 type VercelRequest = {
   method?: string;
@@ -94,8 +94,14 @@ const sendCardImage = async (
   return response.status(200).end(jpeg);
 };
 
-const sendBeautyCardImage = async (card: Parameters<typeof renderBeautyShareCardJpeg>[0], response: VercelResponse) => {
-  const jpeg = await renderBeautyShareCardJpeg(card);
+const sendBeautyCardImage = async (
+  card: Parameters<typeof renderBeautyShareCardJpeg>[0],
+  response: VercelResponse,
+  telegram = false,
+) => {
+  const jpeg = telegram
+    ? await renderTelegramBeautyShareCardJpeg(card)
+    : await renderBeautyShareCardJpeg(card);
   setCardImageResponseHeaders(response, jpeg.length);
   return response.status(200).end(jpeg);
 };
@@ -111,7 +117,7 @@ const handleBeautyPreview = async (
   const card = await loadTrustedTelegramBeautyCard(slug, language, date, "", origin);
   if (!card) return response.status(404).end("not_found");
   if (format === "image" || format === "download") {
-    return sendBeautyCardImage(card, response);
+    return sendBeautyCardImage(card, response, format === "download");
   }
 
   const canonicalUrl = beautyLandingUrl(origin, slug, language, date);
