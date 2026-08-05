@@ -69,7 +69,7 @@ const buildTelegramBeautyInviteUrl = (slug: string) => {
   return `https://t.me/${bot}${appName ? `/${appName}` : ""}?startapp=${encodeURIComponent(slug)}`;
 };
 
-type PublicBeautyRow = {
+export type PublicBeautyRow = {
   profile_id: string;
   slug: string;
   display_name: string;
@@ -108,27 +108,43 @@ export async function loadPublicBeautyRows(
   return (result.data || []) as PublicBeautyRow[];
 }
 
-export async function loadTrustedTelegramBeautyCard(
+const beautyFallbackOrigin = "https://go-irl-1-0.vercel.app";
+
+const buildPublicBeautyProfileUrl = (origin: string, slug: string) => {
+  try {
+    return new URL(`/beauty/${encodeURIComponent(slug)}`, origin || beautyFallbackOrigin).toString();
+  } catch {
+    return new URL(`/beauty/${encodeURIComponent(slug)}`, beautyFallbackOrigin).toString();
+  }
+};
+
+export function buildTrustedBeautyCardFromRows(
+  rows: PublicBeautyRow[],
   slug: string,
   language: ShareLanguage,
   selectedDate: unknown,
-  _selectedTime: unknown,
-  _publicOrigin: string,
-): Promise<TelegramEventCardInput | null> {
-  void _selectedTime;
-  void _publicOrigin;
-  const client = db();
-  const rows = await loadPublicBeautyRows(client, language);
-  const row = rows.find((item) => item.slug === slug);
+  publicOrigin: string,
+): TelegramEventCardInput | null {
+  const profileRows = rows.filter((item) => item.slug === slug);
+  const row = profileRows[0];
   if (!row) return null;
 
   const date = normalizeDate(selectedDate, language);
-  const serviceName = localizeBeautyServiceName(row.service_name, language);
+  const services = profileRows
+    .slice(0, 3)
+    .map((item) => ({
+      name: localizeBeautyServiceName(item.service_name, language),
+      priceCzk: item.price_czk,
+    }));
+  const primaryService = services[0] || {
+    name: localizeBeautyServiceName(row.service_name, language),
+    priceCzk: row.price_czk,
+  };
   const city = row.city_id === "olomouc" ? "Olomouc" : row.city_id;
 
   return {
     eventId: row.profile_id,
-    title: serviceName,
+    title: primaryService.name,
     activity: row.display_name,
     date: date.display,
     eventDate: date.raw,
@@ -138,14 +154,29 @@ export async function loadTrustedTelegramBeautyCard(
     capacity: 0,
     icon: "✨",
     inviteUrl: buildTelegramBeautyInviteUrl(row.slug),
+    publicProfileUrl: buildPublicBeautyProfileUrl(publicOrigin, row.slug),
+    beautyServices: services,
     city,
     organizer: row.display_name,
     durationMinutes: row.duration_minutes,
-    price: row.price_czk,
+    price: primaryService.priceCzk,
     level: language === "cs" ? "Beauty služba" : language === "en" ? "Beauty service" : language === "uk" ? "Бʼюті-послуга" : "Бьюти-услуга",
     format: `${row.duration_minutes} min`,
     environment: row.public_location,
     isSport: false,
     language,
   };
+}
+
+export async function loadTrustedTelegramBeautyCard(
+  slug: string,
+  language: ShareLanguage,
+  selectedDate: unknown,
+  _selectedTime: unknown,
+  publicOrigin: string,
+): Promise<TelegramEventCardInput | null> {
+  void _selectedTime;
+  const client = db();
+  const rows = await loadPublicBeautyRows(client, language);
+  return buildTrustedBeautyCardFromRows(rows, slug, language, selectedDate, publicOrigin);
 }

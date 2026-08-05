@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { vi } from "vitest";
-import { isBeautyShareSlug, loadPublicBeautyRows, localizeBeautyServiceName } from "./telegram-share-beauty";
+import {
+  buildTrustedBeautyCardFromRows,
+  isBeautyShareSlug,
+  loadPublicBeautyRows,
+  localizeBeautyServiceName,
+} from "./telegram-share-beauty";
 
 describe("Beauty Telegram share", () => {
   it("accepts legacy and editable namespaced English slugs", () => {
@@ -16,6 +21,32 @@ describe("Beauty Telegram share", () => {
     expect(localizeBeautyServiceName("Маникюр с гель-лаком", "uk")).toBe("Манікюр з гель-лаком");
     expect(localizeBeautyServiceName("Маникюр с гель-лаком", "cs")).toBe("Manikúra s gel lakem");
     expect(localizeBeautyServiceName("Маникюр с гель-лаком", "en")).toBe("Gel manicure");
+  });
+
+  it("builds one trusted Beauty card with up to three service rows", () => {
+    const base = {
+      profile_id: "profile-1",
+      slug: "beauty-test-studio",
+      display_name: "Studio Vita",
+      city_id: "olomouc",
+      public_location: "Центр, Оломоуц",
+      duration_minutes: 60,
+      currency: "CZK",
+    };
+    const card = buildTrustedBeautyCardFromRows([
+      { ...base, service_name: "Маникюр с гель-лаком", price_czk: 890 },
+      { ...base, service_name: "Педикюр", price_czk: 990 },
+      { ...base, service_name: "Nail art", price_czk: 250 },
+      { ...base, service_name: "Ignored fourth service", price_czk: 1 },
+    ], "beauty-test-studio", "ru", "2026-08-05", "https://go-irl-1-0.vercel.app");
+
+    expect(card?.activity).toBe("Studio Vita");
+    expect(card?.beautyServices).toEqual([
+      { name: "Маникюр с гель-лаком", priceCzk: 890 },
+      { name: "Педикюр", priceCzk: 990 },
+      { name: "Nail art", priceCzk: 250 },
+    ]);
+    expect(card?.publicProfileUrl).toBe("https://go-irl-1-0.vercel.app/beauty/beauty-test-studio");
   });
 
   it("uses the same current public Beauty projection as the Services directory", async () => {

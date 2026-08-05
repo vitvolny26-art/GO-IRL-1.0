@@ -414,7 +414,13 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
                 event.preventDefault();
                 event.stopPropagation();
                 if (channel.id === "whatsapp") {
-                  void prepareWhatsAppCard();
+                  if (canPrepareBeautyTelegramShare(url)) {
+                    setOpen(false);
+                    setExpanded(false);
+                    openExternalShareTarget(buildCardShareTarget("whatsapp", content));
+                  } else {
+                    void prepareWhatsAppCard();
+                  }
                 } else {
                   void share(channel.id);
                 }

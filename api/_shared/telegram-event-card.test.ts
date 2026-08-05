@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTelegramEventCard } from "./telegram-event-card";
+import { buildTelegramBeautyCard, buildTelegramEventCard } from "./telegram-event-card";
 
 const input = {
   eventId: "3b172dd9-d5e2-4328-86a4-d4107a6359fc",
@@ -45,6 +45,27 @@ describe("buildTelegramEventCard", () => {
     expect(calendarUrl.searchParams.get("text")).toBe(input.title);
     expect(calendarUrl.searchParams.get("location")).toBe("ZŠ Demlova & park, Оломоуц");
     expect(calendarUrl.searchParams.get("details")).toContain(input.inviteUrl);
+  });
+
+  it("builds a Beauty photo with one profile button and no duplicated text", () => {
+    const imageUrl = "https://go-irl-1-0.vercel.app/api/meta/event-preview?slug=beauty-test&format=image&v=10";
+    const result = buildTelegramBeautyCard({
+      ...input,
+      activity: "Studio Vita",
+      title: "Маникюр с гель-лаком",
+      inviteUrl: "https://t.me/GOirl_bot?startapp=beauty-test",
+    }, imageUrl);
+
+    expect(result.type).toBe("photo");
+    expect(result.photo_width).toBe(1080);
+    expect(result.photo_height).toBe(1350);
+    expect(result.caption).toBe("");
+    expect("title" in result).toBe(false);
+    expect("description" in result).toBe(false);
+    expect(result.reply_markup.inline_keyboard).toEqual([[{
+      text: "Открыть профиль",
+      url: "https://t.me/GOirl_bot?startapp=beauty-test",
+    }]]);
   });
 
   it("does not build a calendar action from the localized compact date", () => {

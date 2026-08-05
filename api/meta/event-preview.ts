@@ -3,7 +3,7 @@ import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "../_sha
 import { isBeautyShareSlug, loadTrustedTelegramBeautyCard } from "../_shared/telegram-share-beauty.js";
 import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from "../_shared/telegram-share-event.js";
 import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
-import { renderMetaInvitationCardJpeg } from "../_shared/telegram-share-card-image.js";
+import { renderBeautyShareCardJpeg, renderMetaInvitationCardJpeg } from "../_shared/telegram-share-card-image.js";
 
 type VercelRequest = {
   method?: string;
@@ -94,6 +94,12 @@ const sendCardImage = async (
   return response.status(200).end(jpeg);
 };
 
+const sendBeautyCardImage = async (card: Parameters<typeof renderBeautyShareCardJpeg>[0], response: VercelResponse) => {
+  const jpeg = await renderBeautyShareCardJpeg(card);
+  setCardImageResponseHeaders(response, jpeg.length);
+  return response.status(200).end(jpeg);
+};
+
 const handleBeautyPreview = async (
   slug: string,
   language: keyof typeof metaBeautyPreviewCopy,
@@ -105,16 +111,17 @@ const handleBeautyPreview = async (
   const card = await loadTrustedTelegramBeautyCard(slug, language, date, "", origin);
   if (!card) return response.status(404).end("not_found");
   if (format === "image" || format === "download") {
-    return sendCardImage(card, response, format === "download");
+    return sendBeautyCardImage(card, response);
   }
 
-  const query = new URLSearchParams({ slug, language });
-  if (date) query.set("date", date);
   const canonicalUrl = beautyLandingUrl(origin, slug, language, date);
-  const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
-  const imageUrl = secret
-    ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
-    : `${origin}/branding/logo-wide.png`;
+  const image = new URL("/api/meta/event-preview", origin);
+  image.searchParams.set("slug", slug);
+  image.searchParams.set("language", language);
+  if (date) image.searchParams.set("date", date);
+  image.searchParams.set("format", "image");
+  image.searchParams.set("v", "10");
+  const imageUrl = image.toString();
   const title = card.activity || card.organizer || "GO IRL Beauty";
   const description = [card.title, card.date, card.address, card.price ? `${card.price} Kč` : ""]
     .filter(Boolean)
@@ -131,9 +138,9 @@ const handleBeautyPreview = async (
 <meta property="og:description" content="${escapeHtml(description)}" />
 <meta property="og:image" content="${escapeHtml(imageUrl)}" />
 <meta property="og:image:type" content="image/jpeg" />
-<meta property="og:image:width" content="1080" /><meta property="og:image:height" content="1020" />
+<meta property="og:image:width" content="1080" /><meta property="og:image:height" content="1350" />
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
-<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:18/17;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
+<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:4/5;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
 </head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(browserBeautyUrl(origin, slug, date))}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
 };
 
