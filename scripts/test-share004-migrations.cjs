@@ -154,12 +154,12 @@ declare
   staff_policy_count integer;
   bucket_count integer;
 begin
-  select column.udt_name
+  select column_info.udt_name
   into service_ids_type
-  from information_schema.columns column
-  where column.table_schema = 'public'
-    and column.table_name = 'beauty_share_cards'
-    and column.column_name = 'service_ids';
+  from information_schema.columns column_info
+  where column_info.table_schema = 'public'
+    and column_info.table_name = 'beauty_share_cards'
+    and column_info.column_name = 'service_ids';
 
   if service_ids_type is distinct from '_text' then
     raise exception 'service_ids must be text[], got %', service_ids_type;
@@ -169,10 +169,10 @@ begin
     raise exception 'generic SECURITY DEFINER role helper must be removed';
   end if;
 
-  select procedure.prosecdef
+  select procedure_info.prosecdef
   into status_rpc_is_definer
-  from pg_proc procedure
-  where procedure.oid = to_regprocedure('public.go_irl_get_beauty_share_card_status(uuid)');
+  from pg_proc procedure_info
+  where procedure_info.oid = to_regprocedure('public.go_irl_get_beauty_share_card_status(uuid)');
 
   if status_rpc_is_definer is null or status_rpc_is_definer then
     raise exception 'status RPC must exist as SECURITY INVOKER';
@@ -196,10 +196,10 @@ begin
 
   select count(*)
   into staff_policy_count
-  from pg_policies policy
-  where policy.schemaname = 'public'
-    and policy.tablename = 'beauty_share_cards'
-    and policy.policyname = 'beauty share cards staff read';
+  from pg_policies policy_info
+  where policy_info.schemaname = 'public'
+    and policy_info.tablename = 'beauty_share_cards'
+    and policy_info.policyname = 'beauty share cards staff read';
 
   if staff_policy_count <> 1 then
     raise exception 'staff read RLS policy missing';
@@ -207,8 +207,8 @@ begin
 
   select count(*)
   into bucket_count
-  from storage.buckets bucket
-  where bucket.id in ('beauty-share-assets', 'beauty-share-cards');
+  from storage.buckets bucket_info
+  where bucket_info.id in ('beauty-share-assets', 'beauty-share-cards');
 
   if bucket_count <> 2 then
     raise exception 'expected two Beauty share-card buckets, got %', bucket_count;
