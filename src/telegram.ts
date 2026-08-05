@@ -27,6 +27,12 @@ declare global {
         openTelegramLink?: (url: string) => void;
         openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
         shareMessage?: (preparedMessageId: string, callback?: (success: boolean) => void) => void;
+        downloadFile?: (
+          params: { url: string; file_name: string },
+          callback?: (accepted: boolean) => void,
+        ) => void;
+        isVersionAtLeast?: (version: string) => boolean;
+        version?: string;
       };
     };
   }

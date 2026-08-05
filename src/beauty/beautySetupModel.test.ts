@@ -61,6 +61,16 @@ describe("Beauty setup model", () => {
     expect(upgraded?.services).toHaveLength(1);
     expect(upgraded?.services[0].name).toBe("Старое название");
     expect(upgraded?.service.name).toBe("Старое название");
+    expect(upgraded?.shareCard.serviceIds).toEqual([upgraded?.services[0].id]);
+    expect(upgraded?.shareCard.status).toBe("updating");
+  });
+
+  it("creates persistent sharing-card settings with a generation status", () => {
+    const workspace = createDefaultBeautyWorkspace("ru");
+    expect(workspace.shareCard.enabled).toBe(true);
+    expect(workspace.shareCard.serviceIds).toEqual([workspace.service.id]);
+    expect(workspace.shareCard.status).toBe("updating");
+    expect(workspace.shareCard.generatedImageDataUrl).toBe("");
   });
 
   it("publishes only completed optional blocks and active services", () => {

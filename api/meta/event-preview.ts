@@ -68,12 +68,29 @@ const beautyLandingUrl = (origin: string, slug: string, language: string, date: 
   return url.toString();
 };
 
-const sendCardImage = async (card: Parameters<typeof renderMetaInvitationCardJpeg>[0], response: VercelResponse) => {
-  const jpeg = await renderMetaInvitationCardJpeg(card);
+export const setCardImageResponseHeaders = (
+  response: Pick<VercelResponse, "setHeader">,
+  contentLength: number,
+  asAttachment = false,
+) => {
   response.setHeader("Content-Type", "image/jpeg");
-  response.setHeader("Content-Length", String(jpeg.length));
+  response.setHeader("Content-Length", String(contentLength));
   response.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
-  response.setHeader("Access-Control-Allow-Origin", "*");
+  if (asAttachment) {
+    response.setHeader("Content-Disposition", 'attachment; filename="go-irl-card.jpg"');
+    response.setHeader("Access-Control-Allow-Origin", "https://web.telegram.org");
+  } else {
+    response.setHeader("Access-Control-Allow-Origin", "*");
+  }
+};
+
+const sendCardImage = async (
+  card: Parameters<typeof renderMetaInvitationCardJpeg>[0],
+  response: VercelResponse,
+  asAttachment = false,
+) => {
+  const jpeg = await renderMetaInvitationCardJpeg(card);
+  setCardImageResponseHeaders(response, jpeg.length, asAttachment);
   return response.status(200).end(jpeg);
 };
 
@@ -87,7 +104,9 @@ const handleBeautyPreview = async (
   const origin = publicOrigin();
   const card = await loadTrustedTelegramBeautyCard(slug, language, date, "", origin);
   if (!card) return response.status(404).end("not_found");
-  if (format === "image") return sendCardImage(card, response);
+  if (format === "image" || format === "download") {
+    return sendCardImage(card, response, format === "download");
+  }
 
   const query = new URLSearchParams({ slug, language });
   if (date) query.set("date", date);
@@ -136,7 +155,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
     if (!isShareEventId(eventId)) return response.status(404).end("not_found");
     const card = await loadTrustedTelegramEventCard(eventId, language);
     if (!card) return response.status(404).end("not_found");
-    if (format === "image") return await sendCardImage(card, response);
+    if (format === "image" || format === "download") {
+      return await sendCardImage(card, response, format === "download");
+    }
 
     const origin = publicOrigin();
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;

@@ -89,6 +89,15 @@ export const buildCardShareImageUrl = (content: CardShareContent) => {
   return url.toString();
 };
 
+export const buildCardShareDownloadUrl = (content: CardShareContent) => {
+  const imageUrl = buildCardShareImageUrl(content);
+  if (!imageUrl) return "";
+  const origin = typeof window === "undefined" ? fallbackOrigin : window.location.origin;
+  const downloadUrl = new URL(imageUrl, origin);
+  downloadUrl.searchParams.set("format", "download");
+  return downloadUrl.toString();
+};
+
 export const buildOrganicCardShareContent = (content: CardShareContent) => ({
   title: `GO IRL: ${content.title}`,
   text: [content.date, content.address].filter(Boolean).join("\n"),
