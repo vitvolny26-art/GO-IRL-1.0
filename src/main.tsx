@@ -20,6 +20,7 @@ import { resolveAdminRoute } from "./admin/adminSession";
 import { isProfilePath } from "./profile/profileRoute";
 import { BeautyHomeEntryPortal } from "./beauty/BeautyHomeEntryPortal";
 import { BeautyProfessionalProfilePortal } from "./beauty/BeautyProfessionalProfilePortal";
+import { BeautyShareCardStaffStatusPortal } from "./beauty/BeautyShareCardStaffStatusPortal";
 import { ServicesBottomNavigationPortal } from "./beauty/ServicesBottomNavigationPortal";
 import { ServicesBookingsPortal } from "./services/ServicesBookingsPortal";
 import { useAppStore } from "./store";
@@ -202,6 +203,7 @@ function MainSurface() {
       <ServicesBottomNavigationPortal />
       <ServicesBookingsPortal />
       <BeautyProfessionalProfilePortal />
+      <BeautyShareCardStaffStatusPortal />
       <OrganizerProfilePortal />
       <OrganizerEventDetailsPortal />
       <EventLocationPickerPortal />
