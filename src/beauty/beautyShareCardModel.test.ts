@@ -35,7 +35,7 @@ describe("Beauty sharing business card", () => {
     expect(repositioned).not.toBe(renamed);
   });
 
-  it("prints a standalone GO IRL address on forwarded images", () => {
+  it("keeps the legacy public-link formatter available outside the image renderer", () => {
     expect(formatBeautyShareCardPublicLink("/beauty/studio-vita")).toBe("goirl.app/beauty/studio-vita");
     expect(formatBeautyShareCardPublicLink("https://goirl.app/studio-vita")).toBe("goirl.app/studio-vita");
   });

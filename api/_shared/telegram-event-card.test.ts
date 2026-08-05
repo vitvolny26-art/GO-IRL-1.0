@@ -47,8 +47,8 @@ describe("buildTelegramEventCard", () => {
     expect(calendarUrl.searchParams.get("details")).toContain(input.inviteUrl);
   });
 
-  it("builds a Beauty photo with one profile button and no duplicated text", () => {
-    const imageUrl = "https://go-irl-1-0.vercel.app/api/meta/event-preview?slug=beauty-test&format=image&v=10";
+  it("builds a horizontal Beauty photo with one profile button and no duplicated text", () => {
+    const imageUrl = "https://go-irl-1-0.vercel.app/api/meta/event-preview?slug=beauty-test&format=image&v=11";
     const result = buildTelegramBeautyCard({
       ...input,
       activity: "Studio Vita",
@@ -58,7 +58,7 @@ describe("buildTelegramEventCard", () => {
 
     expect(result.type).toBe("photo");
     expect(result.photo_width).toBe(1080);
-    expect(result.photo_height).toBe(1350);
+    expect(result.photo_height).toBe(1020);
     expect(result.caption).toBe("");
     expect("title" in result).toBe(false);
     expect("description" in result).toBe(false);

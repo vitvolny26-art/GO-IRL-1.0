@@ -8,7 +8,6 @@ import {
 } from "./beautySetupModel";
 import {
   buildBeautyShareCardFingerprint,
-  formatBeautyShareCardPublicLink,
   resolveBeautyShareCardServices,
 } from "./beautyShareCardModel";
 import "./beauty-share-card-editor.css";
@@ -135,9 +134,11 @@ const loadImage = (source: string) => new Promise<HTMLImageElement>((resolve, re
   image.src = source;
 });
 
-const drawCover = (
+const drawCoverAt = (
   context: CanvasRenderingContext2D,
   image: HTMLImageElement,
+  x: number,
+  y: number,
   width: number,
   height: number,
   positionY: number,
@@ -145,8 +146,8 @@ const drawCover = (
   const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
   const scaledWidth = image.naturalWidth * scale;
   const scaledHeight = image.naturalHeight * scale;
-  const left = (width - scaledWidth) / 2;
-  const top = -(scaledHeight - height) * (positionY / 100);
+  const left = x + (width - scaledWidth) / 2;
+  const top = y - (scaledHeight - height) * (positionY / 100);
   context.drawImage(image, left, top, scaledWidth, scaledHeight);
 };
 
@@ -167,129 +168,159 @@ const fitText = (
   value: string,
   maxWidth: number,
   startSize: number,
+  minSize: number,
   weight = 800,
 ) => {
   let size = startSize;
-  do {
-    context.font = `${weight} ${size}px Inter, Arial, sans-serif`;
+  context.font = `${weight} ${size}px Inter, Arial, sans-serif`;
+  while (size > minSize && context.measureText(value).width > maxWidth) {
     size -= 2;
-  } while (size > 28 && context.measureText(value).width > maxWidth);
-  return context.font;
+    context.font = `${weight} ${size}px Inter, Arial, sans-serif`;
+  }
+  return size;
 };
 
-const renderBeautyShareCard = async (workspace: BeautyWorkspace, language: Language) => {
+const wrapText = (
+  context: CanvasRenderingContext2D,
+  value: string,
+  maxWidth: number,
+  maxLines: number,
+) => {
+  const words = value.trim().replace(/\s+/g, " ").split(" ").filter(Boolean);
+  const lines: string[] = [];
+  for (const word of words) {
+    const current = lines.at(-1) || "";
+    const candidate = current ? `${current} ${word}` : word;
+    if (context.measureText(candidate).width <= maxWidth) {
+      if (current) lines[lines.length - 1] = candidate;
+      else lines.push(candidate);
+    } else if (lines.length < maxLines) {
+      lines.push(word);
+    } else {
+      let last = lines.at(-1) || "";
+      while (last.length && context.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
+      lines[lines.length - 1] = `${last}…`;
+      break;
+    }
+  }
+  return lines.slice(0, maxLines);
+};
+
+const drawPhotoPlaceholder = (context: CanvasRenderingContext2D) => {
+  context.fillStyle = "rgba(36,24,43,.82)";
+  roundedRect(context, 74, 70, 126, 126, 30);
+  context.fill();
+  context.strokeStyle = "rgba(226,189,102,.8)";
+  context.lineWidth = 3;
+  context.stroke();
+  context.fillStyle = "#e2bd66";
+  context.beginPath();
+  context.arc(166, 103, 11, 0, Math.PI * 2);
+  context.fill();
+  context.strokeStyle = "#e2bd66";
+  context.lineWidth = 8;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.beginPath();
+  context.moveTo(96, 164);
+  context.lineTo(125, 133);
+  context.lineTo(147, 154);
+  context.lineTo(161, 139);
+  context.lineTo(184, 164);
+  context.stroke();
+};
+
+export const renderBeautyShareCard = async (workspace: BeautyWorkspace, language: Language) => {
   const text = copy[language];
   const canvas = document.createElement("canvas");
   canvas.width = 1080;
-  canvas.height = 1350;
+  canvas.height = 1020;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("beauty_share_canvas_unavailable");
 
   const background = await loadImage(workspace.shareCard.backgroundImageDataUrl || defaultBackground);
-  drawCover(context, background, canvas.width, canvas.height, workspace.shareCard.backgroundPositionY);
+  drawCoverAt(context, background, 0, 0, canvas.width, canvas.height, workspace.shareCard.backgroundPositionY);
 
-  const topShade = context.createLinearGradient(0, 0, 0, 500);
-  topShade.addColorStop(0, "rgba(13,8,18,.72)");
-  topShade.addColorStop(1, "rgba(13,8,18,0)");
+  const topShade = context.createLinearGradient(0, 0, 0, 360);
+  topShade.addColorStop(0, "rgba(13,8,18,.86)");
+  topShade.addColorStop(1, "rgba(13,8,18,.12)");
   context.fillStyle = topShade;
-  context.fillRect(0, 0, canvas.width, 540);
-  const shade = context.createLinearGradient(0, 330, 0, canvas.height);
-  shade.addColorStop(0, "rgba(18,10,24,.06)");
-  shade.addColorStop(.38, "rgba(18,10,24,.72)");
-  shade.addColorStop(1, "rgba(10,6,14,.98)");
+  context.fillRect(0, 0, canvas.width, 360);
+  const shade = context.createLinearGradient(0, 250, 0, canvas.height);
+  shade.addColorStop(0, "rgba(18,10,24,.08)");
+  shade.addColorStop(.42, "rgba(18,10,24,.68)");
+  shade.addColorStop(1, "rgba(10,6,14,.96)");
   context.fillStyle = shade;
-  context.fillRect(0, 300, canvas.width, canvas.height - 300);
+  context.fillRect(0, 250, canvas.width, canvas.height - 250);
 
   context.strokeStyle = "rgba(224,188,101,.92)";
   context.lineWidth = 3;
-  roundedRect(context, 28, 28, 1024, 1294, 46);
+  roundedRect(context, 28, 28, 1024, 964, 44);
   context.stroke();
 
-  context.fillStyle = "#e2bd66";
-  context.font = "800 26px Inter, Arial, sans-serif";
-  context.letterSpacing = "5px";
-  context.fillText("GO IRL BEAUTY", 74, 102);
-  context.letterSpacing = "0px";
-
-  const initial = workspace.profile.displayName.trim().slice(0, 1).toUpperCase() || "G";
-  roundedRect(context, 74, 142, 150, 150, 38);
-  context.save();
-  context.clip();
   if (workspace.shareCard.logoImageDataUrl) {
+    roundedRect(context, 74, 70, 126, 126, 30);
+    context.save();
+    context.clip();
     const logo = await loadImage(workspace.shareCard.logoImageDataUrl);
-    drawCover(context, logo, 150, 150, 50);
+    drawCoverAt(context, logo, 74, 70, 126, 126, 50);
+    context.restore();
+    context.strokeStyle = "rgba(226,189,102,.8)";
+    context.lineWidth = 3;
+    roundedRect(context, 74, 70, 126, 126, 30);
+    context.stroke();
   } else {
-    const logoFill = context.createLinearGradient(74, 142, 224, 292);
-    logoFill.addColorStop(0, "#e2bd66");
-    logoFill.addColorStop(1, "#9f73c8");
-    context.fillStyle = logoFill;
-    context.fillRect(74, 142, 150, 150);
-    context.fillStyle = "#1a1020";
-    context.font = "900 72px Inter, Arial, sans-serif";
-    context.textAlign = "center";
-    context.fillText(initial, 149, 242);
-    context.textAlign = "start";
+    drawPhotoPlaceholder(context);
   }
-  context.restore();
-  context.strokeStyle = "rgba(255,244,218,.8)";
-  context.lineWidth = 3;
-  roundedRect(context, 74, 142, 150, 150, 38);
-  context.stroke();
 
   const name = workspace.profile.displayName.trim() || "GO IRL Beauty";
   context.fillStyle = "#fff9fb";
-  fitText(context, name, 920, 76, 900);
-  context.fillText(name, 74, 540);
+  fitText(context, name, 770, 60, 42, 900);
+  context.fillText(name, 232, 124);
 
-  const specialization = resolveBeautyLocalizedText(
+  const description = resolveBeautyLocalizedText(
     workspace.profile.specializationByLanguage,
     language,
     resolveBeautyLocalizedText(workspace.profile.descriptionByLanguage, language, workspace.profile.description),
   ).trim();
   context.fillStyle = "#e7dce9";
-  fitText(context, specialization, 920, 38, 600);
-  context.fillText(specialization.slice(0, 90), 76, 600);
+  context.font = "600 30px Inter, Arial, sans-serif";
+  wrapText(context, description, 770, 2).forEach((line, index) => {
+    context.fillText(line, 232, 184 + index * 42);
+  });
 
   const services = resolveBeautyShareCardServices(workspace, language);
   services.forEach((service, index) => {
-    const y = 660 + index * 112;
-    context.fillStyle = "rgba(36,24,43,.78)";
-    roundedRect(context, 74, y, 932, 90, 24);
+    const y = 430 + index * 100;
+    context.fillStyle = "rgba(36,24,43,.82)";
+    roundedRect(context, 74, y, 932, 78, 22);
     context.fill();
-    context.strokeStyle = "rgba(226,189,102,.42)";
+    context.strokeStyle = "rgba(226,189,102,.46)";
     context.lineWidth = 2;
     context.stroke();
     context.fillStyle = "#fff7fb";
-    fitText(context, service.name, 650, 32, 750);
-    context.fillText(service.name.slice(0, 70), 104, y + 57);
+    fitText(context, service.name, 650, 31, 24, 750);
+    context.fillText(service.name.slice(0, 70), 104, y + 50);
     context.fillStyle = "#f1cb72";
-    context.font = "850 31px Inter, Arial, sans-serif";
+    context.font = "850 29px Inter, Arial, sans-serif";
     context.textAlign = "right";
-    context.fillText(`${text.priceFrom} ${Math.round(service.priceCzk)} Kč`, 976, y + 57);
+    context.fillText(`${text.priceFrom} ${Math.round(service.priceCzk)} Kč`, 976, y + 50);
     context.textAlign = "start";
   });
 
   context.fillStyle = "#d9cddd";
-  context.font = "650 31px Inter, Arial, sans-serif";
-  context.fillText(`⌖ ${workspace.profile.publicLocation || workspace.profile.city}`, 76, 1080);
+  context.font = "650 30px Inter, Arial, sans-serif";
+  context.fillText(`⌖ ${workspace.profile.publicLocation || workspace.profile.city}`, 76, 782);
 
   context.fillStyle = "#e2bd66";
-  roundedRect(context, 74, 1130, 932, 96, 26);
+  roundedRect(context, 74, 826, 932, 92, 25);
   context.fill();
   context.fillStyle = "#1b111f";
-  context.font = "900 34px Inter, Arial, sans-serif";
-  context.fillText(text.profile, 112, 1191);
+  context.font = "900 33px Inter, Arial, sans-serif";
+  context.fillText(text.profile, 112, 884);
   context.textAlign = "right";
-  context.fillText("→", 966, 1191);
-  context.textAlign = "start";
-
-  context.fillStyle = "#d4c7d6";
-  context.font = "650 25px Inter, Arial, sans-serif";
-  context.fillText(formatBeautyShareCardPublicLink(workspace.publicLink), 76, 1282);
-  context.textAlign = "right";
-  context.fillStyle = "#e2bd66";
-  context.font = "800 25px Inter, Arial, sans-serif";
-  context.fillText("LESS SCROLLING. MORE LIFE.", 1004, 1282);
+  context.font = "900 40px Inter, Arial, sans-serif";
+  context.fillText("→", 966, 884);
   context.textAlign = "start";
 
   return canvas.toDataURL("image/jpeg", 0.9);
@@ -360,9 +391,7 @@ export function BeautyShareCardEditor({
       && workspace.shareCard.generatedImageDataUrl
     ) return;
 
-    if (workspace.shareCard.status !== "updating") {
-      updateShareCard({ status: "updating", errorMessage: "" });
-    }
+    if (workspace.shareCard.status !== "updating") updateShareCard({ status: "updating", errorMessage: "" });
     let cancelled = false;
     const timer = window.setTimeout(() => {
       const source = workspaceRef.current;
@@ -442,10 +471,8 @@ export function BeautyShareCardEditor({
   };
 
   const generatedTime = workspace.shareCard.generatedAt
-    ? new Intl.DateTimeFormat(localeByLanguage[language], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(workspace.shareCard.generatedAt))
+    ? new Intl.DateTimeFormat(localeByLanguage[language], { hour: "2-digit", minute: "2-digit" })
+      .format(new Date(workspace.shareCard.generatedAt))
     : "";
   const statusText = text[workspace.shareCard.status];
 

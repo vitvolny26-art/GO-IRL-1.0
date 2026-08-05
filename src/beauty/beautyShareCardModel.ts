@@ -39,7 +39,7 @@ export const buildBeautyShareCardFingerprint = (
   workspace: BeautyWorkspace,
   language: Language,
 ) => hash(JSON.stringify({
-  version: 1,
+  version: 2,
   language,
   displayName: workspace.profile.displayName,
   specialization: resolveBeautyLocalizedText(
@@ -49,7 +49,6 @@ export const buildBeautyShareCardFingerprint = (
   ),
   publicLocation: workspace.profile.publicLocation,
   city: workspace.profile.city,
-  publicLink: workspace.publicLink,
   services: resolveBeautyShareCardServices(workspace, language),
   backgroundImage: hash(workspace.shareCard.backgroundImageDataUrl),
   logoImage: hash(workspace.shareCard.logoImageDataUrl),

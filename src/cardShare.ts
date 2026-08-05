@@ -53,7 +53,7 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
       previewUrl.searchParams.set("slug", beautySlug);
       previewUrl.searchParams.set("language", content.language || "ru");
       if (content.date.trim()) previewUrl.searchParams.set("date", content.date.trim());
-      previewUrl.searchParams.set("v", "10");
+      previewUrl.searchParams.set("v", "11");
       return previewUrl.toString();
     }
 

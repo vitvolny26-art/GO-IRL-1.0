@@ -135,12 +135,12 @@ export const renderBeautyShareCardJpeg = async (input: TelegramEventCardInput) =
   const overlay = { input: Buffer.from(buildBeautyShareCardSvg(input)), left: 0, top: 0 };
   if (existsSync(backgroundUrl)) {
     return sharp(readFileSync(backgroundUrl))
-      .resize(1080, 1350, { fit: "cover", position: "attention" })
+      .resize(1080, 1020, { fit: "cover", position: "attention" })
       .composite([overlay])
       .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
       .toBuffer();
   }
-  return sharp({ create: { width: 1080, height: 1350, channels: 3, background: "#160d1d" } })
+  return sharp({ create: { width: 1080, height: 1020, channels: 3, background: "#160d1d" } })
     .composite([overlay])
     .jpeg({ quality: 90, chromaSubsampling: "4:4:4" })
     .toBuffer();

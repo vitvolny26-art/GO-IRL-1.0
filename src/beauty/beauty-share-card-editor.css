@@ -45,7 +45,7 @@
 
 .beauty-share-card-layout {
   display: grid;
-  grid-template-columns: minmax(230px, 340px) 1fr;
+  grid-template-columns: minmax(280px, 430px) 1fr;
   gap: 22px;
   align-items: start;
 }
@@ -53,7 +53,7 @@
 .beauty-share-card-preview {
   position: sticky;
   top: 14px;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 18 / 17;
   overflow: hidden;
   border: 1px solid rgba(226, 189, 102, .65);
   border-radius: 22px;
@@ -122,7 +122,7 @@
   .beauty-share-card-heading { display: grid; }
   .beauty-share-card-status { justify-self: start; }
   .beauty-share-card-layout { grid-template-columns: 1fr; }
-  .beauty-share-card-preview { position: relative; top: auto; width: min(100%, 390px); margin: 0 auto; }
+  .beauty-share-card-preview { position: relative; top: auto; width: min(100%, 520px); margin: 0 auto; }
 }
 
 @media (max-width: 480px) {

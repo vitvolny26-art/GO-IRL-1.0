@@ -43,10 +43,11 @@ describe("Meta event preview copy", () => {
     expect(previewHeaders.has("Content-Disposition")).toBe(false);
   });
 
-  it("routes Activity downloads through attachment mode and Beauty through the canonical renderer", () => {
+  it("routes Activity downloads through attachment mode and Beauty through the horizontal renderer", () => {
     expect(source.match(/format === "image" \|\| format === "download"/g)).toHaveLength(2);
     expect(source).toContain("renderBeautyShareCardJpeg");
-    expect(source).toContain('image.searchParams.set("v", "10")');
-    expect(source).toContain('og:image:height" content="1350"');
+    expect(source).toContain('image.searchParams.set("v", "11")');
+    expect(source).toContain('og:image:height" content="1020"');
+    expect(source).toContain("aspect-ratio:18/17");
   });
 });

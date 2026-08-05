@@ -23,13 +23,15 @@ describe("Beauty Telegram share", () => {
     expect(localizeBeautyServiceName("Маникюр с гель-лаком", "en")).toBe("Gel manicure");
   });
 
-  it("builds one trusted Beauty card with up to three service rows", () => {
+  it("builds one trusted Beauty card with profile description and up to three service rows", () => {
     const base = {
       profile_id: "profile-1",
       slug: "beauty-test-studio",
       display_name: "Studio Vita",
       city_id: "olomouc",
       public_location: "Центр, Оломоуц",
+      description: "Маникюр и уход за ногтями",
+      specialization: "Комбинированный маникюр и укрепление натуральных ногтей",
       duration_minutes: 60,
       currency: "CZK",
     };
@@ -41,6 +43,7 @@ describe("Beauty Telegram share", () => {
     ], "beauty-test-studio", "ru", "2026-08-05", "https://go-irl-1-0.vercel.app");
 
     expect(card?.activity).toBe("Studio Vita");
+    expect(card?.description).toBe("Комбинированный маникюр и укрепление натуральных ногтей");
     expect(card?.beautyServices).toEqual([
       { name: "Маникюр с гель-лаком", priceCzk: 890 },
       { name: "Педикюр", priceCzk: 990 },
