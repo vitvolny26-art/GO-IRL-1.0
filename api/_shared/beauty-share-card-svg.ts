@@ -55,7 +55,9 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
   const labels = copy[input.language] || copy.en;
   const name = clean(input.activity || input.organizer || "GO IRL Beauty", 48);
   const description = clean(input.description || input.level || input.title, 180);
-  const nameFontSize = name.length > 34 ? 44 : name.length > 24 ? 50 : 60;
+  const nameFontSize = isTelegram
+    ? name.length > 34 ? 44 : name.length > 24 ? 50 : 58
+    : name.length > 34 ? 44 : name.length > 24 ? 50 : 60;
   const services = (input.beautyServices?.length
     ? input.beautyServices
     : [{ name: input.title, priceCzk: input.price }])
@@ -77,21 +79,37 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
   const location = clean(input.address || input.city, 80);
   const height = isTelegram ? 900 : 1020;
   const descriptionOptions = isTelegram
-    ? { x: 232, startY: 164, step: 34, maxLines: 3, maxChars: 44 }
+    ? { x: 232, startY: 188, step: 34, maxLines: 3, maxChars: 44 }
     : { x: 232, startY: 184, step: 42, maxLines: 2, maxChars: 46 };
   const locationY = isTelegram ? 730 : 782;
+  const frame = isTelegram
+    ? `<g data-beauty-telegram-frame="true" fill="none" stroke="url(#beautyGold)" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="24" y="24" width="1032" height="852" rx="16" stroke-width="3"/>
+      <rect x="40" y="40" width="1000" height="820" rx="10" stroke-width="1.4" stroke-opacity=".7"/>
+      <path d="M24 102h18V68c0-15 11-26 26-26h34V24M978 24v18h34c15 0 26 11 26 26v34h18M24 798h18v34c0 15 11 26 26 26h34v18M978 876v-18h34c15 0 26-11 26-26v-34h18" stroke-width="3"/>
+    </g>`
+    : `<rect x="28" y="28" width="1024" height="${height - 56}" rx="44" fill="none" stroke="#e0bc65" stroke-opacity=".92" stroke-width="3"/>`;
+  const title = isTelegram
+    ? `<text data-beauty-telegram-title="true" x="232" y="122" fill="url(#beautyGold)" font-family="DejaVu Serif, Georgia, serif" font-size="${nameFontSize}" font-style="italic" font-weight="650" letter-spacing=".6">${xml(name)}</text>
+    <g data-beauty-title-flourish="true" fill="none" stroke="url(#beautyGold)" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M232 148h122c28 0 32-18 52-18 18 0 24 18 50 18h120" stroke-width="2.6"/>
+      <path d="M576 148h92c22 0 28-13 44-13 15 0 22 13 43 13h87" stroke-width="1.8" stroke-opacity=".78"/>
+      <path d="M445 148l11-8 11 8-11 8z" fill="url(#beautyGold)" stroke="none"/>
+    </g>`
+    : `<text x="232" y="124" fill="#fff9fb" font-size="${nameFontSize}" font-weight="900">${xml(name)}</text>`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}">
   <defs>
     <linearGradient id="beautyTop" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#0d0812" stop-opacity=".86"/><stop offset="1" stop-color="#0d0812" stop-opacity=".12"/></linearGradient>
     <linearGradient id="beautyShade" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#120a18" stop-opacity=".08"/><stop offset=".42" stop-color="#120a18" stop-opacity=".68"/><stop offset="1" stop-color="#0a060e" stop-opacity=".96"/></linearGradient>
+    <linearGradient id="beautyGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0b5"/><stop offset=".34" stop-color="#d6a94d"/><stop offset=".68" stop-color="#f7d884"/><stop offset="1" stop-color="#b77925"/></linearGradient>
   </defs>
   <rect width="1080" height="${isTelegram ? 330 : 360}" fill="url(#beautyTop)"/>
   <rect y="${isTelegram ? 220 : 250}" width="1080" height="${height - (isTelegram ? 220 : 250)}" fill="url(#beautyShade)"/>
-  <rect x="28" y="28" width="1024" height="${height - 56}" rx="44" fill="none" stroke="#e0bc65" stroke-opacity=".92" stroke-width="3"/>
+  ${frame}
   <g font-family="DejaVu Sans, Arial, sans-serif">
     ${placeholderIcon}
-    <text x="232" y="124" fill="#fff9fb" font-size="${nameFontSize}" font-weight="900">${xml(name)}</text>
+    ${title}
     <text fill="#e7dce9" font-size="${isTelegram ? 27 : 30}" font-weight="600">${descriptionTspans(description, descriptionOptions)}</text>
     ${serviceRows}
     <text x="76" y="${locationY}" fill="#d9cddd" font-size="30" font-weight="650">⌖ ${xml(location)}</text>
