@@ -117,7 +117,6 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
       <rect width="1080" height="900" fill="url(#beautyLeftShade)"/>
       <g data-beauty-telegram-frame="true" stroke="url(#beautyGold)" fill="none">
         <path data-beauty-telegram-frame-outer="true" d="M32 60A28 28 0 0 0 60 32H1020A28 28 0 0 0 1048 60V840A28 28 0 0 0 1020 868H60A28 28 0 0 0 32 840Z" stroke-width="2.5" stroke-opacity=".9"/>
-        <path data-beauty-telegram-frame-inner="true" d="M42 64A22 22 0 0 0 64 42H1016A22 22 0 0 0 1038 64V836A22 22 0 0 0 1016 858H64A22 22 0 0 0 42 836Z" stroke-width="1" stroke-opacity=".45"/>
       </g>
       ${telegramLogoPlaceholder}
       <text data-beauty-telegram-title="true" x="80" y="140" fill="url(#beautyGold)" filter="url(#beautyGoldGlow)" font-family="Great Vibes" font-size="${nameFontSize}" font-weight="400">${xml(name)}</text>
