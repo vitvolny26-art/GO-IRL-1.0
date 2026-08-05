@@ -49,8 +49,8 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
   const isTelegram = variant === "telegram";
   const labels = copy[input.language] || copy.en;
   const name = clean(input.activity || input.organizer || "GO IRL Beauty", 48);
-  const description = clean(input.description || input.level || input.title, 180);
-  const nameFontSize = name.length > 34 ? 58 : name.length > 24 ? 70 : 88;
+  const description = clean(input.description || input.level || input.title, 220);
+  const nameFontSize = name.length > 34 ? 62 : name.length > 24 ? 76 : 100;
   const services = (input.beautyServices?.length
     ? input.beautyServices
     : [{ name: input.title, priceCzk: input.price }])
@@ -72,7 +72,7 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
   }).join("");
   const location = clean(input.address || input.city, 48);
   const height = isTelegram ? 900 : 1020;
-  const descriptionLines = wrap(description, 48, 2);
+  const descriptionLines = wrap(description, 48, 3);
   const monogram = monogramFor(name);
   const footer = isTelegram ? "" : `<g data-beauty-default-cta="true">
     <rect y="900" width="1080" height="120" fill="#0a030d"/>
@@ -81,14 +81,8 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
     <text x="960" y="971" text-anchor="end" fill="#180b1f" font-family="DejaVu Sans, Arial, sans-serif" font-size="38" font-weight="900">→</text>
   </g>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}" data-beauty-template="premium-v2">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${height}" viewBox="0 0 1080 ${height}" data-beauty-template="premium-v3">
   <defs>
-    <linearGradient id="leftShade" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#0a030d" stop-opacity=".98"/>
-      <stop offset="55%" stop-color="#0a030d" stop-opacity=".88"/>
-      <stop offset="80%" stop-color="#0a030d" stop-opacity=".35"/>
-      <stop offset="100%" stop-color="#0a030d" stop-opacity="0"/>
-    </linearGradient>
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fff8d6"/>
       <stop offset="25%" stop-color="#e2b453"/>
@@ -103,7 +97,6 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
       <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <rect width="1080" height="900" fill="url(#leftShade)"/>
   <g data-beauty-double-frame="true" stroke="url(#goldGrad)" fill="none">
     <path d="M32 60A28 28 0 0 0 60 32H1020A28 28 0 0 0 1048 60V840A28 28 0 0 0 1020 868H60A28 28 0 0 0 32 840Z" stroke-width="2.5" stroke-opacity=".9"/>
     <path d="M42 64A22 22 0 0 0 64 42H1016A22 22 0 0 0 1038 64V836A22 22 0 0 0 1016 858H64A22 22 0 0 0 42 836Z" stroke-width="1" stroke-opacity=".45"/>
@@ -113,12 +106,11 @@ const buildBeautyShareCardSvgVariant = (input: TelegramEventCardInput, variant: 
     <rect x="6" y="6" width="158" height="158" rx="12" fill="none" stroke="url(#goldGrad)" stroke-width="1" stroke-opacity=".5"/>
     <text data-beauty-monogram="true" x="85" y="114" text-anchor="middle" fill="url(#goldGrad)" filter="url(#goldGlow)" font-family="DejaVu Serif, Georgia, serif" font-size="96" font-style="italic" font-weight="600">${xml(monogram)}</text>
   </g>
-  <text data-beauty-premium-title="true" x="80" y="140" fill="url(#goldGrad)" filter="url(#goldGlow)" font-family="DejaVu Serif, Georgia, serif" font-size="${nameFontSize}" font-style="italic" font-weight="600">${xml(name)}</text>
+  <text data-beauty-premium-title="true" x="80" y="150" fill="url(#goldGrad)" filter="url(#goldGlow)" font-family="GO IRL Beauty Script, Great Vibes, cursive" font-size="${nameFontSize}" font-weight="400" letter-spacing=".4">${xml(name)}</text>
   <text fill="#ebdbe8" font-size="26" font-family="DejaVu Serif, Georgia, serif">${tspans(descriptionLines, 80, 215, 37, "beauty-description")}</text>
   ${serviceRows}
   <g data-beauty-location="true">
-    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" fill="url(#goldGrad)" transform="translate(620 807) scale(1.15)"/>
-    <text x="1006" y="835" text-anchor="end" fill="#e6d8eb" font-size="28" font-family="DejaVu Serif, Georgia, serif">${xml(location)}</text>
+    <text data-beauty-location-text="true" x="1006" y="835" text-anchor="end" fill="#e6d8eb" font-size="28" font-family="DejaVu Serif, Georgia, serif">${xml(location)}</text>
   </g>
   ${footer}
 </svg>`;
