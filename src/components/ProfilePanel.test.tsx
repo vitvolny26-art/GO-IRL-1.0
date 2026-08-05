@@ -8,6 +8,7 @@ describe("ProfilePanel", () => {
       <ProfilePanel
         language="en"
         editing={false}
+        userRole="user"
         renderSection={(section) => <div>{section}</div>}
       />,
     );
@@ -18,6 +19,34 @@ describe("ProfilePanel", () => {
     expect(html).toContain(">Privacy<");
     expect(html).toContain(">Diagnostics<");
     expect(html).not.toContain("profile-page");
+    expect(html).not.toContain("/beauty/workspace");
+  });
+
+  it("shows the Beauty workspace entry to professionals", () => {
+    const html = renderToStaticMarkup(
+      <ProfilePanel
+        language="en"
+        editing={false}
+        userRole="professional"
+        renderSection={(section) => <div>{section}</div>}
+      />,
+    );
+
+    expect(html).toContain("/beauty/workspace");
+    expect(html).toContain("GO IRL Beauty");
+  });
+
+  it("shows the Beauty workspace entry to admins", () => {
+    const html = renderToStaticMarkup(
+      <ProfilePanel
+        language="en"
+        editing={false}
+        userRole="admin"
+        renderSection={(section) => <div>{section}</div>}
+      />,
+    );
+
+    expect(html).toContain("/beauty/workspace");
   });
 
   it("blocks other sections while identity editing is active", () => {
@@ -25,6 +54,7 @@ describe("ProfilePanel", () => {
       <ProfilePanel
         language="en"
         editing
+        userRole="user"
         renderSection={(section) => <div>{section}</div>}
       />,
     );

@@ -4,11 +4,13 @@ import { Sparkles, ChevronRight } from "lucide-react";
 import { useAppStore } from "../store";
 import { beautyHomeCopy } from "./beautyI18n";
 import { useBeautyWorkspaceAttentionCount } from "./beautyWorkspaceAttention";
+import { canShowBeautyWorkspaceEntry } from "./servicesRoleNavigation";
 import "./beauty-home-entry.css";
 
 export function BeautyHomeEntryPortal() {
   const language = useAppStore((state) => state.language);
   const view = useAppStore((state) => state.view);
+  const userRole = useAppStore((state) => state.userRole);
   const attentionCount = useBeautyWorkspaceAttentionCount();
   const [target, setTarget] = useState<Element | null>(null);
 
@@ -20,7 +22,7 @@ export function BeautyHomeEntryPortal() {
     return () => observer.disconnect();
   }, []);
 
-  if (view !== "home" || !target) return null;
+  if (view !== "home" || !target || !canShowBeautyWorkspaceEntry(userRole)) return null;
   const text = beautyHomeCopy[language];
   return createPortal(
     <a className="beauty-home-entry" href="/beauty/workspace" target="_blank" rel="noopener noreferrer">

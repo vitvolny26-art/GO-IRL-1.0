@@ -14,8 +14,10 @@ import {
   resolveProfileSectionFromPath,
 } from "../profile/profileRoute";
 import { useBeautyWorkspaceAttentionCount } from "../beauty/beautyWorkspaceAttention";
+import { canShowBeautyWorkspaceEntry } from "../beauty/servicesRoleNavigation";
+import { useAppStore } from "../store";
 import type { ProfilePanelSection, ProfilePanelState } from "../profile/profilePanelTypes";
-import type { Language } from "../types";
+import type { Language, UserRole } from "../types";
 
 type ProfilePanelCopy = {
   title: string;
@@ -93,12 +95,15 @@ type ProfilePanelProps = {
   editing: boolean;
   renderSection: (section: ProfilePanelSection) => ReactNode;
   onSectionChange?: (section: ProfilePanelSection) => void;
+  userRole?: UserRole;
 };
 
-export function ProfilePanel({ language, editing, renderSection, onSectionChange }: ProfilePanelProps) {
+export function ProfilePanel({ language, editing, renderSection, onSectionChange, userRole: userRoleOverride }: ProfilePanelProps) {
   const [activeSection, setActiveSection] = useState<ProfilePanelSection>(() => (
     typeof window === "undefined" ? defaultProfilePanelSection : resolveProfileSectionFromPath(window.location.pathname)
   ));
+  const storedUserRole = useAppStore((state) => state.userRole);
+  const userRole = userRoleOverride ?? storedUserRole;
   const attentionCount = useBeautyWorkspaceAttentionCount();
   const labels = copy[language];
   const applySection = useCallback((section: ProfilePanelSection) => {
@@ -135,11 +140,13 @@ export function ProfilePanel({ language, editing, renderSection, onSectionChange
     <ProfileLayout activeSection={activeSection} editing={editing} onSectionChange={applySection}>
       <div className="profile-panel" data-profile-panel-section={activeSection}>
         <header className="profile-panel-header"><h2>{labels.title}</h2><p>{labels.hint}</p></header>
-        <a className="profile-panel-beauty-entry" href="/beauty/workspace" target="_blank" rel="noopener noreferrer">
-          <Sparkles />
-          <span><strong>GO IRL Beauty</strong><small>{labels.beautyHint}</small></span>
-          {attentionCount > 0 && <b className="profile-panel-beauty-badge" aria-label={`${attentionCount}`}>{attentionCount > 99 ? "99+" : attentionCount}</b>}
-        </a>
+        {canShowBeautyWorkspaceEntry(userRole) && (
+          <a className="profile-panel-beauty-entry" href="/beauty/workspace" target="_blank" rel="noopener noreferrer">
+            <Sparkles />
+            <span><strong>GO IRL Beauty</strong><small>{labels.beautyHint}</small></span>
+            {attentionCount > 0 && <b className="profile-panel-beauty-badge" aria-label={`${attentionCount}`}>{attentionCount > 99 ? "99+" : attentionCount}</b>}
+          </a>
+        )}
         {activeSection === defaultProfilePanelSection ? content : null}
         <nav className="profile-panel-navigation" aria-label={labels.title}>
           {profilePanelSections.map(({ id }) => {
