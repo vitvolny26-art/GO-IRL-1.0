@@ -44,9 +44,10 @@ describe("Beauty share card SVG", () => {
     expect(svg).not.toContain("LESS SCROLLING. MORE LIFE.");
     expect(svg).not.toContain("go-irl-1-0.vercel.app/beauty/beauty-test");
     expect(svg).not.toContain('data-beauty-telegram-frame="true"');
+    expect(svg).not.toContain('data-beauty-telegram-wordmark="true"');
   });
 
-  it("renders a wider Telegram-only 1080x900 card with three description lines and no fake CTA", () => {
+  it("renders a reference-inspired Telegram-only frame, wordmark, and divider", () => {
     const svg = buildTelegramBeautyShareCardSvg({
       ...card,
       description: "Комбинированный маникюр, выравнивание и укрепление натуральных ногтей, однотонные покрытия и минималистичный дизайн",
@@ -56,8 +57,16 @@ describe("Beauty share card SVG", () => {
     expect(svg.match(/data-beauty-service-row=/g)).toHaveLength(3);
     expect(svg).toContain("Центр, Оломоуц");
     expect(svg).toContain('data-beauty-telegram-frame="true"');
+    expect(svg).toContain('data-beauty-telegram-frame-outer="true"');
+    expect(svg).toContain('data-beauty-telegram-frame-inner="true"');
+    expect(svg).toContain('data-beauty-telegram-frame-corner="true"');
+    expect(svg).toContain('data-beauty-telegram-wordmark="true"');
     expect(svg).toContain('data-beauty-telegram-title="true"');
+    expect(svg).toContain('font-family="DejaVu Serif Condensed, DejaVu Serif, Georgia, serif"');
+    expect(svg).toContain('font-weight="400"');
+    expect(svg).toContain('filter="url(#beautyGoldGlow)"');
     expect(svg).toContain('data-beauty-title-flourish="true"');
+    expect(svg).toContain('data-beauty-title-ornament="true"');
     expect(svg).toContain('fill="url(#beautyGold)"');
     expect(svg).not.toContain("Услуги и запись");
   });
