@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { vi } from "vitest";
 import {
   buildTrustedBeautyCardFromRows,
   isBeautyShareSlug,
+  loadBeautyShareArtwork,
   loadPublicBeautyRows,
   localizeBeautyServiceName,
 } from "./telegram-share-beauty";
@@ -40,7 +40,7 @@ describe("Beauty Telegram share", () => {
       { ...base, service_name: "Педикюр", price_czk: 990 },
       { ...base, service_name: "Nail art", price_czk: 250 },
       { ...base, service_name: "Ignored fourth service", price_czk: 1 },
-    ], "beauty-test-studio", "ru", "2026-08-05", "https://go-irl-1-0.vercel.app");
+    ], "beauty-test-studio", "ru", "2026-08-05", "https://goirl.realitka.pp.ua");
 
     expect(card?.activity).toBe("Studio Vita");
     expect(card?.description).toBe("Комбинированный маникюр и укрепление натуральных ногтей");
@@ -49,7 +49,55 @@ describe("Beauty Telegram share", () => {
       { name: "Педикюр", priceCzk: 990 },
       { name: "Nail art", priceCzk: 250 },
     ]);
-    expect(card?.publicProfileUrl).toBe("https://go-irl-1-0.vercel.app/beauty/beauty-test-studio");
+    expect(card?.publicProfileUrl).toBe("https://goirl.realitka.pp.ua/beauty/beauty-test-studio");
+  });
+
+  it("uses the saved ready JPEG as the canonical Beauty artwork", async () => {
+    const maybeSingle = vi.fn(async () => ({
+      data: {
+        status: "ready",
+        generated_object_path: "user-1/beauty-share-card/generated/current.jpg",
+        source_fingerprint: "fingerprint-1",
+        generated_at: "2026-08-06T00:00:00.000Z",
+        updated_at: "2026-08-06T00:00:01.000Z",
+      },
+      error: null,
+    }));
+    const eq = vi.fn(() => ({ maybeSingle }));
+    const select = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ select }));
+    const getPublicUrl = vi.fn(() => ({
+      data: { publicUrl: "https://storage.example/beauty-share-cards/current.jpg" },
+    }));
+    const storageFrom = vi.fn(() => ({ getPublicUrl }));
+    const client = {
+      from,
+      storage: { from: storageFrom },
+    } as unknown as SupabaseClient;
+
+    await expect(loadBeautyShareArtwork(client, "profile-1")).resolves.toEqual({
+      imageUrl: "https://storage.example/beauty-share-cards/current.jpg?v=fingerprint-1",
+      version: "fingerprint-1",
+      generatedAt: "2026-08-06T00:00:00.000Z",
+    });
+    expect(from).toHaveBeenCalledWith("beauty_share_cards");
+    expect(eq).toHaveBeenCalledWith("profile_id", "profile-1");
+    expect(storageFrom).toHaveBeenCalledWith("beauty-share-cards");
+  });
+
+  it("does not expose artwork that is not ready", async () => {
+    const client = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({ data: { status: "updating" }, error: null }),
+          }),
+        }),
+      }),
+      storage: { from: vi.fn() },
+    } as unknown as SupabaseClient;
+
+    await expect(loadBeautyShareArtwork(client, "profile-1")).resolves.toBeNull();
   });
 
   it("uses the same current public Beauty projection as the Services directory", async () => {
