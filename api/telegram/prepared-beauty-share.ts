@@ -81,7 +81,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     image.searchParams.set("slug", body.slug);
     image.searchParams.set("language", card.language);
     if (typeof body.date === "string" && body.date.trim()) image.searchParams.set("date", body.date.trim());
-    image.searchParams.set("format", "download");
+    image.searchParams.set("format", "image");
     image.searchParams.set("v", artwork?.version || "12");
     const imageUrl = image.toString();
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
