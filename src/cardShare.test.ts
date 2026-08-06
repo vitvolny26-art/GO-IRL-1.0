@@ -77,7 +77,7 @@ describe("card share", () => {
     expect(target.origin + target.pathname).toBe("https://www.facebook.com/dialog/send");
     expect(target.searchParams.get("app_id")).toBe("1348703396728256");
     expect(target.searchParams.get("link")).toBe(previewUrl);
-    expect(target.searchParams.get("redirect_uri")).toBe("https://goirl.realitka.pp.ua/");
+    expect(target.searchParams.get("redirect_uri")).toBe("https://goirl.realitka.pp.ua");
   });
 
   it("builds native Messenger targets for mobile devices", () => {
