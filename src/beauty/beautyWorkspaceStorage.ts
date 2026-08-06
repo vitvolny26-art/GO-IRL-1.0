@@ -13,6 +13,38 @@ import { createBeautyWorkspaceSaveQueue } from "./beautyWorkspaceSaveQueue";
 import type { Language } from "../types";
 import type { BeautyWorkspace } from "./beautySetupModel";
 
+export const beautyShareCardPersistenceEvent = "go-irl-beauty-share-card-persistence";
+
+export type BeautyShareCardPersistenceDetail = {
+  sourceFingerprint: string;
+  status: "ready" | "error";
+  errorMessage: string;
+};
+
+const dispatchBeautyShareCardPersistence = (detail: BeautyShareCardPersistenceDetail) => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent<BeautyShareCardPersistenceDetail>(beautyShareCardPersistenceEvent, { detail }));
+};
+
+export const prepareBeautyWorkspaceForPersistence = (workspace: BeautyWorkspace) => {
+  const card = workspace.shareCard;
+  if (
+    !card.enabled
+    || card.status !== "updating"
+    || !card.generatedImageDataUrl
+    || !card.sourceFingerprint
+  ) return workspace;
+
+  return {
+    ...workspace,
+    shareCard: {
+      ...card,
+      status: "ready" as const,
+      errorMessage: "",
+    },
+  };
+};
+
 export const loadBeautyWorkspace = async (language: Language = "en") => {
   const workspace = await loadBeautyWorkspaceBase(language);
   const withShareCard = await loadRemoteBeautyShareCard(workspace);
@@ -20,8 +52,29 @@ export const loadBeautyWorkspace = async (language: Language = "en") => {
 };
 
 const saveBeautyWorkspaceNow = async (workspace: BeautyWorkspace) => {
-  await saveBeautyWorkspaceBase(workspace);
-  await saveRemoteBeautyShareCard(workspace);
+  const persistedWorkspace = prepareBeautyWorkspaceForPersistence(workspace);
+  const confirmsGeneratedCard = persistedWorkspace !== workspace;
+  const sourceFingerprint = workspace.shareCard.sourceFingerprint;
+
+  try {
+    await saveBeautyWorkspaceBase(workspace);
+    await saveRemoteBeautyShareCard(persistedWorkspace);
+    if (confirmsGeneratedCard) {
+      await saveBeautyWorkspaceBase(persistedWorkspace);
+      dispatchBeautyShareCardPersistence({ sourceFingerprint, status: "ready", errorMessage: "" });
+    }
+  } catch (error) {
+    if (confirmsGeneratedCard) {
+      const errorMessage = error instanceof Error ? error.message : "beauty_share_card_save_failed";
+      const failedWorkspace: BeautyWorkspace = {
+        ...workspace,
+        shareCard: { ...workspace.shareCard, status: "error", errorMessage },
+      };
+      await saveBeautyWorkspaceBase(failedWorkspace).catch(() => undefined);
+      dispatchBeautyShareCardPersistence({ sourceFingerprint, status: "error", errorMessage });
+    }
+    throw error;
+  }
 };
 
 const enqueueBeautyWorkspaceSave = createBeautyWorkspaceSaveQueue(saveBeautyWorkspaceNow);
