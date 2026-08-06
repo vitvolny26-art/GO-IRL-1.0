@@ -57,9 +57,6 @@ const escapeHtml = (value: string) => value
 
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
 
-const browserEventUrl = (origin: string, eventId: string) =>
-  `${origin}/join/${encodeURIComponent(eventId)}`;
-
 const browserBeautyUrl = (origin: string, slug: string, date: string) => {
   const url = new URL(`/beauty/${encodeURIComponent(slug)}`, origin);
   if (date) url.searchParams.set("date", date);
@@ -217,7 +214,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       response.setHeader("Cache-Control", "private, max-age=300");
       return response.status(200).end(buildMetaEventCalendar(card, origin));
     }
-    const openUrl = browserEventUrl(origin, card.eventId);
+    const openUrl = card.inviteUrl;
     const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
     const imageUrl = secret
       ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
