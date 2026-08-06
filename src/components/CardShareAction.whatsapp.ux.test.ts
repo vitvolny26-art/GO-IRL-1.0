@@ -1,79 +1,29 @@
 import { describe, expect, it } from "vitest";
 import source from "./CardShareAction.tsx?raw";
 
-describe("WhatsApp prepared share UX", () => {
-  it("prepares the server JPEG before showing the modal", () => {
+describe("WhatsApp Meta link preview UX", () => {
+  it("opens the clean Meta landing directly without preparing or downloading a JPEG", () => {
     const handler = source.slice(
       source.indexOf("const prepareWhatsAppCard = async () =>"),
       source.indexOf("const share = async"),
     );
-    expect(handler).toContain("buildCardShareImageUrl(content)");
-    expect(handler).toContain("buildCardShareDownloadUrl(content)");
-    expect(handler).toContain("const file = new File(");
-    expect(handler).toContain("directSend: canNativeShareBeautyFile(file)");
-    expect(handler).toContain("downloadAccepted: false");
-    expect(handler).not.toContain("openExternalShareTarget");
+    expect(handler).toContain('openExternalShareTarget(buildCardShareTarget("whatsapp", content))');
+    expect(handler).not.toContain("buildCardShareImageUrl");
+    expect(handler).not.toContain("buildCardShareDownloadUrl");
+    expect(handler).not.toContain("new File(");
   });
 
-  it("binds card preparation directly to the WhatsApp channel button", () => {
+  it("binds the WhatsApp channel button to the direct Meta landing action", () => {
     const channelClick = source.slice(
       source.indexOf('if (channel.id === "whatsapp")'),
       source.indexOf("</button>", source.indexOf('if (channel.id === "whatsapp")')),
     );
     expect(channelClick).toContain("void prepareWhatsAppCard()");
-    expect(channelClick).not.toContain("openExternalShareTarget");
   });
 
-  it("detects native file sharing only for a prepared Beauty JPEG", () => {
-    const capability = source.slice(
-      source.indexOf("const canNativeShareBeautyFile = (file: File) =>"),
-      source.indexOf("const prepareWhatsAppCard = async () =>"),
-    );
-    expect(capability).toContain("canPrepareBeautyTelegramShare(url)");
-    expect(capability).toContain('typeof navigator.share !== "function"');
-    expect(capability).toContain('typeof navigator.canShare !== "function"');
-    expect(capability).toContain("navigator.canShare({ files: [file] })");
-  });
-
-  it("attaches the JPEG and caption through the native share sheet", () => {
-    const handler = source.slice(
-      source.indexOf("const openPreparedWhatsApp = async () =>"),
-      source.indexOf("const activate = () =>"),
-    );
-    expect(handler).toContain('typeof navigator.share === "function"');
-    expect(handler).toContain("await navigator.share({ files: [prepared.file], title, text: prepared.text })");
-    expect(handler).toContain('error.name === "AbortError"');
-    expect(handler).toContain("attachmentFallback");
-  });
-
-  it("keeps manual download and wa.me only as the unsupported-device fallback", () => {
-    const download = source.slice(
-      source.indexOf("const downloadPreparedWhatsApp = () =>"),
-      source.indexOf("const openPreparedWhatsApp = async () =>"),
-    );
-    const open = source.slice(
-      source.indexOf("const openPreparedWhatsApp = async () =>"),
-      source.indexOf("const activate = () =>"),
-    );
-    expect(download).toContain("webApp.downloadFile(");
-    expect(download).toContain("URL.createObjectURL(prepared.file)");
-    expect(open).toContain("!prepared.directSend && !prepared.downloadAccepted");
-    expect(open).toContain("https://wa.me/?text=");
-  });
-
-  it("shows download instructions when native attachment is unavailable", () => {
-    const modal = source.slice(
-      source.indexOf('className="whatsapp-share-prepared-backdrop"'),
-      source.indexOf("document.body,", source.indexOf('className="whatsapp-share-prepared-backdrop"')),
-    );
-    expect(modal).toContain("!preparedWhatsApp.directSend ? (");
-    expect(modal).toContain("disabled={!preparedWhatsApp.directSend && !preparedWhatsApp.downloadAccepted}");
-    expect(modal).toContain("void openPreparedWhatsApp()");
-  });
-
-  it("labels the primary preview action as sending to WhatsApp", () => {
-    expect(source).toContain('open: "Отправить в WhatsApp"');
-    expect(source).toContain('download: "Скачать JPEG"');
-    expect(source).toContain("attachmentFallback");
+  it("removes the obsolete JPEG download modal from the active share component", () => {
+    expect(source).not.toContain("whatsapp-share-prepared-backdrop");
+    expect(source).not.toContain("downloadPreparedWhatsApp");
+    expect(source).not.toContain("openPreparedWhatsApp");
   });
 });

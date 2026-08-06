@@ -34,11 +34,11 @@ describe("card share", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", content))).toContain(content.url);
     const whatsappTarget = new URL(buildCardShareTarget("whatsapp", content));
     expect(whatsappTarget.origin).toBe("https://wa.me");
-    expect(whatsappTarget.searchParams.get("text")).toContain(`https://goirl.realitka.pp.ua/e/${eventId}`);
+    expect(whatsappTarget.searchParams.get("text")).toContain(`https://go-irl-1-1.vercel.app/e/${eventId}`);
   });
 
   it("separates the public landing domain from the Vercel image API", () => {
-    expect(buildCardShareLandingUrl(content)).toBe(`https://goirl.realitka.pp.ua/e/${eventId}`);
+    expect(buildCardShareLandingUrl(content)).toBe(`https://go-irl-1-1.vercel.app/e/${eventId}`);
     expect(buildCardShareImageUrl(content)).toContain("https://go-irl-1-1.vercel.app/api/meta/event-preview?");
   });
 
@@ -48,7 +48,7 @@ describe("card share", () => {
     expect(buildOrganicCardShareContent(content)).toEqual({
       title: "GO IRL: Ролики в парке",
       text: "16 июл. · 18:00\nSmetanovy sady, Olomouc",
-      url: previewUrl,
+      url: buildCardShareLandingUrl(content),
     });
   });
 
@@ -66,7 +66,7 @@ describe("card share", () => {
   it("keeps Facebook separate from Messenger and never puts preview URL in user text", () => {
     const target = new URL(buildFacebookShareTarget(content));
     expect(target.origin + target.pathname).toBe("https://www.facebook.com/sharer/sharer.php");
-    expect(target.searchParams.get("u")).toBe(previewUrl);
+    expect(target.searchParams.get("u")).toBe(buildCardShareLandingUrl(content));
     expect(target.searchParams.get("quote")).toContain(content.url);
     expect(target.searchParams.get("quote")).not.toContain("/api/meta/event-preview");
     expect(buildCardShareTarget("facebook", content)).toBe(target.toString());
@@ -76,7 +76,7 @@ describe("card share", () => {
     const target = new URL(buildCardShareTarget("messenger", content));
     expect(target.origin + target.pathname).toBe("https://www.facebook.com/dialog/send");
     expect(target.searchParams.get("app_id")).toBe("1348703396728256");
-    expect(target.searchParams.get("link")).toBe(previewUrl);
+    expect(target.searchParams.get("link")).toBe(buildCardShareLandingUrl(content));
     expect(target.searchParams.get("redirect_uri")).toBe("https://goirl.realitka.pp.ua");
   });
 
@@ -94,7 +94,7 @@ describe("card share", () => {
     expect(target.searchParams.get("title")).toBe(content.title);
     expect(target.searchParams.get("date")).toBe(content.date);
     expect(target.searchParams.get("address")).toBe(content.address);
-    expect(target.searchParams.get("url")).toBe(previewUrl);
+    expect(target.searchParams.get("url")).toBe(buildCardShareLandingUrl(content));
   });
 
   it("falls back to the original URL when no valid event id is present", () => {
@@ -116,11 +116,11 @@ describe("card share", () => {
     expect(preview.searchParams.get("slug")).toBe("beauty-test-studio");
     expect(preview.searchParams.get("date")).toBe(beauty.date);
     expect(preview.searchParams.get("v")).toBe("12");
-    expect(buildCardShareLandingUrl(beauty)).toContain("https://goirl.realitka.pp.ua/s/beauty-test-studio");
+    expect(buildCardShareLandingUrl(beauty)).toContain("https://go-irl-1-1.vercel.app/s/beauty-test-studio");
     expect(isBeautyCardShareContent(beauty)).toBe(true);
 
     const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));
-    expect(whatsapp.searchParams.get("text")).toBe(preview.toString());
+    expect(whatsapp.searchParams.get("text")).toBe(buildCardShareLandingUrl(beauty));
     expect(decodeURIComponent(buildCardShareTarget("telegram", beauty))).toContain(beauty.url);
   });
 });
