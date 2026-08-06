@@ -53,7 +53,30 @@ Repair the Beauty business-card sharing chain so the generated workspace JPEG is
 
 ## Checks
 
-Pending exact-head GitHub Actions.
+PR: `#690`
+
+Initial CI:
+
+- CI `#1810`, run `31063800533`, job `92497162572`.
+- Repository check: PASS.
+- Diff check: PASS.
+- Tests: PASS, 158 files / 732 tests.
+- Typecheck: FAIL on a Node-only test placed under `src/` and a narrowed optional Telegram `openLink` method.
+- Lint, build and bundle budget: correctly skipped after the first red gate.
+
+Corrective commit moved the static HTML assertion to `tests/public/` and captured `openLink` after the capability guard.
+
+Green CI:
+
+- Exact head before this report-only update: `3e82b74bfdd85176d64590b82674610852f0ed3f`.
+- CI `#1813`, run `31063904099`, job `92497469197`: PASS.
+- Repository check: PASS, 1292 tracked files.
+- Diff check: PASS.
+- Tests: PASS, 159 files / 732 tests.
+- Typecheck: PASS.
+- Lint: PASS with one pre-existing warning in `api/_shared/admin-authorization.ts`.
+- Build: PASS, 386 modules transformed.
+- Bundle budget: PASS, 10 JavaScript chunks checked.
 
 Required physical smoke after deployment:
 
@@ -69,4 +92,4 @@ Revert the eventual squash merge commit. No database rollback is required.
 
 ## Next step
 
-Run exact-head CI, review the diff, then keep the PR unmerged until explicit approval.
+Run final exact-head CI for this report-only commit. Keep the PR unmerged until explicit approval.
