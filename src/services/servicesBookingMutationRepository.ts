@@ -205,7 +205,20 @@ const createLocalResult = (
   input: SubmitServiceBookingInput,
   createLocal: (booking: CreateServiceBookingInput) => ServiceBooking,
 ): SubmitServiceBookingResult => {
-  const { serviceId: _serviceId, idempotencyKey: _idempotencyKey, ...localInput } = input;
+  const localInput: CreateServiceBookingInput = {
+    profileId: input.profileId,
+    professionalName: input.professionalName,
+    serviceName: input.serviceName,
+    clientName: input.clientName,
+    clientContact: input.clientContact,
+    contactBeforeConfirmation: input.contactBeforeConfirmation,
+    date: input.date,
+    time: input.time,
+    durationMinutes: input.durationMinutes,
+    priceCzk: input.priceCzk,
+    currency: input.currency,
+    publicLocation: input.publicLocation,
+  };
   const booking = createLocal(localInput);
   return {
     result: "local_created",
