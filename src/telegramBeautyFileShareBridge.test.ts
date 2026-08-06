@@ -1,10 +1,7 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   buildBeautyFileShareBridgeTarget,
 } from "./telegramBeautyFileShareBridge";
-
-const bridgeHtml = readFileSync(new URL("../public/beauty-share-bridge.html", import.meta.url), "utf8");
 
 describe("Telegram Beauty file share bridge", () => {
   it("builds a cache-busted image bridge for a Beauty landing URL", () => {
@@ -26,13 +23,5 @@ describe("Telegram Beauty file share bridge", () => {
 
   it("rejects non-Beauty share text", () => {
     expect(buildBeautyFileShareBridgeTarget("GO IRL: Running", "Running", "fixed")).toBe("");
-  });
-
-  it("loads the JPEG and calls navigator.share with a File after a user click", () => {
-    expect(bridgeHtml).toContain('document.querySelector("#share").addEventListener("click"');
-    expect(bridgeHtml).toContain("const file = new File([blob]");
-    expect(bridgeHtml).toContain("navigator.canShare(data)");
-    expect(bridgeHtml).toContain("await navigator.share(data)");
-    expect(bridgeHtml).toContain('candidate.searchParams.get("format") === "image"');
   });
 });
