@@ -1,16 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { MessageCircle, MoreHorizontal, Share2 } from "lucide-react";
 import {
-  buildCardShareDownloadUrl,
-  buildCardShareImageUrl,
-  buildCardShareLandingUrl,
   buildCardShareTarget,
   buildOrganicCardShareContent,
   buildCardShareText,
 } from "../cardShare";
 import { openExternalShareTarget, openTelegramShareTarget } from "../cardShareNavigation";
-import { getTelegramWebApp } from "../telegram";
 import type { PreparedTelegramShareResult } from "../telegramPreparedShare";
 import { canPrepareBeautyTelegramShare, sharePreparedTelegramBeauty } from "../telegramPreparedBeautyShare";
 import type { ShareProvider } from "../userPreferences";
@@ -35,16 +30,6 @@ type CardShareActionProps = {
 
 type ShareChannel = ShareProvider | "facebook" | "native";
 type ActivityChatUnreadChangedDetail = { activityId?: string };
-type PreparedWhatsAppShare = {
-  file: File | null;
-  imageUrl: string;
-  downloadUrl: string;
-  text: string;
-  directSend: boolean;
-  downloadAccepted: boolean;
-  error: string | null;
-};
-
 const channels: Array<{ id: ShareChannel; label: string; icon: string | null }> = [
   { id: "telegram", label: "Telegram", icon: "/icons/telegram.svg" },
   { id: "facebook", label: "Facebook", icon: "/icons/facebook.svg" },
@@ -61,59 +46,10 @@ const moreLabels = {
   en: "More options",
 } as const;
 
-const whatsappLabels = {
-  ru: {
-    preparing: "Готовим карточку…",
-    title: "Карточка готова",
-    steps: ["Скачайте JPEG-карточку.", "Откройте WhatsApp.", "Прикрепите карточку из загрузок."],
-    download: "Скачать JPEG",
-    open: "Отправить в WhatsApp",
-    close: "Закрыть",
-    cancelled: "Скачивание карточки отменено.",
-    failed: "Не удалось подготовить JPEG. Попробуйте ещё раз.",
-    attachmentFallback: "Не удалось прикрепить JPEG автоматически. Скачайте карточку и отправьте её через WhatsApp.",
-  },
-  uk: {
-    preparing: "Готуємо картку…",
-    title: "Картка готова",
-    steps: ["Завантажте JPEG-картку.", "Відкрийте WhatsApp.", "Прикріпіть картку із завантажень."],
-    download: "Завантажити JPEG",
-    open: "Надіслати у WhatsApp",
-    close: "Закрити",
-    cancelled: "Завантаження картки скасовано.",
-    failed: "Не вдалося підготувати JPEG. Спробуйте ще раз.",
-    attachmentFallback: "Не вдалося прикріпити JPEG автоматично. Завантажте картку та надішліть її через WhatsApp.",
-  },
-  cs: {
-    preparing: "Připravuji kartu…",
-    title: "Karta je připravena",
-    steps: ["Stáhněte kartu JPEG.", "Otevřete WhatsApp.", "Přiložte kartu ze stažených souborů."],
-    download: "Stáhnout JPEG",
-    open: "Odeslat do WhatsApp",
-    close: "Zavřít",
-    cancelled: "Stažení karty bylo zrušeno.",
-    failed: "JPEG se nepodařilo připravit. Zkuste to znovu.",
-    attachmentFallback: "JPEG se nepodařilo přiložit automaticky. Stáhněte kartu a odešlete ji přes WhatsApp.",
-  },
-  en: {
-    preparing: "Preparing card…",
-    title: "Card ready",
-    steps: ["Download the JPEG card.", "Open WhatsApp.", "Attach the card from your downloads."],
-    download: "Download JPEG",
-    open: "Send to WhatsApp",
-    close: "Close",
-    cancelled: "Card download was cancelled.",
-    failed: "Could not prepare the JPEG. Please try again.",
-    attachmentFallback: "The JPEG could not be attached automatically. Download the card and send it through WhatsApp.",
-  },
-} as const;
-
 export function CardShareAction({ title, date, address, url, label, onTelegramShare }: CardShareActionProps) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [preparingWhatsApp, setPreparingWhatsApp] = useState(false);
-  const [preparedWhatsApp, setPreparedWhatsApp] = useState<PreparedWhatsAppShare | null>(null);
   const rootRef = useRef<HTMLSpanElement>(null);
   const activityId = useMemo(() => activityIdFromInviteUrl(url), [url]);
   const joinedIds = useAppStore((state) => state.joinedIds);
@@ -121,7 +57,6 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
   const content = { title, date, address, url, language };
   const canAccessChat = Boolean(activityId && joinedIds.includes(activityId));
   const showUnread = canShowEventCardUnread(activityId, joinedIds, unreadCount);
-  const whatsappCopy = whatsappLabels[language];
 
   useEffect(() => {
     if (!open) return;
@@ -206,63 +141,10 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
   };
 
-  const canNativeShareBeautyFile = (file: File) => {
-    if (!canPrepareBeautyTelegramShare(url) || typeof navigator.share !== "function") return false;
-    try {
-      return typeof navigator.canShare !== "function" || navigator.canShare({ files: [file] });
-    } catch {
-      return false;
-    }
-  };
-
   const prepareWhatsAppCard = async () => {
     setOpen(false);
     setExpanded(false);
-    setPreparingWhatsApp(true);
-    const imageUrl = buildCardShareImageUrl(content);
-    const downloadUrl = buildCardShareDownloadUrl(content);
-    const landingUrl = buildCardShareLandingUrl(content);
-
-    if (!imageUrl || !downloadUrl) {
-      setPreparedWhatsApp({
-        file: null,
-        imageUrl: "",
-        downloadUrl: "",
-        text: "",
-        directSend: false,
-        downloadAccepted: false,
-        error: whatsappCopy.failed,
-      });
-      setPreparingWhatsApp(false);
-      return;
-    }
-
-    try {
-      const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error(`Card image request failed: ${response.status}`);
-      const file = new File([await response.blob()], "go-irl-card.jpg", { type: "image/jpeg" });
-      setPreparedWhatsApp({
-        file,
-        imageUrl,
-        downloadUrl,
-        text: buildCardShareText({ ...content, url: landingUrl }),
-        directSend: canNativeShareBeautyFile(file),
-        downloadAccepted: false,
-        error: null,
-      });
-    } catch {
-      setPreparedWhatsApp({
-        file: null,
-        imageUrl,
-        downloadUrl,
-        text: buildCardShareText({ ...content, url: landingUrl }),
-        directSend: false,
-        downloadAccepted: false,
-        error: whatsappCopy.failed,
-      });
-    } finally {
-      setPreparingWhatsApp(false);
-    }
+    openExternalShareTarget(buildCardShareTarget("whatsapp", content));
   };
 
   const share = async (channel: Exclude<ShareChannel, "whatsapp">) => {
@@ -297,91 +179,6 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
     }
     await copyShareText(organicContent.url);
     if (channel === "instagram") openExternalShareTarget("https://www.instagram.com/");
-  };
-
-  const downloadPreparedWhatsApp = () => {
-    const prepared = preparedWhatsApp;
-    if (!prepared?.downloadUrl) return;
-
-    const webApp = getTelegramWebApp();
-    const canUseTelegramDownload = Boolean(webApp?.downloadFile)
-      && (!webApp?.isVersionAtLeast || webApp.isVersionAtLeast("8.0"));
-
-    if (canUseTelegramDownload && webApp?.downloadFile) {
-      setPreparedWhatsApp((current) => current
-        ? { ...current, downloadAccepted: false, error: null }
-        : current);
-      try {
-        webApp.downloadFile(
-          { url: prepared.downloadUrl, file_name: "go-irl-card.jpg" },
-          (accepted) => {
-            setPreparedWhatsApp((current) => current
-              ? {
-                  ...current,
-                  downloadAccepted: accepted,
-                  error: accepted ? null : whatsappCopy.cancelled,
-                }
-              : current);
-          },
-        );
-        return;
-      } catch {
-        // Fall back to a browser download below.
-      }
-    }
-
-    if (!prepared.file) {
-      setPreparedWhatsApp((current) => current
-        ? { ...current, downloadAccepted: false, error: whatsappCopy.failed }
-        : current);
-      return;
-    }
-
-    try {
-      const objectUrl = URL.createObjectURL(prepared.file);
-      const anchor = document.createElement("a");
-      anchor.href = objectUrl;
-      anchor.download = "go-irl-card.jpg";
-      anchor.style.display = "none";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-      setPreparedWhatsApp((current) => current
-        ? { ...current, downloadAccepted: true, error: null }
-        : current);
-    } catch {
-      setPreparedWhatsApp((current) => current
-        ? { ...current, downloadAccepted: false, error: whatsappCopy.failed }
-        : current);
-    }
-  };
-
-  const openPreparedWhatsApp = async () => {
-    const prepared = preparedWhatsApp;
-    if (!prepared || (!prepared.directSend && !prepared.downloadAccepted)) return;
-
-    if (prepared.directSend && prepared.file && typeof navigator.share === "function") {
-      try {
-        await navigator.share({ files: [prepared.file], title, text: prepared.text });
-        setPreparedWhatsApp(null);
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setPreparedWhatsApp((current) => current
-          ? {
-              ...current,
-              directSend: false,
-              downloadAccepted: false,
-              error: whatsappCopy.attachmentFallback,
-            }
-          : current);
-        return;
-      }
-    }
-
-    openExternalShareTarget(`https://wa.me/?text=${encodeURIComponent(prepared.text)}`);
-    setPreparedWhatsApp(null);
   };
 
   const activate = () => {
@@ -483,47 +280,6 @@ export function CardShareAction({ title, date, address, url, label, onTelegramSh
             </button>
           ) : null}
         </span>
-      ) : null}
-      {typeof document !== "undefined" && (preparingWhatsApp || preparedWhatsApp) ? createPortal(
-        <div className="whatsapp-share-prepared-backdrop" role="presentation">
-          <section className="whatsapp-share-prepared" role="dialog" aria-modal="true" aria-label={whatsappCopy.title}>
-            {preparedWhatsApp ? (
-              <>
-                <strong>{whatsappCopy.title}</strong>
-                {preparedWhatsApp.imageUrl ? <img src={preparedWhatsApp.imageUrl} alt={title} /> : null}
-                {!preparedWhatsApp.directSend ? (
-                  <ol className="whatsapp-share-instruction">
-                    {whatsappCopy.steps.map((step) => <li key={step}>{step}</li>)}
-                  </ol>
-                ) : null}
-                {preparedWhatsApp.error ? <p role="alert">{preparedWhatsApp.error}</p> : null}
-                {!preparedWhatsApp.directSend ? (
-                  <button
-                    className="whatsapp-share-download"
-                    type="button"
-                    onClick={downloadPreparedWhatsApp}
-                    disabled={!preparedWhatsApp.downloadUrl}
-                  >
-                    {whatsappCopy.download}
-                  </button>
-                ) : null}
-                <button
-                  className="whatsapp-share-send"
-                  type="button"
-                  onClick={() => { void openPreparedWhatsApp(); }}
-                  disabled={!preparedWhatsApp.directSend && !preparedWhatsApp.downloadAccepted}
-                >
-                  <img src="/icons/whatsapp.svg" alt="" />
-                  {whatsappCopy.open}
-                </button>
-                <button className="whatsapp-share-close" type="button" onClick={() => setPreparedWhatsApp(null)}>
-                  {whatsappCopy.close}
-                </button>
-              </>
-            ) : <strong>{whatsappCopy.preparing}</strong>}
-          </section>
-        </div>,
-        document.body,
       ) : null}
     </span>
   );
