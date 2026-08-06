@@ -11,7 +11,6 @@ export type CardShareContent = {
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const beautySlugPattern = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const shareApiOrigin = "https://go-irl-1-1.vercel.app";
-const shareLandingOrigin = shareApiOrigin;
 const publicAppOrigin = "https://goirl.realitka.pp.ua";
 const shareTextMarker = "GO IRL:";
 export const metaAppId = "1348703396728256";
@@ -77,14 +76,14 @@ export const buildCardShareLandingUrl = (content: CardShareContent) => {
     const language = content.language || "ru";
     const eventId = previewUrl.searchParams.get("event") || "";
     if (eventIdPattern.test(eventId)) {
-      const landingUrl = new URL(`/e/${encodeURIComponent(eventId)}`, shareLandingOrigin);
+      const landingUrl = new URL(`/e/${encodeURIComponent(eventId)}`, publicAppOrigin);
       if (language !== "ru") landingUrl.searchParams.set("language", language);
       return landingUrl.toString();
     }
 
     const beautySlug = previewUrl.searchParams.get("slug") || "";
     if (beautySlugPattern.test(beautySlug)) {
-      const landingUrl = new URL(`/s/${encodeURIComponent(beautySlug)}`, shareLandingOrigin);
+      const landingUrl = new URL(`/s/${encodeURIComponent(beautySlug)}`, publicAppOrigin);
       if (language !== "ru") landingUrl.searchParams.set("language", language);
       const date = previewUrl.searchParams.get("date") || "";
       if (date) landingUrl.searchParams.set("date", date);
@@ -117,12 +116,12 @@ export const buildCardShareDownloadUrl = (content: CardShareContent) => {
 export const buildOrganicCardShareContent = (content: CardShareContent) => ({
   title: `GO IRL: ${content.title}`,
   text: [content.date, content.address].filter(Boolean).join("\n"),
-  url: buildCardShareLandingUrl(content),
+  url: buildMetaEventPreviewUrl(content),
 });
 
 export const buildFacebookShareTarget = (content: CardShareContent) => {
   const target = new URL("https://www.facebook.com/sharer/sharer.php");
-  target.searchParams.set("u", buildCardShareLandingUrl(content));
+  target.searchParams.set("u", buildMetaEventPreviewUrl(content));
   target.searchParams.set("quote", buildCardShareText(content));
   return target.toString();
 };
@@ -130,18 +129,18 @@ export const buildFacebookShareTarget = (content: CardShareContent) => {
 export const buildMessengerSendTarget = (content: CardShareContent) => {
   const dialogUrl = new URL("https://www.facebook.com/dialog/send");
   dialogUrl.searchParams.set("app_id", metaAppId);
-  dialogUrl.searchParams.set("link", buildCardShareLandingUrl(content));
+  dialogUrl.searchParams.set("link", buildMetaEventPreviewUrl(content));
   dialogUrl.searchParams.set("redirect_uri", publicAppOrigin);
   return dialogUrl.toString();
 };
 
 export const buildMessengerAppTarget = (content: CardShareContent) => {
-  const link = encodeURIComponent(buildCardShareLandingUrl(content));
+  const link = encodeURIComponent(buildMetaEventPreviewUrl(content));
   return `fb-messenger://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}`;
 };
 
 export const buildMessengerAndroidIntentTarget = (content: CardShareContent) => {
-  const link = encodeURIComponent(buildCardShareLandingUrl(content));
+  const link = encodeURIComponent(buildMetaEventPreviewUrl(content));
   return `intent://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}#Intent;scheme=fb-messenger;package=com.facebook.orca;end`;
 };
 
@@ -150,7 +149,7 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
   target.searchParams.set("title", content.title);
   target.searchParams.set("date", content.date);
   target.searchParams.set("address", content.address);
-  target.searchParams.set("url", buildCardShareLandingUrl(content));
+  target.searchParams.set("url", buildMetaEventPreviewUrl(content));
   return target.toString();
 };
 
@@ -163,7 +162,12 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     return target.toString();
   }
   if (channel === "whatsapp") {
-    return `https://wa.me/?text=${encodeURIComponent(buildCardShareLandingUrl(normalizedContent))}`;
+    if (isBeautyCardShareContent(normalizedContent)) {
+      return `https://wa.me/?text=${encodeURIComponent(buildMetaEventPreviewUrl(normalizedContent))}`;
+    }
+    const landingUrl = buildCardShareLandingUrl(normalizedContent);
+    const message = buildCardShareText({ ...normalizedContent, url: landingUrl });
+    return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }
   if (channel === "facebook") return buildFacebookShareTarget(normalizedContent);
   return buildMessengerSendTarget(normalizedContent);
