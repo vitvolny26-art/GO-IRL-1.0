@@ -10,7 +10,8 @@ export type CardShareContent = {
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const beautySlugPattern = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const fallbackOrigin = "https://go-irl-1-0.vercel.app";
+const shareApiOrigin = "https://go-irl-1-1.vercel.app";
+const publicAppOrigin = "https://goirl.realitka.pp.ua";
 const shareTextMarker = "GO IRL:";
 export const metaAppId = "1348703396728256";
 
@@ -49,18 +50,18 @@ export const buildMetaEventPreviewUrl = (content: CardShareContent) => {
     const inviteUrl = new URL(content.url);
     const beautySlug = beautyShareSlugFromUrl(inviteUrl.toString());
     if (beautySlug) {
-      const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
+      const previewUrl = new URL("/api/meta/event-preview", shareApiOrigin);
       previewUrl.searchParams.set("slug", beautySlug);
       previewUrl.searchParams.set("language", content.language || "ru");
       if (content.date.trim()) previewUrl.searchParams.set("date", content.date.trim());
-      previewUrl.searchParams.set("v", "11");
+      previewUrl.searchParams.set("v", "12");
       return previewUrl.toString();
     }
 
     const eventId = inviteUrl.searchParams.get("startapp")?.trim() || "";
     if (!eventIdPattern.test(eventId)) return content.url;
 
-    const previewUrl = new URL("/api/meta/event-preview", fallbackOrigin);
+    const previewUrl = new URL("/api/meta/event-preview", shareApiOrigin);
     previewUrl.searchParams.set("event", eventId);
     previewUrl.searchParams.set("language", content.language || "ru");
     return previewUrl.toString();
@@ -75,14 +76,14 @@ export const buildCardShareLandingUrl = (content: CardShareContent) => {
     const language = content.language || "ru";
     const eventId = previewUrl.searchParams.get("event") || "";
     if (eventIdPattern.test(eventId)) {
-      const landingUrl = new URL(`/e/${encodeURIComponent(eventId)}`, fallbackOrigin);
+      const landingUrl = new URL(`/e/${encodeURIComponent(eventId)}`, publicAppOrigin);
       if (language !== "ru") landingUrl.searchParams.set("language", language);
       return landingUrl.toString();
     }
 
     const beautySlug = previewUrl.searchParams.get("slug") || "";
     if (beautySlugPattern.test(beautySlug)) {
-      const landingUrl = new URL(`/s/${encodeURIComponent(beautySlug)}`, fallbackOrigin);
+      const landingUrl = new URL(`/s/${encodeURIComponent(beautySlug)}`, publicAppOrigin);
       if (language !== "ru") landingUrl.searchParams.set("language", language);
       const date = previewUrl.searchParams.get("date") || "";
       if (date) landingUrl.searchParams.set("date", date);
@@ -106,7 +107,7 @@ export const buildCardShareImageUrl = (content: CardShareContent) => {
 export const buildCardShareDownloadUrl = (content: CardShareContent) => {
   const imageUrl = buildCardShareImageUrl(content);
   if (!imageUrl) return "";
-  const origin = typeof window === "undefined" ? fallbackOrigin : window.location.origin;
+  const origin = typeof window === "undefined" ? shareApiOrigin : window.location.origin;
   const downloadUrl = new URL(imageUrl, origin);
   downloadUrl.searchParams.set("format", "download");
   return downloadUrl.toString();
@@ -129,7 +130,7 @@ export const buildMessengerSendTarget = (content: CardShareContent) => {
   const dialogUrl = new URL("https://www.facebook.com/dialog/send");
   dialogUrl.searchParams.set("app_id", metaAppId);
   dialogUrl.searchParams.set("link", buildMetaEventPreviewUrl(content));
-  dialogUrl.searchParams.set("redirect_uri", fallbackOrigin);
+  dialogUrl.searchParams.set("redirect_uri", publicAppOrigin);
   return dialogUrl.toString();
 };
 
@@ -143,7 +144,7 @@ export const buildMessengerAndroidIntentTarget = (content: CardShareContent) => 
   return `intent://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}#Intent;scheme=fb-messenger;package=com.facebook.orca;end`;
 };
 
-export const buildMessengerShareBridgeTarget = (content: CardShareContent, origin = fallbackOrigin) => {
+export const buildMessengerShareBridgeTarget = (content: CardShareContent, origin = publicAppOrigin) => {
   const target = new URL("/messenger-share.html", origin);
   target.searchParams.set("title", content.title);
   target.searchParams.set("date", content.date);

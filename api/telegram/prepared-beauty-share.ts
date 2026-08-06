@@ -1,6 +1,11 @@
 import { readEnv } from "../_shared/env.js";
 import { buildTelegramBeautyCard } from "../_shared/telegram-event-card.js";
-import { isBeautyShareSlug, isShareLanguage, loadTrustedTelegramBeautyCard } from "../_shared/telegram-share-beauty.js";
+import {
+  isBeautyShareSlug,
+  isShareLanguage,
+  loadTrustedBeautyShareArtwork,
+  loadTrustedTelegramBeautyCard,
+} from "../_shared/telegram-share-beauty.js";
 import { TelegramInitDataValidationError, validateTelegramInitData } from "../../supabase/functions/_shared/telegramInitData.js";
 
 type VercelRequest = {
@@ -14,10 +19,17 @@ type VercelResponse = {
   status(code: number): VercelResponse;
 };
 
-const publicOrigin = () => {
+const shareApiFallbackOrigin = "https://go-irl-1-1.vercel.app";
+const publicAppFallbackOrigin = "https://goirl.realitka.pp.ua";
+
+const apiOrigin = () => {
   const host = readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL");
-  return host ? `https://${host.replace(/^https?:\/\//, "")}` : "https://go-irl-1-0.vercel.app";
+  return host ? `https://${host.replace(/^https?:\/\//, "")}` : shareApiFallbackOrigin;
 };
+
+const publicAppOrigin = () => (readEnv("GO_IRL_PUBLIC_ORIGIN")
+  || readEnv("VITE_GO_IRL_PUBLIC_ORIGIN")
+  || publicAppFallbackOrigin).replace(/\/+$/, "");
 
 const json = (response: VercelResponse, status: number, payload: unknown) => {
   response.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -61,15 +73,16 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   try {
-    const card = await loadTrustedTelegramBeautyCard(body.slug, body.language, body.date, body.time, publicOrigin());
+    const card = await loadTrustedTelegramBeautyCard(body.slug, body.language, body.date, body.time, publicAppOrigin());
     if (!card) return json(response, 404, { error: "beauty_profile_not_found" });
+    const artwork = await loadTrustedBeautyShareArtwork(card.eventId);
 
-    const image = new URL("/api/meta/event-preview", publicOrigin());
+    const image = new URL("/api/meta/event-preview", apiOrigin());
     image.searchParams.set("slug", body.slug);
     image.searchParams.set("language", card.language);
     if (typeof body.date === "string" && body.date.trim()) image.searchParams.set("date", body.date.trim());
     image.searchParams.set("format", "download");
-    image.searchParams.set("v", "12");
+    image.searchParams.set("v", artwork?.version || "12");
     const imageUrl = image.toString();
     const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/savePreparedInlineMessage`, {
       method: "POST",

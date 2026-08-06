@@ -1,6 +1,10 @@
 import { readEnv } from "../_shared/env.js";
 import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "../_shared/meta-event-calendar.js";
-import { isBeautyShareSlug, loadTrustedTelegramBeautyCard } from "../_shared/telegram-share-beauty.js";
+import {
+  isBeautyShareSlug,
+  loadTrustedBeautyShareArtwork,
+  loadTrustedTelegramBeautyCard,
+} from "../_shared/telegram-share-beauty.js";
 import { loadTrustedTelegramEventCard, isShareEventId, isShareLanguage } from "../_shared/telegram-share-event.js";
 import { createMetaInvitationCardToken } from "../_shared/telegram-share-card-token.js";
 import { renderBeautyShareCardJpeg, renderMetaInvitationCardJpeg, renderTelegramBeautyShareCardJpeg } from "../_shared/telegram-share-card-image.js";
@@ -16,12 +20,19 @@ type VercelResponse = {
   status(code: number): VercelResponse;
 };
 
+const shareApiFallbackOrigin = "https://go-irl-1-1.vercel.app";
+const publicAppFallbackOrigin = "https://goirl.realitka.pp.ua";
+
 const publicOrigin = () => {
   const host = readEnv("VERCEL_ENV") === "preview"
     ? readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL")
     : readEnv("VERCEL_PROJECT_PRODUCTION_URL") || readEnv("VERCEL_URL");
-  return host ? `https://${host.replace(/^https?:\/\//, "")}` : "https://go-irl-1-0.vercel.app";
+  return host ? `https://${host.replace(/^https?:\/\//, "")}` : shareApiFallbackOrigin;
 };
+
+const publicAppOrigin = () => (readEnv("GO_IRL_PUBLIC_ORIGIN")
+  || readEnv("VITE_GO_IRL_PUBLIC_ORIGIN")
+  || publicAppFallbackOrigin).replace(/\/+$/, "");
 
 export const metaEventPreviewCopy = {
   ru: { open: "Открыть GO IRL", calendar: "В календарь" },
@@ -72,10 +83,11 @@ export const setCardImageResponseHeaders = (
   response: Pick<VercelResponse, "setHeader">,
   contentLength: number,
   asAttachment = false,
+  cacheControl = "public, max-age=300, s-maxage=300",
 ) => {
   response.setHeader("Content-Type", "image/jpeg");
   response.setHeader("Content-Length", String(contentLength));
-  response.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
+  response.setHeader("Cache-Control", cacheControl);
   if (asAttachment) {
     response.setHeader("Content-Disposition", 'attachment; filename="go-irl-card.jpg"');
     response.setHeader("Access-Control-Allow-Origin", "https://web.telegram.org");
@@ -106,6 +118,19 @@ const sendBeautyCardImage = async (
   return response.status(200).end(jpeg);
 };
 
+const sendStoredBeautyCardImage = async (
+  imageUrl: string,
+  response: VercelResponse,
+  asAttachment = false,
+) => {
+  const stored = await fetch(imageUrl, { headers: { Accept: "image/jpeg" } });
+  if (!stored.ok) throw new Error(`beauty_share_artwork_fetch_${stored.status}`);
+  const jpeg = new Uint8Array(await stored.arrayBuffer());
+  if (!jpeg.length) throw new Error("beauty_share_artwork_empty");
+  setCardImageResponseHeaders(response, jpeg.length, asAttachment, "no-store");
+  return response.status(200).end(jpeg);
+};
+
 const handleBeautyPreview = async (
   slug: string,
   language: keyof typeof metaBeautyPreviewCopy,
@@ -113,20 +138,29 @@ const handleBeautyPreview = async (
   format: string,
   response: VercelResponse,
 ) => {
-  const origin = publicOrigin();
-  const card = await loadTrustedTelegramBeautyCard(slug, language, date, "", origin);
+  const apiOrigin = publicOrigin();
+  const appOrigin = publicAppOrigin();
+  const card = await loadTrustedTelegramBeautyCard(slug, language, date, "", appOrigin);
   if (!card) return response.status(404).end("not_found");
+  const artwork = await loadTrustedBeautyShareArtwork(card.eventId);
   if (format === "image" || format === "download") {
+    if (artwork) {
+      try {
+        return await sendStoredBeautyCardImage(artwork.imageUrl, response, format === "download");
+      } catch {
+        // Keep the server renderer as a compatibility fallback when Storage is temporarily unavailable.
+      }
+    }
     return sendBeautyCardImage(card, response, format === "download");
   }
 
-  const canonicalUrl = beautyLandingUrl(origin, slug, language, date);
-  const image = new URL("/api/meta/event-preview", origin);
+  const canonicalUrl = beautyLandingUrl(appOrigin, slug, language, date);
+  const image = new URL("/api/meta/event-preview", apiOrigin);
   image.searchParams.set("slug", slug);
   image.searchParams.set("language", language);
   if (date) image.searchParams.set("date", date);
   image.searchParams.set("format", "image");
-  image.searchParams.set("v", "11");
+  image.searchParams.set("v", artwork?.version || "12");
   const imageUrl = image.toString();
   const title = card.activity || card.organizer || "GO IRL Beauty";
   const description = card.description || [card.title, card.date, card.address, card.price ? `${card.price} Kč` : ""]
@@ -134,7 +168,7 @@ const handleBeautyPreview = async (
     .join(" · ");
 
   response.setHeader("Content-Type", "text/html; charset=utf-8");
-  response.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
+  response.setHeader("Cache-Control", "no-store");
   return response.status(200).end(`<!doctype html>
 <html lang="${escapeHtml(card.language)}"><head>
 <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -144,10 +178,10 @@ const handleBeautyPreview = async (
 <meta property="og:description" content="${escapeHtml(description)}" />
 <meta property="og:image" content="${escapeHtml(imageUrl)}" />
 <meta property="og:image:type" content="image/jpeg" />
-<meta property="og:image:width" content="1080" /><meta property="og:image:height" content="1020" />
+<meta property="og:image:width" content="1080" /><meta property="og:image:height" content="900" />
 <meta property="og:url" content="${escapeHtml(canonicalUrl)}" />
-<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:18/17;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
-</head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(browserBeautyUrl(origin, slug, date))}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
+<style>:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#080b0d;color:#fff}*{box-sizing:border-box}body{margin:0;padding:24px;min-height:100vh;background:#080b0d}.card{max-width:680px;margin:auto;background:#17101f;border:2px solid #d9ad4a;border-radius:24px;overflow:hidden}.hero{width:100%;display:block;aspect-ratio:6/5;object-fit:contain;background:#0a0e10}.content{padding:22px}h1{margin:0 0 10px}.meta{color:#ddd1e7;line-height:1.5;margin-bottom:20px}.btn{display:block;padding:15px;text-align:center;text-decoration:none;border-radius:14px;background:#d9ad4a;color:#17101f;font-weight:800}</style>
+</head><body><main class="card"><img class="hero" src="${escapeHtml(imageUrl)}" alt="" /><div class="content"><h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(description)}</div><a class="btn" href="${escapeHtml(browserBeautyUrl(appOrigin, slug, date))}">${escapeHtml(metaBeautyPreviewCopy[card.language])}</a></div></main></body></html>`);
 };
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {

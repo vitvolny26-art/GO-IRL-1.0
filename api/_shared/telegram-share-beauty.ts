@@ -4,6 +4,7 @@ import { readEnv } from "./env.js";
 import { isShareLanguage, type ShareLanguage } from "./telegram-share-event.js";
 
 const BEAUTY_SLUG_PATTERN = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const beautyShareCardBucket = "beauty-share-cards";
 
 export const isBeautyShareSlug = (value: unknown): value is string => {
   if (typeof value !== "string") return false;
@@ -83,6 +84,20 @@ export type PublicBeautyRow = {
   currency: string;
 };
 
+type BeautyShareArtworkRow = {
+  status: string;
+  generated_object_path: string | null;
+  source_fingerprint: string;
+  generated_at: string | null;
+  updated_at: string;
+};
+
+export type TrustedBeautyShareArtwork = {
+  imageUrl: string;
+  version: string;
+  generatedAt: string;
+};
+
 type RpcError = { code?: string; message?: string } | null;
 
 const isMissingRpc = (error: RpcError) => error?.code === "PGRST202"
@@ -110,7 +125,35 @@ export async function loadPublicBeautyRows(
   return (result.data || []) as PublicBeautyRow[];
 }
 
-const beautyFallbackOrigin = "https://go-irl-1-0.vercel.app";
+export async function loadBeautyShareArtwork(
+  client: SupabaseClient,
+  profileId: string,
+): Promise<TrustedBeautyShareArtwork | null> {
+  const result = await client
+    .from("beauty_share_cards")
+    .select("status,generated_object_path,source_fingerprint,generated_at,updated_at")
+    .eq("profile_id", profileId)
+    .maybeSingle();
+  if (result.error) throw result.error;
+
+  const row = result.data as BeautyShareArtworkRow | null;
+  if (!row || row.status !== "ready" || !row.generated_object_path) return null;
+
+  const publicUrl = client.storage.from(beautyShareCardBucket)
+    .getPublicUrl(row.generated_object_path).data.publicUrl;
+  if (!publicUrl) return null;
+
+  const version = row.source_fingerprint || row.generated_at || row.updated_at;
+  const image = new URL(publicUrl);
+  if (version) image.searchParams.set("v", version);
+  return {
+    imageUrl: image.toString(),
+    version,
+    generatedAt: row.generated_at || row.updated_at,
+  };
+}
+
+const beautyFallbackOrigin = "https://goirl.realitka.pp.ua";
 
 const buildPublicBeautyProfileUrl = (origin: string, slug: string) => {
   try {
@@ -184,3 +227,6 @@ export async function loadTrustedTelegramBeautyCard(
   const rows = await loadPublicBeautyRows(client, language);
   return buildTrustedBeautyCardFromRows(rows, slug, language, selectedDate, publicOrigin);
 }
+
+export const loadTrustedBeautyShareArtwork = async (profileId: string) =>
+  loadBeautyShareArtwork(db(), profileId);
