@@ -11,41 +11,62 @@ next_review: 2026-08-13
 
 ## Task
 
-Repair the production `public.save_my_beauty_profile_v3` runtime failure that blocks Beauty workspace persistence and therefore prevents the generated sharing card from reaching Storage and `beauty_share_cards`.
+Repair the production `public.save_my_beauty_profile_v3` runtime failures that block Beauty workspace persistence and prevent the generated sharing card from reaching Storage and `beauty_share_cards`.
 
 ## Files inspected
 
 - `supabase/migrations/20260804013030_beauty013_workspace_content_04.sql`
 - `src/beauty/beautyWorkspaceRepository.ts`
 - production Supabase API, PostgreSQL and Storage logs
-- production function definition and extension schema privileges
+- production function definition, configuration and extension schema privileges
+- indexes on `public.beauty_professional_services`
 
 ## Findings
 
+### Failure 1
+
 - Production requests to `save_my_beauty_profile_v3` returned HTTP 404 through PostgREST.
-- PostgreSQL logs showed the actual error: `function digest(text, unknown) does not exist`.
+- PostgreSQL logs showed: `function digest(text, unknown) does not exist`.
 - `pgcrypto.digest(text, text)` exists in schema `extensions`.
-- `save_my_beauty_profile_v3` used unqualified `digest(...)` with runtime `search_path = pg_catalog, public`.
-- Schema `extensions` is owned by `postgres`; application roles have `USAGE` but not `CREATE`, so adding it to the function search path does not introduce a writable-schema lookup.
+- The function used unqualified `digest(...)` with runtime `search_path = pg_catalog, public`.
+
+### Failure 2
+
+- After the digest fix, requests reached the function but returned HTTP 400.
+- PostgreSQL logs showed: `column reference "profile_id" is ambiguous`.
+- The function has an OUT column named `profile_id` and also uses the table column `profile_id` in the `beauty_professional_services` `ON CONFLICT` target.
+- The intended unique index is `beauty_professional_services_profile_client_key_idx` on `(profile_id, client_key)`.
 
 ## Changes made
 
-Added migration `supabase/migrations/20260806022500_fix_beauty_profile_v3_digest.sql` to change only the function runtime search path to:
+1. Added `supabase/migrations/20260806022500_fix_beauty_profile_v3_digest.sql` to set:
 
-`pg_catalog, public, extensions`
+   `search_path = pg_catalog, public, extensions`
 
-The function body, signature, grants, RLS, auth protocol and production data remain unchanged.
+2. Added `supabase/migrations/20260806025900_fix_beauty_profile_v3_profile_id_conflict.sql` to set:
+
+   `plpgsql.variable_conflict = use_column`
+
+The function body, signature, grants, RLS policies, auth protocol and production data remain unchanged.
 
 ## Checks
 
-Pending exact-head GitHub Actions and production migration verification.
+- PR #691 exact-head CI #1816: PASS.
+- PR #691 squash merge: `c36cd1e3a6643709a0af5fbe521c99677f68b5fb`.
+- Production migration `fix_beauty_profile_v3_digest`: applied successfully.
+- Production verification: function search path includes `extensions`; direct `extensions.digest(...)` succeeds.
+- Second migration exact-head CI and production application: pending.
 
 ## Next step
 
-Run CI, merge the migration to `main`, apply the same migration to production Supabase, then verify the function configuration and ask for one controlled card-save retry.
+Run exact-head CI for the second migration, merge it to `main`, apply it to production Supabase, verify function configuration, then request one controlled card-save retry.
 
 ## Rollback
 
-Restore the prior function setting:
+Digest lookup rollback:
 
 `alter function public.save_my_beauty_profile_v3(text, text, text, text, jsonb, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, text, timestamptz) set search_path = pg_catalog, public;`
+
+Variable conflict rollback:
+
+`alter function public.save_my_beauty_profile_v3(text, text, text, text, jsonb, text, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, jsonb, text, timestamptz) reset plpgsql.variable_conflict;`
