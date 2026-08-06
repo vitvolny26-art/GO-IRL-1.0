@@ -13,13 +13,17 @@ describe("Beauty share card persistence contract", () => {
   });
 
   it("publishes ready only after Storage and RPC persistence succeed", () => {
+    const saveFlow = storageSource.slice(
+      storageSource.indexOf("const saveBeautyWorkspaceNow = async"),
+      storageSource.indexOf("const enqueueBeautyWorkspaceSave"),
+    );
     expect(storageSource).toContain("prepareBeautyWorkspaceForPersistence");
-    expect(storageSource.indexOf("await saveRemoteBeautyShareCard(persistedWorkspace)")).toBeLessThan(
-      storageSource.indexOf('status: "ready"'),
+    expect(saveFlow.indexOf("await saveRemoteBeautyShareCard(persistedWorkspace)")).toBeLessThan(
+      saveFlow.indexOf('status: "ready"'),
     );
     expect(storageSource).toContain("beautyShareCardPersistenceEvent");
-    expect(storageSource).toContain('dispatchBeautyShareCardPersistence({ sourceFingerprint, status: "ready"');
-    expect(storageSource).toContain('dispatchBeautyShareCardPersistence({ sourceFingerprint, status: "error"');
+    expect(saveFlow).toContain('dispatchBeautyShareCardPersistence({ sourceFingerprint, status: "ready"');
+    expect(saveFlow).toContain('dispatchBeautyShareCardPersistence({ sourceFingerprint, status: "error"');
   });
 
   it("keeps the editor updating until the persistence event confirms the fingerprint", () => {
