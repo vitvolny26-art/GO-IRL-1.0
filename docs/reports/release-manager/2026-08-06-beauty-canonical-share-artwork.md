@@ -47,13 +47,25 @@ Make Telegram and WhatsApp sharing use the exact JPEG generated in the Beauty pr
 
 - base `main`: `811c0581d98125bdcfc0615d43290ae678b93bf5`;
 - branch: `fix/beauty-canonical-share-artwork-20260806`;
-- changed runtime/test files before report: 10;
-- GitHub Actions exact-head CI: pending.
+- PR: `#687`;
+- first CI `#1802`, run `31059749797`: one test expectation failed because `URLSearchParams` normalized the Messenger redirect without a trailing slash; runtime unchanged;
+- corrected exact head: `420fbaebbf507afb173d97adbaf11921ada4e0fc`;
+- CI `#1803`, run `31059826631`, job `92485128535`: PASS;
+- repository hygiene: PASS, 1286 tracked files;
+- diff check: PASS;
+- tests: PASS, 156 files / 726 tests plus Staff OS;
+- focused WhatsApp UX tests: PASS, 7 tests;
+- saved Beauty artwork tests: PASS, 7 tests;
+- prepared Beauty route test: PASS;
+- typecheck: PASS;
+- lint: PASS with one pre-existing warning in `api/_shared/admin-authorization.ts`;
+- build: PASS, Vite 8.1.3, 385 modules;
+- bundle budget: PASS, 10 JavaScript chunks.
 
 ## Rollback
 
-Close the PR without merging. Production remains unchanged.
+Close PR #687 without merging. Production remains unchanged.
 
 ## Next step
 
-Open a Draft PR, verify exact-head GitHub Actions, then run physical Telegram and Android WhatsApp smoke before merge approval.
+Keep PR #687 in Draft until physical Telegram and Android WhatsApp smoke verifies that the cabinet JPEG is identical and WhatsApp receives the attached image. Merge and deployment require explicit approval.
