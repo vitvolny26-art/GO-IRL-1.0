@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
@@ -7,7 +8,20 @@ export default defineConfig(({ mode }) => {
 
   return {
     publicDir: "images",
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        name: "emit-beauty-share-bridge",
+        apply: "build",
+        generateBundle() {
+          this.emitFile({
+            type: "asset",
+            fileName: "beauty-share-bridge.html",
+            source: readFileSync(new URL("./public/beauty-share-bridge.html", import.meta.url), "utf8"),
+          });
+        },
+      },
+    ],
     define: {
       __GO_IRL_COMMIT__: JSON.stringify(env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || env.VITE_GIT_COMMIT || "unknown"),
       __GO_IRL_BUILT_AT__: JSON.stringify(env.VITE_BUILD_TIME || new Date().toISOString()),
