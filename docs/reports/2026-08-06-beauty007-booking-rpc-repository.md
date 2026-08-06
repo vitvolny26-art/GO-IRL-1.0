@@ -11,12 +11,13 @@ next_review: 2026-08-13
 
 ## Task
 
-Continue Beauty007 after the production database rollout with one bounded D2 repository slice:
+Continue Beauty007 after the production database rollout with bounded D2 client integration:
 
 - read public server availability;
 - submit trusted Telegram bookings through the transactional Beauty007 RPC;
-- preserve Browser Mock Mode and the temporary local fallback;
-- do not wire the UI, merge or deploy in this slice.
+- wire both contracts into `ServiceActivityCard.tsx`;
+- preserve Browser Mock Mode and the explicit temporary local fallback;
+- do not merge or deploy in this task.
 
 ## Files inspected
 
@@ -26,6 +27,7 @@ Continue Beauty007 after the production database rollout with one bounded D2 rep
 - `src/authSession.ts`
 - `src/supabase.ts`
 - `src/services/ServiceActivityCard.tsx`
+- `src/services/service-activity-card.css`
 - `src/services/servicesBookingClientRepository.ts`
 - `src/services/servicesBookingRepository.ts`
 - `src/services/servicesProfessionalDirectory.ts`
@@ -38,16 +40,16 @@ Production Beauty007 migrations were already applied and transactionally verifie
 
 ## Findings
 
-The current card still derives availability and creates bookings from localStorage. The merged backend exposes two narrow contracts required for D2:
+The service card derived availability and created bookings from localStorage even after the Beauty007 production RPCs became available. The merged backend exposes the required contracts:
 
 - `go_irl_list_public_beauty_availability`;
 - `go_irl_create_beauty_booking`.
 
-The create RPC returns explicit business results, including atomic conflict outcomes. A server conflict must not be converted into a local success. Browser Mock Mode and older environments with a missing RPC still require an explicit local path.
+The create RPC returns explicit business results, including atomic conflict outcomes. A server conflict must remain visible and must not be converted into a local success. Browser Mock Mode, non-server demo identifiers and environments with a missing RPC still require an explicit local path.
 
-The backend accepts Prague-local slots as `timestamptz`. Device timezone conversion is unsafe, so the repository needs deterministic `Europe/Prague` conversion with a round-trip validation.
+The backend accepts Prague-local slots as `timestamptz`. Device timezone conversion is unsafe, so the repository uses deterministic `Europe/Prague` conversion with round-trip validation.
 
-The existing `contactBeforeConfirmation` flag is not part of the current server RPC contract. This repository preserves it only in the local fallback and does not claim server persistence.
+The existing `contactBeforeConfirmation` flag is not part of the current server RPC contract. It remains local-only and the UI does not claim server persistence.
 
 ## Changes made
 
@@ -60,7 +62,11 @@ The existing `contactBeforeConfirmation` flag is not part of the current server 
 - Preserved Browser Mock Mode local creation.
 - Preserved local fallback only for untrusted sessions, non-server identifiers or a missing RPC.
 - Kept server slot conflicts as explicit server results; no local write occurs for conflicts.
-- Added repository tests for availability mapping, Browser Mock Mode, missing-RPC fallback, server creation, atomic conflicts, local creation, DST conversion and idempotency keys.
+- Wired monthly server availability into the service-card calendar, slot picker and booking form.
+- Added loading, retry, conflict, generic error and explicit local-mode states.
+- Refreshed availability after successful or conflicting create attempts.
+- Reused the same idempotency key for an unchanged retry and generated a new key after booking parameters change.
+- Added repository tests and a source-level UI wiring contract test.
 
 ## Checks
 
@@ -79,10 +85,9 @@ Pending GitHub Actions against the exact branch head:
 - No `.env` or secret change.
 - No auth architecture change.
 - No SQL, migration, RLS or production-data change.
-- No UI wiring.
 - No merge.
 - No Vercel or VPS deployment.
 
 ## Next step
 
-If CI is green, review this D2a repository layer. Continue separately with D2b UI wiring in `ServiceActivityCard.tsx`, including loading/error states, server slot refresh after create, stable retry idempotency and explicit local-fallback messaging.
+Run exact-head CI. If green, review the combined D2 repository and UI wiring in Draft PR #703. Merge and deployment require separate approval.
