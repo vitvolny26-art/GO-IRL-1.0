@@ -36,6 +36,19 @@ describe("account request boundary", () => {
     });
   });
 
+  it("generates and forwards a correlation id when none is provided", async () => {
+    const transport = vi.fn(async () => ({ requestId: "request-generated" }));
+
+    const result = await submitAccountRequest("data_export", { transport });
+
+    expect(result.status).toBe("submitted");
+    expect(result.correlationId).toBeTruthy();
+    expect(transport).toHaveBeenCalledWith({
+      kind: "data_export",
+      correlationId: result.correlationId,
+    });
+  });
+
   it("rejects a successful transport response without a request id", async () => {
     const result = await submitAccountRequest("data_export", {
       correlationId: "corr-invalid",
