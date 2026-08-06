@@ -11,6 +11,10 @@ import {
   resolveBeautyShareCardServices,
 } from "./beautyShareCardModel";
 import { buildBeautyShareCardPreviewSvg } from "./beautyShareCardPreview";
+import {
+  beautyShareCardPersistenceEvent,
+  type BeautyShareCardPersistenceDetail,
+} from "./beautyWorkspaceStorage";
 import "./beauty-share-card-editor.css";
 
 const defaultBackground = "/services/share-6x5/s-01-manicure.webp";
@@ -62,9 +66,9 @@ const copy = {
     error: "⚠ Не вдалося оновити",
     deleted: "— Візитка видалена",
     retry: "Повторити",
-    update: "Оновити візитку",
-    create: "Створити візитку",
-    remove: "Видалити візитку",
+    update: "Оновити визитку",
+    create: "Створити визитку",
+    remove: "Видалити визитку",
     download: "Завантажити JPEG",
     imageError: "Не вдалося обробити зображення. Використовуйте JPG, PNG або WebP до 6 МБ.",
     maxServices: "Можна обрати не більше трьох послуг.",
@@ -229,6 +233,24 @@ export function BeautyShareCardEditor({
   workspaceRef.current = workspace;
   onChangeRef.current = onChange;
 
+  useEffect(() => {
+    const handlePersistence = (event: Event) => {
+      const detail = (event as CustomEvent<BeautyShareCardPersistenceDetail>).detail;
+      const current = workspaceRef.current;
+      if (!detail || current.shareCard.sourceFingerprint !== detail.sourceFingerprint) return;
+      onChangeRef.current({
+        ...current,
+        shareCard: {
+          ...current.shareCard,
+          status: detail.status,
+          errorMessage: detail.errorMessage,
+        },
+      });
+    };
+    window.addEventListener(beautyShareCardPersistenceEvent, handlePersistence);
+    return () => window.removeEventListener(beautyShareCardPersistenceEvent, handlePersistence);
+  }, []);
+
   const fingerprint = useMemo(
     () => buildBeautyShareCardFingerprint(workspace, language),
     [language, workspace],
@@ -266,7 +288,7 @@ export function BeautyShareCardEditor({
             ...current,
             shareCard: {
               ...current.shareCard,
-              status: "ready",
+              status: "updating",
               generatedImageDataUrl,
               generatedAt: new Date().toISOString(),
               sourceFingerprint: expectedFingerprint,
