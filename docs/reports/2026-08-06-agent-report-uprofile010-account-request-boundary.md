@@ -39,10 +39,12 @@ Continue UProfile010 from current `main` with a bounded, truthful client-side co
 
 ## Checks
 
-GitHub Actions exact-head CI is required after opening the PR.
+GitHub Actions exact-head CI is required before merge.
 
-No auth architecture, RLS, SQL, migrations, secrets, production data, UI wiring, merge, or deployment was changed.
+On 2026-08-06 the user explicitly approved squash merge to GitHub `main` and VPS production deployment. Merge and deployment remain blocked until the exact-head CI run is green and the PR remains mergeable.
+
+No auth architecture, RLS, SQL, migrations, secrets, production data, or UI wiring was changed.
 
 ## Next step
 
-After green CI, review the boundary. Backend transport and UI wiring remain separate tasks requiring a verified endpoint contract.
+After green exact-head CI, squash merge the approved PR and deploy that merge SHA through the governed VPS workflow. Backend transport and UI wiring remain separate tasks requiring a verified endpoint contract.
