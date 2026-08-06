@@ -3,8 +3,8 @@ title: Knowledge Debt
 owner: Project Archivist
 status: Active
 source_of_truth: true
-last_review: 2026-07-11
-next_review: 2026-07-18
+last_review: 2026-08-03
+next_review: 2026-08-10
 ---
 
 # Knowledge Debt
@@ -34,6 +34,7 @@ Before accepting NotebookLM, Gemini, ChatGPT, or other AI-generated audit findin
 3. Prefer canonical docs in `DOCS_INDEX.md` over exported mirrors, chat history, or generated reports.
 4. Mark unverified claims as `Review`, not `Closed` or source-of-truth.
 5. Do not patch code from audit claims unless the affected source file confirms the issue.
+6. Do not classify a report as stale from a quotation about another report. The evidence must contain the subject report's own contradictory status fields or another direct subject-level defect.
 
 ## Severity model
 
@@ -68,6 +69,7 @@ Before accepting NotebookLM, Gemini, ChatGPT, or other AI-generated audit findin
 | KD-012 | `docs/governance/KNOWLEDGE_PLATFORM_2_0.md` and `docs/audit/KNOWLEDGE_PLATFORM_EPIC.md` overlap | Duplication | Medium | Project Archivist | Open | 2026-08-09 | Merge, archive, or define distinct purpose. |
 | KD-014 | Chat lifecycle wording may conflict with SQL/migration behavior | Docs/schema mismatch | High | Supabase Steward | Open | 2026-07-18 | NotebookLM audit flagged a possible mismatch between event lifecycle documentation and chat expiry behavior. Verify against migrations and product intent before any SQL work. Do not change Supabase/RLS/auth from this item alone. |
 | KD-015 | Legacy/demo identity fallback can confuse Trusted Auth documentation | Security documentation drift | Medium | Security Lead | Open | 2026-07-24 | Verify current production path, release wording, and legacy/demo header boundaries. Do not change `.env`, Vercel secrets, auth, or RLS from this item alone. |
+| KD-017 | Archivist semantic findings can attribute a quoted stale-report claim to the report containing the quotation | Evidence attribution defect | High | Technical Archivist | Open | 2026-08-10 | Reports `1kEYA5MVK4Sp2lML3x_glGJvXcxvtUwWD`, `1tZs7GPqOtRazZpZd8DgaZHDOBBvgtvzC`, and `1_EbJXcTwUAxytkvjehpyEUIkSvdg_jP7` contain inherited claims about earlier reports, not direct proof that each subject report has `COMPLETED` with `context_complete:false`. Preserve them and repair the n8n subject-evidence guard before reclassification. |
 
 ## Immediate correction order
 
