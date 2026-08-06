@@ -1,4 +1,9 @@
-import { getCurrentAuthIdentity, getCurrentUserRole, isBrowserMockMode } from "../authSession";
+import {
+  getCurrentAuthIdentity,
+  getCurrentUserRole,
+  initializeTrustedAuth,
+  isBrowserMockMode,
+} from "../authSession";
 import { getUserKey, supabase } from "../supabase";
 import type { BeautyShareCard, BeautyWorkspace } from "./beautySetupModel";
 
@@ -37,6 +42,14 @@ const usesTrustedBeautyStorage = () => {
   return !isBrowserMockMode()
     && identity?.source === "trusted-telegram"
     && getCurrentUserRole() === "professional";
+};
+
+const ensureTrustedBeautyStorage = async (required: boolean) => {
+  if (isBrowserMockMode()) return false;
+  await initializeTrustedAuth();
+  if (usesTrustedBeautyStorage()) return true;
+  if (required) throw new Error("beauty_share_trusted_auth_required");
+  return false;
 };
 
 const dataUrlToBlob = async (value: string) => {
@@ -81,7 +94,7 @@ const generatedPublicUrl = (path: string | null) => path
   : "";
 
 export const loadRemoteBeautyShareCard = async (workspace: BeautyWorkspace): Promise<BeautyWorkspace> => {
-  if (!usesTrustedBeautyStorage()) return workspace;
+  if (!(await ensureTrustedBeautyStorage(false))) return workspace;
 
   const result = await supabase.rpc("get_my_beauty_share_card");
   if (result.error) {
@@ -126,7 +139,7 @@ export const loadRemoteBeautyShareCard = async (workspace: BeautyWorkspace): Pro
 };
 
 export const saveRemoteBeautyShareCard = async (workspace: BeautyWorkspace) => {
-  if (!usesTrustedBeautyStorage()) return;
+  if (!(await ensureTrustedBeautyStorage(true))) return;
 
   const userKey = getUserKey();
   const prefix = `${userKey}/beauty-share-card`;
@@ -169,7 +182,7 @@ export const saveRemoteBeautyShareCard = async (workspace: BeautyWorkspace) => {
   });
 
   if (result.error) {
-    if (result.error.code === "PGRST202") return;
+    if (result.error.code === "PGRST202") throw new Error("beauty_share_card_rpc_missing");
     throw result.error;
   }
 

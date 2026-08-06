@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#0a0b0d" />
+    <title>GO IRL — Beauty share</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100svh; display: grid; place-items: center; padding: 22px; background: radial-gradient(circle at 50% 0, #33203d 0, #151019 38%, #08090b 78%); color: #fff; }
+      main { width: min(100%, 460px); padding: 24px; border: 1px solid rgba(190, 255, 58, .38); border-radius: 28px; background: rgba(10, 11, 13, .95); box-shadow: 0 24px 70px rgba(0, 0, 0, .5); }
+      h1 { margin: 0; text-align: center; font-size: 30px; line-height: 1.1; }
+      p { margin: 12px auto 18px; color: #c5c7ca; text-align: center; line-height: 1.45; }
+      img { display: block; width: 100%; aspect-ratio: 6 / 5; object-fit: contain; border-radius: 20px; background: #111; }
+      button, a { width: 100%; min-height: 58px; margin-top: 16px; display: grid; place-items: center; border: 0; border-radius: 18px; font: inherit; font-weight: 850; text-decoration: none; cursor: pointer; }
+      #share { background: #a8ff00; color: #10130c; font-size: 18px; }
+      #download { background: #27292c; color: #fff; }
+      #status { min-height: 24px; margin-top: 14px; color: #b8ff3f; text-align: center; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 id="heading">Share business card</h1>
+      <p id="hint">Tap the button and choose WhatsApp in the system share menu.</p>
+      <img id="preview" alt="GO IRL Beauty card" />
+      <button id="share" type="button">Share JPEG</button>
+      <a id="download" download="go-irl-beauty-card.jpg">Download JPEG</a>
+      <div id="status" role="status" aria-live="polite"></div>
+    </main>
+    <script>
+      const translations = {
+        ru: { heading: "Поделиться визиткой", hint: "Нажмите кнопку и выберите WhatsApp в системном меню.", share: "Поделиться JPEG", download: "Скачать JPEG", preparing: "Подготавливаем файл…", unavailable: "Системная отправка файлов недоступна. Скачайте JPEG.", failed: "Не удалось загрузить визитку. Вернитесь в GO IRL и повторите." },
+        uk: { heading: "Поділитися візиткою", hint: "Натисніть кнопку та виберіть WhatsApp у системному меню.", share: "Поділитися JPEG", download: "Завантажити JPEG", preparing: "Готуємо файл…", unavailable: "Системне надсилання файлів недоступне. Завантажте JPEG.", failed: "Не вдалося завантажити візитку. Поверніться до GO IRL і повторіть." },
+        cs: { heading: "Sdílet vizitku", hint: "Klepněte na tlačítko a v systémové nabídce vyberte WhatsApp.", share: "Sdílet JPEG", download: "Stáhnout JPEG", preparing: "Připravuji soubor…", unavailable: "Systémové sdílení souborů není dostupné. Stáhněte JPEG.", failed: "Vizitku se nepodařilo načíst. Vraťte se do GO IRL a zkuste to znovu." },
+        en: { heading: "Share business card", hint: "Tap the button and choose WhatsApp in the system share menu.", share: "Share JPEG", download: "Download JPEG", preparing: "Preparing file…", unavailable: "System file sharing is unavailable. Download the JPEG instead.", failed: "The business card could not be loaded. Return to GO IRL and try again." }
+      };
+      const params = new URLSearchParams(location.search);
+      const language = params.get("language") || (navigator.language || "en").slice(0, 2).toLowerCase();
+      const t = translations[language] || translations.en;
+      const allowedHosts = new Set(["go-irl-1-1.vercel.app", "go-irl-1-0.vercel.app", "goirl.realitka.pp.ua"]);
+      const status = document.querySelector("#status");
+      const preview = document.querySelector("#preview");
+      const download = document.querySelector("#download");
+      const rawImage = params.get("image") || "";
+      const shareText = params.get("text") || "";
+      const shareTitle = params.get("title") || "GO IRL Beauty";
+      let imageUrl = null;
+
+      try {
+        const candidate = new URL(rawImage);
+        if (candidate.protocol === "https:" && allowedHosts.has(candidate.hostname) && candidate.pathname === "/api/meta/event-preview" && candidate.searchParams.get("format") === "image") imageUrl = candidate;
+      } catch {
+        imageUrl = null;
+      }
+
+      document.documentElement.lang = language;
+      document.querySelector("#heading").textContent = t.heading;
+      document.querySelector("#hint").textContent = t.hint;
+      document.querySelector("#share").textContent = t.share;
+      download.textContent = t.download;
+
+      if (imageUrl) {
+        preview.src = imageUrl.toString();
+        download.href = imageUrl.toString().replace("format=image", "format=download");
+      } else {
+        status.textContent = t.failed;
+        document.querySelector("#share").disabled = true;
+        download.removeAttribute("href");
+      }
+
+      document.querySelector("#share").addEventListener("click", async () => {
+        if (!imageUrl) return;
+        status.textContent = t.preparing;
+        try {
+          const response = await fetch(imageUrl.toString(), { cache: "no-store", headers: { Accept: "image/jpeg" } });
+          if (!response.ok) throw new Error(`image_${response.status}`);
+          const blob = await response.blob();
+          if (!blob.type.startsWith("image/jpeg")) throw new Error("image_type");
+          const file = new File([blob], "go-irl-beauty-card.jpg", { type: "image/jpeg" });
+          const data = { files: [file], title: shareTitle, text: shareText };
+          if (typeof navigator.share === "function" && (typeof navigator.canShare !== "function" || navigator.canShare(data))) {
+            await navigator.share(data);
+            status.textContent = "";
+            return;
+          }
+          status.textContent = t.unavailable;
+        } catch (error) {
+          if (error && error.name === "AbortError") { status.textContent = ""; return; }
+          status.textContent = t.failed;
+        }
+      });
+    </script>
+  </body>
+</html>

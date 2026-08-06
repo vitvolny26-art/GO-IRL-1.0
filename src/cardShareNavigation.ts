@@ -1,5 +1,8 @@
 import { buildMessengerSendTarget, buildMessengerShareBridgeTarget, type CardShareContent } from "./cardShare";
 import { openExternal, openTelegramExternal } from "./openExternal";
+import { installTelegramBeautyFileShareBridge } from "./telegramBeautyFileShareBridge";
+
+installTelegramBeautyFileShareBridge();
 
 export const openTelegramShareTarget = (url: string) => {
   openTelegramExternal(url);
