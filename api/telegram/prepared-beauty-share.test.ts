@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import source from "./prepared-beauty-share.ts?raw";
+
+const source = readFileSync(new URL("./prepared-beauty-share.ts", import.meta.url), "utf8");
 
 describe("prepared Beauty share route", () => {
   it("uses the saved card artwork version and public app profile URL", () => {
