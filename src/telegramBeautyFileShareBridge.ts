@@ -52,6 +52,7 @@ export const installTelegramBeautyFileShareBridge = () => {
   if (installed || typeof navigator === "undefined") return;
   const webApp = getTelegramWebApp();
   if (!webApp?.openLink) return;
+  const openLink = webApp.openLink.bind(webApp);
 
   const nativeShare = typeof navigator.share === "function" ? navigator.share.bind(navigator) : null;
   const nativeCanShare = typeof navigator.canShare === "function" ? navigator.canShare.bind(navigator) : null;
@@ -86,7 +87,7 @@ export const installTelegramBeautyFileShareBridge = () => {
 
       const bridgeTarget = buildBeautyFileShareBridgeTarget(data.text || "", data.title || "");
       if (bridgeTarget) {
-        webApp.openLink(bridgeTarget);
+        openLink(bridgeTarget);
         return;
       }
     }
