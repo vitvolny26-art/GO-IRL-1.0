@@ -70,15 +70,17 @@ The existing `contactBeforeConfirmation` flag is not part of the current server 
 
 ## Checks
 
-Pending GitHub Actions against the exact branch head:
+Implementation head `296d62da04f80e772aebe221c61e30d49ff515bd` passed GitHub Actions run `31107035850`:
 
-- repository check;
-- diff check;
-- tests;
-- typecheck;
-- lint;
-- build;
-- bundle budget.
+- repository check: PASS;
+- diff check: PASS;
+- tests: PASS;
+- typecheck: PASS;
+- lint: PASS;
+- build: PASS;
+- bundle budget: PASS.
+
+A final exact-head run is required after this documentation-only evidence commit.
 
 ## Safety
 
@@ -90,4 +92,4 @@ Pending GitHub Actions against the exact branch head:
 
 ## Next step
 
-Run exact-head CI. If green, review the combined D2 repository and UI wiring in Draft PR #703. Merge and deployment require separate approval.
+Review the combined D2 repository and UI wiring in Draft PR #703. Merge and deployment require separate approval.
