@@ -7,30 +7,38 @@ describe("WhatsApp prepared share UX", () => {
       source.indexOf("const prepareWhatsAppCard = async () =>"),
       source.indexOf("const share = async"),
     );
+    expect(handler).toContain("const directSend = canPrepareBeautyTelegramShare(url)");
     expect(handler).toContain("buildCardShareImageUrl(content)");
     expect(handler).toContain("buildCardShareDownloadUrl(content)");
+    expect(handler).toContain("directSend,");
     expect(handler).toContain("downloadAccepted: false");
     expect(handler).not.toContain("openExternalShareTarget");
   });
 
-  it("binds card preparation directly to the WhatsApp channel button", () => {
+  it("binds card preparation directly to the WhatsApp channel button for every card", () => {
     const channelClick = source.slice(
       source.indexOf('if (channel.id === "whatsapp")'),
       source.indexOf("</button>", source.indexOf('if (channel.id === "whatsapp")')),
     );
     expect(channelClick).toContain("void prepareWhatsAppCard()");
+    expect(channelClick).not.toContain("canPrepareBeautyTelegramShare(url)");
+    expect(channelClick).not.toContain("openExternalShareTarget");
     expect(channelClick).not.toContain("navigator.share(");
   });
 
-  it("bypasses the manual JPEG modal for Beauty and opens one WhatsApp preview URL", () => {
-    const channelClick = source.slice(
-      source.indexOf('if (channel.id === "whatsapp")'),
-      source.indexOf("</button>", source.indexOf('if (channel.id === "whatsapp")')),
+  it("shows the Beauty preview modal and allows direct WhatsApp send without a download", () => {
+    const openHandler = source.slice(
+      source.indexOf("const openPreparedWhatsApp = () =>"),
+      source.indexOf("const activate = () =>"),
     );
-    expect(channelClick).toContain("canPrepareBeautyTelegramShare(url)");
-    expect(channelClick).toContain('buildCardShareTarget("whatsapp", content)');
-    expect(channelClick).toContain("openExternalShareTarget");
-    expect(channelClick.indexOf("openExternalShareTarget")).toBeLessThan(channelClick.indexOf("void prepareWhatsAppCard()"));
+    const modal = source.slice(
+      source.indexOf('className="whatsapp-share-prepared-backdrop"'),
+      source.indexOf("document.body,", source.indexOf('className="whatsapp-share-prepared-backdrop"')),
+    );
+    expect(openHandler).toContain("(!prepared.directSend && !prepared.downloadAccepted)");
+    expect(openHandler).toContain('buildCardShareTarget("whatsapp", content)');
+    expect(modal).toContain("!preparedWhatsApp.directSend ? (");
+    expect(modal).toContain("disabled={!preparedWhatsApp.directSend && !preparedWhatsApp.downloadAccepted}");
   });
 
   it("uses Telegram downloadFile without requiring an in-memory File", () => {
@@ -55,21 +63,21 @@ describe("WhatsApp prepared share UX", () => {
     expect(handler).toContain("URL.revokeObjectURL(objectUrl)");
   });
 
-  it("opens wa.me only after a separate accepted download and never shares files", () => {
+  it("keeps manual download gating for non-Beauty cards and never shares files", () => {
     const handler = source.slice(
       source.indexOf("const openPreparedWhatsApp = () =>"),
       source.indexOf("const activate = () =>"),
     );
-    expect(handler).toContain("if (!preparedWhatsApp?.downloadAccepted) return");
+    expect(handler).toContain("!prepared.directSend && !prepared.downloadAccepted");
     expect(handler).toContain("https://wa.me/?text=");
     expect(handler).toContain("openExternalShareTarget(whatsappUrl)");
     expect(source).not.toContain("files: [preparedWhatsApp.file]");
     expect(source).not.toContain("sendPreparedWhatsApp");
   });
 
-  it("labels the second action honestly as opening WhatsApp", () => {
-    expect(source).toContain('open: "Открыть WhatsApp"');
+  it("labels the primary preview action as sending to WhatsApp", () => {
+    expect(source).toContain('open: "Отправить в WhatsApp"');
     expect(source).toContain('download: "Скачать JPEG"');
-    expect(source).toContain("disabled={!preparedWhatsApp.downloadAccepted}");
+    expect(source).toContain("disabled={!preparedWhatsApp.directSend && !preparedWhatsApp.downloadAccepted}");
   });
 });
