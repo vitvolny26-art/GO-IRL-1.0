@@ -38,16 +38,20 @@ describe("Meta event preview copy", () => {
     const previewHeaders = new Map<string, string>();
     setCardImageResponseHeaders({
       setHeader: (name, value) => previewHeaders.set(name, value),
-    }, 1234);
+    }, 1234, false, "no-store");
     expect(previewHeaders.get("Access-Control-Allow-Origin")).toBe("*");
+    expect(previewHeaders.get("Cache-Control")).toBe("no-store");
     expect(previewHeaders.has("Content-Disposition")).toBe(false);
   });
 
-  it("routes Activity downloads through attachment mode and Beauty through the horizontal renderer", () => {
-    expect(source.match(/format === "image" \|\| format === "download"/g)).toHaveLength(2);
+  it("serves the saved Beauty JPEG before the compatibility renderer", () => {
+    expect(source).toContain("loadTrustedBeautyShareArtwork");
+    expect(source).toContain("sendStoredBeautyCardImage");
+    expect(source).toContain("artwork.imageUrl");
+    expect(source).toContain('image.searchParams.set("v", artwork?.version || "12")');
+    expect(source).toContain('og:image:height" content="900"');
+    expect(source).toContain("aspect-ratio:6/5");
+    expect(source).toContain("https://goirl.realitka.pp.ua");
     expect(source).toContain("renderBeautyShareCardJpeg");
-    expect(source).toContain('image.searchParams.set("v", "11")');
-    expect(source).toContain('og:image:height" content="1020"');
-    expect(source).toContain("aspect-ratio:18/17");
   });
 });
