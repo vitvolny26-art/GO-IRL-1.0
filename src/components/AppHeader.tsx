@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Bell, Check, ChevronDown, Globe2, MapPin, UserRoundPlus } from "lucide-react";
+import { Bell, CalendarPlus, Check, ChevronDown, Globe2, MapPin, UserRoundPlus } from "lucide-react";
+import { useBeautyProfessionalPendingBookings } from "../beauty/useBeautyProfessionalPendingBookings";
 import { cities, getCity } from "../config/cities";
 import { languageOptions, localeByLanguage, type Translation } from "../i18n";
 import { requestLaunchSurface } from "../launchNavigation";
@@ -33,6 +34,13 @@ const notificationCopy: Record<Language, { joined: string; request: string }> = 
   en: { joined: "New participant", request: "New join request" },
 };
 
+const beautyRequestCopy: Record<Language, string> = {
+  ru: "Новый запрос на запись",
+  uk: "Новий запит на запис",
+  cs: "Nová žádost o rezervaci",
+  en: "New booking request",
+};
+
 const notificationTitle = (notification: ParticipantJoinNotification, language: Language) =>
   notification.activityTitle[language]
   || notification.activityTitle.ru
@@ -55,12 +63,16 @@ export function AppHeader({
   onCityChange,
   onLanguageChange,
 }: AppHeaderProps) {
+  const userRole = useAppStore((state) => state.userRole);
   const [openMenu, setOpenMenu] = useState<HeaderMenu>(null);
   const [logoFailed, setLogoFailed] = useState(false);
   const [notifications, setNotifications] = useState(getParticipantJoinNotifications);
   const selectedCity = getCity(selectedCityId);
   const selectedLanguage = languageOptions.find((item) => item.id === language) ?? languageOptions[0];
-  const unreadCount = notifications.filter((item) => !item.read).length;
+  const servicesPath = typeof window !== "undefined"
+    && window.location.pathname.replace(/\/+$/, "") === "/services";
+  const beautyRequests = useBeautyProfessionalPendingBookings(language, userRole, servicesPath);
+  const unreadCount = notifications.filter((item) => !item.read).length + beautyRequests.length;
 
   useEffect(() => {
     const slug = beautyDeepLinkSlug(window.location.pathname, window.location.search);
@@ -205,8 +217,18 @@ export function AppHeader({
           {openMenu === "notifications" && (
             <div className="header-popover notifications-popover" role="status">
               <div className="popover-title">{translation.notifications}</div>
-              {notifications.length ? (
+              {beautyRequests.length || notifications.length ? (
                 <div className="notification-list">
+                  {beautyRequests.map((booking) => (
+                    <a className="notification-item is-unread notification-beauty-request" href="/beauty/workspace" key={`beauty:${booking.id}`}>
+                      <span className="notification-item-icon"><CalendarPlus /></span>
+                      <span className="notification-item-copy">
+                        <strong>{beautyRequestCopy[language]}: {booking.clientName}</strong>
+                        <span>{booking.serviceName} · {booking.date} · {booking.time}</span>
+                        <small>{notificationTime(new Date(booking.createdAt).getTime(), language)}</small>
+                      </span>
+                    </a>
+                  ))}
                   {notifications.map((notification) => (
                     <div className={notification.read ? "notification-item" : "notification-item is-unread"} key={notification.id}>
                       <span className="notification-item-icon"><UserRoundPlus /></span>

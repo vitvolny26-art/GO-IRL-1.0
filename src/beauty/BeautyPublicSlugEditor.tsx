@@ -21,6 +21,11 @@ const copy = {
 
 type SaveState = "idle" | "saving" | "saved" | "taken" | "invalid" | "error";
 
+const isMasterWorkspacePath = () => {
+  const path = window.location.pathname.replace(/\/+$/, "");
+  return path === "/beauty/workspace" || path === "/services/beauty/master";
+};
+
 export function BeautyPublicSlugEditor() {
   const language = readBeautyLanguage();
   const text = copy[language];
@@ -30,7 +35,7 @@ export function BeautyPublicSlugEditor() {
   const [state, setState] = useState<SaveState>("idle");
 
   useEffect(() => {
-    if (window.location.pathname.replace(/\/+$/, "") !== "/beauty/workspace") return;
+    if (!isMasterWorkspacePath()) return;
     let active = true;
     void loadBeautyWorkspace(language).then((loaded) => {
       if (!active) return;
@@ -41,7 +46,7 @@ export function BeautyPublicSlugEditor() {
   }, [language]);
 
   useEffect(() => {
-    const resolve = () => setTarget(document.querySelector(".beauty-workspace-page"));
+    const resolve = () => setTarget(document.querySelector(".beauty-workspace-page-view"));
     resolve();
     const observer = new MutationObserver(resolve);
     observer.observe(document.body, { childList: true, subtree: true });
