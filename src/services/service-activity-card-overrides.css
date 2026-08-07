@@ -396,3 +396,27 @@
     min-height: 40px;
   }
 }
+
+.service-booking-service-select {
+  display: grid;
+  width: 100%;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid #d4af37;
+  border-radius: 14px;
+  background: rgba(36, 20, 45, 0.92);
+  color: #fff;
+  text-align: left;
+}
+
+.service-booking-service-select span,
+.service-booking-service-select small {
+  color: #cbbbcf;
+  font-size: 12px;
+}
+
+.service-booking-service-select strong {
+  font-size: 16px;
+  line-height: 1.25;
+}
