@@ -8,6 +8,7 @@ import {
   type BeautyLocalizedText,
   type BeautyPortfolioItem,
   type BeautyService,
+  type BeautyWeekday,
   type BeautyWorkspace,
 } from "./beautySetupModel";
 import { buildBeautyPublicLink, isValidBeautyPublicSlug, normalizeBeautyPublicSlug } from "./beautyPublicSlug";
@@ -79,7 +80,24 @@ type ServerPortfolioItem = {
   sort_order?: unknown;
 };
 
+type BeautyAvailabilityRuleInput = {
+  weekday: number;
+  start_time: string;
+  end_time: string;
+  slot_interval_minutes: number;
+};
+
 let expectedServerUpdatedAt: string | null = null;
+
+const weekdayNumber: Record<BeautyWeekday, number> = {
+  mon: 1,
+  tue: 2,
+  wed: 3,
+  thu: 4,
+  fri: 5,
+  sat: 6,
+  sun: 7,
+};
 
 const usesTrustedBeautyStorage = () => {
   const identity = getCurrentAuthIdentity();
@@ -90,6 +108,25 @@ const usesTrustedBeautyStorage = () => {
 
 const isMissingRpc = (error: RpcError) => error?.code === "PGRST202"
   || Boolean(error?.message?.includes("Could not find the function"));
+
+const buildBeautyAvailabilityRules = (workspace: BeautyWorkspace): BeautyAvailabilityRuleInput[] | null => {
+  const { weekdays, startTime, endTime, breakEnabled, breakStart, breakEnd } = workspace.availability;
+  if (!startTime || !endTime || startTime >= endTime) return null;
+
+  const segments: Array<[string, string]> = breakEnabled
+    ? (breakStart > startTime && breakStart < breakEnd && breakEnd < endTime
+      ? [[startTime, breakStart], [breakEnd, endTime]]
+      : [])
+    : [[startTime, endTime]];
+  if (breakEnabled && !segments.length) return null;
+
+  return weekdays.flatMap((day) => segments.map(([start_time, end_time]) => ({
+    weekday: weekdayNumber[day],
+    start_time,
+    end_time,
+    slot_interval_minutes: 30,
+  })));
+};
 
 const normalizeTranslations = (
   value: Partial<BeautyLocalizedText> | null | undefined,
@@ -284,6 +321,15 @@ export const saveBeautyWorkspace = async (workspace: BeautyWorkspace) => {
   if (!row) throw new Error("beauty_profile_save_empty_response");
   if (row.status === "conflict") throw new Error("beauty_profile_conflict");
   expectedServerUpdatedAt = row.updated_at;
+
+  const availabilityRules = buildBeautyAvailabilityRules(workspace);
+  if (availabilityRules) {
+    const availabilityResult = await supabase.rpc("go_irl_replace_my_beauty_availability", {
+      p_profile_id: row.profile_id,
+      p_rules: availabilityRules,
+    });
+    if (availabilityResult.error && !isMissingRpc(availabilityResult.error)) throw availabilityResult.error;
+  }
 };
 
 export const updateBeautyPublicSlug = async (workspace: BeautyWorkspace, requestedSlug: string) => {
