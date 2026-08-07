@@ -101,6 +101,10 @@ export const legacyEventNotificationKindMap: Readonly<Record<EventNotificationKi
   request_rejected: "participation.request_rejected",
   event_changed: "participation.event_time_changed",
   event_cancelled: "participation.event_cancelled",
+  "services.booking_requested": "services.booking_requested",
+  "services.booking_confirmed": "services.booking_confirmed",
+  "services.booking_declined": "services.booking_declined",
+  "services.booking_cancelled": "services.booking_cancelled",
 };
 
 export const buildNotificationDeliveryIdempotencyKey = (
