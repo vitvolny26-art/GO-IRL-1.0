@@ -5,6 +5,7 @@ import type { Language } from "../types";
 import { BeautyPilotWorkspace } from "./BeautyPilotWorkspace";
 import { BeautyShareCardEditor } from "./BeautyShareCardEditor";
 import { BeautyWorkspaceContentEditor } from "./BeautyWorkspaceContentEditor";
+import { BeautyWorkspaceSettingsDialog } from "./BeautyWorkspaceSettingsDialog";
 import { createDefaultBeautyWorkspace, type BeautyWorkspace } from "./beautySetupModel";
 import { loadBeautyWorkspace, saveBeautyWorkspace } from "./beautyWorkspaceStorage";
 import { canShowBeautyWorkspaceEntry } from "./servicesRoleNavigation";
@@ -31,6 +32,7 @@ export function BeautyMasterWorkspacePage() {
   const userRole = useAppStore((state) => state.userRole);
   const [workspace, setWorkspace] = useState<BeautyWorkspace>(() => createDefaultBeautyWorkspace(language));
   const [loading, setLoading] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -57,21 +59,27 @@ export function BeautyMasterWorkspacePage() {
   if (loading) return <main className="beauty-shell beauty-workspace-shell"><div className="beauty-loading">{loadingCopy[language]}</div></main>;
 
   const changeWorkspace = (next: BeautyWorkspace) => setWorkspace(next);
-  const openSetup = () => window.location.assign("/beauty");
+  const openSettings = () => setSettingsOpen(true);
 
   return <main className="beauty-shell beauty-workspace-shell" data-beauty-master-route="/services/beauty/master">
     <header className="beauty-topbar">
       <button className="beauty-icon-button" type="button" onClick={() => window.location.assign("/services")} aria-label="Назад"><ArrowLeft /></button>
       <div><span>GO IRL · Services / Beauty / Master</span><h1>{title[language]}</h1></div>
-      <button className="beauty-icon-button" type="button" onClick={openSetup} aria-label="Основные настройки"><Settings2 /></button>
+      <button className="beauty-icon-button" type="button" onClick={openSettings} aria-label="Основные настройки"><Settings2 /></button>
     </header>
     <section className="beauty-workspace-page">
       <BeautyPilotWorkspace
         setup={workspace}
-        onEdit={openSetup}
+        onEdit={openSettings}
         pageEditor={<BeautyWorkspaceContentEditor workspace={workspace} language={language} onChange={changeWorkspace} />}
         businessCardEditor={<BeautyShareCardEditor workspace={workspace} language={language} onChange={changeWorkspace} />}
       />
     </section>
+    {settingsOpen && <BeautyWorkspaceSettingsDialog
+      workspace={workspace}
+      language={language}
+      onChange={changeWorkspace}
+      onClose={() => setSettingsOpen(false)}
+    />}
   </main>;
 }
