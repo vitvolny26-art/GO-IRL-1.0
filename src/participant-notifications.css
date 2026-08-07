@@ -23,6 +23,17 @@
   pointer-events: none;
 }
 
+.bottom-nav-link {
+  position: relative;
+}
+
+.services-workspace-notification-badge {
+  top: 2px;
+  right: auto;
+  left: calc(50% + 5px);
+  box-shadow: 0 0 0 2px rgba(12, 13, 16, 0.96);
+}
+
 .notifications-popover {
   z-index: 4;
   max-height: min(68vh, 460px);
@@ -48,6 +59,11 @@
 .notification-item.is-unread {
   border-color: rgba(201, 255, 61, 0.3);
   background: rgba(201, 255, 61, 0.08);
+}
+
+.notification-beauty-request {
+  color: inherit;
+  text-decoration: none;
 }
 
 .notification-item-icon {
