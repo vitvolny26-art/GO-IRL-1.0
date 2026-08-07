@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Ban, BellDot, CalendarDays, Check, Clock3, CreditCard, House, MessageCircle, Plus, Scissors, UserRound, X, type LucideIcon } from "lucide-react";
+import { Ban, BellDot, CalendarDays, Check, ChevronLeft, ChevronRight, Clock3, CreditCard, House, MessageCircle, Plus, Scissors, UserRound, X, type LucideIcon } from "lucide-react";
 import { useAppStore } from "../store";
 import {
   loadProfessionalServiceBookings,
@@ -12,7 +12,8 @@ import {
   subscribeServiceBookings,
   type ServiceBookingStatus,
 } from "../services/servicesBookingRepository";
-import type { BeautyWorkspace } from "./beautySetupModel";
+import type { BeautyWeekday, BeautyWorkspace } from "./beautySetupModel";
+import "../services/service-activity-card.css";
 
 type Status = ProfessionalServiceBookingStatus;
 type Appointment = {
@@ -40,6 +41,28 @@ const today = () => new Date().toISOString().slice(0, 10);
 const uid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 const appointmentKey = (item: Appointment) => `${item.date}T${item.time}`;
 const sortAppointments = (items: Appointment[]) => [...items].sort((left, right) => appointmentKey(left).localeCompare(appointmentKey(right)));
+const weekdayKeys: BeautyWeekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const weekdayLabels = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"];
+const localDateKey = (value: Date) => {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+const parseDateKey = (value: string) => {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0);
+};
+const calendarCells = (month: string) => {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const first = new Date(year, monthNumber - 1, 1, 12);
+  const days = new Date(year, monthNumber, 0, 12).getDate();
+  const mondayOffset = (first.getDay() + 6) % 7;
+  return [
+    ...Array.from({ length: mondayOffset }, () => null),
+    ...Array.from({ length: days }, (_, index) => localDateKey(new Date(year, monthNumber - 1, index + 1, 12))),
+  ];
+};
 const initialData = (): PilotData => ({
   appointments: [
     { id: uid(), clientName: "Petra K.", phone: "+420 777 222 333", date: today(), time: "10:30", status: "pending", source: "client" },
@@ -102,6 +125,8 @@ export function BeautyPilotWorkspace({ setup, onEdit, pageEditor, businessCardEd
   const [selected, setSelected] = useState("");
   const [dialog, setDialog] = useState<"appointment" | "block" | "booking" | "reschedule" | null>(null);
   const [form, setForm] = useState({ name: "", phone: "", date: today(), time: "09:00", label: "" });
+  const [calendarMonth, setCalendarMonth] = useState(today().slice(0, 7));
+  const [calendarDate, setCalendarDate] = useState(today());
   const persist = (next: PilotData) => { setData(next); localStorage.setItem(pilotKey, JSON.stringify(next)); };
 
   const refreshProfessionalBookings = useCallback(async () => {
@@ -144,6 +169,19 @@ export function BeautyPilotWorkspace({ setup, onEdit, pageEditor, businessCardEd
   const slots = ["09:00", "10:30", "12:00", "14:30", "16:00"];
   const nextAppointment = upcomingAppointments[0];
   const activeServiceCount = setup.services.filter((service) => service.active).length || 1;
+  const calendarDays = useMemo(() => calendarCells(calendarMonth), [calendarMonth]);
+  const configuredWeekdays = useMemo(() => new Set(setup.availability.weekdays), [setup.availability.weekdays]);
+  const calendarAppointments = useMemo(() => allAppointments.filter((item) => item.date === calendarDate && ["pending", "confirmed"].includes(item.status)), [allAppointments, calendarDate]);
+  const calendarMonthLabel = useMemo(() => new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" }).format(parseDateKey(`${calendarMonth}-01`)), [calendarMonth]);
+  const isWorkingDate = (date: string) => {
+    const weekdayIndex = (parseDateKey(date).getDay() + 6) % 7;
+    return configuredWeekdays.has(weekdayKeys[weekdayIndex]);
+  };
+  const moveCalendarMonth = (delta: number) => {
+    const [year, month] = calendarMonth.split("-").map(Number);
+    const next = new Date(year, month - 1 + delta, 1, 12);
+    setCalendarMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`);
+  };
 
   const updateStatus = async (status: ServiceBookingStatus) => {
     if (!current) return;
@@ -223,7 +261,7 @@ export function BeautyPilotWorkspace({ setup, onEdit, pageEditor, businessCardEd
         ? <div className="beauty-note"><span>Временный локальный режим: серверный RPC недоступен. Изменения видны только на этом устройстве.</span></div>
         : bookingSource === "browser-local"
           ? <div className="beauty-note"><span>Browser Mock Mode: записи и статусы хранятся только на этом устройстве.</span></div>
-          : <div className="beauty-note"><span>Серверные записи синхронизированы. Ручные записи и блоки времени пока отключены.</span></div>;
+          : <div className="beauty-note"><span>Серверные записи синхронизированы. Расписание мастера синхронизируется с клиентским календарём.</span></div>;
 
   const appointmentList = (items: Appointment[], emptyText: string) => <div className="beauty-pilot-list">
     {items.map((item) => <button className="beauty-appointment-card" type="button" key={item.id} onClick={() => setSelected(item.id)}>
@@ -255,9 +293,28 @@ export function BeautyPilotWorkspace({ setup, onEdit, pageEditor, businessCardEd
   </section>;
 
   const appointments = <section className="beauty-workspace-view">
-    <div className="beauty-workspace-section-head"><div><span className="beauty-preview-badge">КАЛЕНДАРЬ</span><h2>Записи</h2><p>Подтверждённые будущие записи и заблокированное время.</p></div><div className="beauty-workspace-head-actions"><button className="beauty-secondary" type="button" disabled={serverBacked} onClick={() => setDialog("block")}>Блок</button><button className="beauty-primary" type="button" disabled={serverBacked} onClick={() => setDialog("appointment")}><Plus size={18} />Запись</button></div></div>
+    <div className="beauty-workspace-section-head"><div><span className="beauty-preview-badge">КАЛЕНДАРЬ</span><h2>Записи</h2><p>Календарь мастера, подтверждённые записи и рабочее расписание.</p></div><div className="beauty-workspace-head-actions"><button className="beauty-secondary" type="button" disabled={serverBacked} onClick={() => setDialog("block")}>Блок</button><button className="beauty-primary" type="button" disabled={serverBacked} onClick={() => setDialog("appointment")}><Plus size={18} />Запись</button></div></div>
     {bookingSyncNotice}
-    {appointmentList(upcomingAppointments, "Подтверждённых записей пока нет.")}
+    <div className="beauty-workspace-subsection">
+      <div className="beauty-workspace-subsection-head"><div><h3>Календарь расписания</h3><p>Рабочие дни мастера доступны клиентам для записи. Нажмите дату, чтобы увидеть записи.</p></div><button className="beauty-secondary" type="button" onClick={onEdit}>Настроить расписание</button></div>
+      <div className="service-calendar-toolbar">
+        <button type="button" aria-label="Предыдущий месяц" onClick={() => moveCalendarMonth(-1)} disabled={calendarMonth <= today().slice(0, 7)}><ChevronLeft /></button>
+        <strong>{calendarMonthLabel}</strong>
+        <button type="button" aria-label="Следующий месяц" onClick={() => moveCalendarMonth(1)}><ChevronRight /></button>
+      </div>
+      <div className="service-calendar-weekdays">{weekdayLabels.map((label) => <span key={label}>{label}</span>)}</div>
+      <div className="service-calendar-grid">{calendarDays.map((date, index) => date ? <button
+        className={date === calendarDate ? "is-selected" : ""}
+        type="button"
+        key={date}
+        disabled={date < today() || !isWorkingDate(date)}
+        onClick={() => setCalendarDate(date)}
+      ><span>{parseDateKey(date).getDate()}</span><small>{allAppointments.filter((item) => item.date === date && ["pending", "confirmed"].includes(item.status)).length || "•"}</small></button> : <span key={`empty-${index}`} />)}</div>
+      <div className="service-booking-selected"><CalendarDays /><strong>{calendarDate}</strong><span>{setup.availability.startTime}–{setup.availability.endTime}</span></div>
+      <div className="beauty-note"><span>Рабочие дни: {setup.availability.weekdays.length ? setup.availability.weekdays.map((day) => weekdayLabels[weekdayKeys.indexOf(day)]).join(", ") : "не выбраны"}. После сохранения расписание синхронизируется с календарём клиента.</span></div>
+      {appointmentList(calendarAppointments, "На выбранную дату записей нет.")}
+    </div>
+    <div className="beauty-workspace-subsection"><div className="beauty-workspace-subsection-head"><div><h3>Будущие подтверждённые записи</h3></div></div>{appointmentList(upcomingAppointments, "Подтверждённых записей пока нет.")}</div>
     {upcomingBlocks.length > 0 && <div className="beauty-workspace-subsection"><div className="beauty-workspace-subsection-head"><div><h3>Заблокированное время</h3><p>Перерывы и личные дела, недоступные клиентам.</p></div></div><div className="beauty-pilot-list">{timeBlocks(upcomingBlocks)}</div></div>}
   </section>;
 
