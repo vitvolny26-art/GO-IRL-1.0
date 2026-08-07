@@ -43,7 +43,7 @@ Surface Beauty booking requests in Services UI, keep the master public-link edit
 
 ## Checks
 
-- Exact-head CI `31180845808`: PASS.
+- Exact-head CI before this report-only update: `31180845808` PASS; final report head CI is pending/required.
 - Production migration verification: PASS.
 - Canonical worker HTTP response: 200.
 - Worker summary: 4 notifications claimed, 4 sent, 0 retried, 0 failed.
@@ -53,4 +53,4 @@ Surface Beauty booking requests in Services UI, keep the master public-link edit
 
 ## Next step
 
-Review PR #713, then merge/deploy only with separate explicit approval.
+Wait for final exact-head CI on PR #713, then merge/deploy only with separate explicit approval.
