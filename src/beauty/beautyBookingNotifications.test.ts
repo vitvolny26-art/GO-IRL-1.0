@@ -4,6 +4,7 @@ import {
   buildBeautyBookingNotificationText,
   runBeautyBookingNotificationWorker,
   type BeautyBookingNotificationDelivery,
+  type BeautyBookingNotificationOutcome,
 } from "./beautyBookingNotifications";
 
 const delivery: BeautyBookingNotificationDelivery = {
@@ -32,7 +33,7 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("sends through Telegram and preserves provider message evidence", async () => {
-    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({
+    const fetchImpl = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({
       ok: true,
       result: { message_id: 812 },
     }), { status: 200, headers: { "Content-Type": "application/json" } }));
@@ -47,7 +48,10 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("retries transient Telegram failures and records the retry outcome", async () => {
-    const finish = vi.fn(async () => undefined);
+    const finish = vi.fn(async (
+      _item: BeautyBookingNotificationDelivery,
+      _outcome: BeautyBookingNotificationOutcome,
+    ) => undefined);
     const repository = {
       claim: async () => [delivery],
       finish,
@@ -69,7 +73,10 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("stops retrying after the fifth attempt", async () => {
-    const finish = vi.fn(async () => undefined);
+    const finish = vi.fn(async (
+      _item: BeautyBookingNotificationDelivery,
+      _outcome: BeautyBookingNotificationOutcome,
+    ) => undefined);
     const repository = {
       claim: async () => [{ ...delivery, attemptCount: 5 }],
       finish,
@@ -87,7 +94,7 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("treats a blocked Telegram recipient as cancelled instead of retrying", async () => {
-    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({
+    const fetchImpl = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({
       ok: false,
       error_code: 403,
     }), { status: 403, headers: { "Content-Type": "application/json" } }));
