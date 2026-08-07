@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDays, Clock3, MapPin, RefreshCw, Ticket } from "lucide-react";
+import { CalendarDays, Clock3, MapPin, RefreshCw, Ticket, XCircle } from "lucide-react";
 import type { Language } from "../types";
 import {
+  cancelClientServiceBooking,
   loadClientServiceBookings,
   type ClientServiceBooking,
   type ClientServiceBookingSnapshot,
@@ -21,6 +22,11 @@ const copy = {
     fallback: "Сервер записей ещё не подключён. Показаны записи с этого устройства.",
     address: "Место",
     duration: "Длительность",
+    cancel: "Отменить запись",
+    cancelling: "Отменяем…",
+    cancelConfirm: "Отменить эту запись?",
+    cancelLocked: "Отмена доступна не позднее чем за 24 часа до начала.",
+    cancelFailed: "Не удалось отменить запись",
   },
   uk: {
     title: "Мої записи",
@@ -32,6 +38,11 @@ const copy = {
     fallback: "Сервер записів ще не підключений. Показано записи з цього пристрою.",
     address: "Місце",
     duration: "Тривалість",
+    cancel: "Скасувати запис",
+    cancelling: "Скасовуємо…",
+    cancelConfirm: "Скасувати цей запис?",
+    cancelLocked: "Скасування доступне не пізніше ніж за 24 години до початку.",
+    cancelFailed: "Не вдалося скасувати запис",
   },
   cs: {
     title: "Moje rezervace",
@@ -43,6 +54,11 @@ const copy = {
     fallback: "Server rezervací ještě není připojen. Zobrazují se záznamy z tohoto zařízení.",
     address: "Místo",
     duration: "Délka",
+    cancel: "Zrušit rezervaci",
+    cancelling: "Rušíme…",
+    cancelConfirm: "Zrušit tuto rezervaci?",
+    cancelLocked: "Rezervaci lze zrušit nejpozději 24 hodin před začátkem.",
+    cancelFailed: "Rezervaci se nepodařilo zrušit",
   },
   en: {
     title: "My bookings",
@@ -54,6 +70,11 @@ const copy = {
     fallback: "The booking server is not connected yet. Showing records from this device.",
     address: "Location",
     duration: "Duration",
+    cancel: "Cancel booking",
+    cancelling: "Cancelling…",
+    cancelConfirm: "Cancel this booking?",
+    cancelLocked: "Cancellation is available until 24 hours before the appointment.",
+    cancelFailed: "Could not cancel the booking",
   },
 } satisfies Record<Language, Record<string, string>>;
 
@@ -104,6 +125,7 @@ const locale: Record<Language, string> = {
 };
 
 const emptySnapshot: ClientServiceBookingSnapshot = { bookings: [], source: "browser-local" };
+const cancellationLeadMs = 24 * 60 * 60 * 1000;
 
 const formatDate = (booking: ClientServiceBooking, language: Language) => {
   const date = new Date(`${booking.date}T12:00:00`);
@@ -116,9 +138,24 @@ const formatDate = (booking: ClientServiceBooking, language: Language) => {
   }).format(date);
 };
 
-function BookingCard({ booking, language }: { booking: ClientServiceBooking; language: Language }) {
+function BookingCard({
+  booking,
+  language,
+  cancelling,
+  onCancel,
+}: {
+  booking: ClientServiceBooking;
+  language: Language;
+  cancelling: boolean;
+  onCancel: (booking: ClientServiceBooking) => void;
+}) {
   const text = copy[language];
   const location = booking.exactAddress || booking.publicLocation;
+  const cancellationStatus = booking.status === "pending" || booking.status === "confirmed";
+  const startsAt = new Date(booking.startsAt).getTime();
+  const cancellationAllowed = cancellationStatus
+    && Number.isFinite(startsAt)
+    && startsAt - Date.now() >= cancellationLeadMs;
   return (
     <article className={`services-booking-card status-${booking.status}`}>
       <header>
@@ -131,6 +168,11 @@ function BookingCard({ booking, language }: { booking: ClientServiceBooking; lan
         <div><Ticket /><span><small>{booking.priceCzk} {booking.currency}</small><strong>{booking.serviceName}</strong></span></div>
         <div><MapPin /><span><small>{text.address}</small><strong>{location}</strong></span></div>
       </div>
+      {cancellationStatus && <div className="services-booking-cancel">
+        {cancellationAllowed
+          ? <button type="button" onClick={() => onCancel(booking)} disabled={cancelling}><XCircle />{cancelling ? text.cancelling : text.cancel}</button>
+          : <small>{text.cancelLocked}</small>}
+      </div>}
     </article>
   );
 }
@@ -139,6 +181,8 @@ export function ServicesBookingsView({ language }: { language: Language }) {
   const text = copy[language];
   const [snapshot, setSnapshot] = useState<ClientServiceBookingSnapshot>(emptySnapshot);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [cancellingId, setCancellingId] = useState("");
+  const [actionError, setActionError] = useState("");
 
   const refresh = useCallback(async () => {
     setState((current) => current === "ready" ? "ready" : "loading");
@@ -150,6 +194,23 @@ export function ServicesBookingsView({ language }: { language: Language }) {
       setState("error");
     }
   }, [language]);
+
+  const cancelBooking = useCallback(async (booking: ClientServiceBooking) => {
+    if (!window.confirm(text.cancelConfirm)) return;
+    setCancellingId(booking.id);
+    setActionError("");
+    try {
+      const result = await cancelClientServiceBooking(booking);
+      if (result !== "cancelled" && result !== "local_cancelled") {
+        setActionError(result === "policy_required" ? text.cancelLocked : text.cancelFailed);
+      }
+      await refresh();
+    } catch {
+      setActionError(text.cancelFailed);
+    } finally {
+      setCancellingId("");
+    }
+  }, [refresh, text]);
 
   useEffect(() => {
     let active = true;
@@ -178,10 +239,11 @@ export function ServicesBookingsView({ language }: { language: Language }) {
     <section className="page-section services-client-view services-bookings-view">
       <div className="page-title"><CalendarDays /><div><h1>{text.title}</h1><p>{text.hint}</p></div></div>
       {snapshot.source === "local-fallback" && <div className="services-bookings-fallback">{text.fallback}</div>}
+      {actionError && <div className="services-bookings-state is-error">{actionError}</div>}
       {state === "loading" && <div className="services-bookings-state">{text.loading}</div>}
       {state === "error" && <div className="services-bookings-state is-error"><span>{text.error}</span><button type="button" onClick={() => void refresh()}><RefreshCw />{text.retry}</button></div>}
       {state === "ready" && (snapshot.bookings.length
-        ? <div className="services-bookings-list">{snapshot.bookings.map((booking) => <BookingCard key={booking.id} booking={booking} language={language} />)}</div>
+        ? <div className="services-bookings-list">{snapshot.bookings.map((booking) => <BookingCard key={booking.id} booking={booking} language={language} cancelling={cancellingId === booking.id} onCancel={(item) => void cancelBooking(item)} />)}</div>
         : <div className="services-bookings-state">{text.empty}</div>)}
     </section>
   );
