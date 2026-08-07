@@ -51,7 +51,7 @@ describe("Meta event preview copy", () => {
     expect(source).toContain('image.searchParams.set("v", artwork?.version || "12")');
     expect(source).toContain('og:image:height" content="900"');
     expect(source).toContain("aspect-ratio:6/5");
-    expect(source).toContain("https://goirl.realitka.pp.ua");
+    expect(source).toContain("https://go-irl.fun");
     expect(source).toContain("renderBeautyShareCardJpeg");
   });
 });
