@@ -20,6 +20,16 @@ type ClaimRow = {
   language_code: string | null;
 };
 
+export const buildEventNotificationOpenUrl = (
+  origin: string,
+  payload: EventNotificationPayload,
+  activityId: string | null,
+) => {
+  const base = origin.replace(/\/$/, "");
+  if (payload.openPath?.startsWith("/")) return `${base}${payload.openPath}`;
+  return `${base}/join/${encodeURIComponent(payload.eventId || activityId || "")}`;
+};
+
 export class EventNotificationRepository {
   private readonly client: SupabaseClient;
 
@@ -56,7 +66,7 @@ export class EventNotificationRepository {
       language: (["ru", "uk", "cs", "en"].includes(row.language_code || "")
         ? row.language_code
         : "ru") as Language,
-      openUrl: `${this.origin}/join/${encodeURIComponent(row.payload.eventId || row.activity_id || "")}`,
+      openUrl: buildEventNotificationOpenUrl(this.origin, row.payload, row.activity_id),
     }));
   }
 
