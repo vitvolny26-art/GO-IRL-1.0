@@ -22,6 +22,27 @@ const delivery = (kind: EventNotificationDelivery["kind"]): EventNotificationDel
   openUrl: "https://go-irl-1-0.vercel.app/join/event-1",
 });
 
+const beautyDelivery: EventNotificationDelivery = {
+  id: "notification-beauty",
+  userKey: "telegram:client",
+  kind: "services.booking_confirmed",
+  payload: {
+    subjectType: "beauty_booking",
+    bookingId: "booking-1",
+    title: { cs: "Gelová manikúra", en: "Gel manicure" },
+    date: "2026-08-08",
+    time: "10:30:00",
+    address: "Olomouc centrum",
+    counterpartName: "Studio Vita",
+    openPath: "/services",
+  },
+  attemptCount: 1,
+  provider: "telegram",
+  recipientId: "123",
+  language: "cs",
+  openUrl: "https://goirl.example/services",
+};
+
 describe("event notification messages", () => {
   it("renders a join confirmation with event details", () => {
     expect(buildEventNotificationText(delivery("join_confirmed"))).toContain("Вы участвуете");
@@ -30,6 +51,15 @@ describe("event notification messages", () => {
 
   it("lists changed event fields", () => {
     expect(buildEventNotificationText(delivery("event_changed"))).toContain("time, location");
+  });
+
+  it("renders canonical Beauty booking details without exact address", () => {
+    const text = buildEventNotificationText(beautyDelivery);
+    expect(text).toContain("Запись подтверждена");
+    expect(text).toContain("Gelová manikúra");
+    expect(text).toContain("Olomouc centrum");
+    expect(text).toContain("Studio Vita");
+    expect(text).not.toContain("Horní náměstí");
   });
 });
 

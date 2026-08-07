@@ -10,6 +10,7 @@ export type NotificationCategory =
   | "communication"
   | "post_event"
   | "weather"
+  | "services"
   | "system";
 
 export type NotificationKind =
@@ -43,6 +44,10 @@ export type NotificationKind =
   | "weather.strong_wind"
   | "weather.heat"
   | "weather.frost"
+  | "services.booking_requested"
+  | "services.booking_confirmed"
+  | "services.booking_declined"
+  | "services.booking_cancelled"
   | "system.delivery_problem";
 
 export type NotificationSubjectType =
@@ -52,6 +57,7 @@ export type NotificationSubjectType =
   | "message"
   | "review"
   | "profile"
+  | "beauty_booking"
   | "weather_alert"
   | "system";
 
@@ -67,7 +73,7 @@ export type NotificationSubject = {
 };
 
 export type NotificationDeepLink = {
-  view: "home" | "discover" | "explore" | "profile" | "activity" | "team" | "chat" | "review";
+  view: "home" | "discover" | "explore" | "profile" | "activity" | "team" | "chat" | "review" | "services";
   entityId?: string;
   messageId?: string;
   query?: Record<string, string>;
@@ -82,6 +88,7 @@ export type NotificationPayload = {
   chatId?: string;
   messageId?: string;
   reviewId?: string;
+  bookingId?: string;
   changedFields?: string[];
   metadata?: Record<string, string | number | boolean | null>;
 };
@@ -164,6 +171,10 @@ export const notificationRegistry = registry([
   { kind: "weather.strong_wind", category: "weather", serviceCritical: true, defaultChannels: ["in_app", "telegram"], retentionDays: 7 },
   { kind: "weather.heat", category: "weather", serviceCritical: false, defaultChannels: ["in_app"], retentionDays: 7 },
   { kind: "weather.frost", category: "weather", serviceCritical: false, defaultChannels: ["in_app"], retentionDays: 7 },
+  { kind: "services.booking_requested", category: "services", serviceCritical: true, defaultChannels: ["in_app", "telegram"], retentionDays: 90 },
+  { kind: "services.booking_confirmed", category: "services", serviceCritical: true, defaultChannels: ["in_app", "telegram"], retentionDays: 90 },
+  { kind: "services.booking_declined", category: "services", serviceCritical: true, defaultChannels: ["in_app", "telegram"], retentionDays: 90 },
+  { kind: "services.booking_cancelled", category: "services", serviceCritical: true, defaultChannels: ["in_app", "telegram"], retentionDays: 90 },
   { kind: "system.delivery_problem", category: "system", serviceCritical: true, defaultChannels: ["in_app"], retentionDays: 30 },
 ] as const);
 

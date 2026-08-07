@@ -50,17 +50,24 @@ export class EventNotificationDispatcher {
 
     if (delivery.provider === "telegram") {
       const eventId = delivery.payload.eventId || delivery.activityId || "";
-      const telegramOpenUrl = buildTelegramActivityInviteUrl(
-        eventId,
-        this.options.telegramBotUsername || "GOirl_bot",
-        this.options.telegramAppName || "",
-      ) || delivery.openUrl;
+      const telegramOpenUrl = eventId
+        ? buildTelegramActivityInviteUrl(
+          eventId,
+          this.options.telegramBotUsername || "GOirl_bot",
+          this.options.telegramAppName || "",
+        ) || delivery.openUrl
+        : delivery.openUrl;
       url = `https://api.telegram.org/bot${this.options.telegramBotToken}/sendMessage`;
       token = "";
       body = {
         chat_id: delivery.recipientId,
         text,
-        reply_markup: { inline_keyboard: [[{ text: "Открыть событие", url: telegramOpenUrl }]] },
+        reply_markup: {
+          inline_keyboard: [[{
+            text: eventId ? "Открыть событие" : "Открыть GO IRL",
+            url: telegramOpenUrl,
+          }]],
+        },
       };
     } else {
       const canRespond = withinWindow(delivery, this.now());

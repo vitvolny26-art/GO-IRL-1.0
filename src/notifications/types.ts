@@ -8,10 +8,14 @@ export type EventNotificationKind =
   | "request_approved"
   | "request_rejected"
   | "event_changed"
-  | "event_cancelled";
+  | "event_cancelled"
+  | "services.booking_requested"
+  | "services.booking_confirmed"
+  | "services.booking_declined"
+  | "services.booking_cancelled";
 
 export type EventNotificationPayload = {
-  eventId: string;
+  eventId?: string;
   title?: Partial<Record<Language, string>>;
   activity?: Partial<Record<Language, string>>;
   date?: string;
@@ -20,6 +24,12 @@ export type EventNotificationPayload = {
   locationUrl?: string;
   cityId?: string;
   changedFields?: string[];
+  subjectType?: "beauty_booking";
+  bookingId?: string;
+  bookingStatus?: string;
+  counterpartName?: string;
+  sourceEventId?: string;
+  openPath?: string;
 };
 
 export type EventNotificationDelivery = {

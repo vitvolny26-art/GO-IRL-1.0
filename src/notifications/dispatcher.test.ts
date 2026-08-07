@@ -23,6 +23,27 @@ const telegramDelivery: EventNotificationDelivery = {
   openUrl: `https://go-irl-1-0.vercel.app/join/${eventId}`,
 };
 
+const beautyDelivery: EventNotificationDelivery = {
+  id: "notification-beauty",
+  userKey: "telegram:2",
+  kind: "services.booking_requested",
+  payload: {
+    subjectType: "beauty_booking",
+    bookingId: "booking-1",
+    title: { cs: "Gelová manikúra" },
+    date: "2026-08-08",
+    time: "10:30",
+    address: "Olomouc centrum",
+    counterpartName: "Anna",
+    openPath: "/services",
+  },
+  attemptCount: 1,
+  provider: "telegram",
+  recipientId: "2",
+  language: "cs",
+  openUrl: "https://goirl.example/services",
+};
+
 describe("EventNotificationDispatcher Telegram links", () => {
   it("opens lifecycle notifications in the Telegram Mini App", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({
@@ -46,5 +67,27 @@ describe("EventNotificationDispatcher Telegram links", () => {
       `https://t.me/GOirl_bot?startapp=${eventId}`,
     );
     expect(body.reply_markup.inline_keyboard[0][0].url).not.toContain("/join/");
+  });
+
+  it("keeps Beauty booking notifications on the services deep link", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      ok: true,
+      result: { message_id: 43 },
+    }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+    const dispatcher = new EventNotificationDispatcher({
+      telegramBotToken: "test-token",
+      graphVersion: "v23.0",
+      fetchImpl,
+    });
+
+    await dispatcher.send(beautyDelivery);
+
+    const init = fetchImpl.mock.calls[0]?.[1] as RequestInit;
+    const body = JSON.parse(String(init.body));
+    expect(body.reply_markup.inline_keyboard[0][0].url).toBe("https://goirl.example/services");
+    expect(body.reply_markup.inline_keyboard[0][0].text).toBe("Открыть GO IRL");
   });
 });
