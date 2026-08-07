@@ -1,7 +1,7 @@
 import { lazy, StrictMode, Suspense, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { enableFullCreateTaxonomy } from "./fullCreateTaxonomy";
+import { closedBetaActivityOptions } from "./data";
 import { enableParticipantJoinNotifications } from "./participantNotifications";
 import { enableMapyRuntimeLinks } from "./mapyRuntimeLinks";
 import { enableActivity3dIcons } from "./enableActivity3dIcons";
@@ -111,6 +111,8 @@ const initializeLanguagePreference = () => {
 };
 
 initializeLanguagePreference();
+const betaActivityOptions = closedBetaActivityOptions.activities.filter((option) => option.name.en !== "Chess");
+closedBetaActivityOptions.activities.splice(0, closedBetaActivityOptions.activities.length, ...betaActivityOptions);
 const App = lazy(() => import("./App"));
 const AdminLoginPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminLoginPage })));
 const AdminAccessDeniedPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminAccessDeniedPage })));
@@ -126,7 +128,6 @@ if (!adminRoute && !beautyRoute && isProfilePath(window.location.pathname)) {
   useAppStore.setState({ view: "profile" });
 }
 
-enableFullCreateTaxonomy();
 enableParticipantJoinNotifications();
 enableMapyRuntimeLinks();
 enableUxRegressionPack();
