@@ -378,7 +378,12 @@ export function ServiceActivityCard({ professional: initialProfessional, service
   const booking = bookingOpen ? createPortal(<div className="service-sheet-backdrop" onPointerDown={() => setBookingOpen(false)}>
     <section className="service-booking-sheet service-booking-calendar-sheet" role="dialog" aria-modal="true" onPointerDown={(event) => event.stopPropagation()}>
       <button className="service-sheet-close" type="button" aria-label={labels.close} onClick={() => setBookingOpen(false)}><X /></button>
-      <h2>{labels.booking}</h2><p>{professional.displayName} · {professional.serviceName}</p>
+      <h2>{labels.booking}</h2><p>{professional.displayName}</p>
+      <button className="service-booking-service-select" type="button" onClick={() => { resetBookingAttempt(); setServicesOpen(true); }}>
+        <span>{labels.selectService}</span>
+        <strong>{professional.serviceName}</strong>
+        <small>{professional.durationMinutes} min · {professional.priceCzk} CZK</small>
+      </button>
       <div className="service-booking-contact-grid">
         <label><span>{labels.name} *</span><input required value={bookingName} onChange={(event) => { setBookingName(event.target.value); resetBookingAttempt(); }} placeholder={labels.required} /></label>
         <label><span>{labels.contact} *</span><input required value={bookingContact} onChange={(event) => { setBookingContact(event.target.value); resetBookingAttempt(); }} placeholder="Telegram / phone / email" /></label>

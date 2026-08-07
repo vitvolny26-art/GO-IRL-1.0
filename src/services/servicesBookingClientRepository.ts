@@ -1,7 +1,7 @@
 import { initializeTrustedAuth, isBrowserMockMode } from "../authSession";
 import { supabase } from "../supabase";
 import type { Language } from "../types";
-import { listServiceBookings, type ServiceBooking } from "./servicesBookingRepository";
+import { listServiceBookings, updateServiceBookingStatus, type ServiceBooking } from "./servicesBookingRepository";
 import { loadProfessionalDirectory, type ServicesProfessional } from "./servicesProfessionalDirectory";
 
 export type ClientServiceBookingStatus = ServiceBooking["status"] | "expired";
@@ -30,6 +30,13 @@ export type ClientServiceBookingSnapshot = {
   bookings: ClientServiceBooking[];
   source: ClientServiceBookingSource;
 };
+
+export type CancelClientServiceBookingResult =
+  | "cancelled"
+  | "stale"
+  | "policy_required"
+  | "not_found"
+  | "local_cancelled";
 
 type BookingRpcError = { code?: string; message?: string } | null;
 type BookingRpcClient = {
@@ -217,6 +224,45 @@ export const loadClientServiceBookings = async (
     .filter((booking): booking is ClientServiceBooking => Boolean(booking))
     .sort((left, right) => right.startsAt.localeCompare(left.startsAt));
   return { bookings, source: "server" };
+};
+
+export const cancelClientServiceBooking = async (
+  booking: ClientServiceBooking,
+  dependencies: Pick<RepositoryDependencies, "client" | "browserMock" | "initializeAuth"> & {
+    updateLocal?: typeof updateServiceBookingStatus;
+  } = {},
+): Promise<CancelClientServiceBookingResult> => {
+  const updateLocal = dependencies.updateLocal || updateServiceBookingStatus;
+  const cancelLocal = (): CancelClientServiceBookingResult => {
+    updateLocal(booking.id, "cancelled");
+    return "local_cancelled";
+  };
+
+  const browserMock = dependencies.browserMock ?? isBrowserMockMode();
+  if (browserMock) return cancelLocal();
+
+  const initializeAuth = dependencies.initializeAuth || initializeTrustedAuth;
+  const identity = await initializeAuth();
+  if (identity?.source !== "trusted-telegram") return cancelLocal();
+
+  const client = dependencies.client || (supabase as unknown as BookingRpcClient);
+  const response = await client.rpc("go_irl_cancel_my_beauty_booking", {
+    p_booking_id: booking.id,
+    p_expected_updated_at: booking.updatedAt,
+  });
+  if (response.error) {
+    if (isMissingRpc(response.error)) throw new Error("Beauty booking cancellation RPC is unavailable");
+    throw response.error;
+  }
+
+  const row = Array.isArray(response.data)
+    ? response.data[0] as { result?: unknown } | undefined
+    : undefined;
+  const result = String(row?.result || "");
+  if (!["cancelled", "stale", "policy_required", "not_found"].includes(result)) {
+    throw new Error("Unexpected Beauty booking cancellation RPC result");
+  }
+  return result as CancelClientServiceBookingResult;
 };
 
 export const serviceBookingClientRepositoryInternals = {
