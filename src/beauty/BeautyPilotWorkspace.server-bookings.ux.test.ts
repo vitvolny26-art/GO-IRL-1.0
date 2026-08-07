@@ -20,6 +20,6 @@ describe("Beauty professional workspace server booking wiring", () => {
   it("does not mix pilot appointments or local manual scheduling into server mode", () => {
     expect(workspaceSource).toContain("...(serverBacked ? [] : data.appointments)");
     expect(workspaceSource).toContain("disabled={serverBacked}");
-    expect(workspaceSource).toContain("Ручные записи и блоки времени пока отключены");
+    expect(workspaceSource).toContain("Расписание мастера синхронизируется с клиентским календарём");
   });
 });
