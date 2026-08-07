@@ -23,6 +23,22 @@ const delivery: BeautyBookingNotificationDelivery = {
   openUrl: "https://goirl.example/services",
 };
 
+const responseMock = (payload: unknown, status: number) => vi.fn(async (
+  ...args: Parameters<typeof fetch>
+) => {
+  void args;
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+});
+
+const finishMock = () => vi.fn(async (
+  ...args: [BeautyBookingNotificationDelivery, BeautyBookingNotificationOutcome]
+) => {
+  void args;
+});
+
 describe("Beauty booking Telegram notifications", () => {
   it("builds a minimal localized transactional message", () => {
     const text = buildBeautyBookingNotificationText(delivery);
@@ -33,10 +49,7 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("sends through Telegram and preserves provider message evidence", async () => {
-    const fetchImpl = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({
-      ok: true,
-      result: { message_id: 812 },
-    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    const fetchImpl = responseMock({ ok: true, result: { message_id: 812 } }, 200);
     const dispatcher = new BeautyBookingTelegramDispatcher({ botToken: "test-token", fetchImpl });
     const outcome = await dispatcher.send(delivery);
 
@@ -48,10 +61,7 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("retries transient Telegram failures and records the retry outcome", async () => {
-    const finish = vi.fn(async (
-      _item: BeautyBookingNotificationDelivery,
-      _outcome: BeautyBookingNotificationOutcome,
-    ) => undefined);
+    const finish = finishMock();
     const repository = {
       claim: async () => [delivery],
       finish,
@@ -73,10 +83,7 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("stops retrying after the fifth attempt", async () => {
-    const finish = vi.fn(async (
-      _item: BeautyBookingNotificationDelivery,
-      _outcome: BeautyBookingNotificationOutcome,
-    ) => undefined);
+    const finish = finishMock();
     const repository = {
       claim: async () => [{ ...delivery, attemptCount: 5 }],
       finish,
@@ -94,10 +101,7 @@ describe("Beauty booking Telegram notifications", () => {
   });
 
   it("treats a blocked Telegram recipient as cancelled instead of retrying", async () => {
-    const fetchImpl = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify({
-      ok: false,
-      error_code: 403,
-    }), { status: 403, headers: { "Content-Type": "application/json" } }));
+    const fetchImpl = responseMock({ ok: false, error_code: 403 }, 403);
     const dispatcher = new BeautyBookingTelegramDispatcher({ botToken: "test-token", fetchImpl });
 
     await expect(dispatcher.send(delivery)).resolves.toEqual({
