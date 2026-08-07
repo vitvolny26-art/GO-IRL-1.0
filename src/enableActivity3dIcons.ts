@@ -1,6 +1,16 @@
-import { getActivityIconAsset } from "./activityIconAssets";
+import { getActivityIconAsset, getCategoryIconAsset } from "./activityIconAssets";
 
 const emojiPattern = /^(?:\s|\u200d|\ufe0f|\p{Extended_Pictographic})+/u;
+
+const categoryEmojiIds: Readonly<Record<string, string>> = {
+  "🏆": "sport",
+  "🎉": "activities",
+  "🍻": "party",
+  "🌿": "nature",
+  "❤️": "social",
+  "❤": "social",
+  "🎨": "creativity",
+};
 
 const replaceLeadingEmoji = (element: HTMLElement) => {
   if (element.dataset.activity3dIconProcessed === "true") return;
@@ -8,7 +18,9 @@ const replaceLeadingEmoji = (element: HTMLElement) => {
   const text = textNode?.textContent || "";
   const match = text.match(emojiPattern)?.[0]?.trim();
   if (!match) return;
-  const src = getActivityIconAsset(match);
+
+  const categoryId = element.classList.contains("filter") ? categoryEmojiIds[match] : undefined;
+  const src = categoryId ? getCategoryIconAsset(categoryId) : getActivityIconAsset(match);
   if (!src) return;
 
   const image = document.createElement("img");
@@ -22,12 +34,41 @@ const replaceLeadingEmoji = (element: HTMLElement) => {
   element.dataset.activity3dIconProcessed = "true";
 };
 
+const optionIconSource = (select: HTMLSelectElement, option: HTMLOptionElement) => {
+  if (select.name === "categoryId") return getCategoryIconAsset(option.value);
+  const text = option.textContent || "";
+  const emoji = text.match(emojiPattern)?.[0]?.trim();
+  const label = text.replace(emojiPattern, "").trimStart();
+  return emoji ? getActivityIconAsset(emoji, label) : null;
+};
+
+const updateSelectIcon = (select: HTMLSelectElement) => {
+  const option = select.selectedOptions[0];
+  const src = option?.dataset.activityIconSrc || (select.name === "categoryId" ? getCategoryIconAsset(select.value) : null);
+  if (!src) {
+    select.classList.remove("activity-3d-select");
+    select.style.removeProperty("--activity-select-icon");
+    return;
+  }
+  select.classList.add("activity-3d-select");
+  select.style.setProperty("--activity-select-icon", `url("${src}")`);
+};
+
 const cleanSelectOptions = (select: HTMLSelectElement) => {
-  if (select.dataset.activity3dIconProcessed === "true") return;
-  Array.from(select.options).forEach((option) => {
-    option.textContent = (option.textContent || "").replace(emojiPattern, "").trimStart();
-  });
-  select.dataset.activity3dIconProcessed = "true";
+  if (select.dataset.activity3dIconProcessed !== "true") {
+    Array.from(select.options).forEach((option) => {
+      const src = optionIconSource(select, option);
+      if (src) option.dataset.activityIconSrc = src;
+      option.textContent = (option.textContent || "").replace(emojiPattern, "").trimStart();
+    });
+    select.dataset.activity3dIconProcessed = "true";
+  }
+
+  if (select.dataset.activity3dSelectDecorated !== "true") {
+    select.addEventListener("change", () => updateSelectIcon(select));
+    select.dataset.activity3dSelectDecorated = "true";
+  }
+  updateSelectIcon(select);
 };
 
 const processRoot = (root: ParentNode) => {

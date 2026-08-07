@@ -45,12 +45,12 @@ const emojiFiles: Readonly<Record<string, string>> = {
 };
 
 const categoryFiles: Readonly<Record<string, string>> = {
-  sport: "03-basketball.webp",
-  activities: "14-board-games.webp",
-  party: "22-festival.webp",
-  nature: "24-hiking.webp",
-  social: "35-new-connections.webp",
-  creativity: "36-drawing.webp",
+  sport: "i01-sport.webp",
+  activities: "i02-activities.webp",
+  party: "i03-party.webp",
+  nature: "i04-nature.webp",
+  social: "i05-social.webp",
+  creativity: "i06-creativity.webp",
 };
 
 const resolveFile = (file?: string) => file ? `/activities/icons/${file}` : null;
