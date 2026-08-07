@@ -54,13 +54,25 @@ Implement Beauty007-D4 through the existing canonical notification outbox after 
 - Updated `go_irl_claim_event_notifications(...)` so a preselected provider must be respected while legacy rows with `provider is null` retain existing provider selection.
 - Delivery keys are deterministic from the immutable Beauty lifecycle event, recipient and notification kind.
 - Payload contains public location only; exact Beauty address is not queued.
-- Extended canonical TypeScript notification registry, shared worker types, message rendering and deep-link handling.
+- Extended canonical TypeScript notification registry, shared worker types, service-kind mapping, message rendering and deep-link handling.
 - Added verification SQL with transactional fixtures and rollback.
 - Added focused TypeScript tests for registry entries, Beauty message rendering, services deep links and repository open-path mapping.
 
 ## Checks
 
-Pending exact-head repository checks and GitHub Actions evidence.
+VPS draft check execution `9409` found one TypeScript exhaustiveness error in the canonical event-to-notification kind map. The exact red block was fixed by adding the four Beauty mappings.
+
+Final VPS draft check execution `9412` on code head `d66acdbda65b3ba438f14fc1677befd6a23bc4ea`:
+
+- repository hygiene: PASS;
+- lint: PASS with 1 pre-existing warning and 0 errors;
+- typecheck: PASS;
+- build: PASS;
+- tests: PASS, 166 files / 765 tests;
+- staff-os: PASS;
+- `git diff --check`: PASS.
+
+GitHub Actions exact-head evidence is pending the Draft PR.
 
 ## Safety
 
@@ -68,4 +80,4 @@ No `.env`, secrets, auth architecture, destructive SQL, production data, product
 
 ## Next step
 
-Run repository checks on the exact branch head. If green, open a Draft PR only. Applying the migration to any Supabase environment requires separate authorization.
+Open a Draft PR and require exact-head CI. Applying this migration to any Supabase environment, merging, or deploying requires separate authorization.
