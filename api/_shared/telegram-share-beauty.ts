@@ -153,7 +153,7 @@ export async function loadBeautyShareArtwork(
   };
 }
 
-const beautyFallbackOrigin = "https://goirl.realitka.pp.ua";
+const beautyFallbackOrigin = "https://go-irl.fun";
 
 const buildPublicBeautyProfileUrl = (origin: string, slug: string) => {
   try {
