@@ -21,7 +21,7 @@ type VercelResponse = {
 };
 
 const shareApiFallbackOrigin = "https://go-irl-1-1.vercel.app";
-const publicAppFallbackOrigin = "https://goirl.realitka.pp.ua";
+const publicAppFallbackOrigin = "https://go-irl.fun";
 
 const publicOrigin = () => {
   const host = readEnv("VERCEL_ENV") === "preview"
@@ -203,22 +203,23 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return await sendCardImage(card, response, format === "download");
     }
 
-    const origin = publicOrigin();
+    const apiOrigin = publicOrigin();
+    const appOrigin = publicAppOrigin();
     const eventQuery = `event=${encodeURIComponent(card.eventId)}&language=${encodeURIComponent(card.language)}`;
-    const canonicalUrl = eventLandingUrl(origin, card.eventId, card.language);
-    const previewApiUrl = `${origin}/api/meta/event-preview?${eventQuery}`;
-    const addToCalendarUrl = buildMetaEventGoogleCalendarUrl(card, origin) || `${previewApiUrl}&format=ics`;
+    const canonicalUrl = eventLandingUrl(appOrigin, card.eventId, card.language);
+    const previewApiUrl = `${apiOrigin}/api/meta/event-preview?${eventQuery}`;
+    const addToCalendarUrl = buildMetaEventGoogleCalendarUrl(card, apiOrigin) || `${previewApiUrl}&format=ics`;
     if (first(request.query?.format) === "ics") {
       response.setHeader("Content-Type", "text/calendar; charset=utf-8");
       response.setHeader("Content-Disposition", `attachment; filename="go-irl-${card.eventId}.ics"`);
       response.setHeader("Cache-Control", "private, max-age=300");
-      return response.status(200).end(buildMetaEventCalendar(card, origin));
+      return response.status(200).end(buildMetaEventCalendar(card, apiOrigin));
     }
     const openUrl = card.inviteUrl;
     const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
     const imageUrl = secret
-      ? `${origin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
-      : `${origin}/branding/logo-wide.png`;
+      ? `${apiOrigin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
+      : `${apiOrigin}/branding/logo-wide.png`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
     const labels = metaEventPreviewCopy[card.language];

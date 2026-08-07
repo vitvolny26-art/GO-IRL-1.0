@@ -40,7 +40,7 @@ describe("Beauty Telegram share", () => {
       { ...base, service_name: "Педикюр", price_czk: 990 },
       { ...base, service_name: "Nail art", price_czk: 250 },
       { ...base, service_name: "Ignored fourth service", price_czk: 1 },
-    ], "beauty-test-studio", "ru", "2026-08-05", "https://goirl.realitka.pp.ua");
+    ], "beauty-test-studio", "ru", "2026-08-05", "https://go-irl.fun");
 
     expect(card?.activity).toBe("Studio Vita");
     expect(card?.description).toBe("Комбинированный маникюр и укрепление натуральных ногтей");
@@ -49,7 +49,7 @@ describe("Beauty Telegram share", () => {
       { name: "Педикюр", priceCzk: 990 },
       { name: "Nail art", priceCzk: 250 },
     ]);
-    expect(card?.publicProfileUrl).toBe("https://goirl.realitka.pp.ua/beauty/beauty-test-studio");
+    expect(card?.publicProfileUrl).toBe("https://go-irl.fun/beauty/beauty-test-studio");
   });
 
   it("uses the saved ready JPEG as the canonical Beauty artwork", async () => {

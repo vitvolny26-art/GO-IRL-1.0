@@ -34,11 +34,11 @@ describe("card share", () => {
     expect(decodeURIComponent(buildCardShareTarget("telegram", content))).toContain(content.url);
     const whatsappTarget = new URL(buildCardShareTarget("whatsapp", content));
     expect(whatsappTarget.origin).toBe("https://wa.me");
-    expect(whatsappTarget.searchParams.get("text")).toContain(`https://goirl.realitka.pp.ua/e/${eventId}`);
+    expect(whatsappTarget.searchParams.get("text")).toContain(`https://go-irl.fun/e/${eventId}`);
   });
 
   it("separates the public landing domain from the Vercel image API", () => {
-    expect(buildCardShareLandingUrl(content)).toBe(`https://goirl.realitka.pp.ua/e/${eventId}`);
+    expect(buildCardShareLandingUrl(content)).toBe(`https://go-irl.fun/e/${eventId}`);
     expect(buildCardShareImageUrl(content)).toContain("https://go-irl-1-1.vercel.app/api/meta/event-preview?");
   });
 
@@ -77,7 +77,7 @@ describe("card share", () => {
     expect(target.origin + target.pathname).toBe("https://www.facebook.com/dialog/send");
     expect(target.searchParams.get("app_id")).toBe("1348703396728256");
     expect(target.searchParams.get("link")).toBe(previewUrl);
-    expect(target.searchParams.get("redirect_uri")).toBe("https://goirl.realitka.pp.ua");
+    expect(target.searchParams.get("redirect_uri")).toBe("https://go-irl.fun");
   });
 
   it("builds native Messenger targets for mobile devices", () => {
@@ -89,7 +89,7 @@ describe("card share", () => {
 
   it("uses the public HTTPS share bridge with the dynamic preview", () => {
     const target = new URL(buildMessengerShareBridgeTarget(content));
-    expect(target.origin).toBe("https://goirl.realitka.pp.ua");
+    expect(target.origin).toBe("https://go-irl.fun");
     expect(target.pathname).toBe("/messenger-share.html");
     expect(target.searchParams.get("title")).toBe(content.title);
     expect(target.searchParams.get("date")).toBe(content.date);
@@ -108,7 +108,7 @@ describe("card share", () => {
       title: "Test Studio",
       date: "03 авг · 09:00",
       address: "Центр, Оломоуц",
-      url: "https://goirl.realitka.pp.ua/beauty/beauty-test-studio",
+      url: "https://go-irl.fun/beauty/beauty-test-studio",
     };
     const preview = new URL(buildMetaEventPreviewUrl(beauty));
     expect(preview.origin).toBe("https://go-irl-1-1.vercel.app");
@@ -116,7 +116,7 @@ describe("card share", () => {
     expect(preview.searchParams.get("slug")).toBe("beauty-test-studio");
     expect(preview.searchParams.get("date")).toBe(beauty.date);
     expect(preview.searchParams.get("v")).toBe("12");
-    expect(buildCardShareLandingUrl(beauty)).toContain("https://goirl.realitka.pp.ua/s/beauty-test-studio");
+    expect(buildCardShareLandingUrl(beauty)).toContain("https://go-irl.fun/s/beauty-test-studio");
     expect(isBeautyCardShareContent(beauty)).toBe(true);
 
     const whatsapp = new URL(buildCardShareTarget("whatsapp", beauty));

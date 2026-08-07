@@ -11,7 +11,7 @@ export type CardShareContent = {
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const beautySlugPattern = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const shareApiOrigin = "https://go-irl-1-1.vercel.app";
-const publicAppOrigin = "https://goirl.realitka.pp.ua";
+const publicAppOrigin = "https://go-irl.fun";
 const shareTextMarker = "GO IRL:";
 export const metaAppId = "1348703396728256";
 
