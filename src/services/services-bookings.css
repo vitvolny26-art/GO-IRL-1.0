@@ -26,3 +26,25 @@
   .services-booking-card > header { align-items: stretch; flex-direction: column; }
   .services-booking-card > header b { max-width: none; align-self: flex-start; }
 }
+
+.services-booking-cancel {
+  display: grid;
+  gap: 7px;
+}
+.services-booking-cancel button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,111,97,.55);
+  border-radius: 9px;
+  background: rgba(255,111,97,.08);
+  color: var(--coral);
+  font: inherit;
+  font-weight: 800;
+}
+.services-booking-cancel button:disabled { opacity: .55; }
+.services-booking-cancel button svg { width: 17px; height: 17px; }
+.services-booking-cancel small { color: var(--muted); font-size: 11px; line-height: 1.35; }
