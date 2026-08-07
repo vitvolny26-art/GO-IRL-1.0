@@ -14,7 +14,7 @@ describe("prepared Beauty share route", () => {
     expect(source).not.toContain('image.searchParams.set("format", "download")');
     expect(source).toContain('image.searchParams.set("v", artwork?.version || "12")');
     expect(source).toContain("publicAppOrigin()");
-    expect(source).toContain("https://goirl.realitka.pp.ua");
+    expect(source).toContain("https://go-irl.fun");
     expect(source).toContain("https://go-irl-1-1.vercel.app");
   });
 });
