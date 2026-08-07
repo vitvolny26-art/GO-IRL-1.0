@@ -6,13 +6,13 @@ import {
 describe("Telegram Beauty file share bridge", () => {
   it("builds a cache-busted image bridge for a Beauty landing URL", () => {
     const target = new URL(buildBeautyFileShareBridgeTarget(
-      "GO IRL: Studio Vita\n\nhttps://goirl.realitka.pp.ua/s/beauty-test?language=cs&date=2026-08-07",
+      "GO IRL: Studio Vita\n\nhttps://go-irl.fun/s/beauty-test?language=cs&date=2026-08-07",
       "Studio Vita",
       "fixed",
     ));
     const image = new URL(target.searchParams.get("image") || "");
 
-    expect(target.origin).toBe("https://goirl.realitka.pp.ua");
+    expect(target.origin).toBe("https://go-irl.fun");
     expect(target.pathname).toBe("/beauty-share-bridge.html");
     expect(target.searchParams.get("language")).toBe("cs");
     expect(image.origin).toBe("https://go-irl-1-1.vercel.app");
