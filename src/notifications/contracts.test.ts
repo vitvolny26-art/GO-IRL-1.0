@@ -12,11 +12,16 @@ describe("notification data model contracts", () => {
     expect(kinds).toContain("participation.event_cancelled");
     expect(kinds).toContain("communication.mention");
     expect(kinds).toContain("weather.thunderstorm");
+    expect(kinds).toContain("services.booking_requested");
+    expect(kinds).toContain("services.booking_confirmed");
+    expect(kinds).toContain("services.booking_declined");
+    expect(kinds).toContain("services.booking_cancelled");
   });
 
   it("keeps service-critical notifications enabled", () => {
     expect(canDisableNotification("participation.event_cancelled")).toBe(false);
     expect(canDisableNotification("organizer.new_request")).toBe(false);
+    expect(canDisableNotification("services.booking_confirmed")).toBe(false);
     expect(canDisableNotification("communication.message")).toBe(true);
   });
 
@@ -28,6 +33,11 @@ describe("notification data model contracts", () => {
     expect(getNotificationRegistryEntry("communication.message")).toMatchObject({
       category: "communication",
       serviceCritical: false,
+    });
+    expect(getNotificationRegistryEntry("services.booking_requested")).toMatchObject({
+      category: "services",
+      serviceCritical: true,
+      defaultChannels: ["in_app", "telegram"],
     });
   });
 });
