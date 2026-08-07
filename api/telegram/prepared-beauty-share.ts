@@ -20,7 +20,7 @@ type VercelResponse = {
 };
 
 const shareApiFallbackOrigin = "https://go-irl-1-1.vercel.app";
-const publicAppFallbackOrigin = "https://goirl.realitka.pp.ua";
+const publicAppFallbackOrigin = "https://go-irl.fun";
 
 const apiOrigin = () => {
   const host = readEnv("VERCEL_URL") || readEnv("VERCEL_PROJECT_PRODUCTION_URL");
