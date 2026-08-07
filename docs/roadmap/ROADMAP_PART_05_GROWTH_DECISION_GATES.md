@@ -233,3 +233,53 @@ The following retained files preserve planning history and source traceability:
 - [`SPRINT_5.md`](SPRINT_5.md) — Draft historical input.
 
 They remain available for audit and context, but this file controls current growth, future Services and monetization sequencing, decision gates, dependencies, and scope.
+
+## GO IRL 2.0 repository reconciliation — 2026-08-07
+
+**State:** Evidence-reconciled planning layer / implementation status mixed.
+
+This section records repository evidence already present on main before GO IRL 2.0 execution. It does not authorize protected runtime changes and does not override the release gates above.
+
+### Implemented / merged foundation
+
+- trusted Telegram authentication foundation with server-side Telegram data verification;
+- PWA install/offline foundation;
+- public Activity/Services share-preview infrastructure and multi-channel share paths for Telegram, WhatsApp, Messenger, Facebook and Instagram;
+- substantial notification/outbox/reminder infrastructure and event lifecycle notification contracts;
+- UProfile 002–009 modular profile work;
+- ADMIN005–009 admin foundation;
+- significant Master/Beauty workspace, booking, calendar and availability foundation.
+
+### Partial / release-gated
+
+- Communication & Notifications still needs fresh deployment/runtime and Telegram chat-binding E2E evidence;
+- WhatsApp Business remains gated by Meta business/number/template/permission verification and live-delivery smoke;
+- Instagram transport remains permission/credential/release gated;
+- PWA still needs Web Push, subscription lifecycle and physical-device verification;
+- UProfile010 / Account & Security remains incomplete;
+- SEO has dynamic share/OG foundations but still needs canonical-domain migration, robots/sitemap/indexing rules and structured event metadata;
+- full wide desktop/web parity is not yet proven complete.
+
+### Planned / not yet proven on main
+
+- go-irl.fun as canonical runtime origin and admin.go-irl.fun as canonical admin origin;
+- Google-primary web sign-in plus Apple, Meta, email and phone providers under one production identity model;
+- explicit cross-provider account linking with Telegram continuity;
+- end-to-end multi-role RBAC for user, organizer, master, moderator, admin and superadmin;
+- Web Push;
+- full GO IRL 2.0 SEO and acquisition/referral analytics;
+- payments, which remain future scope.
+
+### Execution order
+
+1. DOM001 — establish go-irl.fun as canonical production origin while preserving old URLs.
+2. WEB001 — verify and finish responsive desktop/mobile/PWA shell.
+3. AUTH200 — web multi-provider auth while preserving trusted Telegram continuity.
+4. AUTH201 — explicit identity linking and Account & Security.
+5. PWA200 — Web Push and device verification.
+6. SEO200 — canonical-domain SEO, robots/sitemap/indexing and structured event metadata.
+7. DIST200 — consolidate Telegram/WhatsApp/Messenger/Meta distribution on canonical smart links and attribution.
+8. MOD200 — complete GO IRL 2.0 moderation/RBAC/admin boundaries.
+
+Protected areas remain separately approval-gated: auth, RLS, SQL/migrations, secrets, production configuration and deployments.
+
