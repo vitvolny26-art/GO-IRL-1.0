@@ -86,7 +86,7 @@ export function AppHeader({
     root.style.setProperty("--app-header-height", "84px");
 
     return () => {
-      if (previousHeaderHeight) root.style.setPropertyValue("--app-header-height", previousHeaderHeight);
+      if (previousHeaderHeight) root.style.setProperty("--app-header-height", previousHeaderHeight);
       else root.style.removeProperty("--app-header-height");
     };
   }, []);
