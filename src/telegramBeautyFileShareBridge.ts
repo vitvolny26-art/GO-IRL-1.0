@@ -1,7 +1,7 @@
 import { getTelegramWebApp } from "./telegram";
 
 const shareApiOrigin = "https://go-irl-1-1.vercel.app";
-const publicAppOrigin = "https://goirl.realitka.pp.ua";
+const publicAppOrigin = "https://go-irl.fun";
 const beautyLandingPattern = /^\/s\/(beauty-[a-z0-9]+(?:-[a-z0-9]+)*)\/?$/i;
 let installed = false;
 
