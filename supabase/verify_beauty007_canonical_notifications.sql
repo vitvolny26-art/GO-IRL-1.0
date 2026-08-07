@@ -79,8 +79,8 @@ begin
   insert into public.app_users (
     id, auth_provider, provider_user_id, user_key, first_name, status
   ) values
-    (gen_random_uuid(), 'beauty007d4_verify', 'pro-' || v_suffix, v_professional, 'Beauty Pro', 'active'),
-    (gen_random_uuid(), 'beauty007d4_verify', 'client-' || v_suffix, v_client, 'Beauty Client', 'active');
+    (gen_random_uuid(), 'telegram', 'pro-' || v_suffix, v_professional, 'Beauty Pro', 'active'),
+    (gen_random_uuid(), 'telegram', 'client-' || v_suffix, v_client, 'Beauty Client', 'active');
 
   insert into public.user_roles (user_key, role, note)
   values (v_professional, 'professional', 'Beauty007-D4 verification')
