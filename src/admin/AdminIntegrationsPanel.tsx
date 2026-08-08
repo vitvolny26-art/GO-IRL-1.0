@@ -1,3 +1,9 @@
+import { useState } from "react";
+import {
+  requestInstagramPublisherReadiness,
+  type InstagramPublisherReadinessResult,
+} from "./instagramPublisherReadiness";
+
 declare const __GO_IRL_COMMIT__: string;
 declare const __GO_IRL_BUILT_AT__: string;
 
@@ -18,6 +24,18 @@ const stateClass: Record<IntegrationState, string> = {
   "not-connected": "is-neutral",
 };
 
+const instagramFailureCopy: Record<
+  Exclude<InstagramPublisherReadinessResult, { ok: true }>["error"],
+  string
+> = {
+  trusted_session_required: "Нет активной защищённой Telegram admin-сессии.",
+  access_denied: "Текущая сессия не прошла admin-проверку.",
+  publisher_unavailable: "Publisher readiness не подтверждён сервером.",
+  invalid_readiness_response: "Сервер вернул некорректный readiness-ответ.",
+  network_unavailable: "Readiness endpoint сейчас недоступен по сети.",
+  unexpected_status: "Readiness endpoint вернул неожиданный статус.",
+};
+
 export const countReadyIntegrations = (authorized: boolean, rolesLoading: boolean, rolesError: string) => {
   let count = 1;
   if (authorized) count += 1;
@@ -34,9 +52,20 @@ export function AdminIntegrationsPanel({
   rolesLoading: boolean;
   rolesError: string;
 }) {
+  const [instagramChecking, setInstagramChecking] = useState(false);
+  const [instagramReadiness, setInstagramReadiness] = useState<InstagramPublisherReadinessResult | null>(null);
   const commit = typeof __GO_IRL_COMMIT__ === "string" ? __GO_IRL_COMMIT__ : "unknown";
   const builtAt = typeof __GO_IRL_BUILT_AT__ === "string" ? __GO_IRL_BUILT_AT__ : "unknown";
   const supabaseState: IntegrationState = rolesLoading ? "checking" : rolesError ? "unavailable" : "ready";
+
+  const checkInstagramPublisher = async () => {
+    setInstagramChecking(true);
+    try {
+      setInstagramReadiness(await requestInstagramPublisherReadiness());
+    } finally {
+      setInstagramChecking(false);
+    }
+  };
 
   const integrations: IntegrationItem[] = [
     {
@@ -69,6 +98,21 @@ export function AdminIntegrationsPanel({
     },
   ];
 
+  const instagramState: IntegrationState = instagramChecking
+    ? "checking"
+    : instagramReadiness?.ok
+      ? "ready"
+      : instagramReadiness
+        ? "unavailable"
+        : "not-connected";
+  const instagramStatus = instagramChecking
+    ? "Проверка"
+    : instagramReadiness?.ok
+      ? "Аккаунт подтверждён"
+      : instagramReadiness
+        ? "Недоступно"
+        : "Не проверено";
+
   return (
     <section className="admin-tab-panel admin-tab-stack">
       <section className="admin-login-card admin-integrations-summary">
@@ -94,6 +138,34 @@ export function AdminIntegrationsPanel({
           </article>
         ))}
       </div>
+
+      <article className="admin-login-card admin-integration-row admin-instagram-readiness">
+        <div className="admin-integration-copy">
+          <div className="admin-integration-title">
+            <strong>Instagram publisher</strong>
+            <span className={`admin-integration-status ${stateClass[instagramState]}`}>{instagramStatus}</span>
+          </div>
+          {instagramReadiness?.ok ? (
+            <>
+              <p>@{instagramReadiness.username} · account {instagramReadiness.accountId}</p>
+              <small>Account binding подтверждён. {instagramReadiness.requiredPermission}: {instagramReadiness.permissionStatus}.</small>
+            </>
+          ) : (
+            <>
+              <p>{instagramReadiness ? instagramFailureCopy[instagramReadiness.error] : "Проверяет runtime credential и привязку аккаунта без публикации поста."}</p>
+              <small>Токены и provider body не выводятся в интерфейс.</small>
+            </>
+          )}
+          <button
+            className="admin-integration-action"
+            type="button"
+            onClick={() => void checkInstagramPublisher()}
+            disabled={!authorized || instagramChecking}
+          >
+            {instagramChecking ? "Проверяем…" : "Проверить publisher"}
+          </button>
+        </div>
+      </article>
     </section>
   );
 }

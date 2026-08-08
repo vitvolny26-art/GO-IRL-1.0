@@ -105,6 +105,20 @@
 .admin-integration-status.is-unavailable { background: rgba(255, 84, 104, 0.14); color: #ffb5bd; }
 .admin-integration-status.is-neutral { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.62); }
 
+.admin-integration-action {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 14px;
+  background: #2f6df6;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.admin-integration-action:disabled { cursor: wait; opacity: 0.62; }
+
 .admin-empty-state { min-height: 330px; display: grid; place-content: center; text-align: center; }
 .admin-empty-state h2 { margin: 10px 0 8px; }
 .admin-empty-state p { max-width: 420px; margin: 0 auto; }
