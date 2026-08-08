@@ -135,7 +135,7 @@ export function AppHeader({
               <span style={{ color: "#c9ff3d", fontSize: 18, fontWeight: 950, lineHeight: 1 }}>GO IRL</span>
             ) : (
               <img
-                src={`/branding/go-irl-logo-header-final.png?v=${encodeURIComponent(__GO_IRL_COMMIT__)}`}
+                src={`/branding/go-irl-logo.jpg?v=${encodeURIComponent(__GO_IRL_COMMIT__)}`}
                 alt="GO IRL"
                 onError={() => setLogoFailed(true)}
                 style={{

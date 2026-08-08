@@ -219,7 +219,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const secret = readEnv("META_APP_SECRET") || readEnv("INSTAGRAM_APP_SECRET");
     const imageUrl = secret
       ? `${apiOrigin}/api/meta/event-invitation-card?token=${encodeURIComponent(createMetaInvitationCardToken(card, secret))}&v=9`
-      : `${apiOrigin}/branding/logo-wide.png`;
+      : `${apiOrigin}/branding/go-irl-logo.jpg`;
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
     const labels = metaEventPreviewCopy[card.language];
