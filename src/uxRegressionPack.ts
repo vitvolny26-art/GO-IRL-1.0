@@ -254,7 +254,7 @@ const ensureLocalizedHero = (language: Language) => {
     brand.className = "runtime-hero-brand";
 
     const logo = document.createElement("img");
-    logo.src = "/branding/logo-square.png";
+    logo.src = "/branding/go-irl-logo.jpg";
     logo.alt = "";
     logo.className = "runtime-hero-brand-mark";
 

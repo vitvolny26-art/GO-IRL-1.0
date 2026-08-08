@@ -9,7 +9,7 @@ next_review: 2026-08-20
 
 # GO IRL Telegram Mini App
 
-![GO IRL logo](images/branding/logo-wide.png)
+![GO IRL logo](images/branding/go-irl-logo.jpg)
 
 Before contributing or implementing new features, read:
 
