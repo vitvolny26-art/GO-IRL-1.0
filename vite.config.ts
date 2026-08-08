@@ -14,11 +14,13 @@ export default defineConfig(({ mode }) => {
         name: "emit-beauty-share-bridge",
         apply: "build",
         generateBundle() {
-          this.emitFile({
-            type: "asset",
-            fileName: "beauty-share-bridge.html",
-            source: readFileSync(new URL("./public/beauty-share-bridge.html", import.meta.url), "utf8"),
-          });
+          for (const fileName of ["beauty-share-bridge.html", "service-worker.js", "manifest.webmanifest", "offline.html"]) {
+            this.emitFile({
+              type: "asset",
+              fileName,
+              source: readFileSync(new URL(`./public/${fileName}`, import.meta.url), "utf8"),
+            });
+          }
         },
       },
     ],
