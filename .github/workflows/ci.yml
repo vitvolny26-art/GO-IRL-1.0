@@ -47,6 +47,7 @@ jobs:
           node --input-type=module <<'NODE'
           import fs from 'node:fs/promises';
           import sharp from 'sharp';
+          sharp.cache(false);
           const cards = [
             '22-festival.webp',
             '23-dancing.webp',
@@ -66,11 +67,11 @@ jobs:
               .resize({ width: 1080, height: 1440, fit: 'contain', background: { r: 10, g: 14, b: 16, alpha: 1 } })
               .webp({ quality: 92, effort: 6 })
               .toFile(tmp);
-            await fs.rename(tmp, path);
-            const after = await sharp(path).metadata();
+            const after = await sharp(tmp).metadata();
             if (after.width !== 1080 || after.height !== 1440 || after.format !== 'webp') {
-              throw new Error(`${file}: invalid output ${after.width}x${after.height} ${after.format}`);
+              throw new Error(`${file}: invalid tmp output ${after.width}x${after.height} ${after.format}`);
             }
+            await fs.rename(tmp, path);
           }
           const icon = await sharp('images/activities/icons/36-drawing.webp').metadata();
           if (icon.width !== 384 || icon.height !== 384 || icon.format !== 'webp') {
