@@ -17,7 +17,7 @@ describe("Meta event preview copy", () => {
   it("routes short Activity and Service landings to the HTML preview handler", () => {
     expect(vercel.rewrites).toContainEqual({
       source: "/e/:id",
-      destination: "/api/meta/event-preview?event=:id",
+      destination: "/api/meta/event-preview-attributed?event=:id",
     });
     expect(vercel.rewrites).toContainEqual({
       source: "/s/:slug",
