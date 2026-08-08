@@ -1,8 +1,8 @@
 /* global self, caches, fetch, URL */
 
-const offlineCache = "go-irl-offline-v2";
+const offlineCache = "go-irl-offline-v3";
 const offlineUrl = "/offline.html";
-const appShellUrls = ["/", "/beauty", offlineUrl];
+const appShellUrls = ["/", "/activities", "/services", "/beauty", offlineUrl];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(offlineCache).then((cache) => cache.addAll(appShellUrls)));
