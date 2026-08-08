@@ -11,9 +11,6 @@ on:
       - "docs/**"
       - "**/*.md"
 
-permissions:
-  contents: write
-
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -22,7 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          ref: fix/activity-image-assets-20260808
           fetch-depth: 2
 
       - name: Setup pnpm
@@ -36,56 +32,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Finalize bounded image patch
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p images/activities/icons
-          cat .asset-staging/icon-36-drawing.b64.* | base64 -d > images/activities/icons/36-drawing.webp
-          echo '9992b9116a6a346c6a96bc5eb90734d3eea2820d1e1b267631d1de79eee4fbad  images/activities/icons/36-drawing.webp' | sha256sum -c -
-          node --input-type=module <<'NODE'
-          import fs from 'node:fs/promises';
-          import sharp from 'sharp';
-          sharp.cache(false);
-          const cards = [
-            '22-festival.webp',
-            '23-dancing.webp',
-            '33-language-exchange.webp',
-            '36-drawing.webp',
-            '37-photo-walk.webp',
-            '38-ceramics.webp',
-          ];
-          for (const file of cards) {
-            const path = `images/activities/cards-3x4/${file}`;
-            const before = await sharp(path).metadata();
-            if (before.width !== 1024 || before.height !== 1536) {
-              throw new Error(`${file}: expected 1024x1536 source, got ${before.width}x${before.height}`);
-            }
-            const tmp = `${path}.tmp.webp`;
-            await sharp(path)
-              .resize({ width: 1080, height: 1440, fit: 'contain', background: { r: 10, g: 14, b: 16, alpha: 1 } })
-              .webp({ quality: 92, effort: 6 })
-              .toFile(tmp);
-            const after = await sharp(tmp).metadata();
-            if (after.width !== 1080 || after.height !== 1440 || after.format !== 'webp') {
-              throw new Error(`${file}: invalid tmp output ${after.width}x${after.height} ${after.format}`);
-            }
-            await fs.rename(tmp, path);
-          }
-          const icon = await sharp('images/activities/icons/36-drawing.webp').metadata();
-          if (icon.width !== 384 || icon.height !== 384 || icon.format !== 'webp') {
-            throw new Error(`icon: invalid output ${icon.width}x${icon.height} ${icon.format}`);
-          }
-          NODE
-          rm -rf .asset-staging
-          git config user.name 'GO IRL Release Bot'
-          git config user.email 'actions@users.noreply.github.com'
-          git add -A
-          test "$(git diff --cached --name-only | wc -l)" -eq 10
-          ! git diff --cached --name-only | grep -q '^\.github/workflows/'
-          git commit -m 'Fix activity image assets'
-          git push origin HEAD:fix/activity-image-assets-20260808
 
       - name: Repository check
         run: pnpm run repo:check
