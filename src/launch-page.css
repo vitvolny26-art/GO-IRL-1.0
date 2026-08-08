@@ -11,7 +11,6 @@
 @media(prefers-reduced-motion:reduce){.launch-root *{transition-duration:.01ms!important}}
 .launch-root{width:min(100%,630px);padding:0}.launch-content{padding:calc(var(--app-safe-top) + var(--app-header-height) + 24px) 16px max(42px,env(safe-area-inset-bottom))}.launch-domain-section{margin-top:0;padding-top:0}.launch-domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.launch-domain-card{aspect-ratio:1;min-height:0}
 @media(max-width:420px){.launch-root{padding:0}.launch-content{padding-left:14px;padding-right:14px}.launch-domain-card{grid-template-columns:minmax(0,1fr) 36px;gap:8px;min-height:0;padding:12px}.launch-card-arrow{width:36px;height:36px;font-size:28px}.launch-domain-copy strong{font-size:clamp(22px,7.3vw,28px)}.launch-domain-copy small{font-size:11.5px}}
-
 .launch-domain-copy strong{font-size:clamp(20px,4.4vw,26px)}
 .launch-domain-copy small{font-size:12px}
 .launch-domain-card{border-radius:10px}
@@ -21,4 +20,4 @@
 .launch-card-arrow{width:28px;height:36px;border:0;border-radius:0;background:transparent;backdrop-filter:none;font-size:30px}
 .launch-domain-card{grid-template-columns:minmax(0,1fr)}
 .launch-services-card .launch-card-shade{background:linear-gradient(180deg,rgba(4,5,7,.02) 8%,rgba(4,5,7,.18) 48%,rgba(4,5,7,.68) 100%),linear-gradient(90deg,rgba(4,5,7,.22),transparent 72%)}
-
+.launch-auth-row{display:grid;gap:8px;margin-bottom:14px}.launch-google-auth{cursor:pointer;color:#0b0d0f;background:#f7f8f3;border:1px solid #ffffff66;border-radius:10px;min-height:44px;padding:0 16px;font-weight:900}.launch-google-auth:hover{background:#fff}.launch-auth-error{color:#ff9d9d;margin:0;font-size:12px;font-weight:700}
