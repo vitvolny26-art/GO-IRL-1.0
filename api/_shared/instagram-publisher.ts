@@ -102,7 +102,10 @@ const postForm = async (
       body: new URLSearchParams(params).toString(),
     });
   } catch (error) {
-    throw new Error(`instagram_publish_transport_failed:${stage}:${safeTransportCode(error)}`);
+    throw new Error(
+      `instagram_publish_transport_failed:${stage}:${safeTransportCode(error)}`,
+      { cause: error },
+    );
   }
 
   if (!response.ok) {
