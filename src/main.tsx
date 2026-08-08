@@ -26,6 +26,7 @@ import { ServicesBookingsPortal } from "./services/ServicesBookingsPortal";
 import { useAppStore } from "./store";
 import { LaunchPage } from "./LaunchPage";
 import { resolveLaunchSurface, type LaunchSurface } from "./launchSurface";
+import { resolveGoIrlClient } from "./clientSurface";
 import "./styles.css";
 import "./category-cards.css";
 import "./activity-3d-icons.css";
@@ -67,6 +68,7 @@ import "./event-sheet-production-fix.css";
 import "./services/service-activity-card-overrides.css";
 import "./services/beauty-share-priority-fix.css";
 import "./beauty/beauty-booking-notice-overrides.css";
+import "./responsive-shell.css";
 
 type SupportedLanguage = "ru" | "uk" | "cs" | "en";
 type StoredPreferences = { language?: SupportedLanguage; cityId?: string; mapProvider?: "google" | "apple" | "mapy" };
@@ -111,6 +113,7 @@ const initializeLanguagePreference = () => {
 };
 
 initializeLanguagePreference();
+document.documentElement.dataset.goIrlClient = resolveGoIrlClient(window.Telegram);
 const betaActivityOptions = closedBetaActivityOptions.activities.filter((option) => option.name.en !== "Chess");
 closedBetaActivityOptions.activities.splice(0, closedBetaActivityOptions.activities.length, ...betaActivityOptions);
 const App = lazy(() => import("./App"));
