@@ -28,7 +28,7 @@ const getWebAuthClient = () => {
       autoRefreshToken: false,
       detectSessionInUrl: false,
       flowType: "pkce",
-      persistSession: false,
+      persistSession: true,
       storage: window.sessionStorage,
     },
   });
