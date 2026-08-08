@@ -1,4 +1,7 @@
+import { buildSocialAttributionUrl, type SocialAttribution } from "./socialAttribution";
+
 export type CardShareChannel = "telegram" | "whatsapp" | "messenger" | "facebook" | "instagram";
+export type CardShareAttributionChannel = CardShareChannel | "native" | "copy";
 
 export type CardShareContent = {
   title: string;
@@ -7,6 +10,8 @@ export type CardShareContent = {
   url: string;
   language?: "ru" | "uk" | "cs" | "en";
 };
+
+export type CardShareAttributionContext = Pick<SocialAttribution, "campaign" | "ref">;
 
 const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const beautySlugPattern = /^beauty-[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -95,6 +100,29 @@ export const buildCardShareLandingUrl = (content: CardShareContent) => {
   return normalizeCardShareUrl(content.url);
 };
 
+const cardShareAttribution = {
+  telegram: { source: "telegram", medium: "message" },
+  whatsapp: { source: "whatsapp", medium: "message" },
+  messenger: { source: "messenger", medium: "message" },
+  facebook: { source: "facebook", medium: "share" },
+  instagram: { source: "instagram", medium: "share" },
+  native: { source: "native", medium: "share" },
+  copy: { source: "copy", medium: "copy" },
+} as const satisfies Record<CardShareAttributionChannel, Pick<SocialAttribution, "source" | "medium">>;
+
+export const buildCardShareSmartUrl = (
+  content: CardShareContent,
+  channel: CardShareAttributionChannel,
+  context: CardShareAttributionContext = {},
+) => {
+  const landingUrl = buildCardShareLandingUrl(content);
+  if (isBeautyCardShareContent(content)) return landingUrl;
+  return buildSocialAttributionUrl(landingUrl, {
+    ...context,
+    ...cardShareAttribution[channel],
+  });
+};
+
 export const buildMessengerPreviewUrl = buildMetaEventPreviewUrl;
 
 export const buildCardShareImageUrl = (content: CardShareContent) => {
@@ -119,28 +147,38 @@ export const buildOrganicCardShareContent = (content: CardShareContent) => ({
   url: buildMetaEventPreviewUrl(content),
 });
 
+export const buildAttributedOrganicCardShareContent = (
+  content: CardShareContent,
+  channel: Extract<CardShareAttributionChannel, "messenger" | "instagram" | "native" | "copy">,
+  context: CardShareAttributionContext = {},
+) => ({
+  ...buildOrganicCardShareContent(content),
+  url: buildCardShareSmartUrl(content, channel, context),
+});
+
 export const buildFacebookShareTarget = (content: CardShareContent) => {
   const target = new URL("https://www.facebook.com/sharer/sharer.php");
-  target.searchParams.set("u", buildMetaEventPreviewUrl(content));
-  target.searchParams.set("quote", buildCardShareText(content));
+  const smartUrl = buildCardShareSmartUrl(content, "facebook");
+  target.searchParams.set("u", smartUrl);
+  target.searchParams.set("quote", buildCardShareText({ ...content, url: smartUrl }));
   return target.toString();
 };
 
 export const buildMessengerSendTarget = (content: CardShareContent) => {
   const dialogUrl = new URL("https://www.facebook.com/dialog/send");
   dialogUrl.searchParams.set("app_id", metaAppId);
-  dialogUrl.searchParams.set("link", buildMetaEventPreviewUrl(content));
+  dialogUrl.searchParams.set("link", buildCardShareSmartUrl(content, "messenger"));
   dialogUrl.searchParams.set("redirect_uri", publicAppOrigin);
   return dialogUrl.toString();
 };
 
 export const buildMessengerAppTarget = (content: CardShareContent) => {
-  const link = encodeURIComponent(buildMetaEventPreviewUrl(content));
+  const link = encodeURIComponent(buildCardShareSmartUrl(content, "messenger"));
   return `fb-messenger://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}`;
 };
 
 export const buildMessengerAndroidIntentTarget = (content: CardShareContent) => {
-  const link = encodeURIComponent(buildMetaEventPreviewUrl(content));
+  const link = encodeURIComponent(buildCardShareSmartUrl(content, "messenger"));
   return `intent://share/?link=${link}&app_id=${encodeURIComponent(metaAppId)}#Intent;scheme=fb-messenger;package=com.facebook.orca;end`;
 };
 
@@ -149,7 +187,7 @@ export const buildMessengerShareBridgeTarget = (content: CardShareContent, origi
   target.searchParams.set("title", content.title);
   target.searchParams.set("date", content.date);
   target.searchParams.set("address", content.address);
-  target.searchParams.set("url", buildMetaEventPreviewUrl(content));
+  target.searchParams.set("url", buildCardShareSmartUrl(content, "messenger"));
   return target.toString();
 };
 
@@ -165,7 +203,7 @@ export const buildCardShareTarget = (channel: Exclude<CardShareChannel, "instagr
     if (isBeautyCardShareContent(normalizedContent)) {
       return `https://wa.me/?text=${encodeURIComponent(buildMetaEventPreviewUrl(normalizedContent))}`;
     }
-    const landingUrl = buildCardShareLandingUrl(normalizedContent);
+    const landingUrl = buildCardShareSmartUrl(normalizedContent, "whatsapp");
     const message = buildCardShareText({ ...normalizedContent, url: landingUrl });
     return `https://wa.me/?text=${encodeURIComponent(message)}`;
   }
