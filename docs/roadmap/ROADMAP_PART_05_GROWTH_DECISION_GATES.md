@@ -5,7 +5,7 @@ status: Active
 source_of_truth: true
 canonical_index: ROADMAP.md
 scope: Production growth, future Services and monetization tracks, decision gates, dependency chain, and historical sprint references
-last_review: 2026-07-31
+last_review: 2026-08-05
 next_review: 2026-08-12
 ---
 
@@ -48,7 +48,7 @@ Source record: [`SPRINT_5.md`](SPRINT_5.md).
 
 ## Future Track A — Services and Beauty
 
-**State:** Local/Mock Prototype Implemented / Production Pilot Gated
+**State:** Bounded Production Foundations Implemented / Production Pilot Gated
 
 **Product outcome:** Prove that GO IRL can reduce coordination friction for real-world service appointments without weakening the Activities product or displacing unresolved release blockers.
 
@@ -62,14 +62,46 @@ Proposed sequence:
 4. `BEAUTY004` — local or mock-data prototype. **Implemented on `main` and deployed as a bounded UI prototype; evidence requires review.**
 5. `BEAUTY005` — bounded production pilot after explicit roadmap approval and protected-change approvals.
 
-Current prototype evidence:
+Current implementation evidence:
 
 - root entry separates `/activities` and `/services`;
 - Services has independent Home, For You, Catalog, My Bookings, and Client Profile tabs;
-- Beauty Professional setup and local workspace exist at `/beauty`;
-- professional data, preferences, and appointments remain local/mock and do not establish a shared production directory;
-- `professional` is an admin-assigned production identity role, but it grants no production Services data model or pilot authorization by itself;
-- the deployed shell is not evidence that Gate F is green.
+- Beauty Professional setup and workspace exist at `/beauty` and `/beauty/workspace`;
+- `professional` is an admin-assigned production identity role, but it does not authorize a public Services pilot by itself;
+- SHARE004 persistent Beauty share-card configuration and lifecycle state are released on production Supabase, VPS, and Vercel at merge SHA `b8cfed3b4f5a642be3b582165e2ecfc04ea46b7c`;
+- SHARE004 provides owner-scoped persistence, artwork/generated-card Storage boundaries, optimistic concurrency, lifecycle validation, and authenticated staff status visibility;
+- organizer/admin user-visible status presentation remains a separate bounded UI task;
+- other Services domains, including catalog publication, booking lifecycle, support, moderation, and pilot operations, remain separately governed and must not be inferred as complete from SHARE004;
+- the deployed shell and SHARE004 production foundation are not evidence that Gate F is green.
+
+### SHARE004 production milestone
+
+**State:** Backend persistence and professional workspace integration released; staff status UI pending.
+
+Verified evidence:
+
+- implementation PR `#666` merged to `main`;
+- merge SHA `b8cfed3b4f5a642be3b582165e2ecfc04ea46b7c`;
+- exact-head CI run `31033979722` — PASS;
+- PostgreSQL 17 migration smoke run `31033980013` — PASS;
+- production Supabase migrations `20260805193000`, `20260805194000`, and `20260805195000` applied and verified;
+- n8n production execution `8734` completed with VPS SSH `code 0`;
+- VPS production health returned HTTP `200`;
+- Vercel production deployment `dpl_N4eAoDzLFfFVLBXFjfkHgT8t7apv` reached `READY` for the exact merge SHA.
+
+Next bounded step:
+
+- expose read-only lifecycle status to authorized organizer/admin users through the existing `go_irl_get_beauty_share_card_status(...)` contract;
+- preserve the professional status states: ready with timestamp, updating, failed with owner retry, and deleted;
+- do not add another table, RPC, migration, RLS policy, role model, or authentication path for this UI task;
+- open a separate Draft PR and require full exact-head repository checks before merge or deployment.
+
+Durable evidence:
+
+- GitHub report: `docs/reports/release-manager/2026-08-05-share004-beauty-share-card-persistence.md`;
+- GitHub handoff: `docs/reports/release-manager/2026-08-05-share004-production-handoff.md`;
+- Drive SHARE004 folder: `1L3sTLTlvb_o3Wn6vV9AHCrrg8hHcv0Av`;
+- Drive production handoff: `1htAWqM_0RlN_DseD_XoXli6YsC4EhK0UwTrTMiEUf10`.
 
 Entry gate:
 
@@ -195,7 +227,8 @@ Evidence required:
 - privacy, consent, retention, deletion, moderation, and safety model;
 - support and operational ownership;
 - protected production changes approved individually;
-- local or mock prototype evidence, including commit `70841bf`, reviewed before production authorization.
+- local/mock prototype and bounded production-foundation evidence, including SHARE004 merge SHA `b8cfed3b4f5a642be3b582165e2ecfc04ea46b7c`, reviewed before production-pilot authorization;
+- remaining user-visible staff status, booking, support, moderation, and operations gates completed or explicitly accepted.
 
 ### Gate G — Monetization validation
 
@@ -216,10 +249,11 @@ Evidence required:
 4. Introduce trust features only after explicit approval and stable attendance evidence.
 5. Expand Activities modules and cities only after release and product evidence.
 6. Start production-growth mechanics only after operational and public-safety readiness.
-7. Review and harden the implemented Services mock prototype only as a non-displacing gated track.
-8. Start a Beauty production pilot only after Gate F and all protected-change approvals are green.
-9. Validate Offline Enabler value and willingness to pay before selecting pricing.
-10. Implement or publicly announce monetization only after Gate G and separate implementation approval.
+7. Review and harden the implemented Services prototype and bounded production foundations only as a non-displacing gated track.
+8. Complete SHARE004 organizer/admin status presentation without changing the released backend contract.
+9. Start a Beauty production pilot only after Gate F and all protected-change approvals are green.
+10. Validate Offline Enabler value and willingness to pay before selecting pricing.
+11. Implement or publicly announce monetization only after Gate G and separate implementation approval.
 
 ## Historical sprint records
 
