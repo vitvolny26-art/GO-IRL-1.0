@@ -211,7 +211,6 @@ const enhanceCreateIconSelect = (select: HTMLSelectElement) => {
   const signature = Array.from(select.options).map((option) => `${option.value}:${option.textContent || ""}`).join("|");
   const previousSignature = select.dataset.createIconPickerSignature;
   if (select.dataset.createIconPickerProcessed === "true" && previousSignature === signature) {
-    createIconPickerSync.get(select)?.();
     return;
   }
 
