@@ -17,7 +17,7 @@ export interface ProfileRepository {
 
 export type ProfileRepositoryKind = "local" | "supabase";
 
-type TrustedProfileIdentity = Extract<AppAuthIdentity, { source: "trusted-telegram" }>;
+type TrustedProfileIdentity = Extract<AppAuthIdentity, { source: "trusted-telegram" | "trusted-provider" }>;
 
 export type CreateProfileRepositoryOptions = {
   identity: AppAuthIdentity | null;
@@ -31,7 +31,7 @@ export type CreateProfileRepositoryOptions = {
 
 const isTrustedProfileIdentity = (
   identity: AppAuthIdentity | null,
-): identity is TrustedProfileIdentity => identity?.source === "trusted-telegram";
+): identity is TrustedProfileIdentity => identity?.source === "trusted-telegram" || identity?.source === "trusted-provider";
 
 export function selectProfileRepositoryKind(identity: AppAuthIdentity | null): ProfileRepositoryKind {
   return isTrustedProfileIdentity(identity) ? "supabase" : "local";
