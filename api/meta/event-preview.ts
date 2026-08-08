@@ -1,4 +1,9 @@
 import { readEnv } from "../_shared/env.js";
+import {
+  buildActivityAttributionSession,
+  socialAttributionParamKeys,
+  socialAttributionSessionKey,
+} from "../../src/socialAttribution.js";
 import { buildMetaEventCalendar, buildMetaEventGoogleCalendarUrl } from "../_shared/meta-event-calendar.js";
 import {
   isBeautyShareSlug,
@@ -56,6 +61,37 @@ const escapeHtml = (value: string) => value
   .replaceAll("'", "&#39;");
 
 const first = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
+
+const activityAttributionProbe = "activity-attribution-v1";
+
+export const buildEventAttributionCapture = (
+  eventId: string,
+  query: VercelRequest["query"],
+) => {
+  const params = new URLSearchParams();
+  for (const key of socialAttributionParamKeys) {
+    const value = first(query?.[key]);
+    if (value) params.set(key, value);
+  }
+
+  const session = buildActivityAttributionSession({
+    activityId: eventId,
+    entryPath: `/e/${eventId}`,
+    search: params,
+  });
+  const storageKey = JSON.stringify(socialAttributionSessionKey);
+  if (!session) {
+    return {
+      attributed: false,
+      script: `<script>try{sessionStorage.removeItem(${storageKey})}catch{}</script>`,
+    };
+  }
+
+  return {
+    attributed: true,
+    script: `<script>try{sessionStorage.setItem(${storageKey},${JSON.stringify(JSON.stringify(session))})}catch{}</script>`,
+  };
+};
 
 const browserBeautyUrl = (origin: string, slug: string, date: string) => {
   const url = new URL(`/beauty/${encodeURIComponent(slug)}`, origin);
@@ -223,10 +259,16 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const title = card.title || card.activity || "GO IRL";
     const description = [[card.date, card.time].filter(Boolean).join(" · "), card.address].filter(Boolean).join(" · ");
     const labels = metaEventPreviewCopy[card.language];
+    const attributionCapture = first(request.query?.capture) === activityAttributionProbe
+      ? buildEventAttributionCapture(card.eventId, request.query)
+      : null;
 
     response.setHeader("Content-Type", "text/html; charset=utf-8");
-    response.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
-    return response.status(200).end(`<!doctype html>
+    response.setHeader(
+      "Cache-Control",
+      attributionCapture?.attributed ? "no-store" : "public, max-age=300, s-maxage=300",
+    );
+    const html = `<!doctype html>
 <html lang="${escapeHtml(card.language)}">
 <head>
 <meta charset="utf-8" />
@@ -251,7 +293,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
 <div class="actions">
 <a class="btn primary" href="${escapeHtml(openUrl)}">${escapeHtml(labels.open)}</a>
 <a class="btn secondary" href="${escapeHtml(addToCalendarUrl)}">${escapeHtml(labels.calendar)}</a>
-</div></div></article></main></body></html>`);
+</div></div></article></main></body></html>`;
+    return response.status(200).end(attributionCapture
+      ? html.replace("</head>", `${attributionCapture.script}\n</head>`)
+      : html);
   } catch {
     return response.status(503).end("preview_unavailable");
   }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildEventAttributionCapture,
   metaEventPreviewCopy,
   setCardImageResponseHeaders,
 } from "../../../api/meta/event-preview.js";
@@ -17,12 +18,36 @@ describe("Meta event preview copy", () => {
   it("routes short Activity and Service landings to the HTML preview handler", () => {
     expect(vercel.rewrites).toContainEqual({
       source: "/e/:id",
-      destination: "/api/meta/event-preview-attributed?event=:id",
+      destination: "/api/meta/event-preview?event=:id&capture=activity-attribution-v1",
     });
     expect(vercel.rewrites).toContainEqual({
       source: "/s/:slug",
       destination: "/api/meta/event-preview?slug=:slug",
     });
+  });
+
+  it("serializes valid attribution for the canonical Activity entry", () => {
+    const eventId = "3b172dd9-d5e2-4328-86a4-d4107a6359fc";
+    const result = buildEventAttributionCapture(eventId, {
+      source: "instagram",
+      medium: "story",
+      campaign: "olomouc-pilot-v1",
+      ref: "pub_42",
+    });
+    expect(result.attributed).toBe(true);
+    expect(result.script).toContain("go-irl-social-attribution-v1");
+    expect(result.script).toContain("olomouc-pilot-v1");
+    expect(result.script).toContain(`/e/${eventId}`);
+  });
+
+  it("drops invalid attribution and clears stale transient state", () => {
+    const result = buildEventAttributionCapture("3b172dd9-d5e2-4328-86a4-d4107a6359fc", {
+      source: "Instagram",
+      medium: "email",
+      ref: "user@example.com",
+    });
+    expect(result.attributed).toBe(false);
+    expect(result.script).toContain("sessionStorage.removeItem");
   });
 
   it("returns Telegram-compatible attachment headers only for downloads", () => {

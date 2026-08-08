@@ -81,10 +81,11 @@ export async function checkInstagramPublisherReadiness(
       },
     });
   } catch (error) {
-    throw new Error(
+    const failure = new Error(
       `instagram_readiness_transport_failed:${safeTransportCode(error)}`,
-      { cause: error },
-    );
+    ) as Error & { cause?: unknown };
+    failure.cause = error;
+    throw failure;
   }
 
   if (!response.ok) {

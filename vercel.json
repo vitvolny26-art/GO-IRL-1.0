@@ -19,7 +19,7 @@
     },
     {
       "source": "/e/:id",
-      "destination": "/api/meta/event-preview-attributed?event=:id"
+      "destination": "/api/meta/event-preview?event=:id&capture=activity-attribution-v1"
     },
     {
       "source": "/s/:slug",
