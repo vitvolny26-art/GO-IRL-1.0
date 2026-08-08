@@ -1,6 +1,6 @@
 /* global self, caches, fetch, URL */
 
-const offlineCache = "go-irl-offline-v3";
+const offlineCache = "go-irl-offline-v4";
 const offlineUrl = "/offline.html";
 const appShellUrls = ["/", "/activities", "/services", "/beauty", offlineUrl];
 
