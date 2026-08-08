@@ -14,6 +14,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/admin/instagram-publisher-readiness",
+      "destination": "/api/admin/session?probe=instagram-publisher-readiness"
+    },
+    {
       "source": "/e/:id",
       "destination": "/api/meta/event-preview-attributed?event=:id"
     },
